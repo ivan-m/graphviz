@@ -4,9 +4,10 @@
 
  {- GraphViz ------------------------------------------------------\
  |                                                                 |
- | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org)     |
+ | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org),    |
+ |              Ivan Lazar Miljenovic (ivan.miljenovic@gmail.com)  |
  |                                                                 |
- | DisTract is freely distributable under the terms of a 3-Clause  |
+ | GraphViz is freely distributable under the terms of a 3-Clause  |
  | BSD-style license.                                              |
  |                                                                 |
  \-----------------------------------------------------------------}
@@ -58,26 +59,26 @@ instance Show ArrowType where
 
 readArrowType :: Parser Char ArrowType
 readArrowType
-              = oneOf [ optionalQuotedString "normal" >> return Normal   
-                      , optionalQuotedString "inv" >> return Inv      
-                      , optionalQuotedString "dot" >> return Dot      
-                      , optionalQuotedString "invdot" >> return InvDot   
-                      , optionalQuotedString "odot" >> return ODot     
-                      , optionalQuotedString "invodot" >> return InvODot  
-                      , optionalQuotedString "noarrow" >> return NoArrow  
-                      , optionalQuotedString "tee" >> return Tee      
-                      , optionalQuotedString "empty" >> return Empty    
-                      , optionalQuotedString "invempty" >> return InvEmpty 
-                      , optionalQuotedString "diamond" >> return Diamond  
-                      , optionalQuotedString "odiamond" >> return ODiamond 
-                      , optionalQuotedString "ediamond" >> return EDiamond 
-                      , optionalQuotedString "crow" >> return Crow     
-                      , optionalQuotedString "box" >> return Box      
-                      , optionalQuotedString "obox" >> return OBox     
-                      , optionalQuotedString "open" >> return Open     
-                      , optionalQuotedString "halfopen" >> return HalfOpen 
-                      , optionalQuotedString "vee" >> return Vee      
-                      ]                                          
+              = oneOf [ optionalQuotedString "normal" >> return Normal
+                      , optionalQuotedString "inv" >> return Inv
+                      , optionalQuotedString "dot" >> return Dot
+                      , optionalQuotedString "invdot" >> return InvDot
+                      , optionalQuotedString "odot" >> return ODot
+                      , optionalQuotedString "invodot" >> return InvODot
+                      , optionalQuotedString "noarrow" >> return NoArrow
+                      , optionalQuotedString "tee" >> return Tee
+                      , optionalQuotedString "empty" >> return Empty
+                      , optionalQuotedString "invempty" >> return InvEmpty
+                      , optionalQuotedString "diamond" >> return Diamond
+                      , optionalQuotedString "odiamond" >> return ODiamond
+                      , optionalQuotedString "ediamond" >> return EDiamond
+                      , optionalQuotedString "crow" >> return Crow
+                      , optionalQuotedString "box" >> return Box
+                      , optionalQuotedString "obox" >> return OBox
+                      , optionalQuotedString "open" >> return Open
+                      , optionalQuotedString "halfopen" >> return HalfOpen
+                      , optionalQuotedString "vee" >> return Vee
+                      ]
 
 data ColorType = RGB { red :: Word8
                       , green :: Word8

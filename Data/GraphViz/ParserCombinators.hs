@@ -1,10 +1,12 @@
 {-# LANGUAGE PatternSignatures #-}
 
- {- GraphViz ------------------------------------------------------\
+
+ {--GraphViz ------------------------------------------------------\
  |                                                                 |
- | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org)     |
+ | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org),    |
+ |              Ivan Lazar Miljenovic (ivan.miljenovic@gmail.com)  |
  |                                                                 |
- | DisTract is freely distributable under the terms of a 3-Clause  |
+ | GraphViz is freely distributable under the terms of a 3-Clause  |
  | BSD-style license.                                              |
  |                                                                 |
  \-----------------------------------------------------------------}
@@ -16,6 +18,9 @@ import Control.Monad
 
 string :: String -> Parser Char String
 string = mapM char
+
+strings :: [String] -> Parser Char String
+strings = oneOf . map string
 
 char :: Char -> Parser Char Char
 char = satisfy . (==)

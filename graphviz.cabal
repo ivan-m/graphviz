@@ -1,10 +1,10 @@
 Name:               graphviz
-Version:            2008.9.6
+Version:            2008.9.20
 Stability:          Beta
-Copyright:          Matthew Sackman
+Copyright:          Matthew Sackman, Ivan Lazar Miljenovic
 Category:           Graphics
 Maintainer:         matthew@wellquite.org
-Author:             Matthew Sackman
+Author:             Matthew Sackman, Ivan Lazar Miljenovic
 License:            BSD3
 License-File:       LICENSE
 Cabal-Version:      >= 1.2
