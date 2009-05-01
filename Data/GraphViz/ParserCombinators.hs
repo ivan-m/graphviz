@@ -1,15 +1,15 @@
 {-# LANGUAGE PatternSignatures #-}
 
+{- |
+   Module      : Data.GraphViz.ParserCombinators
+   Description : Helper functions for Parsing.
+   Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
+   License     : 3-Clause BSD-style
+   Maintainer  : Ivan.Miljenovic@gmail.com
 
- {--GraphViz ------------------------------------------------------\
- |                                                                 |
- | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org),    |
- |              Ivan Lazar Miljenovic (ivan.miljenovic@gmail.com)  |
- |                                                                 |
- | GraphViz is freely distributable under the terms of a 3-Clause  |
- | BSD-style license.                                              |
- |                                                                 |
- \-----------------------------------------------------------------}
+   This module defines simple helper functions for use with
+   "Text.ParserCombinators.Poly.Lazy".
+-}
 
 module Data.GraphViz.ParserCombinators where
 

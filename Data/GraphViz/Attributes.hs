@@ -2,15 +2,19 @@
            , PatternSignatures
            #-}
 
- {- GraphViz ------------------------------------------------------\
- |                                                                 |
- | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org),    |
- |              Ivan Lazar Miljenovic (ivan.miljenovic@gmail.com)  |
- |                                                                 |
- | GraphViz is freely distributable under the terms of a 3-Clause  |
- | BSD-style license.                                              |
- |                                                                 |
- \-----------------------------------------------------------------}
+{- |
+   Module      : Data.GraphViz.Attributes
+   Description : Definition of the GraphViz attributes.
+   Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
+   License     : 3-Clause BSD-style
+   Maintainer  : Ivan.Miljenovic@gmail.com
+
+   This module defines the various attributes that different parts of
+   a GraphViz graph can have.  Note that when using this module, you
+   must either import it qualified or else import "Prelude" hiding
+   'Prelude.LT', as this module exports a constructor with the same
+   name.
+-}
 
 module Data.GraphViz.Attributes where
 
@@ -37,25 +41,25 @@ data ArrowType = Normal   | Inv
                  deriving (Eq)
 
 instance Show ArrowType where
-    show Normal = "normal"
-    show Inv = "inv"
-    show Dot = "dot"
-    show InvDot = "invdot"
-    show ODot = "odot"
-    show InvODot = "invodot"
-    show NoArrow = "none"
-    show Tee = "tee"
-    show Empty = "empty"
+    show Normal   = "normal"
+    show Inv      = "inv"
+    show Dot      = "dot"
+    show InvDot   = "invdot"
+    show ODot     = "odot"
+    show InvODot  = "invodot"
+    show NoArrow  = "none"
+    show Tee      = "tee"
+    show Empty    = "empty"
     show InvEmpty = "invempty"
-    show Diamond = "diamond"
+    show Diamond  = "diamond"
     show ODiamond = "odiamond"
     show EDiamond = "ediamond"
-    show Crow = "crow"
-    show Box = "box"
-    show OBox = "obox"
-    show Open = "open"
+    show Crow     = "crow"
+    show Box      = "box"
+    show OBox     = "obox"
+    show Open     = "open"
     show HalfOpen = "halfopen"
-    show Vee = "vee"
+    show Vee      = "vee"
 
 readArrowType :: Parser Char ArrowType
 readArrowType

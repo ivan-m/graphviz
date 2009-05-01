@@ -2,15 +2,27 @@
            , ScopedTypeVariables
            #-}
 
- {--GraphViz ------------------------------------------------------\
- |                                                                 |
- | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org),    |
- |              Ivan Lazar Miljenovic (ivan.miljenovic@gmail.com)  |
- |                                                                 |
- | GraphViz is freely distributable under the terms of a 3-Clause  |
- | BSD-style license.                                              |
- |                                                                 |
- \-----------------------------------------------------------------}
+{- |
+   Module      : Data.GraphViz
+   Description : GraphViz bindings for Haskell.
+   Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
+   License     : 3-Clause BSD-style
+   Maintainer  : Ivan.Miljenovic@gmail.com
+
+   This is the top-level module for the graphviz library.  It provides
+   functions to create graphs using the Dot language for the GraphViz
+   program:
+
+       <http://graphviz.org/>
+
+   It also has limited ability to parse graphs in the Dot language.
+
+   Note that this module re-exports the "data.GraphViz.Attributes"
+   module, which exports a constructor that clashes with
+   'Prelude.LT'.  As such, you may need to import either this module
+   or the "Prelude" qualified or hiding @LT@.
+
+   -}
 
 module Data.GraphViz
     ( graphToDot
