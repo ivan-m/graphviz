@@ -12,12 +12,13 @@ Cabal-Version:      >= 1.2
 Build-Type:         Simple
 Synopsis:           GraphViz wrapper for Haskell.
 Description:
-  Allows you to convert Data.Graph... graphs into dot format,
-  and parse them back in, as a Dot structure.
+  Provides convenient functions to convert FGL graphs into the Dot
+  language used by the GraphViz (http://graphviz.org/) programs with a
+  large degree of customisation for layout, etc.
 
-  Or, you can run your Data.Graph...graph via dot, get the positional
-  information out from dot and build a new graph, combining the
-  positional information with the original graph.
+  Also allows a limited amount of parsing of Dot, and usage of
+  GraphViz to attach positional data to each node and edge in the
+  graph.
 
 Library {
         Build-Depends:     base == 4.*, containers, process, array,
