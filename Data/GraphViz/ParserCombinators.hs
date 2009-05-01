@@ -13,7 +13,7 @@
 
 module Data.GraphViz.ParserCombinators where
 
-import Text.ParserCombinators.PolyLazy
+import Text.ParserCombinators.Poly.Lazy
 import Control.Monad
 
 string :: String -> Parser Char String

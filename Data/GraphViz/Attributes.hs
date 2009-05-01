@@ -18,7 +18,7 @@ import Prelude hiding (LT)
 
 import Data.Word
 import Numeric
-import Text.ParserCombinators.PolyLazy
+import Text.ParserCombinators.Poly.Lazy
 import Control.Monad
 import Data.Maybe
 

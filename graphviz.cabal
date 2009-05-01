@@ -19,7 +19,7 @@ Description:
   positional information with the original graph.
 
 Library {
-        Build-depends:     base, containers, process, fgl, polyparse
+        Build-depends:     base, containers, process, fgl, polyparse >= 1.1
         Exposed-modules:   Data.GraphViz
                            Data.GraphViz.Attributes
                            Data.GraphViz.ParserCombinators
