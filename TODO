@@ -1,0 +1,10 @@
+Areas to work on:
+
+* Add support for Data.Graph-style graphs.
+
+* Allow user to choose whether or not the graph is meant to be
+  directed or undirected.
+
+* Ensure Data.GraphViz.Attributes contains all supported attributes for Dot.
+
+* Remove (or at least minimise) usage of extensions.
