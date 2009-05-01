@@ -8,7 +8,7 @@ Author:             Matthew Sackman, Ivan Lazar Miljenovic
 License:            BSD3
 License-File:       LICENSE
 Extra-Source-Files: TODO
-Cabal-Version:      >= 1.2
+Cabal-Version:      >= 1.6
 Build-Type:         Simple
 Synopsis:           GraphViz wrapper for Haskell.
 Description:
