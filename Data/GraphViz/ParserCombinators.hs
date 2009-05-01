@@ -1,5 +1,14 @@
 {-# LANGUAGE PatternSignatures #-}
 
+ {- GraphViz ------------------------------------------------------\
+ |                                                                 |
+ | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org)     |
+ |                                                                 |
+ | DisTract is freely distributable under the terms of a 3-Clause  |
+ | BSD-style license.                                              |
+ |                                                                 |
+ \-----------------------------------------------------------------}
+
 module Data.GraphViz.ParserCombinators where
 
 import Text.ParserCombinators.PolyLazy

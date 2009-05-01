@@ -2,6 +2,15 @@
            , ScopedTypeVariables
            #-}
 
+ {- GraphViz ------------------------------------------------------\
+ |                                                                 |
+ | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org)     |
+ |                                                                 |
+ | DisTract is freely distributable under the terms of a 3-Clause  |
+ | BSD-style license.                                              |
+ |                                                                 |
+ \-----------------------------------------------------------------}
+
 module Data.GraphViz
     ( graphToDot
     , graphToGraph

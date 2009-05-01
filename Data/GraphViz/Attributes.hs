@@ -2,6 +2,15 @@
            , PatternSignatures
            #-}
 
+ {- GraphViz ------------------------------------------------------\
+ |                                                                 |
+ | Copyright (c) 2008, Matthew Sackman (matthew@wellquite.org)     |
+ |                                                                 |
+ | DisTract is freely distributable under the terms of a 3-Clause  |
+ | BSD-style license.                                              |
+ |                                                                 |
+ \-----------------------------------------------------------------}
+
 module Data.GraphViz.Attributes where
 
 import Prelude hiding (LT)
@@ -24,6 +33,7 @@ data ArrowType = Normal   | Inv
                | Box      | OBox
                | Open     | HalfOpen
                | Vee
+                 deriving (Eq)
 
 instance Show ArrowType where
     show Normal = "normal"
@@ -69,7 +79,7 @@ readArrowType
                       , optionalQuotedString "vee" >> return Vee      
                       ]                                          
 
-data ColourType = RGB { red :: Word8
+data ColorType = RGB { red :: Word8
                       , green :: Word8
                       , blue :: Word8
                       }
@@ -78,8 +88,9 @@ data ColourType = RGB { red :: Word8
                        , blue :: Word8
                        , alpha :: Word8
                        }
+                  deriving (Eq)
 
-instance Show ColourType where
+instance Show ColorType where
     show (RGB { red, green, blue })
         = show $ '#' : foldr showWord8Pad "" [red, green, blue]
     show (RGBA { red, green, blue, alpha })
@@ -96,8 +107,8 @@ showWord8Pad w s = padding ++ simple ++ s
           | n < 16 = c
           | otherwise = findCols (c+1) (n `div` 16)
 
-readColourType :: Parser Char ColourType
-readColourType
+readColorType :: Parser Char ColorType
+readColorType
               = do { string "\"#"
                    ; digits <- many $ noneOf ['"']
                    ; char '"'
@@ -117,6 +128,7 @@ readColourType
           readHexPairs c = error $ "Error in readHexPairs: " ++ (show c)
 
 data DirType = Forward | Back | Both | None
+               deriving (Eq)
 
 instance Show DirType where
     show Forward = "forward"
@@ -133,6 +145,7 @@ readDirType
                       ]
 
 data OutputMode = BreadthFirst | NodesFirst | EdgesFirst
+                  deriving (Eq)
 
 instance Show OutputMode where
     show BreadthFirst = "breadthfirst"
@@ -147,6 +160,7 @@ readOutputMode
                       ]
 
 data PageDir = BL | BR | TL | TR | RB | RT | LB | LT
+               deriving (Eq)
 
 instance Show PageDir where
     show BL = "BL"
@@ -203,6 +217,7 @@ data ShapeType
     | Folder
     | Box3d
     | Component
+      deriving (Eq)
 
 instance Show ShapeType where
     show BoxShape = "box"
@@ -275,6 +290,7 @@ readShapeType
                       ]
 
 data StyleType = Filled | Invisible | Diagonals | Rounded | Dashed | Dotted | Solid | Bold
+                 deriving (Eq)
 
 instance Show StyleType where
     show Filled = "filled"
@@ -300,7 +316,10 @@ readStyleType
 
 data Point = Point Int Int
            | PointD Double Double
+             deriving (Eq)
+
 newtype PointList = PointList [Point]
+                    deriving (Eq)
 
 instance Show Point where
     show (Point x y) = show $ (show x) ++ (',':(show y))
@@ -347,6 +366,7 @@ readPointList
                    }
 
 data Rect = Rect Point Point
+            deriving (Eq)
 
 instance Show Rect where
     show (Rect (Point x1 y1) (Point x2 y2))
@@ -372,6 +392,7 @@ readRect = do { char '"'
               }
 
 data ScaleType = Scale | NoScale | FitX | FitY
+                 deriving (Eq)
 
 instance Show ScaleType where
     show Scale = "true"
@@ -387,6 +408,7 @@ readScaleType = oneOf [ optionalQuotedString "true" >> return Scale
                       ]
 
 data Justification = JLeft | JRight | JCenter
+                     deriving (Eq)
 
 instance Show Justification where
     show JLeft = "l"
@@ -400,6 +422,7 @@ readJustification = oneOf [ optionalQuotedString "l" >> return JLeft
                           ]
 
 data VerticalPlacement = VTop | VCenter | VBottom
+                         deriving (Eq)
 
 instance Show VerticalPlacement where
     show VTop = "t"
@@ -418,18 +441,18 @@ data Attribute
     | ArrowSize Double
     | ArrowTail ArrowType
     | Bb Rect
-    | BgColour ColourType
+    | BgColor ColorType
     | Center Bool
-    | Colour ColourType
+    | Color ColorType
     | Concentrate Bool
     | Constraint Bool
     | Decorate Bool
     | DefaultDist Double
     | Dir DirType
     | Dpi Double
-    | FillColour ColourType
+    | FillColor ColorType
     | FixedSize Bool
-    | FontColour ColourType
+    | FontColor ColorType
     | FontName String
     | FontSize Double
     | Group String
@@ -442,7 +465,7 @@ data Attribute
     | LabelAngle Double
     | LabelDistance Double
     | LabelFloat Bool
-    | LabelFontColour ColourType
+    | LabelFontColor ColorType
     | LabelFontName String
     | LabelFontSize Double
     | LabelJust Justification
@@ -461,7 +484,7 @@ data Attribute
     | Pad Double Double
     | Page Double Double
     | PageDir PageDir
-    | PenColour ColourType
+    | PenColor ColorType
     | Pos PointList
     | Quantum Double
     | RankDir PageDir
@@ -482,24 +505,26 @@ data Attribute
     | TailLabel String
     | Weight Double
     | Width Double
+    | Unknown String String
+      deriving (Eq)
 
 instance Show Attribute where
     show (ArrowHead arrowtype) = "arrowhead=" ++ (show arrowtype)
     show (ArrowSize double) = "arrowsize=" ++ (show double)
     show (ArrowTail arrowtype) = "arrowtail=" ++ (show arrowtype)
     show (Bb rect) = "bb=" ++ (show rect)
-    show (BgColour colourtype) = "bgcolour=" ++ (show colourtype)
+    show (BgColor colortype) = "bgcolor=" ++ (show colortype)
     show (Center bool) = "center=" ++ (show bool)
-    show (Colour colourtype) = "colour=" ++ (show colourtype)
+    show (Color colortype) = "color=" ++ (show colortype)
     show (Concentrate bool) = "concentrate=" ++ (show bool)
     show (Constraint bool) = "constraint=" ++ (show bool)
     show (Decorate bool) = "decorate=" ++ (show bool)
     show (DefaultDist double) = "defaultdist=" ++ (show double)
     show (Dir dirtype) = "dir=" ++ (show dirtype)
     show (Dpi double) = "dpi=" ++ (show double)
-    show (FillColour colourtype) = "fillcolour=" ++ (show colourtype)
+    show (FillColor colortype) = "fillcolor=" ++ (show colortype)
     show (FixedSize bool) = "fixedsize=" ++ (show bool)
-    show (FontColour colourtype) = "fontcolour=" ++ (show colourtype)
+    show (FontColor colortype) = "fontcolor=" ++ (show colortype)
     show (FontName string) = "fontname=" ++ (show string)
     show (FontSize double) = "fontsize=" ++ (show double)
     show (Group string) = "group=" ++ (show string)
@@ -512,7 +537,7 @@ instance Show Attribute where
     show (LabelAngle double) = "labelangle=" ++ (show double)
     show (LabelDistance double) = "labeldistance=" ++ (show double)
     show (LabelFloat bool) = "labelfloat=" ++ (show bool)
-    show (LabelFontColour colourtype) = "labelfontcolour=" ++ (show colourtype)
+    show (LabelFontColor colortype) = "labelfontcolor=" ++ (show colortype)
     show (LabelFontName string) = "labelfontname=" ++ (show string)
     show (LabelFontSize double) = "labelfontsize=" ++ (show double)
     show (LabelJust justification) = "labeljust=" ++ (show justification)
@@ -531,7 +556,7 @@ instance Show Attribute where
     show (Pad double1 double2) = "pad=" ++ (show $ PointD double1 double2)
     show (Page double1 double2) = "page=" ++ (show $ PointD double1 double2)
     show (PageDir pagedir) = "pagedir=" ++ (show pagedir)
-    show (PenColour colourtype) = "pencolor=" ++ (show colourtype)
+    show (PenColor colortype) = "pencolor=" ++ (show colortype)
     show (Pos pointlist) = "pos=" ++ (show pointlist)
     show (Quantum double) = "quantum=" ++ (show double)
     show (RankDir pagedir) = "rankdir=" ++ (show pagedir)
@@ -552,6 +577,7 @@ instance Show Attribute where
     show (TailLabel string) = "taillabel=" ++ (show string)
     show (Weight double) = "weight=" ++ (show double)
     show (Width double) = "width=" ++ (show double)
+    show (Unknown key value) = (show key) ++ ('=':(show . show $ value))
 
 readBool :: Parser Char Bool
 readBool = oneOf [ (optionalQuotedString "true" >> return True)
@@ -568,7 +594,7 @@ readString = oneOf [quoted, nonquoted]
                   ; char '"'
                   ; return str
                   }
-      nonquoted = many $ noneOf ['"', ' ', ',', '\t', '\n', '\r']
+      nonquoted = many $ noneOf ['"', ' ', ',', '\t', '\n', '\r', ']']
 
 readAttribute :: Parser Char Attribute
 readAttribute
@@ -577,18 +603,18 @@ readAttribute
                 , string "arrowsize=" >> optionalQuoted floatingNumber >>= return . ArrowSize
                 , string "arrowtail=" >> readArrowType >>= return . ArrowTail
                 , string "bb=" >> readRect >>= return . Bb
-                , string "bgcolour=" >> readColourType >>= return . BgColour
+                , string "bgcolor=" >> readColorType >>= return . BgColor
                 , string "center=" >> readBool >>= return . Center
-                , string "colour=" >> readColourType >>= return . Colour
+                , string "color=" >> readColorType >>= return . Color
                 , string "concentrate=" >> readBool >>= return . Concentrate
                 , string "constraint=" >> readBool >>= return . Constraint
                 , string "decorate=" >> readBool >>= return . Decorate
                 , string "defaultdist=" >> optionalQuoted floatingNumber >>= return . DefaultDist
                 , string "dir=" >> readDirType >>= return . Dir
                 , string "dpi=" >> optionalQuoted floatingNumber >>= return . Dpi
-                , string "fillcolour=" >> readColourType >>= return . FillColour
+                , string "fillcolor=" >> readColorType >>= return . FillColor
                 , string "fixedsize=" >> readBool >>= return . FixedSize
-                , string "fontcolour=" >> readColourType >>= return . FontColour
+                , string "fontcolor=" >> readColorType >>= return . FontColor
                 , string "fontname=" >> readString >>= return . FontName
                 , string "fontsize=" >> optionalQuoted floatingNumber >>= return . FontSize
                 , string "group=" >> readString >>= return . Group
@@ -601,7 +627,7 @@ readAttribute
                 , string "labelangle=" >> optionalQuoted floatingNumber >>= return . LabelAngle
                 , string "labeldistance=" >> optionalQuoted floatingNumber >>= return . LabelDistance
                 , string "labelfloat=" >> readBool >>= return . LabelFloat
-                , string "labelfontcolour=" >> readColourType >>= return . LabelFontColour
+                , string "labelfontcolor=" >> readColorType >>= return . LabelFontColor
                 , string "labelfontname=" >> readString >>= return . LabelFontName
                 , string "labelfontsize=" >> optionalQuoted floatingNumber >>= return . LabelFontSize
                 , string "labeljust=" >> readJustification >>= return . LabelJust
@@ -620,7 +646,7 @@ readAttribute
                 , string "pad=" >> readPoint >>= \(PointD x y) -> return $ Pad x y
                 , string "page=" >> readPoint >>= \(PointD x y) -> return $ Page x y
                 , string "pagedir=" >> readPageDir >>= return . PageDir
-                , string "pencolor=" >> readColourType >>= return . PenColour
+                , string "pencolor=" >> readColorType >>= return . PenColor
                 , string "pos=" >> readPointList >>= return . Pos
                 , string "quantum=" >> optionalQuoted floatingNumber >>= return . Quantum
                 , string "rankdir=" >> readPageDir >>= return . RankDir
@@ -641,6 +667,7 @@ readAttribute
                 , string "taillabel=" >> readString >>= return . TailLabel
                 , string "weight=" >> optionalQuoted floatingNumber >>= return . Weight
                 , string "width=" >> optionalQuoted floatingNumber >>= return . Width
+                , many (noneOf ['=', '"', ' ', ',', '\t', '\n', '\r', ']']) >>= \key -> char '=' >> readString >>= return . Unknown key
                 ]
 
 readAttributesList :: Parser Char [Attribute]
