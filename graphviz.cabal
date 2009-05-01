@@ -7,9 +7,10 @@ Maintainer:         Ivan.Miljenovic@gmail.com
 Author:             Matthew Sackman, Ivan Lazar Miljenovic
 License:            BSD3
 License-File:       LICENSE
+Extra-Source-Files: TODO
 Cabal-Version:      >= 1.2
 Build-Type:         Simple
-Synopsis:           GraphViz wrapper for Haskell
+Synopsis:           GraphViz wrapper for Haskell.
 Description:
   Allows you to convert Data.Graph... graphs into dot format,
   and parse them back in, as a Dot structure.
@@ -18,10 +19,25 @@ Description:
   information out from dot and build a new graph, combining the
   positional information with the original graph.
 
+Flag small_base
+  Description: Choose the new smaller, split-up base package.
+
 Library {
-        Build-depends:     base, containers, process, fgl, polyparse >= 1.1
-        Exposed-modules:   Data.GraphViz
+        If flag(small_base)
+            Build-Depends: base >= 3.0, containers, process
+        Else
+            Build-Depends: base < 3
+
+        Build-Depends:     fgl, polyparse >= 1.1
+
+        Exposed-Modules:   Data.GraphViz
+                           Data.GraphViz.Types
+                           Data.GraphViz.Commands
                            Data.GraphViz.Attributes
                            Data.GraphViz.ParserCombinators
-        ghc-options:       -Wall -fno-warn-name-shadowing
+
+        Other-Modules:     Data.GraphViz.Types.Clustering
+
+        Ghc-Options:       -Wall -fno-warn-name-shadowing
+        Ghc-Prof-Options:  -prof -auto-all
 }
