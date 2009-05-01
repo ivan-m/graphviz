@@ -590,11 +590,20 @@ readString :: Parser Char String
 readString = oneOf [quoted, nonquoted]
     where
       quoted = do { char '"'
-                  ; str <- many $ noneOf ['"']
+                  ; str <- liftM concat . many . oneOf $ [nonescaped, escapedPair]
                   ; char '"'
                   ; return str
                   }
       nonquoted = many $ noneOf ['"', ' ', ',', '\t', '\n', '\r', ']']
+      escapedPair = do { char '\\'
+                       ; oneOf [ char '"' >> return "\""
+                               , char 't' >> return "\t"
+                               , char 'n' >> return "\n"
+                               , char 'r' >> return "\r"
+                               , satisfy (const True) >>= \c -> return ['\\', c]
+                               ]
+                       }
+      nonescaped = liftM (: []) . noneOf $ ['\\', '"']
 
 readAttribute :: Parser Char Attribute
 readAttribute
