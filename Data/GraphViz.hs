@@ -28,14 +28,11 @@ module Data.GraphViz
     ( graphToDot
     , clusterGraphToDot
     , graphToGraph
-    , readDotGraph
     , commandFor
-    , DotGraph (..)
-    , DotNode (..)
-    , DotEdge (..)
     , NodeCluster(..)
     , AttributeNode
     , AttributeEdge
+    , module Data.GraphViz.Types
     , module Data.GraphViz.Attributes
     )
     where
@@ -48,7 +45,7 @@ import Data.Graph.Inductive.Graph
 import Data.List
 import Data.Function
 import qualified Data.Set as Set
-import Text.ParserCombinators.PolyLazy
+import Text.ParserCombinators.Poly.Lazy
 import System.IO
 import System.Process
 import Control.Concurrent
@@ -56,68 +53,8 @@ import Control.Monad
 import Data.Maybe
 import qualified Data.Map as Map
 
+import Data.GraphViz.Types
 import Data.GraphViz.Attributes
-import Data.GraphViz.ParserCombinators
-
-data DotGraph = DotGraph { graphAttributes :: [Attribute]
-                         , graphNodes :: [DotNode]
-                         , graphEdges :: [DotEdge]
-                         , directedGraph :: Bool
-                         }
-
-data DotNode
-    = DotNode { nodeID :: Int
-              , nodeAttributes :: [Attribute]
-              }
-    | DotCluster { clusterID         :: String
-                 , clusterAttributes :: [Attribute]
-                 , clusterElems      :: [DotNode]
-                 }
-
-data DotEdge = DotEdge { edgeHeadNodeID :: Int
-                       , edgeTailNodeID :: Int
-                       , edgeAttributes :: [Attribute]
-                       , directedEdge   :: Bool
-                       }
-
-instance Show DotNode where
-    show n = init . unlines . addTabs $ nodesToString n
-
-nodesToString :: DotNode -> [String]
-nodesToString (DotNode { nodeID, nodeAttributes })
-    | null nodeAttributes = [nID ++ ";"]
-    | otherwise           = [nID ++ (' ':((show nodeAttributes) ++ ";"))]
-    where
-      nID = show nodeID
-nodesToString (DotCluster { clusterID, clusterAttributes, clusterElems })
-    = ["subgraph cluster_" ++ clusterID ++ " {"] ++ (addTabs inner) ++ ["}"]
-    where
-      inner = case clusterAttributes of
-                [] -> nodes
-                a  -> ("graph " ++ (show a) ++ ";") : nodes
-      nodes = concatMap nodesToString clusterElems
-
-addTabs :: [String] -> [String]
-addTabs = map ('\t':)
-
-instance Show DotEdge where
-    show (DotEdge { edgeHeadNodeID, edgeTailNodeID, edgeAttributes, directedEdge })
-        = '\t' : ((show edgeTailNodeID) ++ edge ++ (show edgeHeadNodeID) ++ attributes)
-          where
-            edge = " " ++ (if directedEdge then dirEdge else undirEdge) ++ " "
-            attributes = case edgeAttributes of
-                           [] -> ";"
-                           a  -> ' ':((show a) ++ ";")
-
-instance Show DotGraph where
-    show (DotGraph { graphAttributes, graphNodes, graphEdges, directedGraph })
-        = unlines $ gType : " {" : (rest ++ ["}"])
-        where
-          gType = if directedGraph then dirGraph else undirGraph
-          rest = case graphAttributes of
-                   [] -> nodesEdges
-                   a -> ("\tgraph " ++ (show a) ++ ";") : nodesEdges
-          nodesEdges = (map show graphNodes) ++ (map show graphEdges)
 
 -- | Define into which cluster a particular node belongs.
 --   Nodes can be nested to arbitrary depth.
@@ -290,50 +227,3 @@ graphToGraph gr graphAttributes fmtNode fmtEdge
                                   else (f,t,getLabel (f,t))
                 where
                   getLabel c = (fromJust $ Map.lookup c edgeMap,l)
-
-readDotNode :: Parser Char DotNode
-readDotNode = do { optional whitespace
-                 ; nodeID <- number
-                 ; as <- optional (whitespace >> readAttributesList)
-                 ; char ';'
-                 ; skipToNewline
-                 ; return (DotNode { nodeID, nodeAttributes = fromMaybe [] as })
-                 }
-
-readDotEdge :: Parser Char DotEdge
-readDotEdge = do { optional whitespace
-                 ; edgeTailNodeID <- number
-                 ; whitespace
-                 ; edge <- strings [dirEdge,undirEdge]
-                 ; whitespace
-                 ; edgeHeadNodeID <- number
-                 ; as <- optional (whitespace >> readAttributesList)
-                 ; char ';'
-                 ; skipToNewline
-                 ; return (DotEdge { edgeHeadNodeID
-                                   , edgeTailNodeID
-                                   , edgeAttributes = fromMaybe [] as
-                                   , directedEdge = edge == dirEdge })
-                 }
-    where
-
-
-readDotGraph :: Parser Char DotGraph
-readDotGraph = do { d <- strings [dirGraph,undirGraph]
-                  ; let directedGraph = d == dirGraph
-                  ; whitespace
-                  ; char '{'
-                  ; skipToNewline
-                  ; graphAttributes
-                      <- liftM concat $
-                         many (optional whitespace >>
-                               oneOf [ (string "edge" >> skipToNewline >> return [])
-                                     , (string "node" >> skipToNewline >> return [])
-                                     , (string "graph" >> whitespace >> readAttributesList >>= \as -> skipToNewline >> return as)
-                                     ]
-                              )
-                  ; graphNodes <- many readDotNode
-                  ; graphEdges <- many readDotEdge
-                  ; char '}'
-                  ; return $ DotGraph { graphAttributes, graphNodes, graphEdges, directedGraph }
-                  }
