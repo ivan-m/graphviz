@@ -19,16 +19,9 @@ Description:
   information out from dot and build a new graph, combining the
   positional information with the original graph.
 
-Flag small_base
-  Description: Choose the new smaller, split-up base package.
-
 Library {
-        If flag(small_base)
-            Build-Depends: base >= 3.0, containers, process
-        Else
-            Build-Depends: base < 3
-
-        Build-Depends:     fgl, polyparse >= 1.1
+        Build-Depends:     base == 4.*, containers, process, array,
+                           fgl, polyparse >= 1.1
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types

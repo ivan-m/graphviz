@@ -1,5 +1,5 @@
-{-# LANGUAGE RecordPuns
-           , PatternSignatures
+{-# LANGUAGE NamedFieldPuns
+           , ScopedTypeVariables
            #-}
 
 {- |
