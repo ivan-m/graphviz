@@ -10,17 +10,17 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This is the top-level module for the graphviz library.  It provides
-   functions to create graphs using the /Dot/ language for the
-   /GraphViz/ program:
+   functions to convert 'Data.Graph.Inductive.Graph.Graph's into
+   the /Dot/ language used by the /GraphViz/ program (as well as a
+   limited ability to perform the reverse operation).
 
-       <http://graphviz.org/>
+   Information about GraphViz and the Dot language can be found at:
+   <http://graphviz.org/>
 
-   It also has limited ability to parse graphs in the Dot language.
-
-   Note that this module re-exports the "data.GraphViz.Attributes"
+   Note that this module re-exports the "Data.GraphViz.Attributes"
    module, which exports a constructor that clashes with
    'Prelude.LT'.  As such, you may need to import either this module
-   or the "Prelude" qualified or hiding @LT@.
+   or the @Prelude@ qualified or hiding @LT@.
 
    -}
 
@@ -67,7 +67,7 @@ isUndir g = all hasFlip edges
 
 -- -----------------------------------------------------------------------------
 
--- | Convert a graph to /Dot/ format.
+-- | Convert a graph to GraphViz's /Dot/ format.
 graphToDot :: (Ord b, Graph gr) => gr a b -> [Attribute]
            -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute]) -> DotGraph
 graphToDot graph graphAttributes fmtNode fmtEdge
@@ -96,6 +96,8 @@ clusterGraphToDot graph graphAttributes clusterBy fmtCluster fmtNode fmtEdge
                                                   ,edgeAttributes = fmtEdge e
                                                   ,directedEdge = directedGraph}
                               else Nothing
+
+-- -----------------------------------------------------------------------------
 
 type AttributeNode a = ([Attribute], a)
 type AttributeEdge b = ([Attribute], b)
@@ -129,7 +131,7 @@ graphToGraph gr graphAttributes fmtNode fmtEdge
                 where
                   getLabel c = (fromJust $ Map.lookup c edgeMap,l)
 
--- | Pass the plain graph through 'graphToGraph'.  This is an IO action,
+-- | Pass the plain graph through 'graphToGraph'.  This is an @IO@ action,
 --   however since the state doesn't change it's safe to use 'unsafePerformIO'
 --   to convert this to a normal function.
 dotizeGraph   :: (DynGraph gr, Ord b) => gr a b

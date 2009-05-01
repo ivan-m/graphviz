@@ -11,10 +11,9 @@
 
    This module defines the various attributes that different parts of
    a GraphViz graph can have.  Note that when using this module, you
-   must either import it qualified or else import "Prelude" hiding
-   'Prelude.LT', as this module exports a constructor with the same
-   name.
--}
+   may need to either import it or @Prelude@ qualified or hiding
+   @LT@, as this module exports a constructor with the same name.
+  -}
 
 module Data.GraphViz.Attributes where
 

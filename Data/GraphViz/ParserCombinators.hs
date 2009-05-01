@@ -8,7 +8,7 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module defines simple helper functions for use with
-   "Text.ParserCombinators.Poly.Lazy".
+   @Text.ParserCombinators.Poly.Lazy@.
 -}
 
 module Data.GraphViz.ParserCombinators where

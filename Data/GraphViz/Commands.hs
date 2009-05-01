@@ -146,11 +146,13 @@ instance Show GraphvizOutput where
 
 -- | Run the recommended Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
+--   Returns @True@ if successful, @False@ otherwise.
 runGraphviz         :: DotGraph -> GraphvizOutput -> FilePath -> IO Bool
 runGraphviz gr t fp = runGraphvizCommand (commandFor gr) gr t fp
 
 -- | Run the chosen Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
+--   Returns @True@ if successful, @False@ otherwise.
 runGraphvizCommand :: GraphvizCommand -> DotGraph -> GraphvizOutput
                    -> FilePath -> IO Bool
 runGraphvizCommand  cmd gr t fp
@@ -171,6 +173,7 @@ runGraphvizCommand  cmd gr t fp
 
 -- | Run the chosen Graphviz command on this graph, but send the result to the
 --   given handle rather than to a file.
+--   The result is wrapped in 'Maybe' rather than throwing an error.
 graphvizWithHandle :: (Show a) => GraphvizCommand -> DotGraph -> GraphvizOutput
                    -> (Handle -> IO a) -> IO (Maybe a)
 graphvizWithHandle cmd gr t f
