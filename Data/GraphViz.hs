@@ -10,8 +10,8 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This is the top-level module for the graphviz library.  It provides
-   functions to create graphs using the Dot language for the GraphViz
-   program:
+   functions to create graphs using the /Dot/ language for the
+   /GraphViz/ program:
 
        <http://graphviz.org/>
 
@@ -28,12 +28,13 @@ module Data.GraphViz
     ( graphToDot
     , clusterGraphToDot
     , graphToGraph
-    , commandFor
+    , dotizeGraph
     , NodeCluster(..)
     , AttributeNode
     , AttributeEdge
     , module Data.GraphViz.Types
     , module Data.GraphViz.Attributes
+    , module Data.GraphViz.Commands
     )
     where
 
@@ -46,15 +47,15 @@ import Data.List
 import Data.Function
 import qualified Data.Set as Set
 import Text.ParserCombinators.Poly.Lazy
-import System.IO
-import System.Process
-import Control.Concurrent
 import Control.Monad
 import Data.Maybe
 import qualified Data.Map as Map
+import System.IO
+import System.IO.Unsafe(unsafePerformIO)
 
 import Data.GraphViz.Types
 import Data.GraphViz.Attributes
+import Data.GraphViz.Commands
 
 -- | Define into which cluster a particular node belongs.
 --   Nodes can be nested to arbitrary depth.
@@ -98,26 +99,6 @@ collapseNClusts = concatMap grpCls
       grpCls []              = []
       grpCls ns@((NT _):_)   = ns
       grpCls cs@((CT c _):_) = [CT c (collapseNClusts $ concatMap getNodes cs)]
-
--- Differences between directed and undirected graphs.
-
-dirEdge, undirEdge :: String
-dirEdge = "->"
-undirEdge = "--"
-
-dirGraph, undirGraph :: String
-dirGraph = "digraph"
-undirGraph = "graph"
-
-dirCommand, undirCommand :: String
-dirCommand = "dot"
-undirCommand = "neato"
-
--- | The appropriate GraphViz command for the given graph.
-commandFor    :: DotGraph -> String
-commandFor dg = if (directedGraph dg)
-                then dirCommand
-                else undirCommand
 
 -- Determine ifi the given graph is undirected or directed.
 isUndir   :: (Ord b, Graph g) => g a b -> Bool
@@ -199,15 +180,9 @@ type AttributeEdge b = ([Attribute], b)
 graphToGraph :: forall gr a b . (Ord b, Graph gr) =>
                 gr a b -> [Attribute] -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute]) -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph gr graphAttributes fmtNode fmtEdge
-    = do { (inp, outp, errp, proc) <- runInteractiveCommand (command++" -Tdot")
-         ; hPutStr inp (show dot)
-         ; hClose inp
-         ; forkIO $ (hGetContents errp >>= hPutStr stderr)
-         ; res <- hGetContents outp
+    = do { out <- graphvizWithHandle command dot DotOutput hGetContents
+         ; let res = fromJust out
          ; (length res) `seq` return ()
-         ; hClose outp
-         ; hClose errp
-         ; waitForProcess proc
          ; return $ rebuildGraphWithAttributes res
          }
     where
@@ -227,3 +202,14 @@ graphToGraph gr graphAttributes fmtNode fmtEdge
                                   else (f,t,getLabel (f,t))
                 where
                   getLabel c = (fromJust $ Map.lookup c edgeMap,l)
+
+-- | Pass the plain graph through 'graphToGraph'.  This is an IO action,
+--   however since the state doesn't change it's safe to use 'unsafePerformIO'
+--   to convert this to a normal function.
+dotizeGraph   :: (DynGraph gr, Ord b) => gr a b
+              -> gr (AttributeNode a) (AttributeEdge b)
+dotizeGraph g = unsafePerformIO
+                $ graphToGraph g gAttrs noAttrs noAttrs
+    where
+      gAttrs = []
+      noAttrs = const []
