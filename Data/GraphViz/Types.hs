@@ -97,7 +97,7 @@ data DotEdge = DotEdge { edgeHeadNodeID :: Int
 
 instance Show DotEdge where
     show (DotEdge { edgeHeadNodeID, edgeTailNodeID, edgeAttributes, directedEdge })
-        = '\t' : ((show edgeTailNodeID) ++ edge ++ (show edgeHeadNodeID) ++ attributes)
+        = '\t' : ((show edgeHeadNodeID) ++ edge ++ (show edgeTailNodeID) ++ attributes)
           where
             edge = " " ++ (if directedEdge then dirEdge else undirEdge) ++ " "
             attributes = case edgeAttributes of

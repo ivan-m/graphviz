@@ -91,8 +91,8 @@ clusterGraphToDot graph graphAttributes clusterBy fmtCluster fmtNode fmtEdge
         directedGraph = not $ isUndir graph
         graphEdges = catMaybes . map mkDotEdge . labEdges $ graph
         mkDotEdge e@(f,t,_) = if (directedGraph || f <= t)
-                              then Just $ DotEdge {edgeHeadNodeID = t
-                                                  ,edgeTailNodeID = f
+                              then Just $ DotEdge {edgeHeadNodeID = f
+                                                  ,edgeTailNodeID = t
                                                   ,edgeAttributes = fmtEdge e
                                                   ,directedEdge = directedGraph}
                               else Nothing
