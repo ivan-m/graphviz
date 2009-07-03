@@ -114,48 +114,47 @@ undirEdge = "--"
 
 -- | Parse a 'DotNode'
 readDotNode :: Parser Char DotNode
-readDotNode = do { optional whitespace
-                 ; nodeID <- number
-                 ; as <- optional (whitespace >> readAttributesList)
-                 ; char ';'
-                 ; skipToNewline
-                 ; return (DotNode { nodeID, nodeAttributes = fromMaybe [] as })
-                 }
+readDotNode = do optional whitespace
+                 nodeID <- number
+                 as <- optional (whitespace >> readAttributesList)
+                 char ';'
+                 skipToNewline
+                 return (DotNode { nodeID, nodeAttributes = fromMaybe [] as })
+
 
 -- | Parse a 'DotEdge'
 readDotEdge :: Parser Char DotEdge
-readDotEdge = do { optional whitespace
-                 ; edgeTailNodeID <- number
-                 ; whitespace
-                 ; edge <- strings [dirEdge,undirEdge]
-                 ; whitespace
-                 ; edgeHeadNodeID <- number
-                 ; as <- optional (whitespace >> readAttributesList)
-                 ; char ';'
-                 ; skipToNewline
-                 ; return (DotEdge { edgeHeadNodeID
-                                   , edgeTailNodeID
-                                   , edgeAttributes = fromMaybe [] as
-                                   , directedEdge = edge == dirEdge })
-                 }
+readDotEdge = do optional whitespace
+                 edgeTailNodeID <- number
+                 whitespace
+                 edge <- strings [dirEdge,undirEdge]
+                 whitespace
+                 edgeHeadNodeID <- number
+                 as <- optional (whitespace >> readAttributesList)
+                 char ';'
+                 skipToNewline
+                 return (DotEdge { edgeHeadNodeID
+                                 , edgeTailNodeID
+                                 , edgeAttributes = fromMaybe [] as
+                                 , directedEdge = edge == dirEdge })
+
 
 -- | Parse a 'DotGraph'
 readDotGraph :: Parser Char DotGraph
-readDotGraph = do { d <- strings [dirGraph,undirGraph]
-                  ; let directedGraph = d == dirGraph
-                  ; whitespace
-                  ; char '{'
-                  ; skipToNewline
-                  ; graphAttributes
-                      <- liftM concat $
-                         many (optional whitespace >>
-                               oneOf [ (string "edge" >> skipToNewline >> return [])
-                                     , (string "node" >> skipToNewline >> return [])
-                                     , (string "graph" >> whitespace >> readAttributesList >>= \as -> skipToNewline >> return as)
-                                     ]
-                              )
-                  ; graphNodes <- many readDotNode
-                  ; graphEdges <- many readDotEdge
-                  ; char '}'
-                  ; return $ DotGraph { graphAttributes, graphNodes, graphEdges, directedGraph }
-                  }
+readDotGraph = do d <- strings [dirGraph,undirGraph]
+                  let directedGraph = d == dirGraph
+                  whitespace
+                  char '{'
+                  skipToNewline
+                  graphAttributes
+                    <- liftM concat $
+                       many (optional whitespace >>
+                             oneOf [ (string "edge" >> skipToNewline >> return [])
+                                   , (string "node" >> skipToNewline >> return [])
+                                   , (string "graph" >> whitespace >> readAttributesList >>= \as -> skipToNewline >> return as)
+                                   ]
+                            )
+                  graphNodes <- many readDotNode
+                  graphEdges <- many readDotEdge
+                  char '}'
+                  return $ DotGraph { graphAttributes, graphNodes, graphEdges, directedGraph }
