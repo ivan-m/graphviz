@@ -14,6 +14,8 @@
 module Data.GraphViz.ParserCombinators where
 
 import Text.ParserCombinators.Poly.Lazy
+import Data.Char(toLower)
+import Data.Function(on)
 import Control.Monad
 
 string :: String -> Parser Char String
@@ -23,7 +25,7 @@ strings :: [String] -> Parser Char String
 strings = oneOf . map string
 
 char :: Char -> Parser Char Char
-char = satisfy . (==)
+char = satisfy . ((==) `on` toLower)
 
 noneOf :: (Eq a) => [a] -> Parser a a
 noneOf t = satisfy (\x -> and . map ((/= x) $) $ t)
