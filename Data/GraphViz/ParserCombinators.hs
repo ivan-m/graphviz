@@ -16,6 +16,7 @@ module Data.GraphViz.ParserCombinators where
 import Text.ParserCombinators.Poly.Lazy
 import Data.Char(toLower)
 import Data.Function(on)
+import Data.Maybe(isJust)
 import Control.Monad
 
 string :: String -> Parser Char String
@@ -23,6 +24,9 @@ string = mapM char
 
 strings :: [String] -> Parser Char String
 strings = oneOf . map string
+
+hasString :: String -> Parser Char Bool
+hasString = liftM isJust . optional . string
 
 char :: Char -> Parser Char Char
 char = satisfy . ((==) `on` toLower)
