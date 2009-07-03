@@ -32,7 +32,7 @@ char :: Char -> Parser Char Char
 char = satisfy . ((==) `on` toLower)
 
 noneOf :: (Eq a) => [a] -> Parser a a
-noneOf t = satisfy (\x -> and . map ((/= x) $) $ t)
+noneOf t = satisfy (\x -> all ((/= x) $) t)
 
 digit :: Parser Char Char
 digit = oneOf . map char $ ['0'..'9']
@@ -41,11 +41,11 @@ number :: (Num a, Read a) => Parser Char a
 number = liftM read $ many1 digit
 
 floatingNumber :: (Floating a, Read a) => Parser Char a
-floatingNumber = do { a::Integer <- number
-                    ; char '.'
-                    ; b::Integer <- number
-                    ; return . read $ (show a) ++ ('.':(show b))
-                    }
+floatingNumber = do a::Integer <- number
+                    char '.'
+                    b::Integer <- number
+                    return . read $ (show a) ++ ('.':(show b))
+
 
 whitespace :: Parser Char String
 whitespace = many1 (oneOf . map char $ [' ', '\t'])
