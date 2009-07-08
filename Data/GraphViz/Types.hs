@@ -20,6 +20,7 @@ module Data.GraphViz.Types
     , readDotGraph
     ) where
 
+import Data.Char(isAsciiLower, isAsciiUpper, isDigit)
 import Data.Maybe
 import Control.Monad
 import Text.ParserCombinators.Poly.Lazy
@@ -30,11 +31,14 @@ import Data.GraphViz.ParserCombinators
 -- -----------------------------------------------------------------------------
 
 -- | The internal representation of a graph in Dot form.
-data DotGraph = DotGraph { graphAttributes :: [Attribute]
-                         , graphNodes :: [DotNode]
-                         , graphEdges :: [DotEdge]
-                         , directedGraph :: Bool
+data DotGraph = DotGraph { strictGraph     :: Bool
+                         , directedGraph   :: Bool
+                         , graphID         :: Maybe GraphID
+                         , graphAttributes :: [Attribute]
+                         , graphNodes      :: [DotNode]
+                         , graphEdges      :: [DotEdge]
                          }
+--                deriving (Show, Read)
 
 instance Show DotGraph where
     show (DotGraph { graphAttributes, graphNodes, graphEdges, directedGraph })
@@ -51,6 +55,73 @@ dirGraph = "digraph"
 
 undirGraph :: String
 undirGraph = "graph"
+
+-- -----------------------------------------------------------------------------
+
+data GraphID = Str String
+             | Num String
+             | QStr String
+             | HTML String
+
+instance Show GraphID where
+    show (Str str)  = str
+    show (Num str)  = str
+    show (QStr str) = '\"' : str ++ "\""
+    show (HTML str) = '<' : str ++ ">"
+
+readGraphID :: Parser Char GraphID
+readGraphID = oneOf [ readStrID
+                    , readNumID
+                    , readQStrID
+                    , readHtmlID
+                    ]
+
+readStrID :: Parser Char GraphID
+readStrID = do frst <- satisfy frstCond
+               rest <- many (satisfy restCond)
+               return $ Str $ frst : rest
+    where
+      frstCond c = any ($c) [ isAsciiUpper
+                            , isAsciiLower
+                            , (==) '_'
+                            , \ x -> x >= '\200' && x <= '\377'
+                            ]
+
+      restCond c = frstCond c || isDigit c
+
+readNumID :: Parser Char GraphID
+readNumID = do neg <- optional (char '-')
+               num <- oneOf [nonInt, hasInt]
+               return $ Num $ maybe id (:) neg $ num
+    where
+      nonInt = do d <- char '.'
+                  digs <- many1 digit
+                  return $ d : digs
+      hasInt = do int <- many1 digit
+                  dec <- optional $ do d <- char '.'
+                                       digs <- many digit
+                                       return $ d : digs
+                  return $ maybe id (flip (++)) dec $ int
+
+readQStrID :: Parser Char GraphID
+readQStrID = do char qt
+                cnt <- many1 (oneOf [ string eQt
+                                    , liftM return $ satisfy (not . (==) qt)
+                                    ] )
+                char qt
+                return $ QStr (concat cnt)
+  where
+    qt = '\"'
+    eQt = "\\\""
+
+readHtmlID :: Parser Char GraphID
+readHtmlID = do char open
+                cnt <- many1 $ satisfy ((/=) close)
+                char close
+                return $ HTML cnt
+    where
+      open = '<'
+      close = '>'
 
 -- -----------------------------------------------------------------------------
 
@@ -141,8 +212,10 @@ readDotEdge = do optional whitespace
 
 -- | Parse a 'DotGraph'
 readDotGraph :: Parser Char DotGraph
-readDotGraph = do d <- strings [dirGraph,undirGraph]
+readDotGraph = do strictGraph <- parseAndSpace $ hasString "strict"
+                  d <- strings [dirGraph,undirGraph]
                   let directedGraph = d == dirGraph
+                  graphID <- optional (readGraphID `discard` whitespace)
                   whitespace
                   char '{'
                   skipToNewline
@@ -157,4 +230,4 @@ readDotGraph = do d <- strings [dirGraph,undirGraph]
                   graphNodes <- many readDotNode
                   graphEdges <- many readDotEdge
                   char '}'
-                  return $ DotGraph { graphAttributes, graphNodes, graphEdges, directedGraph }
+                  return $ DotGraph { strictGraph, directedGraph, graphID, graphAttributes, graphNodes, graphEdges }
