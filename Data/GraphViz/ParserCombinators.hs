@@ -14,10 +14,13 @@
 module Data.GraphViz.ParserCombinators where
 
 import Text.ParserCombinators.Poly.Lazy
-import Data.Char(toLower)
+import Data.Char(isDigit, isSpace, toLower)
 import Data.Function(on)
 import Data.Maybe(isJust)
 import Control.Monad
+
+parseAndSpace   :: Parser Char a -> Parser Char a
+parseAndSpace p = p `discard` optional whitespace
 
 string :: String -> Parser Char String
 string = mapM char
@@ -32,10 +35,10 @@ char :: Char -> Parser Char Char
 char = satisfy . ((==) `on` toLower)
 
 noneOf :: (Eq a) => [a] -> Parser a a
-noneOf t = satisfy (\x -> all ((/= x) $) t)
+noneOf t = satisfy (\x -> all (/= x) t)
 
 digit :: Parser Char Char
-digit = oneOf . map char $ ['0'..'9']
+digit = satisfy isDigit
 
 number :: (Num a, Read a) => Parser Char a
 number = liftM read $ many1 digit
@@ -48,7 +51,7 @@ floatingNumber = do a::Integer <- number
 
 
 whitespace :: Parser Char String
-whitespace = many1 (oneOf . map char $ [' ', '\t'])
+whitespace = many1 (satisfy isSpace)
 
 optionalQuotedString :: String -> Parser Char String
 optionalQuotedString s = oneOf [string s, char '"' >> string s >>= \s' -> char '"' >> return s']
