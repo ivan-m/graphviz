@@ -1,7 +1,3 @@
-{-# LANGUAGE NamedFieldPuns
-           , ScopedTypeVariables
-           #-}
-
 {- |
    Module      : Data.GraphViz.Types
    Description : Definition of the GraphViz types.
@@ -41,14 +37,14 @@ data DotGraph = DotGraph { strictGraph     :: Bool
 --                deriving (Show, Read)
 
 instance Show DotGraph where
-    show (DotGraph { graphAttributes, graphNodes, graphEdges, directedGraph })
+    show g
         = unlines $ gType : " {" : (rest ++ ["}"])
         where
-          gType = if directedGraph then dirGraph else undirGraph
-          rest = case graphAttributes of
+          gType = if directedGraph g then dirGraph else undirGraph
+          rest = case graphAttributes g of
                    [] -> nodesEdges
-                   a -> ("\tgraph " ++ (show a) ++ ";") : nodesEdges
-          nodesEdges = (map show graphNodes) ++ (map show graphEdges)
+                   a -> ("\tgraph " ++ show a ++ ";") : nodesEdges
+          nodesEdges = map show (graphNodes g) ++ map show (graphEdges g)
 
 dirGraph :: String
 dirGraph = "digraph"
@@ -92,7 +88,7 @@ readStrID = do frst <- satisfy frstCond
 readNumID :: Parser Char GraphID
 readNumID = do neg <- optional (char '-')
                num <- oneOf [nonInt, hasInt]
-               return $ Num $ maybe id (:) neg $ num
+               return $ Num $ maybe id (:) neg num
     where
       nonInt = do d <- char '.'
                   digs <- many1 digit
@@ -101,7 +97,7 @@ readNumID = do neg <- optional (char '-')
                   dec <- optional $ do d <- char '.'
                                        digs <- many digit
                                        return $ d : digs
-                  return $ maybe id (flip (++)) dec $ int
+                  return $ maybe id (flip (++)) dec int
 
 readQStrID :: Parser Char GraphID
 readQStrID = do char qt
@@ -137,21 +133,22 @@ data DotNode
                  }
 
 instance Show DotNode where
-    show n = init . unlines . addTabs $ nodesToString n
+    show = init . unlines . addTabs . nodesToString
 
 nodesToString :: DotNode -> [String]
-nodesToString (DotNode { nodeID, nodeAttributes })
-    | null nodeAttributes = [nID ++ ";"]
-    | otherwise           = [nID ++ (' ':((show nodeAttributes) ++ ";"))]
+nodesToString n@(DotNode {})
+    | null nAs  = [nID ++ ";"]
+    | otherwise = [nID ++ (' ':(show nAs ++ ";"))]
     where
-      nID = show nodeID
-nodesToString (DotCluster { clusterID, clusterAttributes, clusterElems })
-    = ["subgraph cluster_" ++ clusterID ++ " {"] ++ (addTabs inner) ++ ["}"]
+      nID = show $ nodeID n
+      nAs = nodeAttributes n
+nodesToString c@(DotCluster {})
+    = ["subgraph cluster_" ++ clusterID c ++ " {"] ++ addTabs inner ++ ["}"]
     where
-      inner = case clusterAttributes of
+      inner = case clusterAttributes c of
                 [] -> nodes
-                a  -> ("graph " ++ (show a) ++ ";") : nodes
-      nodes = concatMap nodesToString clusterElems
+                a  -> ("graph " ++ show a ++ ";") : nodes
+      nodes = concatMap nodesToString $ clusterElems c
 
 -- | Prefix each 'String' with a tab character.
 addTabs :: [String] -> [String]
@@ -167,13 +164,14 @@ data DotEdge = DotEdge { edgeHeadNodeID :: Int
                        }
 
 instance Show DotEdge where
-    show (DotEdge { edgeHeadNodeID, edgeTailNodeID, edgeAttributes, directedEdge })
-        = '\t' : ((show edgeHeadNodeID) ++ edge ++ (show edgeTailNodeID) ++ attributes)
+    show e
+        = '\t' : (show (edgeHeadNodeID e)
+                  ++ edge ++ show (edgeTailNodeID e) ++ attributes)
           where
-            edge = " " ++ (if directedEdge then dirEdge else undirEdge) ++ " "
-            attributes = case edgeAttributes of
+            edge = " " ++ (if directedEdge e then dirEdge else undirEdge) ++ " "
+            attributes = case edgeAttributes e of
                            [] -> ";"
-                           a  -> ' ':((show a) ++ ";")
+                           a  -> ' ':(show a ++ ";")
 
 dirEdge :: String
 dirEdge = "->"
@@ -186,48 +184,54 @@ undirEdge = "--"
 -- | Parse a 'DotNode'
 readDotNode :: Parser Char DotNode
 readDotNode = do optional whitespace
-                 nodeID <- number
+                 nId <- number
                  as <- optional (whitespace >> readAttributesList)
                  char ';'
                  skipToNewline
-                 return (DotNode { nodeID, nodeAttributes = fromMaybe [] as })
+                 return DotNode { nodeID = nId
+                                , nodeAttributes = fromMaybe [] as }
 
 
 -- | Parse a 'DotEdge'
 readDotEdge :: Parser Char DotEdge
 readDotEdge = do optional whitespace
-                 edgeTailNodeID <- number
+                 eHead <- number
                  whitespace
-                 edge <- strings [dirEdge,undirEdge]
+                 edgeType <- strings [dirEdge,undirEdge]
                  whitespace
-                 edgeHeadNodeID <- number
+                 eTail <- number
                  as <- optional (whitespace >> readAttributesList)
                  char ';'
                  skipToNewline
-                 return (DotEdge { edgeHeadNodeID
-                                 , edgeTailNodeID
-                                 , edgeAttributes = fromMaybe [] as
-                                 , directedEdge = edge == dirEdge })
+                 return DotEdge { edgeHeadNodeID = eHead
+                                , edgeTailNodeID = eTail
+                                , edgeAttributes = fromMaybe [] as
+                                , directedEdge = edgeType == dirEdge
+                                }
 
 
 -- | Parse a 'DotGraph'
 readDotGraph :: Parser Char DotGraph
-readDotGraph = do strictGraph <- parseAndSpace $ hasString "strict"
-                  d <- strings [dirGraph,undirGraph]
-                  let directedGraph = d == dirGraph
-                  graphID <- optional (readGraphID `discard` whitespace)
+readDotGraph = do isStrict <- parseAndSpace $ hasString "strict"
+                  gType <- strings [dirGraph,undirGraph]
+                  gId <- optional (readGraphID `discard` whitespace)
                   whitespace
                   char '{'
                   skipToNewline
-                  graphAttributes
-                    <- liftM concat $
-                       many (optional whitespace >>
-                             oneOf [ (string "edge" >> skipToNewline >> return [])
-                                   , (string "node" >> skipToNewline >> return [])
-                                   , (string "graph" >> whitespace >> readAttributesList >>= \as -> skipToNewline >> return as)
-                                   ]
-                            )
-                  graphNodes <- many readDotNode
-                  graphEdges <- many readDotEdge
+                  as <- liftM concat $
+                        many (optional whitespace >>
+                              oneOf [ (string "edge" >> skipToNewline >> return [])
+                                    , (string "node" >> skipToNewline >> return [])
+                                    , (string "graph" >> whitespace >> readAttributesList >>= \as -> skipToNewline >> return as)
+                                    ]
+                             )
+                  ns <- many readDotNode
+                  es <- many readDotEdge
                   char '}'
-                  return $ DotGraph { strictGraph, directedGraph, graphID, graphAttributes, graphNodes, graphEdges }
+                  return DotGraph { strictGraph = isStrict
+                                  , directedGraph = gType == dirGraph
+                                  , graphID = gId
+                                  , graphAttributes = as
+                                  , graphNodes = ns
+                                  , graphEdges = es
+                                  }
