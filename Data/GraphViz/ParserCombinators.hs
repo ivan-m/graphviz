@@ -38,8 +38,11 @@ class Parseable a where
     parse :: Parse a
 
     parseList :: Parse [a]
-    parseList = oneOf [ char '[' >> optional whitespace >> char ']' >> return []
-                      , bracketSep (char '[') (char ',') (char ']') parse
+    parseList = oneOf [ char '[' >> whitespace' >> char ']' >> return []
+                      , bracketSep (parseAndSpace $ char '[')
+                                   (parseAndSpace $ char ',')
+                                   (parseAndSpace $ char ']')
+                                   (parseAndSpace parse)
                       ]
 
 instance Parseable Int where
