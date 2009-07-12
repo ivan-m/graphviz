@@ -46,7 +46,7 @@ class Parseable a where
                       ]
 
 instance Parseable Int where
-    parse = parseSigned (parseDec 0)
+    parse = parseInt
 
 instance Parseable Double where
     parse = parseSigned parseFloat
@@ -75,19 +75,22 @@ parseSigned p = do '-' <- next; commit (fmap negate p)
                 `onFail`
                 p
 
-parseInt :: (Integral a) => String ->
-                            a -> (Char -> Bool) -> (Char -> Int) ->
-                            a -> Parse a
-parseInt base radix isDigit digitToInt n = go n
+parseIntegral :: (Integral a) => String ->
+                 a -> (Char -> Bool) -> (Char -> Int) ->
+                 a -> Parse a
+parseIntegral base radix isDigit digitToInt n = go n
   where go acc = do cs <- many1 (satisfy isDigit)
                     return (foldl1 (\n d-> n*radix+d)
                                    (map (fromIntegral.digitToInt) cs))
                  `adjustErr` (++("\nexpected one or more "++base++" digits"))
 
 parseDec, parseOct, parseHex :: (Integral a) => a -> Parse a
-parseDec = parseInt "decimal" 10 isDigit    digitToInt
-parseOct = parseInt "octal"    8 isOctDigit digitToInt
-parseHex = parseInt "hex"     16 isHexDigit digitToInt
+parseDec = parseIntegral "decimal" 10 isDigit    digitToInt
+parseOct = parseIntegral "octal"    8 isOctDigit digitToInt
+parseHex = parseIntegral "hex"     16 isHexDigit digitToInt
+
+parseInt :: Parse Int
+parseInt = parseSigned (parseDec 0)
 
 parseFloat :: (RealFrac a) => Parse a
 parseFloat = do ds   <- many1 (satisfy isDigit)
