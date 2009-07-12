@@ -228,7 +228,7 @@ parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
 -- -----------------------------------------------------------------------------
 
 parseAndSpace   :: Parser Char a -> Parser Char a
-parseAndSpace p = p `discard` optional whitespace
+parseAndSpace p = p `discard` whitespace'
 
 string :: String -> Parser Char String
 string = mapM char
@@ -260,6 +260,9 @@ floatingNumber = do a::Integer <- number
 
 whitespace :: Parser Char String
 whitespace = many1 (satisfy isSpace)
+
+whitespace' :: Parser Char String
+whitespace' = many (satisfy isSpace)
 
 optionalQuotedString :: String -> Parser Char String
 optionalQuotedString s = oneOf [string s, char '"' >> string s >>= \s' -> char '"' >> return s']
