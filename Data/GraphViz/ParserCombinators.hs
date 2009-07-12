@@ -51,6 +51,12 @@ instance Parseable Int where
 instance Parseable Double where
     parse = parseSigned parseFloat
 
+instance Parseable Bool where
+    parse = oneOf [ string "true" >> return True
+                  , string "false" >> return False
+                  , liftM (0 /=) parseInt
+                  ]
+
 instance Parseable Char where
     parse = parseLitChar
 
