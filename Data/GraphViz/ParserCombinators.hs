@@ -227,51 +227,51 @@ parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
 
 -- -----------------------------------------------------------------------------
 
-parseAndSpace   :: Parser Char a -> Parser Char a
+parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` whitespace'
 
-string :: String -> Parser Char String
+string :: String -> Parse String
 string = mapM char
 
-strings :: [String] -> Parser Char String
+strings :: [String] -> Parse String
 strings = oneOf . map string
 
-hasString :: String -> Parser Char Bool
+hasString :: String -> Parse Bool
 hasString = liftM isJust . optional . string
 
-char :: Char -> Parser Char Char
+char :: Char -> Parse Char
 char = satisfy . ((==) `on` toLower)
 
 noneOf :: (Eq a) => [a] -> Parser a a
 noneOf t = satisfy (\x -> all (/= x) t)
 
-digit :: Parser Char Char
+digit :: Parse Char
 digit = satisfy isDigit
 
-number :: (Num a, Read a) => Parser Char a
+number :: (Num a, Read a) => Parse a
 number = liftM read $ many1 digit
 
-floatingNumber :: (Floating a, Read a) => Parser Char a
+floatingNumber :: (Floating a, Read a) => Parse a
 floatingNumber = do a::Integer <- number
                     char '.'
                     b::Integer <- number
                     return . read $ (show a) ++ ('.':(show b))
 
 
-whitespace :: Parser Char String
+whitespace :: Parse String
 whitespace = many1 (satisfy isSpace)
 
-whitespace' :: Parser Char String
+whitespace' :: Parse String
 whitespace' = many (satisfy isSpace)
 
-optionalQuotedString :: String -> Parser Char String
+optionalQuotedString :: String -> Parse String
 optionalQuotedString s = oneOf [string s, char '"' >> string s >>= \s' -> char '"' >> return s']
 
-optionalQuoted :: Parser Char a -> Parser Char a
+optionalQuoted :: Parse a -> Parse a
 optionalQuoted p = oneOf [p, char '"' >> p >>= \r -> char '"' >> return r]
 
-newline :: Parser Char String
+newline :: Parse String
 newline = oneOf . map string $ ["\r\n", "\n", "\r"]
 
-skipToNewline :: Parser Char ()
+skipToNewline :: Parse ()
 skipToNewline = many (noneOf ['\n','\r']) >> newline >> return ()
