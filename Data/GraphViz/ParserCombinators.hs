@@ -275,3 +275,10 @@ newline = oneOf . map string $ ["\r\n", "\n", "\r"]
 
 skipToNewline :: Parse ()
 skipToNewline = many (noneOf ['\n','\r']) >> newline >> return ()
+
+parseField     :: (Parseable a) => String -> Parse a
+parseField fld = do string fld
+                    whitespace'
+                    char '='
+                    whitespace'
+                    parse
