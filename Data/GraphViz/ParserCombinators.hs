@@ -19,6 +19,11 @@ import Data.Function(on)
 import Data.Maybe(isJust)
 import Control.Monad
 
+type Parse a = Parser Char a
+
+class Parseable a where
+    parse :: Parse a
+
 parseAndSpace   :: Parser Char a -> Parser Char a
 parseAndSpace p = p `discard` optional whitespace
 
