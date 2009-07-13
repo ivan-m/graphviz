@@ -49,7 +49,9 @@ instance Parseable Int where
     parse = parseInt
 
 instance Parseable Double where
-    parse = parseSigned parseFloat
+    parse = parseSigned $ oneOf [ liftM fromIntegral parseInt -- e.g. 2 :: Double
+                                , parseFloat
+                                ]
 
 instance Parseable Bool where
     parse = oneOf [ string "true" >> return True
@@ -58,7 +60,7 @@ instance Parseable Bool where
                   ]
 
 instance Parseable Char where
-    parse = parseLitChar
+    parse = next
 
     parseList = do w <- word
                    if head w == '"'
@@ -67,6 +69,11 @@ instance Parseable Char where
 
 instance (Parseable a) => Parseable [a] where
     parse = parseList
+
+instance (Parseable a, Parseable b) => Parseable (Either a b) where
+    parse = oneOf [ liftM Left parse
+                  , liftM Right parse
+                  ]
 
 word :: Parse String
 word = P (\s-> case lex s of
@@ -81,22 +88,13 @@ parseSigned p = do '-' <- next; commit (fmap negate p)
                 `onFail`
                 p
 
-parseIntegral :: (Integral a) => String ->
-                 a -> (Char -> Bool) -> (Char -> Int) ->
-                 a -> Parse a
-parseIntegral base radix isDigit digitToInt n = go n
-  where go acc = do cs <- many1 (satisfy isDigit)
-                    return (foldl1 (\n d-> n*radix+d)
-                                   (map (fromIntegral.digitToInt) cs))
-                 `adjustErr` (++("\nexpected one or more "++base++" digits"))
-
-parseDec, parseOct, parseHex :: (Integral a) => a -> Parse a
-parseDec = parseIntegral "decimal" 10 isDigit    digitToInt
-parseOct = parseIntegral "octal"    8 isOctDigit digitToInt
-parseHex = parseIntegral "hex"     16 isHexDigit digitToInt
-
-parseInt :: Parse Int
-parseInt = parseSigned (parseDec 0)
+parseInt :: (Integral a) => Parse a
+parseInt = do cs <- many1 (satisfy isDigit)
+              return (foldl1 (\n d-> n*radix+d)
+                                   (map (fromIntegral . digitToInt) cs))
+           `adjustErr` (++("\nexpected one or more digits"))
+    where
+      radix = 10
 
 parseFloat :: (RealFrac a) => Parse a
 parseFloat = do ds   <- many1 (satisfy isDigit)
@@ -108,7 +106,7 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                                      else exponent `onFail` return 0
                 ( return . fromRational . (* (10^^(exp - length frac)))
                   . (%1) . fst
-                  . runParser (parseDec 0) ) (ds++frac)
+                  . runParser parseInt) (ds++frac)
              `onFail`
              do w <- many (satisfy (not.isSpace))
                 case map toLower w of
@@ -116,114 +114,9 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                   "infinity" -> return (1/0)
                   _          -> fail "expected a floating point number"
   where exponent = do 'e' <- fmap toLower next
-                      commit (do '+' <- next; parseDec 0
+                      commit (do '+' <- next; parseInt
                               `onFail`
-                              parseSigned (parseDec 0) )
-
-
-parseLitChar :: Parse Char
-parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
-                  c <- next
-                  char <- case c of
-                            '\\' -> next >>= escape
-                            '\'' -> fail "expected a literal char, got ''"
-                            _    -> return c
-                  '\'' <- next `adjustErrBad` (++"literal char has no final '")
-                  return char
-  where
-    escape 'a'  = return '\a'
-    escape 'b'  = return '\b'
-    escape 'f'  = return '\f'
-    escape 'n'  = return '\n'
-    escape 'r'  = return '\r'
-    escape 't'  = return '\t'
-    escape 'v'  = return '\v'
-    escape '\\' = return '\\'
-    escape '"'  = return '"'
-    escape '\'' = return '\''
-    escape '^'  = do ctrl <- next
-                     if ctrl >= '@' && ctrl <= '_'
-                       then return (chr (ord ctrl - ord '@'))
-                       else fail ("literal char ctrl-escape malformed: \\^"
-                                   ++[ctrl])
-    escape d | isDigit d
-                = fmap chr $  parseDec (digitToInt d)
-    escape 'o'  = fmap chr $  parseOct 0
-    escape 'x'  = fmap chr $  parseHex 0
-    escape c | isUpper c
-                = mnemonic c
-    escape c    = fail ("unrecognised escape sequence in literal char: \\"++[c])
-
-    mnemonic 'A' = do 'C' <- next; 'K' <- next; return '\ACK'
-                   `wrap` "'\\ACK'"
-    mnemonic 'B' = do 'E' <- next; 'L' <- next; return '\BEL'
-                   `onFail`
-                   do 'S' <- next; return '\BS'
-                   `wrap` "'\\BEL' or '\\BS'"
-    mnemonic 'C' = do 'R' <- next; return '\CR'
-                   `onFail`
-                   do 'A' <- next; 'N' <- next; return '\CAN'
-                   `wrap` "'\\CR' or '\\CAN'"
-    mnemonic 'D' = do 'E' <- next; 'L' <- next; return '\DEL'
-                   `onFail`
-                   do 'L' <- next; 'E' <- next; return '\DLE'
-                   `onFail`
-                   do 'C' <- next; ( do '1' <- next; return '\DC1'
-                                     `onFail`
-                                     do '2' <- next; return '\DC2'
-                                     `onFail`
-                                     do '3' <- next; return '\DC3'
-                                     `onFail`
-                                     do '4' <- next; return '\DC4' )
-                   `wrap` "'\\DEL' or '\\DLE' or '\\DC[1..4]'"
-    mnemonic 'E' = do 'T' <- next; 'X' <- next; return '\ETX'
-                   `onFail`
-                   do 'O' <- next; 'T' <- next; return '\EOT'
-                   `onFail`
-                   do 'N' <- next; 'Q' <- next; return '\ENQ'
-                   `onFail`
-                   do 'T' <- next; 'B' <- next; return '\ETB'
-                   `onFail`
-                   do 'M' <- next; return '\EM'
-                   `onFail`
-                   do 'S' <- next; 'C' <- next; return '\ESC'
-                   `wrap` "one of '\\ETX' '\\EOT' '\\ENQ' '\\ETB' '\\EM' or '\\ESC'"
-    mnemonic 'F' = do 'F' <- next; return '\FF'
-                   `onFail`
-                   do 'S' <- next; return '\FS'
-                   `wrap` "'\\FF' or '\\FS'"
-    mnemonic 'G' = do 'S' <- next; return '\GS'
-                   `wrap` "'\\GS'"
-    mnemonic 'H' = do 'T' <- next; return '\HT'
-                   `wrap` "'\\HT'"
-    mnemonic 'L' = do 'F' <- next; return '\LF'
-                   `wrap` "'\\LF'"
-    mnemonic 'N' = do 'U' <- next; 'L' <- next; return '\NUL'
-                   `onFail`
-                   do 'A' <- next; 'K' <- next; return '\NAK'
-                   `wrap` "'\\NUL' or '\\NAK'"
-    mnemonic 'R' = do 'S' <- next; return '\RS'
-                   `wrap` "'\\RS'"
-    mnemonic 'S' = do 'O' <- next; 'H' <- next; return '\SOH'
-                   `onFail`
-                   do 'O' <- next; return '\SO'
-                   `onFail`
-                   do 'T' <- next; 'X' <- next; return '\STX'
-                   `onFail`
-                   do 'I' <- next; return '\SI'
-                   `onFail`
-                   do 'Y' <- next; 'N' <- next; return '\SYN'
-                   `onFail`
-                   do 'U' <- next; 'B' <- next; return '\SUB'
-                   `onFail`
-                   do 'P' <- next; return '\SP'
-                   `wrap` "'\\SOH' '\\SO' '\\STX' '\\SI' '\\SYN' '\\SUB' or '\\SP'"
-    mnemonic 'U' = do 'S' <- next; return '\US'
-                   `wrap` "'\\US'"
-    mnemonic 'V' = do 'T' <- next; return '\VT'
-                   `wrap` "'\\VT'"
-    wrap p s = p `onFail` fail ("expected literal char "++s)
-
+                              parseSigned parseInt)
 
 -- -----------------------------------------------------------------------------
 
