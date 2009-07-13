@@ -49,9 +49,7 @@ instance Parseable Int where
     parse = parseInt
 
 instance Parseable Double where
-    parse = parseSigned $ oneOf [ liftM fromIntegral parseInt -- e.g. 2 :: Double
-                                , parseFloat
-                                ]
+    parse = parseSigned parseFloat
 
 instance Parseable Bool where
     parse = oneOf [ string "true" >> return True
@@ -102,8 +100,7 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                             many (satisfy isDigit)
                               `adjustErrBad` (++"expected digit after .")
                          `onFail` return [] )
-                exp  <- if null frac then exponent
-                                     else exponent `onFail` return 0
+                exp  <- exponent `onFail` return 0
                 ( return . fromRational . (* (10^^(exp - length frac)))
                   . (%1) . fst
                   . runParser parseInt) (ds++frac)
