@@ -12,19 +12,10 @@
 module Data.GraphViz.AttributeGenerator where
 
 import Text.PrettyPrint
+import Data.List(transpose)
 import Data.Maybe(catMaybes)
 
 type Code = Doc
-
-tab :: Int
-tab = 4
-
-punctuate' _ []     = []
-punctuate' p (d:ds) = d : map ((<>) p) ds
-
-firstOthers            :: Doc -> Doc -> [Doc] -> [Doc]
-firstOthers _ _ []     = []
-firstOthers f o (d:ds) = f <> d : map ((<>) o) ds
 
 type Constructor = String
 type Name = String
@@ -76,8 +67,8 @@ makeAttr c n u v d m cm = A { cnst         = text c
     where
       isFor f = f `elem` u
       forSG = isFor 'S'
-      mDoc (f,fc) = f <> colon <+> (text fc)
-      addF f = fmap ((,) (text f))
+      mDoc (f,fc) = f <> colon <+> text fc
+      addF f = fmap (\ dc -> (wrap (char '/') (text f), dc))
       cm' = hsep
             . punctuate semi
             . map mDoc
@@ -89,65 +80,71 @@ makeAttr c n u v d m cm = A { cnst         = text c
 vtypeCode :: Attribute -> Code
 vtypeCode = vtype . valtype
 
-{-
-parseType       :: Code -> Attribute -> Code
-parseType pFn a =
-    where
-      prs v@Strng = fn <> vtype v
-      prs v       = brackets $
--}
-
-createDefn   :: Attribute -> Code
-createDefn a = cnst a <+> vtypeCode a <+> text "-- ^" <+> comment a
-
-createDefns       :: String -> [Attribute] -> Code
-createDefns dt as = vcat (hdr : constructors) $+$ derivs
+createDefn       :: String -> [Attribute] -> Code
+createDefn dt as = hdr $+$ constructors $+$ derivs
     where
       hdr = text "data" <+> text dt
-      constructors = map (nest tab)
-                     . firstOthers (equals <> space) (char '|' <> space)
+      constructors = nest tab
+                     . asRows
+                     . firstOthers' equals (char '|')
                      $ map createDefn as
       derivs = nest (tab + 2) $ text "deriving (Eq, Show, Read)"
-
-createNameFn       :: String -> [Attribute] -> Code
-createNameFn dt as = vcat $ tpSig : map mkFn as
-    where
-      tpSig = nameOf <+> colon <> colon
-              <+> text dt <+> text "->" <+> text "String"
-      mkFn a = nameOf <+> cnst a <> braces empty
-               <+> equals <+> doubleQuotes (name a)
-
-nameOf :: Doc
-nameOf = text "nameOf"
+      createDefn a = [cnst a <+> vtypeCode a
+                     , if isEmpty cm
+                       then empty
+                       else text "-- ^" <+> cm
+                     ]
+          where
+            cm = comment a
 
 showInstance       :: String -> [Attribute] -> Code
-showInstance dt as = vcat $ hdr : map mkInstance as
+showInstance dt as = hdr $+$ insts
     where
       hdr = text "instance" <+> text "Show" <+> text dt <+> text "where"
       var = char 'v'
       sFunc = text "show"
       cnct = text "++"
-      mkInstance a = nest tab $ sFunc <+> parens (cnst a <+> var)
-                     <+> equals
-                     <+> doubleQuotes (name a <> equals) <+> cnct
-                     <+> sFunc <+> var
+      insts = nest tab
+              . asRows
+              $ map mkInstance as
+      mkInstance a = [ sFunc <+> parens (cnst a <+> var)
+                     , equals <+> doubleQuotes (name a <> equals) <+> cnct
+                                  <+> sFunc <+> var
+                     ]
 
 parseInstance       :: String -> [Attribute] -> Code
 parseInstance dt as = hdr $+$ nest tab fn
     where
       hdr = text "instance" <+> text "Parseable" <+> text dt <+> text "where"
       fn = pFunc <+> equals <+> text "oneOf" <+> ops
-      ops = flip ($$) rbrack . vcat
-            . firstOthers (lbrack <> space) (comma <> space)
+      ops = flip ($$) rbrack
+            . asRows
+            . firstOthers' lbrack comma
             $ map parseAttr as
       pFunc = text "parse"
+      parseAttr a = [ text "liftM" <+> cnst a
+                    , char '$' <+> text "parseField"
+                               <+> doubleQuotes (name a)
+                    ]
 
-monadChain :: [Code] -> Code
-monadChain = hsep . punctuate (space <> text ">>")
-
-parseAttr   :: Attribute -> Code
-parseAttr a = text "liftM" <+> cnst a <+> char '$'
-              <+> text "parseField" <+> doubleQuotes (name a)
+usedByFunc            :: String -> (Attribute -> Bool) -> String -> [Attribute] -> Code
+usedByFunc nm p dt as = asRows $ tpSig : trs ++ [fls]
+    where
+      tpSig = [ fn
+              , colon <> colon
+                <+> text dt <+> text "->" <+> text "Bool"
+              ]
+      fn = text "usedBy" <> text nm
+      tr = text "True"
+      trs = map aTr as'
+      fl = text "False"
+      fls = [ fn <+> char '_'
+            , equals <+> fl
+            ]
+      as' = filter p as
+      aTr a = [ fn <+> cnst a <> braces empty
+              , equals <+> tr
+              ]
 
 attributes :: [Attribute]
 attributes = [ makeAttr "Damping" "Damping" "G" Dbl (Just "0.99") (Just "0.0") (Just "neato only")
@@ -305,16 +302,38 @@ attributes = [ makeAttr "Damping" "Damping" "G" Dbl (Just "0.99") (Just "0.0") (
 
 attrs = take 5 attributes
 
-usedByFunc            :: String -> (Attribute -> Bool) -> String -> [Attribute] -> Code
-usedByFunc nm p dt as = tpSig $$ trs $$ fls
-    where
-      tpSig = fn <+> colon <> colon
-              <+> text dt <+> text "->" <+> text "Bool"
-      fn = text "usedBy" <> text nm
-      tr = text "True"
-      trs = vcat $ map aTr as'
-      fl = text "False"
-      fls = fn <+> char '_' <+> equals <+> fl
-      as' = filter p as
-      aTr a = fn <+> cnst a <> braces empty <+> equals <+> tr
+-- -----------------------------------------------------------------------------
 
+tab :: Int
+tab = 4
+
+punctuate' _ []     = []
+punctuate' p (d:ds) = d : map ((<>) p) ds
+
+firstOthers            :: Doc -> Doc -> [Doc] -> [Doc]
+firstOthers _ _ []     = []
+firstOthers f o (d:ds) = f <> d : map ((<>) o) ds
+
+firstOthers'            :: Doc -> Doc -> [[Doc]] -> [[Doc]]
+firstOthers' _ _ []     = []
+firstOthers' f o (d:ds) = (f : d) : map ((:) o) ds
+
+wrap     :: Doc -> Doc -> Doc
+wrap w d = w <> d <> w
+
+asRows    :: [[Doc]] -> Doc
+asRows as = vcat $ map padR asL
+    where
+      asL = map (map (\d -> (d, docLen d))) as
+      cWidths = map (maximum . map snd) $ transpose asL
+      shiftLen rls = let (rs,ls) = unzip rls
+                     in zip rs (0:ls)
+      padR = hsep . zipWith append (0 : cWidths) . shiftLen
+      append l' (d,l) = hcat (repl (l' - l) space) <> d
+      repl n xs | n <= 0    = []
+                | otherwise = replicate n xs
+
+-- A really hacky thing to do, but oh well...
+-- Don't use this for multi-line Docs!
+docLen :: Doc -> Int
+docLen = length . render
