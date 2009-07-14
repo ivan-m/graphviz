@@ -154,11 +154,13 @@ whitespace = many1 (satisfy isSpace)
 whitespace' :: Parse String
 whitespace' = many (satisfy isSpace)
 
-optionalQuotedString :: String -> Parse String
-optionalQuotedString s = oneOf [string s, char '"' >> string s >>= \s' -> char '"' >> return s']
+optionalQuotedString   :: String -> Parse String
+optionalQuotedString s = optionalQuoted (string s)
 
-optionalQuoted :: Parse a -> Parse a
-optionalQuoted p = oneOf [p, char '"' >> p >>= \r -> char '"' >> return r]
+optionalQuoted   :: Parse a -> Parse a
+optionalQuoted p = oneOf [ p
+                         , char '"' >> p `discard` char '"'
+                         ]
 
 newline :: Parse String
 newline = oneOf . map string $ ["\r\n", "\n", "\r"]
@@ -172,3 +174,11 @@ parseField fld = do string fld
                     char '='
                     whitespace'
                     parse
+
+commaSep :: (Parseable a, Parseable b) => Parse (a, b)
+commaSep = do a <- parse
+              whitespace
+              char ','
+              whitespace
+              b <- parse
+              return (a,b)

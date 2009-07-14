@@ -1,7 +1,3 @@
-{-# LANGUAGE NamedFieldPuns
-           , ScopedTypeVariables
-           #-}
-
 {- |
    Module      : Data.GraphViz.Attributes
    Description : Definition of the GraphViz attributes.
@@ -19,6 +15,7 @@ module Data.GraphViz.Attributes where
 
 import Prelude hiding (LT)
 
+import Data.Char(isHexDigit)
 import Data.Word
 import Numeric
 import Text.ParserCombinators.Poly.Lazy
@@ -37,7 +34,7 @@ data ArrowType = Normal   | Inv
                | Box      | OBox
                | Open     | HalfOpen
                | Vee
-                 deriving (Eq)
+                 deriving (Eq, Read)
 
 instance Show ArrowType where
     show Normal   = "normal"
@@ -60,45 +57,86 @@ instance Show ArrowType where
     show HalfOpen = "halfopen"
     show Vee      = "vee"
 
-readArrowType :: Parser Char ArrowType
-readArrowType
-              = oneOf [ optionalQuotedString "normal" >> return Normal
-                      , optionalQuotedString "inv" >> return Inv
-                      , optionalQuotedString "dot" >> return Dot
-                      , optionalQuotedString "invdot" >> return InvDot
-                      , optionalQuotedString "odot" >> return ODot
-                      , optionalQuotedString "invodot" >> return InvODot
-                      , optionalQuotedString "noarrow" >> return NoArrow
-                      , optionalQuotedString "tee" >> return Tee
-                      , optionalQuotedString "empty" >> return Empty
-                      , optionalQuotedString "invempty" >> return InvEmpty
-                      , optionalQuotedString "diamond" >> return Diamond
-                      , optionalQuotedString "odiamond" >> return ODiamond
-                      , optionalQuotedString "ediamond" >> return EDiamond
-                      , optionalQuotedString "crow" >> return Crow
-                      , optionalQuotedString "box" >> return Box
-                      , optionalQuotedString "obox" >> return OBox
-                      , optionalQuotedString "open" >> return Open
-                      , optionalQuotedString "halfopen" >> return HalfOpen
-                      , optionalQuotedString "vee" >> return Vee
-                      ]
+instance Parseable ArrowType where
+    parse = oneOf [ optionalQuotedString "normal"   >> return Normal
+                  , optionalQuotedString "inv"      >> return Inv
+                  , optionalQuotedString "dot"      >> return Dot
+                  , optionalQuotedString "invdot"   >> return InvDot
+                  , optionalQuotedString "odot"     >> return ODot
+                  , optionalQuotedString "invodot"  >> return InvODot
+                  , optionalQuotedString "none"     >> return NoArrow
+                  , optionalQuotedString "tee"      >> return Tee
+                  , optionalQuotedString "empty"    >> return Empty
+                  , optionalQuotedString "invempty" >> return InvEmpty
+                  , optionalQuotedString "diamond"  >> return Diamond
+                  , optionalQuotedString "odiamond" >> return ODiamond
+                  , optionalQuotedString "ediamond" >> return EDiamond
+                  , optionalQuotedString "crow"     >> return Crow
+                  , optionalQuotedString "box"      >> return Box
+                  , optionalQuotedString "obox"     >> return OBox
+                  , optionalQuotedString "open"     >> return Open
+                  , optionalQuotedString "halfopen" >> return HalfOpen
+                  , optionalQuotedString "vee"      >> return Vee
+                  ]
 
-data ColorType = RGB { red :: Word8
-                      , green :: Word8
-                      , blue :: Word8
-                      }
-                | RGBA { red :: Word8
-                       , green :: Word8
-                       , blue :: Word8
-                       , alpha :: Word8
-                       }
-                  deriving (Eq)
+-- -----------------------------------------------------------------------------
 
-instance Show ColorType where
-    show (RGB { red, green, blue })
-        = show $ '#' : foldr showWord8Pad "" [red, green, blue]
-    show (RGBA { red, green, blue, alpha })
-        = show $ '#' : foldr showWord8Pad "" [red, green, blue, alpha]
+data AspectType = RatioOnly Double
+                | RatioPassCount Double Int
+                  deriving (Eq, Read)
+
+instance Show AspectType where
+    show (RatioOnly r)        = show r
+    show (RatioPassCount r p) = show r ++ ',' : show p
+
+instance Parseable AspectType where
+    parse = do r <- parse
+               mp <- optional $ do char ','
+                                   whitespace'
+                                   parse
+               return $ maybe (RatioOnly r) (RatioPassCount r) mp
+
+-- -----------------------------------------------------------------------------
+
+data Rect = Rect Point Point
+            deriving (Eq)
+
+instance Show Rect where
+    show (Rect (Point x1 y1) (Point x2 y2))
+        = show $ (show x1) ++ (',': ((show y1) ++ (',': ((show x2) ++ (',': (show y2))))))
+    show (Rect (Point x1 y1) (PointD x2 y2))
+        = show $ (show x1) ++ (',': ((show y1) ++ (',': ((show x2) ++ (',': (show y2))))))
+    show (Rect (PointD x1 y1) (Point x2 y2))
+        = show $ (show x1) ++ (',': ((show y1) ++ (',': ((show x2) ++ (',': (show y2))))))
+    show (Rect (PointD x1 y1) (PointD x2 y2))
+        = show $ (show x1) ++ (',': ((show y1) ++ (',': ((show x2) ++ (',': (show y2))))))
+
+instance Parseable Rect where
+    parse = liftM (uncurry Rect) commaSep
+
+-- -----------------------------------------------------------------------------
+
+data Color = RGB { red   :: Word8
+                 , green :: Word8
+                 , blue  :: Word8
+                 }
+           | RGBA { red   :: Word8
+                  , green :: Word8
+                  , blue  :: Word8
+                  , alpha :: Word8
+                  }
+           | HSV { hue        :: Int
+                 , saturation :: Int
+                 , value      :: Int
+                 }
+           | ColorName String
+             deriving (Eq, Read)
+
+instance Show Color where
+    show (RGB r g b)      = show $ '#' : foldr showWord8Pad "" [r,g,b]
+    show (RGBA r g b a)   = show $ '#' : foldr showWord8Pad "" [r,g,b,a]
+    show (HSV h s v)      = show h ++ " " ++ show s ++ " " ++ show v
+    show (ColorName name) = show name
 
 showWord8Pad :: Word8 -> String -> String
 showWord8Pad w s = padding ++ simple ++ s
@@ -111,25 +149,35 @@ showWord8Pad w s = padding ++ simple ++ s
           | n < 16 = c
           | otherwise = findCols (c+1) (n `div` 16)
 
-readColorType :: Parser Char ColorType
-readColorType
-              = do { string "\"#"
-                   ; digits <- many $ noneOf ['"']
-                   ; char '"'
-                   ; let c = readHexPairs digits
-                   ; return $ case c of
-                                [r,g,b]
-                                    -> RGB r g b
-                                [r,g,b,a]
-                                    -> RGBA r g b a
-                                _ -> error $ "Unexpected pairs: " ++ show c
-                   }
-    where
-          readHexPairs :: String -> [Word8]
-          readHexPairs [] = []
-          readHexPairs (h1:h2:h')
-              = let [(n, [])] = readHex [h1,h2] in n : readHexPairs h'
-          readHexPairs c = error $ "Error in readHexPairs: " ++ (show c)
+instance Parseable Color where
+    parse = oneOf [ parseHexBased
+                  , parseHSV
+                  , liftM ColorName parse -- Should we check it is a colour?
+                  ]
+        where
+          parseHexBased
+              = do string "\"#"
+                   cs <- many1 parse2Hex
+                   char '"'
+                   return $ case cs of
+                              [r,g,b] -> RGB r g b
+                              [r,g,b,a] -> RGBA r g b a
+                              _ -> error
+                                    $ "Not a valid hex Color specification: "
+                                          ++ show cs
+          parseHSV = do h <- parse
+                        parseSep
+                        s <- parse
+                        parseSep
+                        v <- parse
+                        return $ HSV h s v
+          parseSep = oneOf [ string ","
+                           , whitespace
+                           ]
+          parse2Hex = do c1 <- satisfy isHexDigit
+                         c2 <- satisfy isHexDigit
+                         let [(n, [])] = readHex [c1, c2]
+                         return n
 
 data DirType = Forward | Back | Both | None
                deriving (Eq)
@@ -318,83 +366,6 @@ readStyleType
                       , optionalQuotedString "bold" >> return Bold
                       ]
 
-data Point = Point Int Int
-           | PointD Double Double
-             deriving (Eq)
-
-newtype PointList = PointList [Point]
-                    deriving (Eq)
-
-instance Show Point where
-    show (Point x y) = show $ (show x) ++ (',':(show y))
-    show (PointD x y) = show $ (show x) ++ (',':(show y))
-
-instance Show PointList where
-    show (PointList points) = show $ case foldr s "" points of
-                                       [] -> ""
-                                       str -> tail str
-        where
-          s (Point x y) acc = ' ':((show x) ++ (',':((show y) ++ acc)))
-          s (PointD x y) acc = ' ':((show x) ++ (',':((show y) ++ acc)))
-
-readPoint :: Parser Char Point
-readPoint = char '"' >> oneOf [readPointI, readPointD]
-    where
-      readPointI = do { x <- number
-                      ; char ','
-                      ; y <- number
-                      ; char '"'
-                      ; return $ Point x y
-                      }
-      readPointD = do { x <- floatingNumber
-                      ; char ','
-                      ; y <- floatingNumber
-                      ; char '"'
-                      ; return $ PointD x y
-                      }
-
-readPointList :: Parser Char PointList
-readPointList
-    = do { char '"'
-         ; points <- many pointPair
-         ; char '"'
-         ; return $ PointList points
-         }
-    where
-          pointPair
-              = do { x <- number
-                   ; char ','
-                   ; y <- number
-                   ; optional (char ' ')
-                   ; return $ Point x y
-                   }
-
-data Rect = Rect Point Point
-            deriving (Eq)
-
-instance Show Rect where
-    show (Rect (Point x1 y1) (Point x2 y2))
-        = show $ (show x1) ++ (',': ((show y1) ++ (',': ((show x2) ++ (',': (show y2))))))
-    show (Rect (Point x1 y1) (PointD x2 y2))
-        = show $ (show x1) ++ (',': ((show y1) ++ (',': ((show x2) ++ (',': (show y2))))))
-    show (Rect (PointD x1 y1) (Point x2 y2))
-        = show $ (show x1) ++ (',': ((show y1) ++ (',': ((show x2) ++ (',': (show y2))))))
-    show (Rect (PointD x1 y1) (PointD x2 y2))
-        = show $ (show x1) ++ (',': ((show y1) ++ (',': ((show x2) ++ (',': (show y2))))))
-
-readRect :: Parser Char Rect
-readRect = do { char '"'
-              ; x1 <- number
-              ; char ','
-              ; y1 <- number
-              ; char ','
-              ; x2 <- number
-              ; char ','
-              ; y2 <- number
-              ; char '"'
-              ; return (Rect (Point x1 y1) (Point x2 y2))
-              }
-
 data ScaleType = Scale | NoScale | FitX | FitY
                  deriving (Eq)
 
@@ -440,6 +411,7 @@ readVerticalPlacement
                       , optionalQuotedString "b" >> return VBottom
                       ]
 
+{-
 data Attribute
     = ArrowHead ArrowType
     | ArrowSize Double
@@ -690,3 +662,19 @@ readAttributesList = do { char '['
                         ; char ']'
                         ; return as
                         }
+-}
+
+-- -----------------------------------------------------------------------------
+
+data Point = Point Int Int
+           | PointD Double Double
+             deriving (Eq, Read)
+
+instance Show Point where
+    show (Point x y) = show $ (show x) ++ (',':(show y))
+    show (PointD x y) = show $ (show x) ++ (',':(show y))
+
+instance Parseable Point where
+    parse = oneOf [ liftM (uncurry Point) commaSep
+                  , liftM (uncurry PointD) commaSep
+                  ]
