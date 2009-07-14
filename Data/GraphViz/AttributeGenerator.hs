@@ -17,27 +17,33 @@ import Data.Maybe(catMaybes)
 
 type Code = Doc
 
-type Constructor = String
-type Name = String
-type UsedBy = String -- should only contain subset of "ENGCS"
-type Default = String
-type Minimum = String
-type Comment = String
+main :: IO ()
+main = print $ genCode att
+    where
+      att = AS { tpNm = text "Attribute"
+               , atts = attributes
+               }
 
-data VType = Dbl
-           | Integ
-           | Strng
-           | Bl
-           | Cust String
-           | Opt VType VType
+genCode     :: Atts -> Doc
+genCode att = vsep $ map ($att) cds
+    where
+      cds = [ createDefn
+            , showInstance
+            , parseInstance
+            , usedByFunc "Graphs" forGraphs
+            , usedByFunc "Clusters" forClusters
+            , usedByFunc "SubGraphs" forSubGraphs
+            , usedByFunc "Nodes" forNodes
+            , usedByFunc "Edges" forEdges
+            ]
 
-vtype           :: VType -> Doc
-vtype Dbl       = text "Double"
-vtype Integ     = text "Int"
-vtype Strng     = text "String"
-vtype Bl        = text "Bool"
-vtype (Cust t)  = text t
-vtype (Opt a b) = parens $ text "Either" <+> vtype a <+> vtype b
+-- -----------------------------------------------------------------------------
+
+-- Defining data structures
+
+data Atts = AS { tpNm :: Code
+               , atts :: [Attribute]
+               }
 
 data Attribute = A { cnst         :: Code
                    , name         :: Code
@@ -77,18 +83,43 @@ makeAttr c n u v d m cm = A { cnst         = text c
                         , addF "Notes" cm
                         ]
 
+type Constructor = String
+type Name = String
+type UsedBy = String -- should only contain subset of "ENGCS"
+type Default = String
+type Minimum = String
+type Comment = String
+
+data VType = Dbl
+           | Integ
+           | Strng
+           | Bl
+           | Cust String
+           | Opt VType VType
+
+vtype           :: VType -> Doc
+vtype Dbl       = text "Double"
+vtype Integ     = text "Int"
+vtype Strng     = text "String"
+vtype Bl        = text "Bool"
+vtype (Cust t)  = text t
+vtype (Opt a b) = parens $ text "Either" <+> vtype a <+> vtype b
+
 vtypeCode :: Attribute -> Code
 vtypeCode = vtype . valtype
 
-createDefn       :: String -> [Attribute] -> Code
-createDefn dt as = hdr $+$ constructors $+$ derivs
+-- -----------------------------------------------------------------------------
+
+createDefn     :: Atts -> Code
+createDefn att = hdr $+$ constructors $+$ derivs
     where
-      hdr = text "data" <+> text dt
+      hdr = text "data" <+> tpNm att
       constructors = nest tab
                      . asRows
-                     . firstOthers' equals (char '|')
-                     $ map createDefn as
-      derivs = nest (tab + 2) $ text "deriving (Eq, Show, Read)"
+                     . firstOthers equals (char '|')
+                     . map createDefn
+                     $ atts att
+      derivs = nest (tab + 2) $ text "deriving (Eq, Read)"
       createDefn a = [cnst a <+> vtypeCode a
                      , if isEmpty cm
                        then empty
@@ -97,54 +128,102 @@ createDefn dt as = hdr $+$ constructors $+$ derivs
           where
             cm = comment a
 
-showInstance       :: String -> [Attribute] -> Code
-showInstance dt as = hdr $+$ insts
+showInstance     :: Atts -> Code
+showInstance att = hdr $+$ insts
     where
-      hdr = text "instance" <+> text "Show" <+> text dt <+> text "where"
+      hdr = text "instance" <+> text "Show" <+> tpNm att <+> text "where"
       var = char 'v'
       sFunc = text "show"
       cnct = text "++"
       insts = nest tab
               . asRows
-              $ map mkInstance as
+              . map mkInstance
+              $ atts att
       mkInstance a = [ sFunc <+> parens (cnst a <+> var)
                      , equals <+> doubleQuotes (name a <> equals) <+> cnct
                                   <+> sFunc <+> var
                      ]
 
-parseInstance       :: String -> [Attribute] -> Code
-parseInstance dt as = hdr $+$ nest tab fn
+parseInstance     :: Atts -> Code
+parseInstance att = hdr $+$ nest tab fn
     where
-      hdr = text "instance" <+> text "Parseable" <+> text dt <+> text "where"
+      hdr = text "instance" <+> text "Parseable" <+> tpNm att <+> text "where"
       fn = pFunc <+> equals <+> text "oneOf" <+> ops
       ops = flip ($$) rbrack
             . asRows
-            . firstOthers' lbrack comma
-            $ map parseAttr as
+            . firstOthers lbrack comma
+            . map parseAttr
+            $ atts att
       pFunc = text "parse"
       parseAttr a = [ text "liftM" <+> cnst a
                     , char '$' <+> text "parseField"
                                <+> doubleQuotes (name a)
                     ]
 
-usedByFunc            :: String -> (Attribute -> Bool) -> String -> [Attribute] -> Code
-usedByFunc nm p dt as = asRows $ tpSig : trs ++ [fls]
+usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code
+usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])
     where
+      nm' = text nm
+      dt = tpNm att
+      cmnt = text "-- | Determine if this" <+> dt
+             <+> text "is valid for use with" <+> nm' <> char '.'
       tpSig = [ fn
               , colon <> colon
-                <+> text dt <+> text "->" <+> text "Bool"
+                <+> dt <+> text "->" <+> text "Bool"
               ]
-      fn = text "usedBy" <> text nm
+      fn = text "usedBy" <> nm'
       tr = text "True"
       trs = map aTr as'
       fl = text "False"
       fls = [ fn <+> char '_'
             , equals <+> fl
             ]
-      as' = filter p as
+      as' = filter p $ atts att
       aTr a = [ fn <+> cnst a <> braces empty
               , equals <+> tr
               ]
+
+
+-- -----------------------------------------------------------------------------
+
+-- Helper functions
+
+-- Size of a tab character
+tab :: Int
+tab = 4
+
+firstOthers            :: Doc -> Doc -> [[Doc]] -> [[Doc]]
+firstOthers _ _ []     = []
+firstOthers f o (d:ds) = (f : d) : map ((:) o) ds
+
+wrap     :: Doc -> Doc -> Doc
+wrap w d = w <> d <> w
+
+vsep :: [Doc] -> Doc
+vsep = vcat . punctuate newline
+    where
+      newline = char '\n'
+
+asRows    :: [[Doc]] -> Doc
+asRows as = vcat $ map padR asL
+    where
+      asL = map (map (\d -> (d, docLen d))) as
+      cWidths = map (maximum . map snd) $ transpose asL
+      shiftLen rls = let (rs,ls) = unzip rls
+                     in zip rs (0:ls)
+      padR = hsep . zipWith append (0 : cWidths) . shiftLen
+      append l' (d,l) = hcat (repl (l' - l) space) <> d
+      repl n xs | n <= 0    = []
+                | otherwise = replicate n xs
+
+-- A really hacky thing to do, but oh well...
+-- Don't use this for multi-line Docs!
+docLen :: Doc -> Int
+docLen = length . render
+
+-- -----------------------------------------------------------------------------
+
+-- The actual attributes
 
 attributes :: [Attribute]
 attributes = [ makeAttr "Damping" "Damping" "G" Dbl (Just "0.99") (Just "0.0") (Just "neato only")
@@ -301,39 +380,3 @@ attributes = [ makeAttr "Damping" "Damping" "G" Dbl (Just "0.99") (Just "0.0") (
              ]
 
 attrs = take 5 attributes
-
--- -----------------------------------------------------------------------------
-
-tab :: Int
-tab = 4
-
-punctuate' _ []     = []
-punctuate' p (d:ds) = d : map ((<>) p) ds
-
-firstOthers            :: Doc -> Doc -> [Doc] -> [Doc]
-firstOthers _ _ []     = []
-firstOthers f o (d:ds) = f <> d : map ((<>) o) ds
-
-firstOthers'            :: Doc -> Doc -> [[Doc]] -> [[Doc]]
-firstOthers' _ _ []     = []
-firstOthers' f o (d:ds) = (f : d) : map ((:) o) ds
-
-wrap     :: Doc -> Doc -> Doc
-wrap w d = w <> d <> w
-
-asRows    :: [[Doc]] -> Doc
-asRows as = vcat $ map padR asL
-    where
-      asL = map (map (\d -> (d, docLen d))) as
-      cWidths = map (maximum . map snd) $ transpose asL
-      shiftLen rls = let (rs,ls) = unzip rls
-                     in zip rs (0:ls)
-      padR = hsep . zipWith append (0 : cWidths) . shiftLen
-      append l' (d,l) = hcat (repl (l' - l) space) <> d
-      repl n xs | n <= 0    = []
-                | otherwise = replicate n xs
-
--- A really hacky thing to do, but oh well...
--- Don't use this for multi-line Docs!
-docLen :: Doc -> Int
-docLen = length . render
