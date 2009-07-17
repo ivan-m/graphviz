@@ -16,6 +16,8 @@ module Data.GraphViz.ParserCombinators where
 import Text.ParserCombinators.Poly.Lazy
 import Data.Char( chr
                 , digitToInt
+                , isAsciiLower
+                , isAsciiUpper
                 , isDigit
                 , isHexDigit
                 , isOctDigit
@@ -60,10 +62,20 @@ instance Parseable Bool where
 instance Parseable Char where
     parse = next
 
-    parseList = do w <- word
-                   if head w == '"'
-                      then return (init (tail w))
-                      else fail "not a String"
+    parseList = oneOf [ stringBlock
+                      , quotedString
+                      ]
+
+-- | Used when quotes are explicitly required;
+--   note that the quotes are not stripped off.
+newtype QuotedString = QS { str :: String }
+    deriving (Eq, Read)
+
+instance Show QuotedString where
+    show = show . str
+
+instance Parseable QuotedString where
+    parse = liftM (QS . tail . init) quotedString
 
 instance (Parseable a) => Parseable [a] where
     parse = parseList
@@ -72,6 +84,24 @@ instance (Parseable a, Parseable b) => Parseable (Either a b) where
     parse = oneOf [ liftM Left parse
                   , liftM Right parse
                   ]
+
+stringBlock :: Parse String
+stringBlock = do frst <- satisfy frstCond
+                 rest <- many (satisfy restCond)
+                 return $ frst : rest
+    where
+      frstCond c = any ($c) [ isAsciiUpper
+                            , isAsciiLower
+                            , (==) '_'
+                            , \ x -> x >= '\200' && x <= '\377'
+                            ]
+      restCond c = frstCond c || isDigit c
+
+quotedString :: Parse String
+quotedString = do w <- word
+                  if head w == '"'
+                     then return w
+                     else fail $ "Not a quoted string: " ++ w
 
 word :: Parse String
 word = P (\s-> case lex s of
@@ -159,8 +189,11 @@ optionalQuotedString s = optionalQuoted (string s)
 
 optionalQuoted   :: Parse a -> Parse a
 optionalQuoted p = oneOf [ p
-                         , char '"' >> p `discard` char '"'
+                         , quotedParse p
                          ]
+
+quotedParse   :: Parse a -> Parse a
+quotedParse p = char '"' >> p `discard` char '"'
 
 newline :: Parse String
 newline = oneOf . map string $ ["\r\n", "\n", "\r"]
@@ -175,10 +208,18 @@ parseField fld = do string fld
                     whitespace'
                     parse
 
+parseBoolField     :: String -> Parse Bool
+parseBoolField fld = oneOf [ parseField fld
+                           , string fld >> return True
+                           ]
+
 commaSep :: (Parseable a, Parseable b) => Parse (a, b)
-commaSep = do a <- parse
-              whitespace
-              char ','
-              whitespace
-              b <- parse
-              return (a,b)
+commaSep = commaSep' parse parse
+
+commaSep'       :: Parse a -> Parse b -> Parse (a,b)
+commaSep' pa pb = do a <- pa
+                     whitespace'
+                     char ','
+                     whitespace'
+                     b <- pb
+                     return (a,b)
