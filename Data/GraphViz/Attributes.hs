@@ -57,15 +57,14 @@
 
 module Data.GraphViz.Attributes where
 
+import Data.GraphViz.ParserCombinators
+
 import Data.Char(isDigit, isHexDigit)
 import Data.List(intercalate)
 import Data.Word
 import Numeric
-import Text.ParserCombinators.Poly.Lazy
 import Control.Monad
 import Data.Maybe
-
-import Data.GraphViz.ParserCombinators
 
 -- -----------------------------------------------------------------------------
 
