@@ -173,8 +173,10 @@ strings = oneOf . map string
 hasString :: String -> Parse Bool
 hasString = liftM isJust . optional . string
 
-char :: Char -> Parse Char
-char = satisfy . ((==) `on` toLower)
+char   :: Char -> Parse Char
+char c = satisfy (((==) `on` toLower) c)
+         `adjustErr`
+         (++ "\nnot the expected char: " ++ [c])
 
 noneOf :: (Eq a) => [a] -> Parser a a
 noneOf t = satisfy (\x -> all (/= x) t)
