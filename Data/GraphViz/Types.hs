@@ -17,6 +17,8 @@ module Data.GraphViz.Types
     , parseDotGraph
     , setID
     , makeStrict
+    , isValidGraph
+    , invalidAttributes
     ) where
 
 import Data.GraphViz.Attributes
@@ -37,11 +39,31 @@ data DotGraph = DotGraph { strictGraph     :: Bool
                          }
                 deriving (Eq, Read)
 
+-- | A strict graph disallows multiple edges.
 makeStrict   :: DotGraph -> DotGraph
 makeStrict g = g { strictGraph = True }
 
 setID     :: GraphID -> DotGraph -> DotGraph
 setID i g = g { graphID = Just i }
+
+-- | Check if all the @Attribute@s are being used correctly.
+isValidGraph   :: DotGraph -> Bool
+isValidGraph g = null gas && null nas && null eas
+    where
+      (gas, nas, eas) = invalidAttributes g
+
+-- | Return all those @Attribute@s which aren't being used properly.
+invalidAttributes   :: DotGraph -> ( [Attribute]
+                                   , [(DotNode, Attribute)]
+                                   , [(DotEdge, Attribute)]
+                                   )
+invalidAttributes g = ( invalidGraphAttributes g
+                      , concatMap invalidNodeAttributes $ graphNodes g
+                      , concatMap invalidEdgeAttributes $ graphEdges g
+                      )
+
+invalidGraphAttributes :: DotGraph -> [Attribute]
+invalidGraphAttributes = filter (not . usedByGraphs) . graphAttributes
 
 instance Show DotGraph where
     show g
@@ -134,6 +156,16 @@ data DotNode
                  }
       deriving (Eq, Read)
 
+invalidNodeAttributes                :: DotNode -> [(DotNode, Attribute)]
+invalidNodeAttributes n@DotNode{}    = map ((,) n)
+                                       . filter (not . usedByNodes)
+                                       $ nodeAttributes n
+invalidNodeAttributes c@DotCluster{} = cErr ++ nErr
+    where
+      cErr = map ((,) c) . filter (not . usedByClusters)
+             $ clusterAttributes c
+      nErr = concatMap invalidNodeAttributes $ clusterElems c
+
 instance Show DotNode where
     show = init . unlines . addTabs . nodesToString
 
@@ -175,6 +207,11 @@ data DotEdge = DotEdge { edgeHeadNodeID :: Int
                        , directedEdge   :: Bool
                        }
              deriving (Eq, Read)
+
+invalidEdgeAttributes   :: DotEdge -> [(DotEdge, Attribute)]
+invalidEdgeAttributes e = map ((,) e)
+                          . filter (not . usedByEdges)
+                          $ edgeAttributes e
 
 instance Show DotEdge where
     show e
