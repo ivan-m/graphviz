@@ -15,6 +15,8 @@ module Data.GraphViz.Types
     , DotNode(..)
     , DotEdge(..)
     , parseDotGraph
+    , setID
+    , makeStrict
     ) where
 
 import Data.GraphViz.Attributes
@@ -36,10 +38,21 @@ data DotGraph = DotGraph { strictGraph     :: Bool
                          }
                 deriving (Eq, Read)
 
+makeStrict   :: DotGraph -> DotGraph
+makeStrict g = g { strictGraph = True }
+
+setID     :: GraphID -> DotGraph -> DotGraph
+setID i g = g { graphID = Just i }
+
 instance Show DotGraph where
     show g
-        = unlines $ gType : " {" : (rest ++ ["}"])
+        = unlines $ (hdr ++ " {") : (rest ++ ["}"])
         where
+          hdr = strct . addId $ gType
+          strct = if strictGraph g
+                  then ("strict " ++)
+                  else id
+          addId = maybe id (\ i -> flip (++) $ ' ' : show i) $ graphID g
           gType = if directedGraph g then dirGraph else undirGraph
           rest = case graphAttributes g of
                    [] -> nodesEdges
@@ -70,8 +83,8 @@ instance Parseable DotGraph where
                                               >> parse `discard` skipToNewline
                                  ]
                           )
-               ns <- many parse
-               es <- many parse
+               ns <- many1 (whitespace' >> parse `discard` skipToNewline)
+               es <- many1 (whitespace' >> parse `discard` skipToNewline)
                char '}'
                return DotGraph { strictGraph = isStrict
                                , directedGraph = gType == dirGraph
@@ -80,6 +93,9 @@ instance Parseable DotGraph where
                                , graphNodes = ns
                                , graphEdges = es
                                }
+
+            `adjustErr`
+            (++ "\nNot a valid DotGraph")
 
 -- -----------------------------------------------------------------------------
 
@@ -101,6 +117,8 @@ instance Parseable GraphID where
                   , liftM QStr parse
                   , liftM HTML parse
                   ]
+            `adjustErr`
+            (++ "\nNot a valid GraphID")
 
 -- -----------------------------------------------------------------------------
 
@@ -140,9 +158,10 @@ instance Parseable DotNode where
     parse = do nId <- parse
                as <- optional (whitespace >> parse)
                char ';'
-               skipToNewline
                return DotNode { nodeID = nId
                               , nodeAttributes = fromMaybe [] as }
+            `adjustErr`
+            (++ "\nNot a valid DotNode")
 
 -- | Prefix each 'String' with a tab character.
 addTabs :: [String] -> [String]
@@ -183,11 +202,12 @@ instance Parseable DotEdge where
                eTail <- parse
                as <- optional (whitespace >> parse)
                char ';'
-               skipToNewline
                return DotEdge { edgeHeadNodeID = eHead
                               , edgeTailNodeID = eTail
                               , edgeAttributes = fromMaybe [] as
                               , directedEdge   = edgeType == dirEdge
                               }
+            `adjustErr`
+            (++ "\nNot a valid DotEdge")
 
 -- -----------------------------------------------------------------------------
