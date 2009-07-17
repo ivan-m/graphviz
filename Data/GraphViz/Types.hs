@@ -13,16 +13,15 @@ module Data.GraphViz.Types
     ( DotGraph(..)
     , DotNode(..)
     , DotEdge(..)
-    , readDotGraph
+    , parseDotGraph
     ) where
+
+import Data.GraphViz.Attributes
+import Data.GraphViz.ParserCombinators
 
 import Data.Char(isAsciiLower, isAsciiUpper, isDigit)
 import Data.Maybe
 import Control.Monad
-import Text.ParserCombinators.Poly.Lazy
-
-import Data.GraphViz.Attributes
-import Data.GraphViz.ParserCombinators
 
 -- -----------------------------------------------------------------------------
 
@@ -52,77 +51,60 @@ dirGraph = "digraph"
 undirGraph :: String
 undirGraph = "graph"
 
+parseDotGraph :: Parse DotGraph
+parseDotGraph = parse
+
+instance Parseable DotGraph where
+    parse = do isStrict <- parseAndSpace $ hasString "strict"
+               gType <- strings [dirGraph,undirGraph]
+               gId <- optional (readGraphID `discard` whitespace)
+               whitespace
+               char '{'
+               skipToNewline
+               as <- liftM concat $
+                     many (whitespace' >>
+                           oneOf [ string "edge" >> skipToNewline >> return []
+                                 , string "node" >> skipToNewline >> return []
+                                 , string "graph" >> whitespace
+                                              >> parse `discard` skipToNewline
+                                 ]
+                          )
+               ns <- many parse
+               es <- many parse
+               char '}'
+               return DotGraph { strictGraph = isStrict
+                               , directedGraph = gType == dirGraph
+                               , graphID = gId
+                               , graphAttributes = as
+                               , graphNodes = ns
+                               , graphEdges = es
+                               }
+
 -- -----------------------------------------------------------------------------
 
 data GraphID = Str String
-             | Num String
-             | QStr String
-             | HTML String
+             | Num Double
+             | QStr QuotedString
+             | HTML URL
 
 instance Show GraphID where
     show (Str str)  = str
-    show (Num str)  = str
-    show (QStr str) = '\"' : str ++ "\""
-    show (HTML str) = '<' : str ++ ">"
+    show (Num n)    = show n
+    show (QStr str) = show str
+    show (HTML url) = show url
 
 readGraphID :: Parser Char GraphID
-readGraphID = oneOf [ readStrID
-                    , readNumID
-                    , readQStrID
-                    , readHtmlID
+readGraphID = oneOf [ liftM Str stringBlock
+                    , liftM Num parse
+                    , liftM QStr parse
+                    , liftM HTML parse
                     ]
-
-readStrID :: Parser Char GraphID
-readStrID = do frst <- satisfy frstCond
-               rest <- many (satisfy restCond)
-               return $ Str $ frst : rest
-    where
-      frstCond c = any ($c) [ isAsciiUpper
-                            , isAsciiLower
-                            , (==) '_'
-                            , \ x -> x >= '\200' && x <= '\377'
-                            ]
-
-      restCond c = frstCond c || isDigit c
-
-readNumID :: Parser Char GraphID
-readNumID = do neg <- optional (char '-')
-               num <- oneOf [nonInt, hasInt]
-               return $ Num $ maybe id (:) neg num
-    where
-      nonInt = do d <- char '.'
-                  digs <- many1 digit
-                  return $ d : digs
-      hasInt = do int <- many1 digit
-                  dec <- optional $ do d <- char '.'
-                                       digs <- many digit
-                                       return $ d : digs
-                  return $ maybe id (flip (++)) dec int
-
-readQStrID :: Parser Char GraphID
-readQStrID = do char qt
-                cnt <- many1 (oneOf [ string eQt
-                                    , liftM return $ satisfy (not . (==) qt)
-                                    ] )
-                char qt
-                return $ QStr (concat cnt)
-  where
-    qt = '\"'
-    eQt = "\\\""
-
-readHtmlID :: Parser Char GraphID
-readHtmlID = do char open
-                cnt <- many1 $ satisfy ((/=) close)
-                char close
-                return $ HTML cnt
-    where
-      open = '<'
-      close = '>'
 
 -- -----------------------------------------------------------------------------
 
 -- | A node in 'DotGraph' is either a singular node, or a cluster
 --   containing nodes (or more clusters) within it.
+--   At the moment, clusters are not parsed.
 data DotNode
     = DotNode { nodeID :: Int
               , nodeAttributes :: [Attribute]
@@ -149,6 +131,15 @@ nodesToString c@(DotCluster {})
                 [] -> nodes
                 a  -> ("graph " ++ show a ++ ";") : nodes
       nodes = concatMap nodesToString $ clusterElems c
+
+
+instance Parseable DotNode where
+    parse = do nId <- parse
+               as <- optional (whitespace >> parse)
+               char ';'
+               skipToNewline
+               return DotNode { nodeID = nId
+                              , nodeAttributes = fromMaybe [] as }
 
 -- | Prefix each 'String' with a tab character.
 addTabs :: [String] -> [String]
@@ -179,59 +170,20 @@ dirEdge = "->"
 undirEdge :: String
 undirEdge = "--"
 
+instance Parseable DotEdge where
+    parse = do whitespace'
+               eHead <- parse
+               whitespace
+               edgeType <- strings [dirEdge,undirEdge]
+               whitespace
+               eTail <- parse
+               as <- optional (whitespace >> parse)
+               char ';'
+               skipToNewline
+               return DotEdge { edgeHeadNodeID = eHead
+                              , edgeTailNodeID = eTail
+                              , edgeAttributes = fromMaybe [] as
+                              , directedEdge   = edgeType == dirEdge
+                              }
+
 -- -----------------------------------------------------------------------------
-
--- | Parse a 'DotNode'
-readDotNode :: Parser Char DotNode
-readDotNode = do optional whitespace
-                 nId <- number
-                 as <- optional (whitespace >> readAttributesList)
-                 char ';'
-                 skipToNewline
-                 return DotNode { nodeID = nId
-                                , nodeAttributes = fromMaybe [] as }
-
-
--- | Parse a 'DotEdge'
-readDotEdge :: Parser Char DotEdge
-readDotEdge = do optional whitespace
-                 eHead <- number
-                 whitespace
-                 edgeType <- strings [dirEdge,undirEdge]
-                 whitespace
-                 eTail <- number
-                 as <- optional (whitespace >> readAttributesList)
-                 char ';'
-                 skipToNewline
-                 return DotEdge { edgeHeadNodeID = eHead
-                                , edgeTailNodeID = eTail
-                                , edgeAttributes = fromMaybe [] as
-                                , directedEdge = edgeType == dirEdge
-                                }
-
-
--- | Parse a 'DotGraph'
-readDotGraph :: Parser Char DotGraph
-readDotGraph = do isStrict <- parseAndSpace $ hasString "strict"
-                  gType <- strings [dirGraph,undirGraph]
-                  gId <- optional (readGraphID `discard` whitespace)
-                  whitespace
-                  char '{'
-                  skipToNewline
-                  as <- liftM concat $
-                        many (optional whitespace >>
-                              oneOf [ (string "edge" >> skipToNewline >> return [])
-                                    , (string "node" >> skipToNewline >> return [])
-                                    , (string "graph" >> whitespace >> readAttributesList >>= \as -> skipToNewline >> return as)
-                                    ]
-                             )
-                  ns <- many readDotNode
-                  es <- many readDotEdge
-                  char '}'
-                  return DotGraph { strictGraph = isStrict
-                                  , directedGraph = gType == dirGraph
-                                  , graphID = gId
-                                  , graphAttributes = as
-                                  , graphNodes = ns
-                                  , graphEdges = es
-                                  }
