@@ -1,7 +1,3 @@
-{-# LANGUAGE NamedFieldPuns
-           , ScopedTypeVariables
-           #-}
-
 {- |
    Module      : Data.GraphViz
    Description : GraphViz bindings for Haskell.
@@ -22,7 +18,7 @@
    'Prelude.LT'.  As such, you may need to import either this module
    or the @Prelude@ qualified or hiding @LT@.
 
-   -}
+ -}
 
 module Data.GraphViz
     ( graphToDot
@@ -35,24 +31,21 @@ module Data.GraphViz
     , module Data.GraphViz.Types
     , module Data.GraphViz.Attributes
     , module Data.GraphViz.Commands
-    )
-    where
-
-import Data.Graph.Inductive.Graph
-import Data.List
-import Data.Function
-import qualified Data.Set as Set
-import Text.ParserCombinators.Poly.Lazy
-import Control.Monad
-import Data.Maybe
-import qualified Data.Map as Map
-import System.IO
-import System.IO.Unsafe(unsafePerformIO)
+    ) where
 
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
+import Data.GraphViz.ParserCombinators(Parse, runParser)
+
+import Data.Graph.Inductive.Graph
+import qualified Data.Set as Set
+import Control.Arrow((&&&))
+import Data.Maybe
+import qualified Data.Map as Map
+import System.IO(hGetContents)
+import System.IO.Unsafe(unsafePerformIO)
 
 -- -----------------------------------------------------------------------------
 
@@ -84,17 +77,23 @@ clusterGraphToDot :: (Ord c, Ord b, Graph gr) => gr a b
                   -> [Attribute] -> (LNode a -> NodeCluster c a)
                   -> (c -> [Attribute]) -> (LNode a -> [Attribute])
                   -> (LEdge b -> [Attribute]) -> DotGraph
-clusterGraphToDot graph graphAttributes clusterBy fmtCluster fmtNode fmtEdge
-    = DotGraph { graphAttributes, graphNodes, graphEdges, directedGraph }
+clusterGraphToDot graph gAttrs clusterBy fmtCluster fmtNode fmtEdge
+    = DotGraph { strictGraph     = False
+               , directedGraph   = dirGraph
+               , graphID         = Nothing
+               , graphAttributes = gAttrs
+               , graphNodes      = ns
+               , graphEdges      = es
+               }
       where
-        graphNodes = clustersToNodes clusterBy fmtCluster fmtNode graph
-        directedGraph = not $ isUndir graph
-        graphEdges = catMaybes . map mkDotEdge . labEdges $ graph
-        mkDotEdge e@(f,t,_) = if (directedGraph || f <= t)
-                              then Just $ DotEdge {edgeHeadNodeID = f
-                                                  ,edgeTailNodeID = t
-                                                  ,edgeAttributes = fmtEdge e
-                                                  ,directedEdge = directedGraph}
+        dirGraph = not $ isUndir graph
+        ns = clustersToNodes clusterBy fmtCluster fmtNode graph
+        es = mapMaybe mkDotEdge . labEdges $ graph
+        mkDotEdge e@(f,t,_) = if dirGraph || f <= t
+                              then Just DotEdge {edgeHeadNodeID = f
+                                                ,edgeTailNodeID = t
+                                                ,edgeAttributes = fmtEdge e
+                                                ,directedEdge = dirGraph}
                               else Nothing
 
 -- -----------------------------------------------------------------------------
@@ -105,31 +104,35 @@ type AttributeEdge b = ([Attribute], b)
 -- | Run the graph via dot to get positional information and then
 --   combine that information back into the original graph.
 --   Note that this doesn't support graphs with clusters.
-graphToGraph :: forall gr a b . (Ord b, Graph gr) =>
-                gr a b -> [Attribute] -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute]) -> IO (gr (AttributeNode a) (AttributeEdge b))
+graphToGraph :: (Ord b, Graph gr) => gr a b -> [Attribute]
+                -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute])
+                -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph gr graphAttributes fmtNode fmtEdge
-    = do { out <- graphvizWithHandle command dot DotOutput hGetContents
-         ; let res = fromJust out
-         ; (length res) `seq` return ()
-         ; return $ rebuildGraphWithAttributes res
-         }
+    = do out <- graphvizWithHandle command dot DotOutput hGetContents
+         let res = fromJust out
+         length res `seq` return ()
+         return $ rebuildGraphWithAttributes res
     where
       undirected = isUndir gr
       command = if undirected then undirCommand else dirCommand
       dot = graphToDot gr graphAttributes fmtNode fmtEdge
-      rebuildGraphWithAttributes :: String -> gr (AttributeNode a) (AttributeEdge b)
       rebuildGraphWithAttributes dotResult = mkGraph lnodes ledges
           where
-            lnodes = map (\(n, l) -> (n, (fromJust $ Map.lookup n nodeMap, l))) . labNodes $ gr
-            ledges = map createEdges . labEdges $ gr
-            (DotGraph { graphEdges, graphNodes }) = fst . runParser readDotGraph $ dotResult
-            nodeMap = Map.fromList . map (\n -> (nodeID n, nodeAttributes n)) $ graphNodes
-            edgeMap = Map.fromList . map (\e -> ((edgeTailNodeID e, edgeHeadNodeID e), edgeAttributes e)) $ graphEdges
-            createEdges (f,t,l) = if (undirected && f > t)
-                                  then (f,t,getLabel (t,f))
-                                  else (f,t,getLabel (f,t))
+            lnodes = map (\(n, l) -> (n, (fromJust $ Map.lookup n nodeMap, l)))
+                     $ labNodes gr
+            ledges = map createEdges $ labEdges gr
+            createEdges (f, t, l) = if undirected && f > t
+                                    then (f, t, getLabel (t,f))
+                                    else (f, t, getLabel (f,t))
                 where
-                  getLabel c = (fromJust $ Map.lookup c edgeMap,l)
+                  getLabel c = (fromJust $ Map.lookup c edgeMap, l)
+            DotGraph { graphNodes = ns, graphEdges = es}
+                = fst . runParser parseDotGraph $ dotResult
+            nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
+            edgeMap = Map.fromList $ map (\e -> ( ( edgeTailNodeID e
+                                                  , edgeHeadNodeID e)
+                                                , edgeAttributes e)
+                                         ) es
 
 -- | Pass the plain graph through 'graphToGraph'.  This is an @IO@ action,
 --   however since the state doesn't change it's safe to use 'unsafePerformIO'
