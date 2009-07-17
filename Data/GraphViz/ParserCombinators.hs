@@ -11,7 +11,29 @@
    @Text.ParserCombinators.Poly.Lazy@.
 -}
 
-module Data.GraphViz.ParserCombinators where
+module Data.GraphViz.ParserCombinators
+    ( module Text.ParserCombinators.Poly.Lazy
+    , Parse
+    , Parseable(..)
+    , stringBlock
+    , quotedString
+    , parseAndSpace
+    , string
+    , strings
+    , hasString
+    , char
+    , whitespace
+    , whitespace'
+    , optionalQuotedString
+    , optionalQuoted
+    , quotedParse
+    , newline
+    , skipToNewline
+    , parseField
+    , parseBoolField
+    , commaSep
+    , commaSep'
+    ) where
 
 import Text.ParserCombinators.Poly.Lazy
 import Data.Char( chr
