@@ -11,6 +11,7 @@
 
 module Data.GraphViz.Types
     ( DotGraph(..)
+    , GraphID(..)
     , DotNode(..)
     , DotEdge(..)
     , parseDotGraph
@@ -33,7 +34,7 @@ data DotGraph = DotGraph { strictGraph     :: Bool
                          , graphNodes      :: [DotNode]
                          , graphEdges      :: [DotEdge]
                          }
---                deriving (Show, Read)
+                deriving (Eq, Read)
 
 instance Show DotGraph where
     show g
@@ -57,7 +58,7 @@ parseDotGraph = parse
 instance Parseable DotGraph where
     parse = do isStrict <- parseAndSpace $ hasString "strict"
                gType <- strings [dirGraph,undirGraph]
-               gId <- optional (readGraphID `discard` whitespace)
+               gId <- optional (parse `discard` whitespace)
                whitespace
                char '{'
                skipToNewline
@@ -86,6 +87,7 @@ data GraphID = Str String
              | Num Double
              | QStr QuotedString
              | HTML URL
+               deriving (Eq, Read)
 
 instance Show GraphID where
     show (Str str)  = str
@@ -93,12 +95,12 @@ instance Show GraphID where
     show (QStr str) = show str
     show (HTML url) = show url
 
-readGraphID :: Parser Char GraphID
-readGraphID = oneOf [ liftM Str stringBlock
-                    , liftM Num parse
-                    , liftM QStr parse
-                    , liftM HTML parse
-                    ]
+instance Parseable GraphID where
+    parse = oneOf [ liftM Str stringBlock
+                  , liftM Num parse
+                  , liftM QStr parse
+                  , liftM HTML parse
+                  ]
 
 -- -----------------------------------------------------------------------------
 
@@ -113,6 +115,7 @@ data DotNode
                  , clusterAttributes :: [Attribute]
                  , clusterElems      :: [DotNode]
                  }
+      deriving (Eq, Read)
 
 instance Show DotNode where
     show = init . unlines . addTabs . nodesToString
@@ -153,6 +156,7 @@ data DotEdge = DotEdge { edgeHeadNodeID :: Int
                        , edgeAttributes :: [Attribute]
                        , directedEdge   :: Bool
                        }
+             deriving (Eq, Read)
 
 instance Show DotEdge where
     show e
