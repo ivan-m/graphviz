@@ -36,16 +36,11 @@ module Data.GraphViz.ParserCombinators
     ) where
 
 import Text.ParserCombinators.Poly.Lazy
-import Data.Char( chr
-                , digitToInt
+import Data.Char( digitToInt
                 , isAsciiLower
                 , isAsciiUpper
                 , isDigit
-                , isHexDigit
-                , isOctDigit
                 , isSpace
-                , isUpper
-                , ord
                 , toLower
                 )
 import Data.Function(on)
@@ -78,8 +73,11 @@ instance Parseable Double where
 instance Parseable Bool where
     parse = oneOf [ string "true" >> return True
                   , string "false" >> return False
-                  , liftM (0 /=) parseInt
+                  , liftM (zero /=) parseInt
                   ]
+        where
+          zero :: Int
+          zero = 0
 
 instance Parseable Char where
     parse = next
@@ -121,7 +119,7 @@ word :: Parse String
 word = P (\s-> case lex s of
                    []         -> Failure s  "no input? (impossible)"
                    [("","")]  -> Failure "" "no input?"
-                   [("",s')]  -> Failure s  "lexing failed?"
+                   [("",s')]  -> Failure s' "lexing failed?"
                    ((x,s'):_) -> Success s' x
          )
 

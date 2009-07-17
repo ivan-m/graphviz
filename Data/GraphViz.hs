@@ -37,7 +37,7 @@ import Data.GraphViz.Types
 import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
-import Data.GraphViz.ParserCombinators(Parse, runParser)
+import Data.GraphViz.ParserCombinators(runParser)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set

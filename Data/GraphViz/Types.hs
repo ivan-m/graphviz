@@ -22,7 +22,6 @@ module Data.GraphViz.Types
 import Data.GraphViz.Attributes
 import Data.GraphViz.ParserCombinators
 
-import Data.Char(isAsciiLower, isAsciiUpper, isDigit)
 import Data.Maybe
 import Control.Monad
 

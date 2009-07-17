@@ -60,7 +60,6 @@ module Data.GraphViz.Attributes where
 import Data.GraphViz.ParserCombinators
 
 import Data.Char(isDigit, isHexDigit)
-import Data.List(intercalate)
 import Data.Word
 import Numeric
 import Control.Monad
@@ -1020,6 +1019,7 @@ instance Parseable Point where
 
     parseList = quotedParse $ sepBy1 parsePoint whitespace
 
+parsePoint :: Parse Point
 parsePoint = oneOf [ liftM (uncurry Point)  commaSep
                    , liftM (uncurry PointD) commaSep
                    ]
