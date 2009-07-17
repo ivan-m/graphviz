@@ -97,9 +97,9 @@ quotedString = do w <- word
 
 word :: Parse String
 word = P (\s-> case lex s of
-                   []         -> Failure s  ("no input? (impossible)")
-                   [("","")]  -> Failure "" ("no input?")
-                   [("",s')]  -> Failure s  ("lexing failed?")
+                   []         -> Failure s  "no input? (impossible)"
+                   [("","")]  -> Failure "" "no input?"
+                   [("",s')]  -> Failure s  "lexing failed?"
                    ((x,s'):_) -> Success s' x
          )
 
@@ -112,7 +112,7 @@ parseInt :: (Integral a) => Parse a
 parseInt = do cs <- many1 (satisfy isDigit)
               return (foldl1 (\n d-> n*radix+d)
                                    (map (fromIntegral . digitToInt) cs))
-           `adjustErr` (++("\nexpected one or more digits"))
+           `adjustErr` (++ "\nexpected one or more digits")
     where
       radix = 10
 
@@ -157,27 +157,14 @@ char = satisfy . ((==) `on` toLower)
 noneOf :: (Eq a) => [a] -> Parser a a
 noneOf t = satisfy (\x -> all (/= x) t)
 
-digit :: Parse Char
-digit = satisfy isDigit
-
-number :: (Num a, Read a) => Parse a
-number = liftM read $ many1 digit
-
-floatingNumber :: (Floating a, Read a) => Parse a
-floatingNumber = do a::Integer <- number
-                    char '.'
-                    b::Integer <- number
-                    return . read $ (show a) ++ ('.':(show b))
-
-
 whitespace :: Parse String
 whitespace = many1 (satisfy isSpace)
 
 whitespace' :: Parse String
 whitespace' = many (satisfy isSpace)
 
-optionalQuotedString   :: String -> Parse String
-optionalQuotedString s = optionalQuoted (string s)
+optionalQuotedString :: String -> Parse String
+optionalQuotedString = optionalQuoted . string
 
 optionalQuoted   :: Parse a -> Parse a
 optionalQuoted p = oneOf [ p
