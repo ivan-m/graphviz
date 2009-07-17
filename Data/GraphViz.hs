@@ -25,6 +25,7 @@ module Data.GraphViz
     , clusterGraphToDot
     , graphToGraph
     , dotizeGraph
+    , runParser -- so the right one is available
     , NodeCluster(..)
     , AttributeNode
     , AttributeEdge
