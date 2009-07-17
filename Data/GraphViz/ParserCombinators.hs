@@ -68,14 +68,6 @@ instance Parseable Char where
 
 -- | Used when quotes are explicitly required;
 --   note that the quotes are not stripped off.
-newtype QuotedString = QS { str :: String }
-    deriving (Eq, Read)
-
-instance Show QuotedString where
-    show = show . str
-
-instance Parseable QuotedString where
-    parse = liftM (QS . tail . init) quotedString
 
 instance (Parseable a) => Parseable [a] where
     parse = parseList
