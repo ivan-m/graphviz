@@ -30,7 +30,7 @@ import System.Exit
 import System.Process
 import Data.Array.IO
 import Control.Concurrent
-import Control.Exception
+import Control.Exception.Extensible
 
 import Data.GraphViz.Types
 
@@ -158,7 +158,8 @@ runGraphviz gr t fp = runGraphvizCommand (commandFor gr) gr t fp
 runGraphvizCommand :: GraphvizCommand -> DotGraph -> GraphvizOutput
                    -> FilePath -> IO Bool
 runGraphvizCommand  cmd gr t fp
-    = do pipe <- tryJust catcher $ openFile fp WriteMode
+    = do pipe <- tryJust (\(SomeException _) -> return ())
+                 $ openFile fp WriteMode
          case pipe of
            (Left _)  -> return False
            (Right f) -> do file <- graphvizWithHandle cmd gr t (flip squirt f)
@@ -166,12 +167,9 @@ runGraphvizCommand  cmd gr t fp
                            case file of
                              (Just _) -> return True
                              _        -> return False
-    where
-      catcher   :: IOError -> Maybe ()
-      catcher _ = Just ()
 
 -- graphvizWithHandle sometimes throws an error about handles not
--- being closed properly: investigate.
+-- being closed properly: investigate (now on the official TODO).
 
 -- | Run the chosen Graphviz command on this graph, but send the result to the
 --   given handle rather than to a file.
