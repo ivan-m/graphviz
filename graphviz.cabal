@@ -7,7 +7,6 @@ Maintainer:         Ivan.Miljenovic@gmail.com
 Author:             Matthew Sackman, Ivan Lazar Miljenovic
 License:            BSD3
 License-File:       LICENSE
-Extra-Source-Files: TODO
 Build-Type:         Simple
 Cabal-Version:      >= 1.2
 Synopsis:           GraphViz wrapper for Haskell.
@@ -19,6 +18,9 @@ Description:
   Also allows a limited amount of parsing of Dot, and usage of
   GraphViz to attach positional data to each node and edge in the
   graph.
+
+Extra-Source-Files: TODO
+                    Changelog
 
 Library {
         Build-Depends:     base >= 3 && < 5,
