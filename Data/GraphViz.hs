@@ -45,10 +45,10 @@ import System.IO.Unsafe(unsafePerformIO)
 
 -- | Determine if the given graph is undirected or directed.
 isUndir   :: (Ord b, Graph g) => g a b -> Bool
-isUndir g = all hasFlip edges
+isUndir g = all hasFlip es
     where
-      edges = labEdges g
-      eSet = Set.fromList edges
+      es = labEdges g
+      eSet = Set.fromList es
       hasFlip e = Set.member (flippedEdge e) eSet
       flippedEdge (f,t,l) = (t,f,l)
 
@@ -57,8 +57,8 @@ isUndir g = all hasFlip edges
 -- | Convert a graph to GraphViz's /Dot/ format.
 graphToDot :: (Ord b, Graph gr) => gr a b -> [Attribute]
            -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute]) -> DotGraph
-graphToDot graph graphAttributes fmtNode fmtEdge
-    = clusterGraphToDot graph graphAttributes clusterBy fmtCluster fmtNode fmtEdge
+graphToDot graph gAttributes fmtNode fmtEdge
+    = clusterGraphToDot graph gAttributes clusterBy fmtCluster fmtNode fmtEdge
       where
         clusterBy :: LNode a -> NodeCluster () a
         clusterBy = N
@@ -101,15 +101,15 @@ type AttributeEdge b = ([Attribute], b)
 graphToGraph :: (Ord b, Graph gr) => gr a b -> [Attribute]
                 -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute])
                 -> IO (gr (AttributeNode a) (AttributeEdge b))
-graphToGraph gr graphAttributes fmtNode fmtEdge
-    = do out <- graphvizWithHandle command dot DotOutput hGetContents
-         let res = fromJust out
+graphToGraph gr gAttributes fmtNode fmtEdge
+    = do output <- graphvizWithHandle command dot DotOutput hGetContents
+         let res = fromJust output
          length res `seq` return ()
          return $ rebuildGraphWithAttributes res
     where
       undirected = isUndir gr
       command = if undirected then undirCommand else dirCommand
-      dot = graphToDot gr graphAttributes fmtNode fmtEdge
+      dot = graphToDot gr gAttributes fmtNode fmtEdge
       rebuildGraphWithAttributes dotResult = mkGraph lnodes ledges
           where
             lnodes = map (\(n, l) -> (n, (fromJust $ Map.lookup n nodeMap, l)))

@@ -39,6 +39,6 @@ Library {
 
         Other-Modules:     Data.GraphViz.Types.Clustering
 
-        Ghc-Options:       -Wall -fno-warn-name-shadowing
+        Ghc-Options:       -Wall
         Ghc-Prof-Options:  -prof -auto-all
 }

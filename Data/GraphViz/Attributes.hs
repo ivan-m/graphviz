@@ -783,11 +783,11 @@ usedByEdges _                = False
 
 -- -----------------------------------------------------------------------------
 
-newtype URL = UStr { url :: String }
+newtype URL = UStr { urlString :: String }
     deriving (Eq, Read)
 
 instance Show URL where
-    show u = '<' : url u ++ ">"
+    show u = '<' : urlString u ++ ">"
 
 instance Parseable URL where
     parse = do char open
@@ -1560,9 +1560,9 @@ instance Parseable CompassPoint where
 
 -- -----------------------------------------------------------------------------
 
-data ViewPort = VP { w     :: Double
-                   , h     :: Double
-                   , z     :: Double
+data ViewPort = VP { wVal  :: Double
+                   , hVal  :: Double
+                   , zVal  :: Double
                    , focus :: Maybe FocusType
                    }
                 deriving (Eq, Read)
@@ -1570,9 +1570,9 @@ data ViewPort = VP { w     :: Double
 instance Show ViewPort where
     show vp = show
               . maybe id (flip (++) . show) (focus vp)
-              $ show (w vp)
-              ++ ',' : show (h vp)
-              ++ ',' : show (z vp)
+              $ show (wVal vp)
+              ++ ',' : show (hVal vp)
+              ++ ',' : show (zVal vp)
 
 instance Parseable ViewPort where
     parse = quotedParse
@@ -1690,11 +1690,11 @@ instance Parseable Ratios where
 -- -----------------------------------------------------------------------------
 
 -- | Represents 'String's that definitely have quotes around them.
-newtype QuotedString = QS { str :: String }
+newtype QuotedString = QS { qStr :: String }
     deriving (Eq, Read)
 
 instance Show QuotedString where
-    show = show . str
+    show = show . qStr
 
 instance Parseable QuotedString where
     parse = liftM (QS . tail . init) quotedString

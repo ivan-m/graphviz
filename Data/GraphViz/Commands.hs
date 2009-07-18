@@ -177,13 +177,13 @@ runGraphvizCommand  cmd gr t fp
 graphvizWithHandle :: (Show a) => GraphvizCommand -> DotGraph -> GraphvizOutput
                       -> (Handle -> IO a) -> IO (Maybe a)
 graphvizWithHandle cmd gr t f
-    = do (inp, outp, errp, proc) <- runInteractiveCommand command
+    = do (inp, outp, errp, prc) <- runInteractiveCommand command
          forkIO $ hPrint inp gr >> hClose inp
          forkIO $ (hGetContents errp >>= hPutStr stderr >> hClose errp)
          a <- f outp
          -- Don't close outp until f finishes.
          a `seq` hClose outp
-         exitCode <- waitForProcess proc
+         exitCode <- waitForProcess prc
          case exitCode of
            ExitSuccess -> return (Just a)
            _           -> return Nothing

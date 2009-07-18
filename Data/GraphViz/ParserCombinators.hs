@@ -154,8 +154,8 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                             many (satisfy isDigit)
                               `adjustErrBad` (++"expected digit after .")
                          `onFail` return [] )
-                exp  <- exponent `onFail` return 0
-                ( return . fromRational . (* (10^^(exp - length frac)))
+                expn  <- parseExp `onFail` return 0
+                ( return . fromRational . (* (10^^(expn - length frac)))
                   . (%1) . fst
                   . runParser parseInt) (ds++frac)
              `onFail`
@@ -164,7 +164,7 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                   "nan"      -> return (0/0)
                   "infinity" -> return (1/0)
                   _          -> fail "expected a floating point number"
-  where exponent = do 'e' <- fmap toLower next
+  where parseExp = do 'e' <- fmap toLower next
                       commit (do '+' <- next; parseInt
                               `onFail`
                               parseSigned parseInt)
