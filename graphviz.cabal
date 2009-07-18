@@ -8,7 +8,7 @@ Author:             Matthew Sackman, Ivan Lazar Miljenovic
 License:            BSD3
 License-File:       LICENSE
 Build-Type:         Simple
-Cabal-Version:      >= 1.2
+Cabal-Version:      >= 1.6
 Synopsis:           GraphViz wrapper for Haskell.
 Description:
   Provides convenient functions to convert FGL graphs into the Dot
@@ -18,9 +18,11 @@ Description:
   Also allows a limited amount of parsing of Dot, and usage of
   GraphViz to attach positional data to each node and edge in the
   graph.
-
 Extra-Source-Files: TODO
                     Changelog
+Source-Repository head
+    Type:         darcs
+    Location:     http://code.haskell.org/graphviz
 
 Library {
         Build-Depends:     base >= 3 && < 5,
