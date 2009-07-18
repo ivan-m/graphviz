@@ -6,7 +6,9 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module defines the overall types and methods that interact
-   with them for the GraphViz library.
+   with them for the GraphViz library.  The specifications are based
+   loosely upon the information available at:
+     <http://graphviz.org/doc/info/lang.html>
 -}
 
 module Data.GraphViz.Types
@@ -86,6 +88,9 @@ dirGraph = "digraph"
 undirGraph :: String
 undirGraph = "graph"
 
+-- | Parse a limited subset of the Dot language to form a 'DotGraph'
+--   (that is, the caveats listed in "Data.GraphViz.Attributes" aside,
+--   Dot graphs are parsed if they match the layout of DotGraph).
 parseDotGraph :: Parse DotGraph
 parseDotGraph = parse
 

@@ -38,7 +38,7 @@ import Data.GraphViz.Types
 data GraphvizCommand = Dot | Neato | TwoPi | Circo | Fdp
 
 instance Show GraphvizCommand where
-    show Dot = "dot"
+    show Dot    = "dot"
     show Neato  = "neato"
     show TwoPi  = "twopi"
     show Circo  = "circo"
@@ -62,7 +62,9 @@ commandFor dg = if (directedGraph dg)
 --   Note that it is not possible to choose between output variants,
 --   and that not all of these may be available on your system.
 --
---   This will probably be improved in future.
+--   This will probably be improved in future.  For now, more
+--   information is available from:
+--     <http://graphviz.org/doc/info/output.html>
 data GraphvizOutput = Canon
                     | Cmap
                     | Cmapx
@@ -175,7 +177,7 @@ runGraphvizCommand  cmd gr t fp
 --   given handle rather than to a file.
 --   The result is wrapped in 'Maybe' rather than throwing an error.
 graphvizWithHandle :: (Show a) => GraphvizCommand -> DotGraph -> GraphvizOutput
-                   -> (Handle -> IO a) -> IO (Maybe a)
+                      -> (Handle -> IO a) -> IO (Maybe a)
 graphvizWithHandle cmd gr t f
     = do (inp, outp, errp, proc) <- runInteractiveCommand command
          forkIO $ hPrint inp gr >> hClose inp

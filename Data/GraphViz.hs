@@ -12,12 +12,6 @@
 
    Information about GraphViz and the Dot language can be found at:
    <http://graphviz.org/>
-
-   Note that this module re-exports the "Data.GraphViz.Attributes"
-   module, which exports a constructor that clashes with
-   'Prelude.LT'.  As such, you may need to import either this module
-   or the @Prelude@ qualified or hiding @LT@.
-
  -}
 
 module Data.GraphViz

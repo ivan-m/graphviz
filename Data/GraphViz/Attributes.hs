@@ -8,52 +8,56 @@
    This module defines the various attributes that different parts of
    a GraphViz graph can have.  These attributes are based on the
    documentation found at:
+
      <http://graphviz.org/doc/info/attrs.html>
+
    For more information on usage, etc. please see that document.
 
-   A summary of known current constraints/limitations/differences:
+   A summary of known current constraints\/limitations\/differences:
 
-   * Parsing of Quoted Strings might not always work if they are a
-     sub-part of another Attribute (e.g. a quoted name in LayerList).
+   * Parsing of quoted strings might not always work if they are a
+     sub-part of another Attribute (e.g. a quoted name in 'LayerList').
      In fact, parsing with quotes is iffy for everything; specifically
      when they are and aren't allowed.
 
-   * ColorScheme is ignored when parsing Color values
+   * 'ColorScheme' is ignored when parsing 'Color' values
 
    * ColorList and PointfList are defined as actual lists (but
-     LayerList is not).
+     'LayerList' is not).
 
-   * A lot of values have a possible value of "none".  These now have
-     custom constructors.  In fact, most constructors have been
+   * A lot of values have a possible value of @"none"@.  These now
+     have custom constructors.  In fact, most constructors have been
      expanded upon to give an idea of what they represent rather than
      using generic terms.
 
-   * PointF and Point have been combined, and feature support for pure
-     Int-based co-ordinates as well as Double ones (i.e. no floating
+   * @PointF@ and 'Point' have been combined, and feature support for pure
+     'Int'-based co-ordinates as well as 'Double' ones (i.e. no floating
      point-only points for Point).  The optional '!' and third value
      for Point are not available.
 
-   * Rect uses two Point values.
+   * 'Rect' uses two 'Point' values to denote the lower-left and
+     top-right corners.
 
-   * The two labelloc attributes have been combined.
+   * The two 'LabelLoc' attributes have been combined.
 
-   * The defined LayerSep is not used to parse LayerRange or
-     LayerList; the default is instead used.
+   * The defined 'LayerSep' is not used to parse 'LayerRange' or
+     'LayerList'; the default (@[' ', ':', '\t']@) is instead used.
 
-   * SplineType has been replaced with [Spline].
+   * @SplineType@ has been replaced with @['Spline']@.
 
-   * Only polygon-based shapes are available.
+   * Only polygon-based 'Shape's are available.
 
-   * Device-dependent StyleType values are not available.
+   * Device-dependent 'StyleName' values are not available.
 
-   * PortPos only has CompassPoint option, not
-     PortName[:CompassPoint] (since record shapes aren't allowed, and
-     parsing HTML-like labels could be problematic).
+   * 'PortPos' only has the 'CompassPoint' option, not
+     @PortName[:CompassPoint]@ (since record shapes aren't allowed,
+     and parsing HTML-like labels could be problematic).
 
-   * Not every Attribute is fully documented/described.  In
-     particular, a lot of them are listed as having a String value,
+   * Not every 'Attribute' is fully documented/described.  In
+     particular, a lot of them are listed as having a 'String' value,
      when actually only certain Strings are allowed.
-  -}
+
+ -}
 
 module Data.GraphViz.Attributes where
 
@@ -75,7 +79,7 @@ import Data.Maybe
    with functions to determine if they are indeed valid for what
    they're being applied to.
 
-   To interpret the "/Valid for/" listings:
+   To interpret the /Valid for/ listings:
 
      [@G@] Valid for Graphs.
 
@@ -1420,7 +1424,7 @@ instance Parseable SmoothType where
 
 -- -----------------------------------------------------------------------------
 
--- | It it assumed that at least one of these is Just _ .
+-- | It it assumed that at least one of these is @Just{}@.
 data StartType = ST (Maybe STStyle) (Maybe Int) -- Use a Word?
                  deriving (Eq, Read)
 
@@ -1595,7 +1599,7 @@ instance Parseable FocusType where
 
 -- -----------------------------------------------------------------------------
 
--- | Note that @VCenter@ is only valid for Nodes.
+-- | Note that 'VCenter' is only valid for Nodes.
 data VerticalPlacement = VTop
                        | VCenter
                        | VBottom
@@ -1685,6 +1689,7 @@ instance Parseable Ratios where
 
 -- -----------------------------------------------------------------------------
 
+-- | Represents 'String's that definitely have quotes around them.
 newtype QuotedString = QS { str :: String }
     deriving (Eq, Read)
 

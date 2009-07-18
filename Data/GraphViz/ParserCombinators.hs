@@ -8,7 +8,18 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module defines simple helper functions for use with
-   @Text.ParserCombinators.Poly.Lazy@.
+   "Text.ParserCombinators.Poly.Lazy".
+
+   Note that the 'Parseable' instances for 'Bool', etc. match those
+   specified for use with GraphViz (e.g. non-zero integers are
+   equivalent to 'True').
+
+   You should not be using this module; rather, it is here for
+   informative/documentative reasons.  If you want to parse a
+   @'Data.GraphViz.Types.DotGraph'@, you should use
+   @'Data.GraphViz.Types.parseDotGraph'@ rather than its 'Parseable'
+   instance.
+
 -}
 
 module Data.GraphViz.ParserCombinators
@@ -51,6 +62,7 @@ import Control.Monad
 -- -----------------------------------------------------------------------------
 -- Based off code from Text.Parse in the polyparse library
 
+-- | A @ReadS@-like type alias.
 type Parse a = Parser Char a
 
 class Parseable a where
