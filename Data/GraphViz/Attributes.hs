@@ -160,7 +160,7 @@ data Attribute
     | Landscape Bool                          -- ^ /Valid for/: G; /Default/: false
     | Layer LayerRange                        -- ^ /Valid for/: EN; /Default/: \"\"
     | Layers LayerList                        -- ^ /Valid for/: G; /Default/: \"\"
-    | LayerSep String                         -- ^ /Valid for/: G; /Default/: " :\\t"
+    | LayerSep String                         -- ^ /Valid for/: G; /Default/: \" :\\t\"
     | Layout String                           -- ^ /Valid for/: G; /Default/: \"\"
     | Len Double                              -- ^ /Valid for/: E; /Default/: 1.0(neato)/0.3(fdp); /Notes/: fdp, neato only
     | Levels Int                              -- ^ /Valid for/: G; /Default/: MAXINT; /Minimum/: 0.0; /Notes/: sfdp only

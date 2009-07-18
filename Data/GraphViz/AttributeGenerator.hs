@@ -306,7 +306,7 @@ attributes = [ makeAttr "Damping" "Damping" "G" Dbl (Just "0.99") (Just "0.0") (
              , makeAttr "Landscape" "landscape" "G" Bl (Just "false") Nothing Nothing
              , makeAttr "Layer" "layer" "EN" (Cust "LayerRange") (Just "\\\"\\\"") Nothing Nothing
              , makeAttr "Layers" "layers" "G" (Cust "LayerList") (Just "\\\"\\\"") Nothing Nothing
-             , makeAttr "LayerSep" "layersep" "G" Strng (Just "\" :\\t\"") Nothing Nothing
+             , makeAttr "LayerSep" "layersep" "G" Strng (Just "\\\" :\\t\\\"") Nothing Nothing
              , makeAttr "Layout" "layout" "G" Strng (Just "\\\"\\\"") Nothing Nothing
              , makeAttr "Len" "len" "E" Dbl (Just "1.0(neato)/0.3(fdp)") Nothing (Just "fdp, neato only")
              , makeAttr "Levels" "levels" "G" Integ (Just "MAXINT") (Just "0.0") (Just "sfdp only")
