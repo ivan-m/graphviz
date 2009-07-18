@@ -1,10 +1,12 @@
 Areas to work on:
 
-* Add support for Data.Graph-style graphs.
+* Utilise the generic graph class once it is finalised.
 
 * Allow user to choose whether or not the graph is meant to be
   directed or undirected.
 
-* Ensure Data.GraphViz.Attributes contains all supported attributes for Dot.
+* Improve parsing to fully (or at least follow more closely) support Dot.
 
-* Remove (or at least minimise) usage of extensions.
+* Improve clustering/subgraph support.
+
+* Use a PrettyPrinter rather than Show to generate Dot output.
