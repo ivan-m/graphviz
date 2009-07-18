@@ -28,9 +28,9 @@ Library {
                            Data.GraphViz.Types
                            Data.GraphViz.Commands
                            Data.GraphViz.Attributes
+                           Data.GraphViz.ParserCombinators
 
         Other-Modules:     Data.GraphViz.Types.Clustering
-                           Data.GraphViz.ParserCombinators
 
         Ghc-Options:       -Wall -fno-warn-name-shadowing
         Ghc-Prof-Options:  -prof -auto-all
