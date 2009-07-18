@@ -10,3 +10,7 @@ Areas to work on:
 * Improve clustering/subgraph support.
 
 * Use a PrettyPrinter rather than Show to generate Dot output.
+
+* Improve Output support.
+
+* Find and fix the handle closing bug with graphvizWithHandle.
