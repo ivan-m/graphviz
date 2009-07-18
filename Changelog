@@ -23,6 +23,9 @@ Changes since 2009.5.1
 
 * Use extensible-exceptions so that base < 4 is once again supported.
 
+* Follow the PVP rather than using dates for versions:
+  http://www.haskell.org/haskellwiki/Package_versioning_policy
+
 Changes since 2008.9.20:
 ========================
 
