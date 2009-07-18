@@ -11,7 +11,7 @@ Changes since 2009.5.1
   covered with allowed values.
 
 * Extend DotGraph to include whether a graph is strict or not and if
-  it has an ID.
+  it has an ID.  Also move the directedGraph field.
 
 * Make "Dot" refer to the actual dot command and DotArrow refer to the
   ArrowType (rather than DotCmd and Dot as before).
