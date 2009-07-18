@@ -35,10 +35,10 @@ import Control.Exception
 import Data.GraphViz.Types
 
 -- | The available Graphviz commands.
-data GraphvizCommand = DotCmd | Neato | TwoPi | Circo | Fdp
+data GraphvizCommand = Dot | Neato | TwoPi | Circo | Fdp
 
 instance Show GraphvizCommand where
-    show DotCmd = "dot"
+    show Dot = "dot"
     show Neato  = "neato"
     show TwoPi  = "twopi"
     show Circo  = "circo"
@@ -46,7 +46,7 @@ instance Show GraphvizCommand where
 
 -- | The default command for directed graphs.
 dirCommand :: GraphvizCommand
-dirCommand = DotCmd
+dirCommand = Dot
 
 -- | The default command for undirected graphs.
 undirCommand :: GraphvizCommand

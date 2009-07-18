@@ -797,7 +797,7 @@ instance Parseable URL where
 -- -----------------------------------------------------------------------------
 
 data ArrowType = Normal   | Inv
-               | Dot      | InvDot
+               | DotArrow | InvDot
                | ODot     | InvODot
                | NoArrow  | Tee
                | Empty    | InvEmpty
@@ -811,7 +811,7 @@ data ArrowType = Normal   | Inv
 instance Show ArrowType where
     show Normal   = "normal"
     show Inv      = "inv"
-    show Dot      = "dot"
+    show DotArrow = "dot"
     show InvDot   = "invdot"
     show ODot     = "odot"
     show InvODot  = "invodot"
@@ -833,7 +833,7 @@ instance Parseable ArrowType where
     parse = optionalQuoted
             $ oneOf [ string "normal"   >> return Normal
                     , string "inv"      >> return Inv
-                    , string "dot"      >> return Dot
+                    , string "dot"      >> return DotArrow
                     , string "invdot"   >> return InvDot
                     , string "odot"     >> return ODot
                     , string "invodot"  >> return InvODot
