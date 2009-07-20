@@ -105,11 +105,6 @@ instance Parseable Char where
 instance (Parseable a) => Parseable [a] where
     parse = parseList
 
-instance (Parseable a, Parseable b) => Parseable (Either a b) where
-    parse = oneOf [ liftM Left parse
-                  , liftM Right parse
-                  ]
-
 stringBlock :: Parse String
 stringBlock = do frst <- satisfy frstCond
                  rest <- many (satisfy restCond)

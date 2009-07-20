@@ -57,6 +57,8 @@
      particular, a lot of them are listed as having a 'String' value,
      when actually only certain Strings are allowed.
 
+   * Deprecated 'Overlap' algorithms are not defined.
+
  -}
 
 module Data.GraphViz.Attributes where
@@ -96,157 +98,152 @@ import Data.Maybe
    the permitted values.
 -}
 data Attribute
-    = Damping Double                          -- ^ /Valid for/: G; /Default/: 0.99; /Minimum/: 0.0; /Notes/: neato only
-    | K Double                                -- ^ /Valid for/: GC; /Default/: 0.3; /Minimum/: 0; /Notes/: sfdp, fdp only
-    | URL URL                                 -- ^ /Valid for/: ENGC; /Default/: \<none\>; /Notes/: svg, postscript, map only
-    | ArrowHead ArrowType                     -- ^ /Valid for/: E; /Default/: Normal
-    | ArrowSize Double                        -- ^ /Valid for/: E; /Default/: 1.0; /Minimum/: 0.0
-    | ArrowTail ArrowType                     -- ^ /Valid for/: E; /Default/: Normal
-    | Aspect AspectType                       -- ^ /Valid for/: G; /Notes/: dot only
-    | Bb Rect                                 -- ^ /Valid for/: G; /Notes/: write only
-    | BgColor Color                           -- ^ /Valid for/: GC; /Default/: \<none\>
-    | Center Bool                             -- ^ /Valid for/: G; /Default/: false
-    | Charset String                          -- ^ /Valid for/: G; /Default/: \"UTF-8\"
-    | ClusterRank ClusterMode                 -- ^ /Valid for/: G; /Default/: local; /Notes/: dot only
-    | Color (Either Color [Color])            -- ^ /Valid for/: ENC; /Default/: black
-    | ColorScheme String                      -- ^ /Valid for/: ENCG; /Default/: \"\"
-    | Comment String                          -- ^ /Valid for/: ENG; /Default/: \"\"
-    | Compound Bool                           -- ^ /Valid for/: G; /Default/: false; /Notes/: dot only
-    | Concentrate Bool                        -- ^ /Valid for/: G; /Default/: false
-    | Constraint Bool                         -- ^ /Valid for/: E; /Default/: true; /Notes/: dot only
-    | Decorate Bool                           -- ^ /Valid for/: E; /Default/: false
-    | DefaultDist Double                      -- ^ /Valid for/: G; /Default/: 1+(avg. len)*sqrt(|V|); /Minimum/: epsilon; /Notes/: neato only
-    | Dim Int                                 -- ^ /Valid for/: G; /Default/: 2; /Minimum/: 2; /Notes/: sfdp, fdp, neato only
-    | Dimen Int                               -- ^ /Valid for/: G; /Default/: 2; /Minimum/: 2; /Notes/: sfdp, fdp, neato only
-    | Dir DirType                             -- ^ /Valid for/: E; /Default/: forward(directed)/none(undirected)
-    | DirEdgeConstraints (Either String Bool) -- ^ /Valid for/: G; /Default/: false; /Notes/: neato only
-    | Distortion Double                       -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -100.0
-    | DPI Double                              -- ^ /Valid for/: G; /Default/: 96.0 | 0.0; /Notes/: svg, bitmap output only
-    | EdgeURL URL                             -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | EdgeHref URL                            -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | EdgeTarget String                       -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
-    | EdgeTooltip String                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
-    | Epsilon Double                          -- ^ /Valid for/: G; /Default/: .0001 * # nodes(mode == KK) | .0001(mode == major); /Notes/: neato only
-    | ESep (Either Double Point)              -- ^ /Valid for/: G; /Default/: +3; /Notes/: not dot
-    | FillColor Color                         -- ^ /Valid for/: NC; /Default/: lightgrey(nodes) | black(clusters)
-    | FixedSize Bool                          -- ^ /Valid for/: N; /Default/: false
-    | FontColor Color                         -- ^ /Valid for/: ENGC; /Default/: black
-    | FontName String                         -- ^ /Valid for/: ENGC; /Default/: \"Times-Roman\"
-    | FontNames String                        -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: svg only
-    | FontPath String                         -- ^ /Valid for/: G; /Default/: system-dependent
-    | FontSize Double                         -- ^ /Valid for/: ENGC; /Default/: 14.0; /Minimum/: 1.0
-    | Group String                            -- ^ /Valid for/: N; /Default/: \"\"; /Notes/: dot only
-    | HeadURL URL                             -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | HeadClip Bool                           -- ^ /Valid for/: E; /Default/: true
-    | HeadHref URL                            -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | HeadLabel (Either String URL)           -- ^ /Valid for/: E; /Default/: \"\"
-    | HeadPort PortPos                        -- ^ /Valid for/: E; /Default/: center
-    | HeadTarget QuotedString                 -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
-    | HeadTooltip QuotedString                -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
-    | Height Double                           -- ^ /Valid for/: N; /Default/: 0.5; /Minimum/: 0.02
-    | Href URL                                -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, postscript, map only
-    | ID (Either String URL)                  -- ^ /Valid for/: GNE; /Default/: \"\"; /Notes/: svg, postscript, map only
-    | Image String                            -- ^ /Valid for/: N; /Default/: \"\"
-    | ImageScale ScaleType                    -- ^ /Valid for/: N; /Default/: false
-    | Label (Either String URL)               -- ^ /Valid for/: ENGC; /Default/: \"\N\" (nodes) | \"\" (otherwise)
-    | LabelURL URL                            -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | LabelAngle Double                       -- ^ /Valid for/: E; /Default/: -25.0; /Minimum/: -180.0
-    | LabelDistance Double                    -- ^ /Valid for/: E; /Default/: 1.0; /Minimum/: 0.0
-    | LabelFloat Bool                         -- ^ /Valid for/: E; /Default/: false
-    | LabelFontColor Color                    -- ^ /Valid for/: E; /Default/: black
-    | LabelFontName String                    -- ^ /Valid for/: E; /Default/: \"Times-Roman\"
-    | LabelFontSize Double                    -- ^ /Valid for/: E; /Default/: 14.0; /Minimum/: 1.0
-    | LabelHref URL                           -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | LabelJust Justification                 -- ^ /Valid for/: GC; /Default/: \"c\"
-    | LabelLoc VerticalPlacement              -- ^ /Valid for/: GCN; /Default/: \"t\"(clusters) | \"b\"(root graphs) | \"c\"(clusters)
-    | LabelTarget String                      -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
-    | LabelTooltip String                     -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
-    | Landscape Bool                          -- ^ /Valid for/: G; /Default/: false
-    | Layer LayerRange                        -- ^ /Valid for/: EN; /Default/: \"\"
-    | Layers LayerList                        -- ^ /Valid for/: G; /Default/: \"\"
-    | LayerSep String                         -- ^ /Valid for/: G; /Default/: \" :\t\"
-    | Layout String                           -- ^ /Valid for/: G; /Default/: \"\"
-    | Len Double                              -- ^ /Valid for/: E; /Default/: 1.0(neato)/0.3(fdp); /Notes/: fdp, neato only
-    | Levels Int                              -- ^ /Valid for/: G; /Default/: MAXINT; /Minimum/: 0.0; /Notes/: sfdp only
-    | LevelsGap Double                        -- ^ /Valid for/: G; /Default/: 0.0; /Notes/: neato only
-    | LHead String                            -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
-    | LP Point                                -- ^ /Valid for/: EGC; /Notes/: write only
-    | LTail String                            -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
-    | Margin (Either Double Point)            -- ^ /Valid for/: NG; /Default/: \<device-dependent\>
-    | MaxIter Int                             -- ^ /Valid for/: G; /Default/: 100 * # nodes(mode == KK) | 200(mode == major) | 600(fdp); /Notes/: fdp, neato only
-    | MCLimit Double                          -- ^ /Valid for/: G; /Default/: 1.0; /Notes/: dot only
-    | MinDist Double                          -- ^ /Valid for/: G; /Default/: 1.0; /Minimum/: 0.0; /Notes/: circo only
-    | MinLen Int                              -- ^ /Valid for/: E; /Default/: 1; /Minimum/: 0; /Notes/: dot only
-    | Mode String                             -- ^ /Valid for/: G; /Default/: \"major\"; /Notes/: neato only
-    | Model String                            -- ^ /Valid for/: G; /Default/: \"shortpath\"; /Notes/: neato only
-    | Mosek Bool                              -- ^ /Valid for/: G; /Default/: false; /Notes/: neato only; requires the Mosek software
-    | NodeSep Double                          -- ^ /Valid for/: G; /Default/: 0.25; /Minimum/: 0.02; /Notes/: dot only
-    | NoJustify Bool                          -- ^ /Valid for/: GCNE; /Default/: false
-    | Normalize Bool                          -- ^ /Valid for/: G; /Default/: false; /Notes/: not dot
-    | Nslimit Double                          -- ^ /Valid for/: G; /Notes/: dot only
-    | Nslimit1 Double                         -- ^ /Valid for/: G; /Notes/: dot only
-    | Ordering String                         -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: dot only
-    | Orientation Double                      -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: 360.0
-    | OrientationGraph String                 -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: Landscape if \"[lL]*\" and rotate not defined
-    | OutputOrder OutputMode                  -- ^ /Valid for/: G; /Default/: breadthfirst
-    | Overlap (Either String Bool)            -- ^ /Valid for/: G; /Default/: true; /Notes/: not dot
-    | OverlapScaling Double                   -- ^ /Valid for/: G; /Default/: -4; /Minimum/: -1.0e10; /Notes/: prism only
-    | Pack (Either Bool Int)                  -- ^ /Valid for/: G; /Default/: false; /Notes/: not dot
-    | PackMode PackMode                       -- ^ /Valid for/: G; /Default/: node; /Notes/: not dot
-    | Pad (Either Double Point)               -- ^ /Valid for/: G; /Default/: 0.0555 (4 points)
-    | Page Point                              -- ^ /Valid for/: G
-    | PageDir PageDir                         -- ^ /Valid for/: G; /Default/: BL
-    | PenColor Color                          -- ^ /Valid for/: C; /Default/: black
-    | PenWidth Double                         -- ^ /Valid for/: CNE; /Default/: 1.0; /Minimum/: 0.0
-    | Peripheries Int                         -- ^ /Valid for/: NC; /Default/: shape default(nodes) | 1(clusters); /Minimum/: 0
-    | Pin Bool                                -- ^ /Valid for/: N; /Default/: false; /Notes/: fdp, neato only
-    | Pos (Either Point [Spline])             -- ^ /Valid for/: EN
-    | QuadTree (Either QuadType Bool)         -- ^ /Valid for/: G; /Default/: \"normal\"; /Notes/: sfdp only
-    | Quantum Double                          -- ^ /Valid for/: G; /Default/: 0.0; /Minimum/: 0.0
-    | Rank RankType                           -- ^ /Valid for/: S; /Notes/: dot only
-    | RankDir RankDir                         -- ^ /Valid for/: G; /Default/: TB; /Notes/: dot only
-    | Ranksep Double                          -- ^ /Valid for/: G; /Default/: 0.5(dot) | 1.0(twopi); /Minimum/: 0.02; /Notes/: twopi, dot only
-    | Ratio Ratios                            -- ^ /Valid for/: G
-    | Rects Rect                              -- ^ /Valid for/: N; /Notes/: write only
-    | Regular Bool                            -- ^ /Valid for/: N; /Default/: false
-    | ReMinCross Bool                         -- ^ /Valid for/: G; /Default/: false; /Notes/: dot only
-    | RepulsiveForce Double                   -- ^ /Valid for/: G; /Default/: 1.0; /Minimum/: 0.0; /Notes/: sfdp only
-    | Resolution Double                       -- ^ /Valid for/: G; /Default/: 96.0 | 0.0; /Notes/: svg, bitmap output only
-    | Root (Either String Bool)               -- ^ /Valid for/: GN; /Default/: \"\"(graphs) | false(nodes); /Notes/: circo, twopi only
-    | Rotate Int                              -- ^ /Valid for/: G; /Default/: 0
-    | SameHead String                         -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
-    | SameTail String                         -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
-    | SamplePoints Int                        -- ^ /Valid for/: N; /Default/: 8(output) | 20(overlap and image maps)
-    | SearchSize Int                          -- ^ /Valid for/: G; /Default/: 30; /Notes/: dot only
-    | Sep (Either Double Point)               -- ^ /Valid for/: G; /Default/: +4; /Notes/: not dot
-    | Shape Shape                             -- ^ /Valid for/: N; /Default/: ellipse
-    | ShapeFile String                        -- ^ /Valid for/: N; /Default/: \"\"
-    | ShowBoxes Int                           -- ^ /Valid for/: ENG; /Default/: 0; /Minimum/: 0; /Notes/: dot only
-    | Sides Int                               -- ^ /Valid for/: N; /Default/: 4; /Minimum/: 0
-    | Size Point                              -- ^ /Valid for/: G
-    | Skew Double                             -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -100.0
-    | Smoothing SmoothType                    -- ^ /Valid for/: G; /Default/: \"none\"; /Notes/: sfdp only
-    | SortV Int                               -- ^ /Valid for/: GCN; /Default/: 0; /Minimum/: 0
-    | Splines (Either Bool String)            -- ^ /Valid for/: G
-    | Start StartType                         -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: fdp, neato only
-    | Style Style                             -- ^ /Valid for/: ENC
-    | StyleSheet String                       -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: svg only
-    | TailURL URL                             -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | TailClip Bool                           -- ^ /Valid for/: E; /Default/: true
-    | TailHref URL                            -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | TailLabel (Either String URL)           -- ^ /Valid for/: E; /Default/: \"\"
-    | TailPort PortPos                        -- ^ /Valid for/: E; /Default/: center
-    | TailTarget String                       -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
-    | TailTooltip String                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
-    | Target String                           -- ^ /Valid for/: ENGC; /Default/: \<none\>; /Notes/: svg, map only
-    | Tooltip String                          -- ^ /Valid for/: NEC; /Default/: \"\"; /Notes/: svg, cmap only
-    | TrueColor Bool                          -- ^ /Valid for/: G; /Notes/: bitmap output only
-    | Vertices [Point]                        -- ^ /Valid for/: N; /Notes/: write only
-    | ViewPort ViewPort                       -- ^ /Valid for/: G; /Default/: \"\"
-    | VoroMargin Double                       -- ^ /Valid for/: G; /Default/: 0.05; /Minimum/: 0.0; /Notes/: not dot
-    | Weight Double                           -- ^ /Valid for/: E; /Default/: 1.0; /Minimum/: 0(dot) | 1(neato,fdp,sfdp)
-    | Width Double                            -- ^ /Valid for/: N; /Default/: 0.75; /Minimum/: 0.01
-    | Z Double                                -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -MAXFLOAT | -1000
+    = Damping Double                   -- ^ /Valid for/: G; /Default/: 0.99; /Minimum/: 0.0; /Notes/: neato only
+    | K Double                         -- ^ /Valid for/: GC; /Default/: 0.3; /Minimum/: 0; /Notes/: sfdp, fdp only
+    | URL URL                          -- ^ /Valid for/: ENGC; /Default/: \<none\>; /Notes/: svg, postscript, map only
+    | ArrowHead ArrowType              -- ^ /Valid for/: E; /Default/: Normal
+    | ArrowSize Double                 -- ^ /Valid for/: E; /Default/: 1.0; /Minimum/: 0.0
+    | ArrowTail ArrowType              -- ^ /Valid for/: E; /Default/: Normal
+    | Aspect AspectType                -- ^ /Valid for/: G; /Notes/: dot only
+    | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
+    | BgColor Color                    -- ^ /Valid for/: GC; /Default/: \<none\>
+    | Center Bool                      -- ^ /Valid for/: G; /Default/: false
+    | Charset String                   -- ^ /Valid for/: G; /Default/: \"UTF-8\"
+    | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: local; /Notes/: dot only
+    | Color Color                      -- ^ /Valid for/: ENC; /Default/: black
+    | ColorScheme String               -- ^ /Valid for/: ENCG; /Default/: \"\"
+    | Comment String                   -- ^ /Valid for/: ENG; /Default/: \"\"
+    | Compound Bool                    -- ^ /Valid for/: G; /Default/: false; /Notes/: dot only
+    | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: false
+    | Constraint Bool                  -- ^ /Valid for/: E; /Default/: true; /Notes/: dot only
+    | Decorate Bool                    -- ^ /Valid for/: E; /Default/: false
+    | DefaultDist Double               -- ^ /Valid for/: G; /Default/: 1+(avg. len)*sqrt(|V|); /Minimum/: epsilon; /Notes/: neato only
+    | Dim Int                          -- ^ /Valid for/: G; /Default/: 2; /Minimum/: 2; /Notes/: sfdp, fdp, neato only
+    | Dimen Int                        -- ^ /Valid for/: G; /Default/: 2; /Minimum/: 2; /Notes/: sfdp, fdp, neato only
+    | Dir DirType                      -- ^ /Valid for/: E; /Default/: forward(directed)/none(undirected)
+    | DirEdgeConstraints DEConstraints -- ^ /Valid for/: G; /Default/: false; /Notes/: neato only
+    | Distortion Double                -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -100.0
+    | DPI Double                       -- ^ /Valid for/: G; /Default/: 96.0 | 0.0; /Notes/: svg, bitmap output only
+    | EdgeURL URL                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
+    | EdgeTarget String                -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
+    | EdgeTooltip String               -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
+    | Epsilon Double                   -- ^ /Valid for/: G; /Default/: .0001 * # nodes(mode == KK) | .0001(mode == major); /Notes/: neato only
+    | ESep DPoint                      -- ^ /Valid for/: G; /Default/: +3; /Notes/: not dot
+    | FillColor Color                  -- ^ /Valid for/: NC; /Default/: lightgrey(nodes) | black(clusters)
+    | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: false
+    | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: black
+    | FontName String                  -- ^ /Valid for/: ENGC; /Default/: \"Times-Roman\"
+    | FontNames String                 -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: svg only
+    | FontPath String                  -- ^ /Valid for/: G; /Default/: system-dependent
+    | FontSize Double                  -- ^ /Valid for/: ENGC; /Default/: 14.0; /Minimum/: 1.0
+    | Group String                     -- ^ /Valid for/: N; /Default/: \"\"; /Notes/: dot only
+    | HeadURL URL                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
+    | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: true
+    | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: \"\"
+    | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: center
+    | HeadTarget QuotedString          -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
+    | HeadTooltip QuotedString         -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
+    | Height Double                    -- ^ /Valid for/: N; /Default/: 0.5; /Minimum/: 0.02
+    | ID Label                         -- ^ /Valid for/: GNE; /Default/: \"\"; /Notes/: svg, postscript, map only
+    | Image String                     -- ^ /Valid for/: N; /Default/: \"\"
+    | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: false
+    | Label Label                      -- ^ /Valid for/: ENGC; /Default/: \"\N\" (nodes) Nothing | \"\" (otherwise) Nothing
+    | LabelURL URL                     -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
+    | LabelAngle Double                -- ^ /Valid for/: E; /Default/: -25.0; /Minimum/: -180.0
+    | LabelDistance Double             -- ^ /Valid for/: E; /Default/: 1.0; /Minimum/: 0.0
+    | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: false
+    | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: black
+    | LabelFontName String             -- ^ /Valid for/: E; /Default/: \"Times-Roman\"
+    | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: 14.0; /Minimum/: 1.0
+    | LabelJust Justification          -- ^ /Valid for/: GC; /Default/: \"c\"
+    | LabelLoc VerticalPlacement       -- ^ /Valid for/: GCN; /Default/: \"t\"(clusters) | \"b\"(root graphs) | \"c\"(clusters)
+    | LabelTarget String               -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
+    | LabelTooltip String              -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
+    | Landscape Bool                   -- ^ /Valid for/: G; /Default/: false
+    | Layer LayerRange                 -- ^ /Valid for/: EN; /Default/: \"\"
+    | Layers LayerList                 -- ^ /Valid for/: G; /Default/: \"\"
+    | LayerSep String                  -- ^ /Valid for/: G; /Default/: \" :\t\"
+    | Layout String                    -- ^ /Valid for/: G; /Default/: \"\"
+    | Len Double                       -- ^ /Valid for/: E; /Default/: 1.0(neato)/0.3(fdp); /Notes/: fdp, neato only
+    | Levels Int                       -- ^ /Valid for/: G; /Default/: MAXINT; /Minimum/: 0.0; /Notes/: sfdp only
+    | LevelsGap Double                 -- ^ /Valid for/: G; /Default/: 0.0; /Notes/: neato only
+    | LHead String                     -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
+    | LP Point                         -- ^ /Valid for/: EGC; /Notes/: write only
+    | LTail String                     -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
+    | Margin DPoint                    -- ^ /Valid for/: NG; /Default/: \<device-dependent\>
+    | MaxIter Int                      -- ^ /Valid for/: G; /Default/: 100 * # nodes(mode == KK) | 200(mode == major) | 600(fdp); /Notes/: fdp, neato only
+    | MCLimit Double                   -- ^ /Valid for/: G; /Default/: 1.0; /Notes/: dot only
+    | MinDist Double                   -- ^ /Valid for/: G; /Default/: 1.0; /Minimum/: 0.0; /Notes/: circo only
+    | MinLen Int                       -- ^ /Valid for/: E; /Default/: 1; /Minimum/: 0; /Notes/: dot only
+    | Mode String                      -- ^ /Valid for/: G; /Default/: \"major\"; /Notes/: neato only
+    | Model String                     -- ^ /Valid for/: G; /Default/: \"shortpath\"; /Notes/: neato only
+    | Mosek Bool                       -- ^ /Valid for/: G; /Default/: false; /Notes/: neato only; requires the Mosek software
+    | NodeSep Double                   -- ^ /Valid for/: G; /Default/: 0.25; /Minimum/: 0.02; /Notes/: dot only
+    | NoJustify Bool                   -- ^ /Valid for/: GCNE; /Default/: false
+    | Normalize Bool                   -- ^ /Valid for/: G; /Default/: false; /Notes/: not dot
+    | Nslimit Double                   -- ^ /Valid for/: G; /Notes/: dot only
+    | Nslimit1 Double                  -- ^ /Valid for/: G; /Notes/: dot only
+    | Ordering String                  -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: dot only
+    | Orientation Double               -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: 360.0
+    | OrientationGraph String          -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: Landscape if \"[lL]*\" and rotate not defined
+    | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: breadthfirst
+    | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: true; /Notes/: not dot
+    | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: -4; /Minimum/: -1.0e10; /Notes/: prism only
+    | Pack Pack                        -- ^ /Valid for/: G; /Default/: false; /Notes/: not dot
+    | PackMode PackMode                -- ^ /Valid for/: G; /Default/: node; /Notes/: not dot
+    | Pad DPoint                       -- ^ /Valid for/: G; /Default/: 0.0555 (4 points)
+    | Page Point                       -- ^ /Valid for/: G
+    | PageDir PageDir                  -- ^ /Valid for/: G; /Default/: BL
+    | PenColor Color                   -- ^ /Valid for/: C; /Default/: black
+    | PenWidth Double                  -- ^ /Valid for/: CNE; /Default/: 1.0; /Minimum/: 0.0
+    | Peripheries Int                  -- ^ /Valid for/: NC; /Default/: shape default(nodes) | 1(clusters); /Minimum/: 0
+    | Pin Bool                         -- ^ /Valid for/: N; /Default/: false; /Notes/: fdp, neato only
+    | Pos Pos                          -- ^ /Valid for/: EN
+    | QuadTree QuadType                -- ^ /Valid for/: G; /Default/: \"normal\"; /Notes/: sfdp only
+    | Quantum Double                   -- ^ /Valid for/: G; /Default/: 0.0; /Minimum/: 0.0
+    | Rank RankType                    -- ^ /Valid for/: S; /Notes/: dot only
+    | RankDir RankDir                  -- ^ /Valid for/: G; /Default/: TB; /Notes/: dot only
+    | Ranksep Double                   -- ^ /Valid for/: G; /Default/: 0.5(dot) | 1.0(twopi); /Minimum/: 0.02; /Notes/: twopi, dot only
+    | Ratio Ratios                     -- ^ /Valid for/: G
+    | Rects Rect                       -- ^ /Valid for/: N; /Notes/: write only
+    | Regular Bool                     -- ^ /Valid for/: N; /Default/: false
+    | ReMinCross Bool                  -- ^ /Valid for/: G; /Default/: false; /Notes/: dot only
+    | RepulsiveForce Double            -- ^ /Valid for/: G; /Default/: 1.0; /Minimum/: 0.0; /Notes/: sfdp only
+    | Resolution Double                -- ^ /Valid for/: G; /Default/: 96.0 | 0.0; /Notes/: svg, bitmap output only
+    | Root Root                        -- ^ /Valid for/: GN; /Default/: \"\"(graphs) | false(nodes); /Notes/: circo, twopi only
+    | Rotate Int                       -- ^ /Valid for/: G; /Default/: 0
+    | SameHead String                  -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
+    | SameTail String                  -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
+    | SamplePoints Int                 -- ^ /Valid for/: N; /Default/: 8(output) | 20(overlap and image maps)
+    | SearchSize Int                   -- ^ /Valid for/: G; /Default/: 30; /Notes/: dot only
+    | Sep DPoint                       -- ^ /Valid for/: G; /Default/: +4; /Notes/: not dot
+    | Shape Shape                      -- ^ /Valid for/: N; /Default/: ellipse
+    | ShapeFile String                 -- ^ /Valid for/: N; /Default/: \"\"
+    | ShowBoxes Int                    -- ^ /Valid for/: ENG; /Default/: 0; /Minimum/: 0; /Notes/: dot only
+    | Sides Int                        -- ^ /Valid for/: N; /Default/: 4; /Minimum/: 0
+    | Size Point                       -- ^ /Valid for/: G
+    | Skew Double                      -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -100.0
+    | Smoothing SmoothType             -- ^ /Valid for/: G; /Default/: \"none\"; /Notes/: sfdp only
+    | SortV Int                        -- ^ /Valid for/: GCN; /Default/: 0; /Minimum/: 0
+    | Splines EdgeType                 -- ^ /Valid for/: G
+    | Start StartType                  -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: fdp, neato only
+    | Style Style                      -- ^ /Valid for/: ENC
+    | StyleSheet String                -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: svg only
+    | TailURL URL                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
+    | TailClip Bool                    -- ^ /Valid for/: E; /Default/: true
+    | TailLabel Label                  -- ^ /Valid for/: E; /Default/: \"\"
+    | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: center
+    | TailTarget String                -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
+    | TailTooltip String               -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
+    | Target String                    -- ^ /Valid for/: ENGC; /Default/: \<none\>; /Notes/: svg, map only
+    | Tooltip String                   -- ^ /Valid for/: NEC; /Default/: \"\"; /Notes/: svg, cmap only
+    | TrueColor Bool                   -- ^ /Valid for/: G; /Notes/: bitmap output only
+    | Vertices [Point]                 -- ^ /Valid for/: N; /Notes/: write only
+    | ViewPort ViewPort                -- ^ /Valid for/: G; /Default/: \"\"
+    | VoroMargin Double                -- ^ /Valid for/: G; /Default/: 0.05; /Minimum/: 0.0; /Notes/: not dot
+    | Weight Double                    -- ^ /Valid for/: E; /Default/: 1.0; /Minimum/: 0(dot) | 1(neato,fdp,sfdp)
+    | Width Double                     -- ^ /Valid for/: N; /Default/: 0.75; /Minimum/: 0.01
+    | Z Double                         -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -MAXFLOAT | -1000
       deriving (Eq, Read)
 
 instance Show Attribute where
@@ -277,7 +274,6 @@ instance Show Attribute where
     show (Distortion v)         = "distortion=" ++ show v
     show (DPI v)                = "dpi=" ++ show v
     show (EdgeURL v)            = "edgeURL=" ++ show v
-    show (EdgeHref v)           = "edgehref=" ++ show v
     show (EdgeTarget v)         = "edgetarget=" ++ v
     show (EdgeTooltip v)        = "edgetooltip=" ++ v
     show (Epsilon v)            = "epsilon=" ++ show v
@@ -292,13 +288,11 @@ instance Show Attribute where
     show (Group v)              = "group=" ++ v
     show (HeadURL v)            = "headURL=" ++ show v
     show (HeadClip v)           = "headclip=" ++ show v
-    show (HeadHref v)           = "headhref=" ++ show v
     show (HeadLabel v)          = "headlabel=" ++ show v
     show (HeadPort v)           = "headport=" ++ show v
     show (HeadTarget v)         = "headtarget=" ++ show v
     show (HeadTooltip v)        = "headtooltip=" ++ show v
     show (Height v)             = "height=" ++ show v
-    show (Href v)               = "href=" ++ show v
     show (ID v)                 = "id=" ++ show v
     show (Image v)              = "image=" ++ v
     show (ImageScale v)         = "imagescale=" ++ show v
@@ -310,7 +304,6 @@ instance Show Attribute where
     show (LabelFontColor v)     = "labelfontcolor=" ++ show v
     show (LabelFontName v)      = "labelfontname=" ++ v
     show (LabelFontSize v)      = "labelfontsize=" ++ show v
-    show (LabelHref v)          = "labelhref=" ++ show v
     show (LabelJust v)          = "labeljust=" ++ show v
     show (LabelLoc v)           = "labelloc=" ++ show v
     show (LabelTarget v)        = "labeltarget=" ++ v
@@ -387,7 +380,6 @@ instance Show Attribute where
     show (StyleSheet v)         = "stylesheet=" ++ v
     show (TailURL v)            = "tailURL=" ++ show v
     show (TailClip v)           = "tailclip=" ++ show v
-    show (TailHref v)           = "tailhref=" ++ show v
     show (TailLabel v)          = "taillabel=" ++ show v
     show (TailPort v)           = "tailport=" ++ show v
     show (TailTarget v)         = "tailtarget=" ++ v
@@ -405,7 +397,7 @@ instance Show Attribute where
 instance Parseable Attribute where
     parse = oneOf [ liftM Damping            $ parseField "Damping"
                   , liftM K                  $ parseField "K"
-                  , liftM URL                $ parseField "URL"
+                  , liftM URL                $ oneOf (map parseField ["URL", "href"])
                   , liftM ArrowHead          $ parseField "arrowhead"
                   , liftM ArrowSize          $ parseField "arrowsize"
                   , liftM ArrowTail          $ parseField "arrowtail"
@@ -426,11 +418,10 @@ instance Parseable Attribute where
                   , liftM Dim                $ parseField "dim"
                   , liftM Dimen              $ parseField "dimen"
                   , liftM Dir                $ parseField "dir"
-                  , liftM DirEdgeConstraints $ parseField "diredgeconstraints"
+                  , liftM DirEdgeConstraints $ parseFieldDef (DEBool True) "diredgeconstraints"
                   , liftM Distortion         $ parseField "distortion"
                   , liftM DPI                $ parseField "dpi"
-                  , liftM EdgeURL            $ parseField "edgeURL"
-                  , liftM EdgeHref           $ parseField "edgehref"
+                  , liftM EdgeURL            $ oneOf (map parseField ["edgeURL", "edgehref"])
                   , liftM EdgeTarget         $ parseField "edgetarget"
                   , liftM EdgeTooltip        $ parseField "edgetooltip"
                   , liftM Epsilon            $ parseField "epsilon"
@@ -443,27 +434,24 @@ instance Parseable Attribute where
                   , liftM FontPath           $ parseField "fontpath"
                   , liftM FontSize           $ parseField "fontsize"
                   , liftM Group              $ parseField "group"
-                  , liftM HeadURL            $ parseField "headURL"
+                  , liftM HeadURL            $ oneOf (map parseField ["headURL", "headhref"])
                   , liftM HeadClip           $ parseBoolField "headclip"
-                  , liftM HeadHref           $ parseField "headhref"
                   , liftM HeadLabel          $ parseField "headlabel"
                   , liftM HeadPort           $ parseField "headport"
                   , liftM HeadTarget         $ parseField "headtarget"
                   , liftM HeadTooltip        $ parseField "headtooltip"
                   , liftM Height             $ parseField "height"
-                  , liftM Href               $ parseField "href"
                   , liftM ID                 $ parseField "id"
                   , liftM Image              $ parseField "image"
-                  , liftM ImageScale         $ parseField "imagescale"
+                  , liftM ImageScale         $ parseFieldDef UniformScale "imagescale"
                   , liftM Label              $ parseField "label"
-                  , liftM LabelURL           $ parseField "labelURL"
+                  , liftM LabelURL           $ oneOf (map parseField ["labelURL", "labelhref"])
                   , liftM LabelAngle         $ parseField "labelangle"
                   , liftM LabelDistance      $ parseField "labeldistance"
                   , liftM LabelFloat         $ parseBoolField "labelfloat"
                   , liftM LabelFontColor     $ parseField "labelfontcolor"
                   , liftM LabelFontName      $ parseField "labelfontname"
                   , liftM LabelFontSize      $ parseField "labelfontsize"
-                  , liftM LabelHref          $ parseField "labelhref"
                   , liftM LabelJust          $ parseField "labeljust"
                   , liftM LabelLoc           $ parseField "labelloc"
                   , liftM LabelTarget        $ parseField "labeltarget"
@@ -496,9 +484,9 @@ instance Parseable Attribute where
                   , liftM Orientation        $ parseField "orientation"
                   , liftM OrientationGraph   $ parseField "orientation"
                   , liftM OutputOrder        $ parseField "outputorder"
-                  , liftM Overlap            $ parseField "overlap"
+                  , liftM Overlap            $ parseFieldDef KeepOverlaps "overlap"
                   , liftM OverlapScaling     $ parseField "overlap_scaling"
-                  , liftM Pack               $ parseField "pack"
+                  , liftM Pack               $ parseFieldDef DoPack "pack"
                   , liftM PackMode           $ parseField "packmode"
                   , liftM Pad                $ parseField "pad"
                   , liftM Page               $ parseField "page"
@@ -508,7 +496,7 @@ instance Parseable Attribute where
                   , liftM Peripheries        $ parseField "peripheries"
                   , liftM Pin                $ parseBoolField "pin"
                   , liftM Pos                $ parseField "pos"
-                  , liftM QuadTree           $ parseField "quadtree"
+                  , liftM QuadTree           $ parseFieldDef NormalQT "quadtree"
                   , liftM Quantum            $ parseField "quantum"
                   , liftM Rank               $ parseField "rank"
                   , liftM RankDir            $ parseField "rankdir"
@@ -519,7 +507,7 @@ instance Parseable Attribute where
                   , liftM ReMinCross         $ parseBoolField "remincross"
                   , liftM RepulsiveForce     $ parseField "repulsiveforce"
                   , liftM Resolution         $ parseField "resolution"
-                  , liftM Root               $ parseField "root"
+                  , liftM Root               $ parseFieldDef IsCentral "root"
                   , liftM Rotate             $ parseField "rotate"
                   , liftM SameHead           $ parseField "samehead"
                   , liftM SameTail           $ parseField "sametail"
@@ -534,13 +522,12 @@ instance Parseable Attribute where
                   , liftM Skew               $ parseField "skew"
                   , liftM Smoothing          $ parseField "smoothing"
                   , liftM SortV              $ parseField "sortv"
-                  , liftM Splines            $ parseField "splines"
+                  , liftM Splines            $ parseFieldDef SplineEdges "splines"
                   , liftM Start              $ parseField "start"
                   , liftM Style              $ parseField "style"
                   , liftM StyleSheet         $ parseField "stylesheet"
-                  , liftM TailURL            $ parseField "tailURL"
+                  , liftM TailURL            $ oneOf (map parseField ["tailURL", "tailhref"])
                   , liftM TailClip           $ parseBoolField "tailclip"
-                  , liftM TailHref           $ parseField "tailhref"
                   , liftM TailLabel          $ parseField "taillabel"
                   , liftM TailPort           $ parseField "tailport"
                   , liftM TailTarget         $ parseField "tailtarget"
@@ -730,7 +717,6 @@ usedByEdges Constraint{}     = True
 usedByEdges Decorate{}       = True
 usedByEdges Dir{}            = True
 usedByEdges EdgeURL{}        = True
-usedByEdges EdgeHref{}       = True
 usedByEdges EdgeTarget{}     = True
 usedByEdges EdgeTooltip{}    = True
 usedByEdges FontColor{}      = True
@@ -738,12 +724,10 @@ usedByEdges FontName{}       = True
 usedByEdges FontSize{}       = True
 usedByEdges HeadURL{}        = True
 usedByEdges HeadClip{}       = True
-usedByEdges HeadHref{}       = True
 usedByEdges HeadLabel{}      = True
 usedByEdges HeadPort{}       = True
 usedByEdges HeadTarget{}     = True
 usedByEdges HeadTooltip{}    = True
-usedByEdges Href{}           = True
 usedByEdges ID{}             = True
 usedByEdges Label{}          = True
 usedByEdges LabelURL{}       = True
@@ -753,7 +737,6 @@ usedByEdges LabelFloat{}     = True
 usedByEdges LabelFontColor{} = True
 usedByEdges LabelFontName{}  = True
 usedByEdges LabelFontSize{}  = True
-usedByEdges LabelHref{}      = True
 usedByEdges LabelTarget{}    = True
 usedByEdges LabelTooltip{}   = True
 usedByEdges Layer{}          = True
@@ -771,7 +754,6 @@ usedByEdges ShowBoxes{}      = True
 usedByEdges Style{}          = True
 usedByEdges TailURL{}        = True
 usedByEdges TailClip{}       = True
-usedByEdges TailHref{}       = True
 usedByEdges TailLabel{}      = True
 usedByEdges TailPort{}       = True
 usedByEdges TailTarget{}     = True
@@ -1005,6 +987,54 @@ instance Parseable DirType where
 
 -- -----------------------------------------------------------------------------
 
+-- | Only when @mode=ipsep@.
+data DEConstraints = DEBool Bool
+                   | Hier
+                     deriving (Eq, Read)
+
+instance Show DEConstraints where
+    show (DEBool b) = show b
+    show Hier       = "hier"
+
+instance Parseable DEConstraints where
+    parse = optionalQuoted
+            $ oneOf [ liftM DEBool parse
+                    , string "hier" >> return Hier
+                    ]
+
+-- -----------------------------------------------------------------------------
+
+-- | Either a 'Double' or a 'Point'.
+data DPoint = DVal Double
+            | PVal Point
+             deriving (Eq, Read)
+
+instance Show DPoint where
+    show (DVal d) = show d
+    show (PVal p) = show p
+
+instance Parseable DPoint where
+    parse = oneOf [ liftM DVal parse
+                  , liftM PVal parsePoint
+                  ]
+
+-- -----------------------------------------------------------------------------
+
+data Label = StrLabel String
+           | URLLabel URL
+             deriving (Eq, Read)
+
+instance Show Label where
+    show (StrLabel s) = s
+    show (URLLabel u) = show u
+
+instance Parseable Label where
+    parse = oneOf [ liftM StrLabel parse
+                  , liftM URLLabel parse
+                  ]
+
+-- -----------------------------------------------------------------------------
+
 data Point = Point Int Int
            | PointD Double Double
              deriving (Eq, Read)
@@ -1027,6 +1057,40 @@ parsePoint :: Parse Point
 parsePoint = oneOf [ liftM (uncurry Point)  commaSep
                    , liftM (uncurry PointD) commaSep
                    ]
+
+-- -----------------------------------------------------------------------------
+
+data Overlap = KeepOverlaps
+             | RemoveOverlaps
+             | ScaleOverlaps
+             | ScaleXYOverlaps
+             | PrismOverlap (Maybe Int) -- ^ Only when sfdp is available, @Int@ is non-negative
+             | CompressOverlap
+             | VpscOverlap
+             | IpsepOverlap -- ^ Only when @mode="ipsep"@
+               deriving (Eq, Read)
+
+instance Show Overlap where
+    show KeepOverlaps     = "true"
+    show RemoveOverlaps   = "false"
+    show ScaleOverlaps    = "scale"
+    show ScaleXYOverlaps  = "scalexy"
+    show (PrismOverlap i) = maybe id (flip (++) . show) i $ "prism"
+    show CompressOverlap  = "compress"
+    show VpscOverlap      = "vpsc"
+    show IpsepOverlap     = "ipsep"
+
+instance Parseable Overlap where
+    parse = optionalQuoted
+            $ oneOf [ string "true" >> return KeepOverlaps
+                    , string "false" >> return RemoveOverlaps
+                    , string "scale" >> return ScaleOverlaps
+                    , string "scalexy" >> return ScaleXYOverlaps
+                    , string "prism" >> liftM PrismOverlap (optional parse)
+                    , string "compress" >> return CompressOverlap
+                    , string "vpsc" >> return VpscOverlap
+                    , string "ipsep" >> return IpsepOverlap
+                    ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1105,6 +1169,24 @@ instance Parseable OutputMode where
 
 -- -----------------------------------------------------------------------------
 
+data Pack = DoPack
+          | DontPack
+          | PackMargin Int -- ^ If non-negative, then packs; otherwise doesn't.
+            deriving (Eq, Read)
+
+instance Show Pack where
+    show DoPack         = "true"
+    show DontPack       = "false"
+    show (PackMargin m) = show m
+
+instance Parseable Pack where
+    parse = optionalQuoted
+            $ oneOf [ liftM (bool DoPack DontPack) parse
+                    , liftM PackMargin parse
+                    ]
+
+-- -----------------------------------------------------------------------------
+
 data PackMode = PackNode
               | PackClust
               | PackGraph
@@ -1146,6 +1228,50 @@ instance Parseable PackMode where
                     ]
         where
           hasChar ms c = maybe False (elem c) ms
+
+-- -----------------------------------------------------------------------------
+
+data Pos = PointPos Point
+         | SplinePos [Spline]
+           deriving (Eq, Read)
+
+instance Show Pos where
+    show (PointPos p)   = show p
+    show (SplinePos ss) = show ss
+
+instance Parseable Pos where
+    -- [Spline] must be quoted, so use the quoted parser for Point as
+    -- well.
+    parse = oneOf [ liftM PointPos parse
+                  , liftM SplinePos parse
+                  ]
+
+-- -----------------------------------------------------------------------------
+
+-- | Controls how (and if) edges are represented.
+data EdgeType = SplineEdges
+              | LineEdges
+              | NoEdges
+              | PolyLine
+              | CompoundEdge -- ^ fdp only
+                deriving (Eq, Read)
+
+instance Show EdgeType where
+    show SplineEdges  = "true"
+    show LineEdges    = "false"
+    show NoEdges      = "\"\""
+    show PolyLine     = "polyline"
+    show CompoundEdge = "compound"
+
+instance Parseable EdgeType where
+    parse = optionalQuoted
+            $ oneOf [ liftM (bool SplineEdges LineEdges) parse
+                    , string "spline"   >> return SplineEdges
+                    , string "line"     >> return LineEdges
+                    , string "\"\""     >> return NoEdges
+                    , string "polyline" >> return PolyLine
+                    , string "compound" >> return CompoundEdge
+                    ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1231,10 +1357,33 @@ instance Show QuadType where
     show NoQT     = "none"
 
 instance Parseable QuadType where
+    -- Have to take into account the slightly different interpretation
+    -- of Bool used as an option for parsing QuadType
     parse = optionalQuoted
             $ oneOf [ string "normal" >> return NormalQT
                     , string "fast"   >> return FastQT
                     , string "none"   >> return NoQT
+                    , char '2' >> return FastQT -- weird bool
+                    , liftM (bool NormalQT NoQT) parse
+                    ]
+
+-- -----------------------------------------------------------------------------
+
+-- | Specify the root node either as a Node attribute or a Graph attribute.
+data Root = IsCentral -- ^ For Nodes only
+          | NotCentral -- ^ For Nodes only
+          | NodeName String -- ^ For Graphs only
+            deriving (Eq, Read)
+
+instance Show Root where
+    show IsCentral    = "true"
+    show NotCentral   = "false"
+    show (NodeName n) = n
+
+instance Parseable Root where
+    parse = optionalQuoted
+            $ oneOf [ liftM (bool IsCentral NotCentral) parse
+                    , liftM NodeName parse
                     ]
 
 -- -----------------------------------------------------------------------------
@@ -1585,16 +1734,16 @@ instance Parseable ViewPort where
                  return $ VP wv hv zv mf
 
 data FocusType = XY Point
-               | NodeName String
+               | NodeFocus String
                  deriving (Eq, Read)
 
 instance Show FocusType where
     show (XY p)        = showPoint p
-    show (NodeName nm) = nm
+    show (NodeFocus nm) = nm
 
 instance Parseable FocusType where
     parse = oneOf [ liftM XY parsePoint
-                  , liftM NodeName stringBlock
+                  , liftM NodeFocus stringBlock
                   ]
 
 -- -----------------------------------------------------------------------------
@@ -1700,3 +1849,11 @@ instance Parseable QuotedString where
     parse = liftM (QS . tail . init) quotedString
 
 -- -----------------------------------------------------------------------------
+
+-- Utility Functions
+
+-- | Fold over 'Bool's.
+bool       :: a -> a -> Bool -> a
+bool t f b = if b
+             then t
+             else f
