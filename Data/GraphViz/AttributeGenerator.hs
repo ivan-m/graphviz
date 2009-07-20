@@ -288,7 +288,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "EdgeTooltip" ["edgetooltip"] "E" Strng Nothing (Just "\\\"\\\"") Nothing (Just "svg, cmap only")
              , makeAttr "Epsilon" ["epsilon"] "G" Dbl Nothing (Just ".0001 * # nodes(mode == KK) | .0001(mode == major)") Nothing (Just "neato only")
              , makeAttr "ESep" ["esep"] "G" (Cust "DPoint") Nothing (Just "+3") Nothing (Just "not dot")
-             , makeAttr "FillColor" ["fillcolor"] "NC" (Cust "Color") Nothing (Just "lightgrey(nodes) | black(clusters)") Nothing Nothing
+             , makeAttr "FillColor" ["fillcolor"] "NC" (Cust "[Color]") Nothing (Just "lightgrey(nodes) | black(clusters)") Nothing Nothing
              , makeAttr "FixedSize" ["fixedsize"] "N" Bl (Just "True") (Just "false") Nothing Nothing
              , makeAttr "FontColor" ["fontcolor"] "ENGC" (Cust "Color") Nothing (Just "black") Nothing Nothing
              , makeAttr "FontName" ["fontname"] "ENGC" Strng Nothing (Just "\\\"Times-Roman\\\"") Nothing Nothing

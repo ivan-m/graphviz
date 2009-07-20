@@ -110,7 +110,7 @@ data Attribute
     | Center Bool                      -- ^ /Valid for/: G; /Default/: false
     | Charset String                   -- ^ /Valid for/: G; /Default/: \"UTF-8\"
     | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: local; /Notes/: dot only
-    | Color Color                      -- ^ /Valid for/: ENC; /Default/: black
+    | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: black
     | ColorScheme String               -- ^ /Valid for/: ENCG; /Default/: \"\"
     | Comment String                   -- ^ /Valid for/: ENG; /Default/: \"\"
     | Compound Bool                    -- ^ /Valid for/: G; /Default/: false; /Notes/: dot only
