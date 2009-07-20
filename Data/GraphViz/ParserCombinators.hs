@@ -42,6 +42,7 @@ module Data.GraphViz.ParserCombinators
     , skipToNewline
     , parseField
     , parseBoolField
+    , parseFieldDef
     , commaSep
     , commaSep'
     ) where
@@ -221,10 +222,15 @@ parseField fld = do string fld
                     whitespace'
                     parse
 
-parseBoolField     :: String -> Parse Bool
-parseBoolField fld = oneOf [ parseField fld
-                           , string fld >> return True
-                           ]
+parseBoolField :: String -> Parse Bool
+parseBoolField = parseFieldDef True
+
+-- | For 'Bool'-like data structures where the presence of the field
+-- name without a value implies a default value.
+parseFieldDef       :: (Parseable a) => a -> String -> Parse a
+parseFieldDef d fld = oneOf [ parseField fld
+                            , string fld >> return d
+                            ]
 
 commaSep :: (Parseable a, Parseable b) => Parse (a, b)
 commaSep = commaSep' parse parse
