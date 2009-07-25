@@ -897,9 +897,9 @@ instance Show Color where
           go (c:cs') = showColor c ++ ':' : go cs'
 
 showColor :: Color -> String
-showColor (RGB r g b)      = show $ '#' : foldr showWord8Pad "" [r,g,b]
-showColor (RGBA r g b a)   = show $ '#' : foldr showWord8Pad "" [r,g,b,a]
-showColor (HSV h s v)      = show $ show h ++ " " ++ show s ++ " " ++ show v
+showColor (RGB r g b)      = '#' : foldr showWord8Pad "" [r,g,b]
+showColor (RGBA r g b a)   = '#' : foldr showWord8Pad "" [r,g,b,a]
+showColor (HSV h s v)      = show h ++ " " ++ show s ++ " " ++ show v
 showColor (ColorName name) = name
 
 showWord8Pad :: Word8 -> String -> String
