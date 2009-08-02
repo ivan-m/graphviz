@@ -327,7 +327,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Levels" ["levels"] "G" Integ Nothing (Just "MAXINT") (Just "0.0") (Just "sfdp only")
              , makeAttr "LevelsGap" ["levelsgap"] "G" Dbl Nothing (Just "0.0") Nothing (Just "neato only")
              , makeAttr "LHead" ["lhead"] "E" Strng Nothing (Just "\\\"\\\"") Nothing (Just "dot only")
-             , makeAttr "LP" ["lp"] "EGC" (Cust "Point") Nothing Nothing Nothing (Just "write only")
+             , makeAttr "LPos" ["lp"] "EGC" (Cust "Point") Nothing Nothing Nothing (Just "write only")
              , makeAttr "LTail" ["ltail"] "E" Strng Nothing (Just "\\\"\\\"") Nothing (Just "dot only")
              , makeAttr "Margin" ["margin"] "NG" (Cust "DPoint") Nothing (Just "\\<device-dependent\\>") Nothing Nothing
              , makeAttr "MaxIter" ["maxiter"] "G" Integ Nothing (Just "100 * # nodes(mode == KK) | 200(mode == major) | 600(fdp)") Nothing (Just "fdp, neato only")

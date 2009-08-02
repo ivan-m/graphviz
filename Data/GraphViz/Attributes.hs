@@ -168,7 +168,7 @@ data Attribute
     | Levels Int                       -- ^ /Valid for/: G; /Default/: MAXINT; /Minimum/: 0.0; /Notes/: sfdp only
     | LevelsGap Double                 -- ^ /Valid for/: G; /Default/: 0.0; /Notes/: neato only
     | LHead String                     -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
-    | LP Point                         -- ^ /Valid for/: EGC; /Notes/: write only
+    | LPos Point                       -- ^ /Valid for/: EGC; /Notes/: write only
     | LTail String                     -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
     | Margin DPoint                    -- ^ /Valid for/: NG; /Default/: \<device-dependent\>
     | MaxIter Int                      -- ^ /Valid for/: G; /Default/: 100 * # nodes(mode == KK) | 200(mode == major) | 600(fdp); /Notes/: fdp, neato only
@@ -317,7 +317,7 @@ instance Show Attribute where
     show (Levels v)             = "levels=" ++ show v
     show (LevelsGap v)          = "levelsgap=" ++ show v
     show (LHead v)              = "lhead=" ++ v
-    show (LP v)                 = "lp=" ++ show v
+    show (LPos v)               = "lp=" ++ show v
     show (LTail v)              = "ltail=" ++ v
     show (Margin v)             = "margin=" ++ show v
     show (MaxIter v)            = "maxiter=" ++ show v
@@ -465,7 +465,7 @@ instance Parseable Attribute where
                   , liftM Levels             $ parseField "levels"
                   , liftM LevelsGap          $ parseField "levelsgap"
                   , liftM LHead              $ parseField "lhead"
-                  , liftM LP                 $ parseField "lp"
+                  , liftM LPos               $ parseField "lp"
                   , liftM LTail              $ parseField "ltail"
                   , liftM Margin             $ parseField "margin"
                   , liftM MaxIter            $ parseField "maxiter"
@@ -580,7 +580,7 @@ usedByGraphs LayerSep{}           = True
 usedByGraphs Layout{}             = True
 usedByGraphs Levels{}             = True
 usedByGraphs LevelsGap{}          = True
-usedByGraphs LP{}                 = True
+usedByGraphs LPos{}               = True
 usedByGraphs Margin{}             = True
 usedByGraphs MaxIter{}            = True
 usedByGraphs MCLimit{}            = True
@@ -642,7 +642,7 @@ usedByClusters FontSize{}    = True
 usedByClusters Label{}       = True
 usedByClusters LabelJust{}   = True
 usedByClusters LabelLoc{}    = True
-usedByClusters LP{}          = True
+usedByClusters LPos{}        = True
 usedByClusters NoJustify{}   = True
 usedByClusters PenColor{}    = True
 usedByClusters PenWidth{}    = True
@@ -742,7 +742,7 @@ usedByEdges LabelTooltip{}   = True
 usedByEdges Layer{}          = True
 usedByEdges Len{}            = True
 usedByEdges LHead{}          = True
-usedByEdges LP{}             = True
+usedByEdges LPos{}           = True
 usedByEdges LTail{}          = True
 usedByEdges MinLen{}         = True
 usedByEdges NoJustify{}      = True
