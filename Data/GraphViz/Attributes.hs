@@ -772,9 +772,9 @@ instance Show URL where
     show u = '<' : urlString u ++ ">"
 
 instance Parseable URL where
-    parse = do char open
+    parse = do character open
                cnt <- many1 $ satisfy ((/=) close)
-               char close
+               character close
                return $ UStr cnt
         where
           open = '<'
@@ -851,7 +851,7 @@ instance Show AspectType where
 instance Parseable AspectType where
     parse = oneOf [ liftM RatioOnly parse
                   , quotedParse $ do r <- parse
-                                     char ','
+                                     character ','
                                      whitespace'
                                      p <- parse
                                      return $ RatioPassCount r p
@@ -916,7 +916,7 @@ showWord8Pad w s = padding ++ simple ++ s
 instance Parseable Color where
     parse = quotedParse parseColor
 
-    parseList = quotedParse $ sepBy1 parseColor (char ':')
+    parseList = quotedParse $ sepBy1 parseColor (character ':')
 
 parseColor :: Parse Color
 parseColor = oneOf [ parseHexBased
@@ -925,7 +925,7 @@ parseColor = oneOf [ parseHexBased
                    ]
     where
       parseHexBased
-          = do char '#'
+          = do character '#'
                cs <- many1 parse2Hex
                return $ case cs of
                           [r,g,b] -> RGB r g b
@@ -1112,7 +1112,7 @@ instance Parseable LayerRange where
 
 parseLayerSep :: Parse String
 parseLayerSep = many1 . oneOf
-                $ map char defLayerSep
+                $ map character defLayerSep
 
 defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
@@ -1219,15 +1219,15 @@ instance Parseable PackMode where
                     , string "clust" >> return PackClust
                     , string "graph" >> return PackGraph
                     , do string "array"
-                         mcu <- optional $ do char '_'
+                         mcu <- optional $ do character '_'
                                               many1 $ satisfy (not . isDigit)
-                         let c = hasChar mcu 'c'
-                             u = hasChar mcu 'u'
+                         let c = hasCharacter mcu 'c'
+                             u = hasCharacter mcu 'u'
                          mi <- optional parse
                          return $ PackArray c u mi
                     ]
         where
-          hasChar ms c = maybe False (elem c) ms
+          hasCharacter ms c = maybe False (elem c) ms
 
 -- -----------------------------------------------------------------------------
 
@@ -1330,7 +1330,7 @@ showSpline (Spline ms me ps) = addS . addE
 instance Parseable Spline where
     parse = quotedParse parseSpline
 
-    parseList = quotedParse $ sepBy1 parseSpline (char ';')
+    parseList = quotedParse $ sepBy1 parseSpline (character ';')
 
 parseSpline :: Parse Spline
 parseSpline = do ms <- parseP 's'
@@ -1340,8 +1340,8 @@ parseSpline = do ms <- parseP 's'
                  ps <- sepBy1 parsePoint whitespace
                  return $ Spline ms me ps
     where
-      parseP t = optional $ do char t
-                               char ';'
+      parseP t = optional $ do character t
+                               character ';'
                                parse
 
 -- -----------------------------------------------------------------------------
@@ -1363,7 +1363,7 @@ instance Parseable QuadType where
             $ oneOf [ string "normal" >> return NormalQT
                     , string "fast"   >> return FastQT
                     , string "none"   >> return NoQT
-                    , char '2' >> return FastQT -- weird bool
+                    , character '2' >> return FastQT -- weird bool
                     , liftM (bool NormalQT NoQT) parse
                     ]
 
@@ -1618,11 +1618,11 @@ instance Show Style where
 instance Parseable Style where
     parse = oneOf [ optionalQuoted $ liftM (\nm -> Stl nm Nothing) parse
                   , quotedParse $ do nm <- parse
-                                     char '('
+                                     character '('
                                      arg <- many1
                                             $ satisfy (flip notElem "()")
 
-                                     char ')'
+                                     character ')'
                                      return $ Stl nm (Just arg)
                   ]
 
@@ -1726,11 +1726,11 @@ instance Show ViewPort where
 instance Parseable ViewPort where
     parse = quotedParse
             $ do wv <- parse
-                 char ','
+                 character ','
                  hv <- parse
-                 char ','
+                 character ','
                  zv <- parse
-                 mf <- optional $ char ',' >> parse
+                 mf <- optional $ character ',' >> parse
                  return $ VP wv hv zv mf
 
 data FocusType = XY Point

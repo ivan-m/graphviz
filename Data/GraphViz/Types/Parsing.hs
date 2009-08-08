@@ -31,7 +31,7 @@ module Data.GraphViz.Types.Parsing
     , string
     , strings
     , hasString
-    , char
+    , character
     , whitespace
     , whitespace'
     , optionalQuotedString
@@ -69,10 +69,10 @@ class Parseable a where
     parse :: Parse a
 
     parseList :: Parse [a]
-    parseList = oneOf [ char '[' >> whitespace' >> char ']' >> return []
-                      , bracketSep (parseAndSpace $ char '[')
-                                   (parseAndSpace $ char ',')
-                                   (parseAndSpace $ char ']')
+    parseList = oneOf [ character '[' >> whitespace' >> character ']' >> return []
+                      , bracketSep (parseAndSpace $ character '[')
+                                   (parseAndSpace $ character ',')
+                                   (parseAndSpace $ character ']')
                                    (parseAndSpace parse)
                       ]
 
@@ -170,7 +170,7 @@ parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` whitespace'
 
 string :: String -> Parse String
-string = mapM char
+string = mapM character
 
 strings :: [String] -> Parse String
 strings = oneOf . map string
@@ -178,10 +178,10 @@ strings = oneOf . map string
 hasString :: String -> Parse Bool
 hasString = liftM isJust . optional . string
 
-char   :: Char -> Parse Char
-char c = satisfy (((==) `on` toLower) c)
-         `adjustErr`
-         (++ "\nnot the expected char: " ++ [c])
+character   :: Char -> Parse Char
+character c = satisfy (((==) `on` toLower) c)
+              `adjustErr`
+              (++ "\nnot the expected char: " ++ [c])
 
 noneOf :: (Eq a) => [a] -> Parser a a
 noneOf t = satisfy (\x -> all (/= x) t)
@@ -201,7 +201,7 @@ optionalQuoted p = oneOf [ p
                          ]
 
 quotedParse   :: Parse a -> Parse a
-quotedParse p = char '"' >> p `discard` char '"'
+quotedParse p = character '"' >> p `discard` character '"'
 
 newline :: Parse String
 newline = oneOf . map string $ ["\r\n", "\n", "\r"]
@@ -212,7 +212,7 @@ skipToNewline = many (noneOf ['\n','\r']) >> newline >> return ()
 parseField     :: (Parseable a) => String -> Parse a
 parseField fld = do string fld
                     whitespace'
-                    char '='
+                    character '='
                     whitespace'
                     parse
 
@@ -232,7 +232,7 @@ commaSep = commaSep' parse parse
 commaSep'       :: Parse a -> Parse b -> Parse (a,b)
 commaSep' pa pb = do a <- pa
                      whitespace'
-                     char ','
+                     character ','
                      whitespace'
                      b <- pb
                      return (a,b)
