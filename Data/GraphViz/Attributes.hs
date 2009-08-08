@@ -63,7 +63,7 @@
 
 module Data.GraphViz.Attributes where
 
-import Data.GraphViz.ParserCombinators
+import Data.GraphViz.Types.Parsing
 
 import Data.Char(isDigit, isHexDigit)
 import Data.Word

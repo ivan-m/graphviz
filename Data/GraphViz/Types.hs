@@ -24,7 +24,7 @@ module Data.GraphViz.Types
     ) where
 
 import Data.GraphViz.Attributes
-import Data.GraphViz.ParserCombinators
+import Data.GraphViz.Types.Parsing
 
 import Data.Maybe
 import Control.Monad

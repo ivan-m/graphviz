@@ -45,9 +45,9 @@ module Data.GraphViz
 
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Clustering
+import Data.GraphViz.Types.Parsing(runParser)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
-import Data.GraphViz.ParserCombinators(runParser)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
@@ -171,7 +171,6 @@ graphToGraph isDir gr gAttributes fmtNode fmtEdge
                                                 , edgeAttributes e)
                                          ) es
 
-
 -- | Run the graph via dot to get positional information and then
 --   combine that information back into the original graph.
 --   Note that this doesn't support graphs with clusters.
@@ -195,7 +194,6 @@ dotizeGraph isDir g = unsafePerformIO
     where
       gAttrs = []
       noAttrs = const []
-
 
 -- | Pass the plain graph through 'graphToGraph'.  This is an @IO@ action,
 --   however since the state doesn't change it's safe to use 'unsafePerformIO'

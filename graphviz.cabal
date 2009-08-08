@@ -37,9 +37,9 @@ Library {
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types
+                           Data.GraphViz.Types.Parsing
                            Data.GraphViz.Commands
                            Data.GraphViz.Attributes
-                           Data.GraphViz.ParserCombinators
 
         Other-Modules:     Data.GraphViz.Types.Clustering
 

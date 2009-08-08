@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 {- |
-   Module      : Data.GraphViz.ParserCombinators
+   Module      : Data.GraphViz.Types.Parsing
    Description : Helper functions for Parsing.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
@@ -19,10 +19,9 @@
    @'Data.GraphViz.Types.DotGraph'@, you should use
    @'Data.GraphViz.Types.parseDotGraph'@ rather than its 'Parseable'
    instance.
-
 -}
 
-module Data.GraphViz.ParserCombinators
+module Data.GraphViz.Types.Parsing
     ( module Text.ParserCombinators.Poly.Lazy
     , Parse
     , Parseable(..)
