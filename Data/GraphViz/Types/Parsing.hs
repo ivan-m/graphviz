@@ -1,5 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-
 {- |
    Module      : Data.GraphViz.Types.Parsing
    Description : Helper functions for Parsing.
@@ -98,9 +96,6 @@ instance Parseable Char where
                       , quotedString
                       ]
 
--- | Used when quotes are explicitly required;
---   note that the quotes are not stripped off.
-
 instance (Parseable a) => Parseable [a] where
     parse = parseList
 
@@ -116,6 +111,8 @@ stringBlock = do frst <- satisfy frstCond
                             ]
       restCond c = frstCond c || isDigit c
 
+-- | Used when quotes are explicitly required;
+--   note that the quotes are not stripped off.
 quotedString :: Parse String
 quotedString = do w <- word
                   if head w == '"'
