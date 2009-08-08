@@ -99,7 +99,7 @@ instance Parseable DotGraph where
                gType <- strings [dirGraph,undirGraph]
                gId <- optional (parse `discard` whitespace)
                whitespace
-               char '{'
+               character '{'
                skipToNewline
                as <- liftM concat $
                      many (whitespace' >>
@@ -111,7 +111,7 @@ instance Parseable DotGraph where
                           )
                ns <- many1 (whitespace' >> parse `discard` skipToNewline)
                es <- many1 (whitespace' >> parse `discard` skipToNewline)
-               char '}'
+               character '}'
                return DotGraph { strictGraph = isStrict
                                , directedGraph = gType == dirGraph
                                , graphID = gId
@@ -193,7 +193,7 @@ nodesToString c@(DotCluster {})
 instance Parseable DotNode where
     parse = do nId <- parse
                as <- optional (whitespace >> parse)
-               char ';'
+               character ';'
                return DotNode { nodeID = nId
                               , nodeAttributes = fromMaybe [] as }
             `adjustErr`
@@ -242,7 +242,7 @@ instance Parseable DotEdge where
                whitespace
                eTail <- parse
                as <- optional (whitespace >> parse)
-               char ';'
+               character ';'
                return DotEdge { edgeHeadNodeID = eHead
                               , edgeTailNodeID = eTail
                               , edgeAttributes = fromMaybe [] as
