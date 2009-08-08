@@ -94,7 +94,7 @@ undirGraph = "graph"
 parseDotGraph :: Parse DotGraph
 parseDotGraph = parse
 
-instance Parseable DotGraph where
+instance ParseDot DotGraph where
     parse = do isStrict <- parseAndSpace $ hasString "strict"
                gType <- strings [dirGraph,undirGraph]
                gId <- optional (parse `discard` whitespace)
@@ -137,7 +137,7 @@ instance Show GraphID where
     show (QStr str) = show str
     show (HTML url) = show url
 
-instance Parseable GraphID where
+instance ParseDot GraphID where
     parse = oneOf [ liftM Str stringBlock
                   , liftM Num parse
                   , liftM QStr parse
@@ -190,7 +190,7 @@ nodesToString c@(DotCluster {})
       nodes = concatMap nodesToString $ clusterElems c
 
 
-instance Parseable DotNode where
+instance ParseDot DotNode where
     parse = do nId <- parse
                as <- optional (whitespace >> parse)
                character ';'
@@ -234,7 +234,7 @@ dirEdge = "->"
 undirEdge :: String
 undirEdge = "--"
 
-instance Parseable DotEdge where
+instance ParseDot DotEdge where
     parse = do whitespace'
                eHead <- parse
                whitespace

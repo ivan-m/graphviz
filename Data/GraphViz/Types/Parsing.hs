@@ -8,21 +8,21 @@
    This module defines simple helper functions for use with
    "Text.ParserCombinators.Poly.Lazy".
 
-   Note that the 'Parseable' instances for 'Bool', etc. match those
+   Note that the 'ParseDot' instances for 'Bool', etc. match those
    specified for use with GraphViz (e.g. non-zero integers are
    equivalent to 'True').
 
    You should not be using this module; rather, it is here for
    informative/documentative reasons.  If you want to parse a
    @'Data.GraphViz.Types.DotGraph'@, you should use
-   @'Data.GraphViz.Types.parseDotGraph'@ rather than its 'Parseable'
+   @'Data.GraphViz.Types.parseDotGraph'@ rather than its 'ParseDot'
    instance.
 -}
 
 module Data.GraphViz.Types.Parsing
     ( module Text.ParserCombinators.Poly.Lazy
     , Parse
-    , Parseable(..)
+    , ParseDot(..)
     , stringBlock
     , quotedString
     , parseAndSpace
@@ -63,7 +63,7 @@ import Control.Monad
 -- | A @ReadS@-like type alias.
 type Parse a = Parser Char a
 
-class Parseable a where
+class ParseDot a where
     parse :: Parse a
 
     parseList :: Parse [a]
@@ -74,13 +74,13 @@ class Parseable a where
                                    (parseAndSpace parse)
                       ]
 
-instance Parseable Int where
+instance ParseDot Int where
     parse = parseInt
 
-instance Parseable Double where
+instance ParseDot Double where
     parse = parseSigned parseFloat
 
-instance Parseable Bool where
+instance ParseDot Bool where
     parse = oneOf [ string "true" >> return True
                   , string "false" >> return False
                   , liftM (zero /=) parseInt
@@ -89,14 +89,14 @@ instance Parseable Bool where
           zero :: Int
           zero = 0
 
-instance Parseable Char where
+instance ParseDot Char where
     parse = next
 
     parseList = oneOf [ stringBlock
                       , quotedString
                       ]
 
-instance (Parseable a) => Parseable [a] where
+instance (ParseDot a) => ParseDot [a] where
     parse = parseList
 
 stringBlock :: Parse String
@@ -206,7 +206,7 @@ newline = oneOf . map string $ ["\r\n", "\n", "\r"]
 skipToNewline :: Parse ()
 skipToNewline = many (noneOf ['\n','\r']) >> newline >> return ()
 
-parseField     :: (Parseable a) => String -> Parse a
+parseField     :: (ParseDot a) => String -> Parse a
 parseField fld = do string fld
                     whitespace'
                     character '='
@@ -218,12 +218,12 @@ parseBoolField = parseFieldDef True
 
 -- | For 'Bool'-like data structures where the presence of the field
 -- name without a value implies a default value.
-parseFieldDef       :: (Parseable a) => a -> String -> Parse a
+parseFieldDef       :: (ParseDot a) => a -> String -> Parse a
 parseFieldDef d fld = oneOf [ parseField fld
                             , string fld >> return d
                             ]
 
-commaSep :: (Parseable a, Parseable b) => Parse (a, b)
+commaSep :: (ParseDot a, ParseDot b) => Parse (a, b)
 commaSep = commaSep' parse parse
 
 commaSep'       :: Parse a -> Parse b -> Parse (a,b)

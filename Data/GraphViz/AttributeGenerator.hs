@@ -161,7 +161,7 @@ showInstance att = hdr $+$ insts
 parseInstance     :: Atts -> Code
 parseInstance att = hdr $+$ nest tab fn
     where
-      hdr = text "instance" <+> text "Parseable" <+> tpNm att <+> text "where"
+      hdr = text "instance" <+> text "ParseDot" <+> tpNm att <+> text "where"
       fn = pFunc <+> equals <+> text "oneOf" <+> ops
       ops = flip ($$) rbrack
             . asRows

@@ -394,7 +394,7 @@ instance Show Attribute where
     show (Width v)              = "width=" ++ show v
     show (Z v)                  = "z=" ++ show v
 
-instance Parseable Attribute where
+instance ParseDot Attribute where
     parse = oneOf [ liftM Damping            $ parseField "Damping"
                   , liftM K                  $ parseField "K"
                   , liftM URL                $ oneOf (map parseField ["URL", "href"])
@@ -771,7 +771,7 @@ newtype URL = UStr { urlString :: String }
 instance Show URL where
     show u = '<' : urlString u ++ ">"
 
-instance Parseable URL where
+instance ParseDot URL where
     parse = do character open
                cnt <- many1 $ satisfy ((/=) close)
                character close
@@ -815,7 +815,7 @@ instance Show ArrowType where
     show HalfOpen = "halfopen"
     show Vee      = "vee"
 
-instance Parseable ArrowType where
+instance ParseDot ArrowType where
     parse = optionalQuoted
             $ oneOf [ string "normal"   >> return Normal
                     , string "inv"      >> return Inv
@@ -848,7 +848,7 @@ instance Show AspectType where
     show (RatioOnly r)        = show r
     show (RatioPassCount r p) = show $ show r ++ ',' : show p
 
-instance Parseable AspectType where
+instance ParseDot AspectType where
     parse = oneOf [ liftM RatioOnly parse
                   , quotedParse $ do r <- parse
                                      character ','
@@ -865,7 +865,7 @@ data Rect = Rect Point Point
 instance Show Rect where
     show (Rect p1 p2) = show $ show p1 ++ ',' : show p2
 
-instance Parseable Rect where
+instance ParseDot Rect where
     parse = liftM (uncurry Rect) . quotedParse
             $ commaSep' parsePoint parsePoint
 
@@ -913,7 +913,7 @@ showWord8Pad w s = padding ++ simple ++ s
           | n < 16 = c
           | otherwise = findCols (c+1) (n `div` 16)
 
-instance Parseable Color where
+instance ParseDot Color where
     parse = quotedParse parseColor
 
     parseList = quotedParse $ sepBy1 parseColor (character ':')
@@ -958,7 +958,7 @@ instance Show ClusterMode where
     show Global    = "global"
     show NoCluster = "none"
 
-instance Parseable ClusterMode where
+instance ParseDot ClusterMode where
     parse = optionalQuoted
             . oneOf
             $ [ string "local"  >> return Local
@@ -977,7 +977,7 @@ instance Show DirType where
     show Both    = "both"
     show NoDir   = "none"
 
-instance Parseable DirType where
+instance ParseDot DirType where
     parse = optionalQuoted
             $ oneOf [ string "forward" >> return Forward
                     , string "back"    >> return Back
@@ -996,7 +996,7 @@ instance Show DEConstraints where
     show (DEBool b) = show b
     show Hier       = "hier"
 
-instance Parseable DEConstraints where
+instance ParseDot DEConstraints where
     parse = optionalQuoted
             $ oneOf [ liftM DEBool parse
                     , string "hier" >> return Hier
@@ -1013,7 +1013,7 @@ instance Show DPoint where
     show (DVal d) = show d
     show (PVal p) = show p
 
-instance Parseable DPoint where
+instance ParseDot DPoint where
     parse = oneOf [ liftM DVal parse
                   , liftM PVal parsePoint
                   ]
@@ -1028,7 +1028,7 @@ instance Show Label where
     show (StrLabel s) = s
     show (URLLabel u) = show u
 
-instance Parseable Label where
+instance ParseDot Label where
     parse = oneOf [ liftM StrLabel parse
                   , liftM URLLabel parse
                   ]
@@ -1048,7 +1048,7 @@ showPoint :: Point -> String
 showPoint (Point  x y) = show x ++ ',' : show y
 showPoint (PointD x y) = show x ++ ',' : show y
 
-instance Parseable Point where
+instance ParseDot Point where
     parse = quotedParse parsePoint
 
     parseList = quotedParse $ sepBy1 parsePoint whitespace
@@ -1080,7 +1080,7 @@ instance Show Overlap where
     show VpscOverlap      = "vpsc"
     show IpsepOverlap     = "ipsep"
 
-instance Parseable Overlap where
+instance ParseDot Overlap where
     parse = optionalQuoted
             $ oneOf [ string "true" >> return KeepOverlaps
                     , string "false" >> return RemoveOverlaps
@@ -1102,7 +1102,7 @@ instance Show LayerRange where
     show (LRID lid)        = show lid
     show (LRS id1 sep id2) = show $ show id1 ++ sep ++ show id2
 
-instance Parseable LayerRange where
+instance ParseDot LayerRange where
     parse = oneOf [ liftM LRID parse
                   , do id1 <- parse
                        sep <- parseLayerSep
@@ -1130,7 +1130,7 @@ instance Show LayerID where
     show (LRInt n)   = show n
     show (LRName nm) = nm
 
-instance Parseable LayerID where
+instance ParseDot LayerID where
     parse = oneOf [ optionalQuotedString "all" >> return AllLayers
                   , liftM LRInt $ optionalQuoted parse
                   , liftM LRName parseLayerName
@@ -1143,7 +1143,7 @@ data LayerList = LL String [(String, String)]
 instance Show LayerList where
     show (LL l1 ols) = l1 ++ concatMap (uncurry (++)) ols
 
-instance Parseable LayerList where
+instance ParseDot LayerList where
     parse = do l1 <- parseLayerName
                ols <- many $ do sep <- parseLayerSep
                                 lnm <- parseLayerName
@@ -1160,7 +1160,7 @@ instance Show OutputMode where
     show NodesFirst = "nodesfirst"
     show EdgesFirst = "edgesfirst"
 
-instance Parseable OutputMode where
+instance ParseDot OutputMode where
     parse = optionalQuoted
             $ oneOf [ string "breadthfirst" >> return BreadthFirst
                     , string "nodesfirst"   >> return NodesFirst
@@ -1179,7 +1179,7 @@ instance Show Pack where
     show DontPack       = "false"
     show (PackMargin m) = show m
 
-instance Parseable Pack where
+instance ParseDot Pack where
     parse = optionalQuoted
             $ oneOf [ liftM (bool DoPack DontPack) parse
                     , liftM PackMargin parse
@@ -1213,7 +1213,7 @@ instance Show PackMode where
                 then flip (++) "u"
                 else id
 
-instance Parseable PackMode where
+instance ParseDot PackMode where
     parse = optionalQuoted
             $ oneOf [ string "node" >> return PackNode
                     , string "clust" >> return PackClust
@@ -1239,7 +1239,7 @@ instance Show Pos where
     show (PointPos p)   = show p
     show (SplinePos ss) = show ss
 
-instance Parseable Pos where
+instance ParseDot Pos where
     -- [Spline] must be quoted, so use the quoted parser for Point as
     -- well.
     parse = oneOf [ liftM PointPos parse
@@ -1263,7 +1263,7 @@ instance Show EdgeType where
     show PolyLine     = "polyline"
     show CompoundEdge = "compound"
 
-instance Parseable EdgeType where
+instance ParseDot EdgeType where
     parse = optionalQuoted
             $ oneOf [ liftM (bool SplineEdges LineEdges) parse
                     , string "spline"   >> return SplineEdges
@@ -1290,7 +1290,7 @@ instance Show PageDir where
     show Lb = "LB"
     show Lt = "LT"
 
-instance Parseable PageDir where
+instance ParseDot PageDir where
     parse = optionalQuoted
             $ oneOf [ string "BL" >> return Bl
                     , string "BR" >> return Br
@@ -1327,7 +1327,7 @@ showSpline (Spline ms me ps) = addS . addE
       addS = addP 's' ms
       addE = addP 'e' me
 
-instance Parseable Spline where
+instance ParseDot Spline where
     parse = quotedParse parseSpline
 
     parseList = quotedParse $ sepBy1 parseSpline (character ';')
@@ -1356,7 +1356,7 @@ instance Show QuadType where
     show FastQT   = "fast"
     show NoQT     = "none"
 
-instance Parseable QuadType where
+instance ParseDot QuadType where
     -- Have to take into account the slightly different interpretation
     -- of Bool used as an option for parsing QuadType
     parse = optionalQuoted
@@ -1380,7 +1380,7 @@ instance Show Root where
     show NotCentral   = "false"
     show (NodeName n) = n
 
-instance Parseable Root where
+instance ParseDot Root where
     parse = optionalQuoted
             $ oneOf [ liftM (bool IsCentral NotCentral) parse
                     , liftM NodeName parse
@@ -1402,7 +1402,7 @@ instance Show RankType where
     show MaxRank    = "max"
     show SinkRank   = "sink"
 
-instance Parseable RankType where
+instance ParseDot RankType where
     parse = optionalQuoted
             $ oneOf [ string "same"   >> return SameRank
                     , string "min"    >> return MinRank
@@ -1425,7 +1425,7 @@ instance Show RankDir where
     show FromBottom = "BT"
     show FromRight  = "RL"
 
-instance Parseable RankDir where
+instance ParseDot RankDir where
     parse = optionalQuoted
             $ oneOf [ string "TB" >> return FromTop
                     , string "LR" >> return FromLeft
@@ -1504,7 +1504,7 @@ instance Show Shape where
     show Box3d         = "box3d"
     show Component     = "component"
 
-instance Parseable Shape where
+instance ParseDot Shape where
     parse = optionalQuoted
             $ oneOf [ string "box"           >> return BoxShape
                     , string "polygon"       >> return Polygon
@@ -1560,7 +1560,7 @@ instance Show SmoothType where
     show Spring         = "spring"
     show TriangleSmooth = "triangle"
 
-instance Parseable SmoothType where
+instance ParseDot SmoothType where
     parse = optionalQuoted
             $ oneOf [ string "none"       >> return NoSmooth
                     , string "avg_dist"   >> return AvgDist
@@ -1581,7 +1581,7 @@ instance Show StartType where
     show (ST ms mi) = maybe id ((++) . show) ms
                       $ maybe "" show mi
 
-instance Parseable StartType where
+instance ParseDot StartType where
     parse = optionalQuoted
             $ do ms <- optional parse
                  mi <- optional parse
@@ -1597,7 +1597,7 @@ instance Show STStyle where
     show Self         = "self"
     show Random       = "random"
 
-instance Parseable STStyle where
+instance ParseDot STStyle where
     parse = oneOf [ string "regular" >> return RegularStyle
                   , string "self"    >> return Self
                   , string "random"  >> return Random
@@ -1615,7 +1615,7 @@ instance Show Style where
         where
           snm = show nm
 
-instance Parseable Style where
+instance ParseDot Style where
     parse = oneOf [ optionalQuoted $ liftM (\nm -> Stl nm Nothing) parse
                   , quotedParse $ do nm <- parse
                                      character '('
@@ -1646,7 +1646,7 @@ instance Show StyleName where
     show Solid     = "solid"
     show Bold      = "bold"
 
-instance Parseable StyleName where
+instance ParseDot StyleName where
     parse = optionalQuoted
             $ oneOf [ string "filled"    >> return Filled
                     , string "invis"     >> return Invisible
@@ -1666,7 +1666,7 @@ newtype PortPos = PP CompassPoint
 instance Show PortPos where
     show (PP cp) = show cp
 
-instance Parseable PortPos where
+instance ParseDot PortPos where
     parse = liftM PP parse
 
 data CompassPoint = North
@@ -1693,7 +1693,7 @@ instance Show CompassPoint where
     show CenterPoint = "c"
     show NoCP        = "_"
 
-instance Parseable CompassPoint where
+instance ParseDot CompassPoint where
     parse = optionalQuoted
             $ oneOf [ string "n"  >> return North
                     , string "ne" >> return NorthEast
@@ -1723,7 +1723,7 @@ instance Show ViewPort where
               ++ ',' : show (hVal vp)
               ++ ',' : show (zVal vp)
 
-instance Parseable ViewPort where
+instance ParseDot ViewPort where
     parse = quotedParse
             $ do wv <- parse
                  character ','
@@ -1741,7 +1741,7 @@ instance Show FocusType where
     show (XY p)        = showPoint p
     show (NodeFocus nm) = nm
 
-instance Parseable FocusType where
+instance ParseDot FocusType where
     parse = oneOf [ liftM XY parsePoint
                   , liftM NodeFocus stringBlock
                   ]
@@ -1759,7 +1759,7 @@ instance Show VerticalPlacement where
     show VCenter = "c"
     show VBottom = "b"
 
-instance Parseable VerticalPlacement where
+instance ParseDot VerticalPlacement where
     parse = optionalQuoted
             $ oneOf [ string "t" >> return VTop
                     , string "c" >> return VCenter
@@ -1783,7 +1783,7 @@ instance Show ScaleType where
     show FillHeight   = "height"
     show FillBoth     = "both"
 
-instance Parseable ScaleType where
+instance ParseDot ScaleType where
     parse = optionalQuoted
             $ oneOf [ string "true"   >> return UniformScale
                     , string "false"  >> return NoScale
@@ -1804,7 +1804,7 @@ instance Show Justification where
     show JRight  = "r"
     show JCenter = "c"
 
-instance Parseable Justification where
+instance ParseDot Justification where
     parse = optionalQuoted
             $ oneOf [ string "l" >> return JLeft
                     , string "r" >> return JRight
@@ -1827,7 +1827,7 @@ instance Show Ratios where
     show ExpandRatio     = "expand"
     show AutoRatio       = "auto"
 
-instance Parseable Ratios where
+instance ParseDot Ratios where
     parse = optionalQuoted
             $ oneOf [ liftM AspectRatio parse
                     , string "fill"     >> return FillRatio
@@ -1845,7 +1845,7 @@ newtype QuotedString = QS { qStr :: String }
 instance Show QuotedString where
     show = show . qStr
 
-instance Parseable QuotedString where
+instance ParseDot QuotedString where
     parse = liftM (QS . tail . init) quotedString
 
 -- -----------------------------------------------------------------------------
