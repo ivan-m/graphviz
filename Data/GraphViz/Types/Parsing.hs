@@ -44,6 +44,8 @@ module Data.GraphViz.Types.Parsing
     , commaSep'
     ) where
 
+import Data.GraphViz.Types.Internal
+
 import Text.ParserCombinators.Poly.Lazy
 import Data.Char( digitToInt
                 , isAsciiLower
@@ -100,32 +102,18 @@ instance (ParseDot a) => ParseDot [a] where
     parse = parseList
 
 stringBlock :: Parse String
-stringBlock = do frst <- satisfy frstCond
-                 rest <- many (satisfy restCond)
+stringBlock = do frst <- satisfy frstIDString
+                 rest <- many (satisfy restIDString)
                  return $ frst : rest
-    where
-      frstCond c = any ($c) [ isAsciiUpper
-                            , isAsciiLower
-                            , (==) '_'
-                            , \ x -> x >= '\200' && x <= '\377'
-                            ]
-      restCond c = frstCond c || isDigit c
 
 -- | Used when quotes are explicitly required;
---   note that the quotes are not stripped off.
 quotedString :: Parse String
-quotedString = do w <- word
-                  if head w == '"'
-                     then return w
-                     else fail $ "Not a quoted string: " ++ w
-
-word :: Parse String
-word = P (\s-> case lex s of
-                   []         -> Failure s  "no input? (impossible)"
-                   [("","")]  -> Failure "" "no input?"
-                   [("",s')]  -> Failure s' "lexing failed?"
-                   ((x,s'):_) -> Success s' x
-         )
+quotedString = do character '"'
+                  str <- many $ oneOf [ string "\\\"" >> return '"'
+                                      , satisfy ((/=) '"')
+                                      ]
+                  character '"'
+                  return str
 
 parseSigned :: Real a => Parse a -> Parse a
 parseSigned p = do '-' <- next; commit (fmap negate p)
@@ -217,7 +205,7 @@ parseBoolField :: String -> Parse Bool
 parseBoolField = parseFieldDef True
 
 -- | For 'Bool'-like data structures where the presence of the field
--- name without a value implies a default value.
+--   name without a value implies a default value.
 parseFieldDef       :: (ParseDot a) => a -> String -> Parse a
 parseFieldDef d fld = oneOf [ parseField fld
                             , string fld >> return d
