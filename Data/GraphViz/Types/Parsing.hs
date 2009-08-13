@@ -30,6 +30,7 @@ module Data.GraphViz.Types.Parsing
     , strings
     , hasString
     , character
+    , noneOf
     , whitespace
     , whitespace'
     , optionalQuotedString
