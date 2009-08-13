@@ -20,10 +20,18 @@
      In fact, parsing with quotes is iffy for everything; specifically
      when they are and aren't allowed.
 
+   * GraphViz says that a number like /.02/ is valid; this library
+     disagrees.
+
    * 'ColorScheme' is ignored when parsing 'Color' values
 
    * ColorList and PointfList are defined as actual lists (but
-     'LayerList' is not).
+     'LayerList' is not).  Note that for the Color 'Attribute', only
+     a single Color is valid; edges are allowed multiple colors with
+     one spline/arrow per color in the list.
+
+   * Style is implemented as a list of 'StyleItem' values; note that
+     empty lists are not allowed.
 
    * A lot of values have a possible value of @"none"@.  These now
      have custom constructors.  In fact, most constructors have been
@@ -64,6 +72,7 @@
 module Data.GraphViz.Attributes where
 
 import Data.GraphViz.Types.Parsing
+import Data.GraphViz.Types.Printing
 
 import Data.Char(isDigit, isHexDigit)
 import Data.Word
@@ -141,8 +150,8 @@ data Attribute
     | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: true
     | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: \"\"
     | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: center
-    | HeadTarget QuotedString          -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
-    | HeadTooltip QuotedString         -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
+    | HeadTarget String                -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
+    | HeadTooltip String               -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
     | Height Double                    -- ^ /Valid for/: N; /Default/: 0.5; /Minimum/: 0.02
     | ID Label                         -- ^ /Valid for/: GNE; /Default/: \"\"; /Notes/: svg, postscript, map only
     | Image String                     -- ^ /Valid for/: N; /Default/: \"\"
@@ -227,7 +236,7 @@ data Attribute
     | SortV Int                        -- ^ /Valid for/: GCN; /Default/: 0; /Minimum/: 0
     | Splines EdgeType                 -- ^ /Valid for/: G
     | Start StartType                  -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: fdp, neato only
-    | Style Style                      -- ^ /Valid for/: ENC
+    | Style [StyleItem]                -- ^ /Valid for/: ENC
     | StyleSheet String                -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: svg only
     | TailURL URL                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
     | TailClip Bool                    -- ^ /Valid for/: E; /Default/: true
@@ -244,155 +253,157 @@ data Attribute
     | Weight Double                    -- ^ /Valid for/: E; /Default/: 1.0; /Minimum/: 0(dot) | 1(neato,fdp,sfdp)
     | Width Double                     -- ^ /Valid for/: N; /Default/: 0.75; /Minimum/: 0.01
     | Z Double                         -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -MAXFLOAT | -1000
-      deriving (Eq, Read)
+      deriving (Eq, Show, Read)
 
-instance Show Attribute where
-    show (Damping v)            = "Damping=" ++ show v
-    show (K v)                  = "K=" ++ show v
-    show (URL v)                = "URL=" ++ show v
-    show (ArrowHead v)          = "arrowhead=" ++ show v
-    show (ArrowSize v)          = "arrowsize=" ++ show v
-    show (ArrowTail v)          = "arrowtail=" ++ show v
-    show (Aspect v)             = "aspect=" ++ show v
-    show (Bb v)                 = "bb=" ++ show v
-    show (BgColor v)            = "bgcolor=" ++ show v
-    show (Center v)             = "center=" ++ show v
-    show (Charset v)            = "charset=" ++ v
-    show (ClusterRank v)        = "clusterrank=" ++ show v
-    show (Color v)              = "color=" ++ show v
-    show (ColorScheme v)        = "colorscheme=" ++ v
-    show (Comment v)            = "comment=" ++ v
-    show (Compound v)           = "compound=" ++ show v
-    show (Concentrate v)        = "concentrate=" ++ show v
-    show (Constraint v)         = "constraint=" ++ show v
-    show (Decorate v)           = "decorate=" ++ show v
-    show (DefaultDist v)        = "defaultdist=" ++ show v
-    show (Dim v)                = "dim=" ++ show v
-    show (Dimen v)              = "dimen=" ++ show v
-    show (Dir v)                = "dir=" ++ show v
-    show (DirEdgeConstraints v) = "diredgeconstraints=" ++ show v
-    show (Distortion v)         = "distortion=" ++ show v
-    show (DPI v)                = "dpi=" ++ show v
-    show (EdgeURL v)            = "edgeURL=" ++ show v
-    show (EdgeTarget v)         = "edgetarget=" ++ v
-    show (EdgeTooltip v)        = "edgetooltip=" ++ v
-    show (Epsilon v)            = "epsilon=" ++ show v
-    show (ESep v)               = "esep=" ++ show v
-    show (FillColor v)          = "fillcolor=" ++ show v
-    show (FixedSize v)          = "fixedsize=" ++ show v
-    show (FontColor v)          = "fontcolor=" ++ show v
-    show (FontName v)           = "fontname=" ++ v
-    show (FontNames v)          = "fontnames=" ++ v
-    show (FontPath v)           = "fontpath=" ++ v
-    show (FontSize v)           = "fontsize=" ++ show v
-    show (Group v)              = "group=" ++ v
-    show (HeadURL v)            = "headURL=" ++ show v
-    show (HeadClip v)           = "headclip=" ++ show v
-    show (HeadLabel v)          = "headlabel=" ++ show v
-    show (HeadPort v)           = "headport=" ++ show v
-    show (HeadTarget v)         = "headtarget=" ++ show v
-    show (HeadTooltip v)        = "headtooltip=" ++ show v
-    show (Height v)             = "height=" ++ show v
-    show (ID v)                 = "id=" ++ show v
-    show (Image v)              = "image=" ++ v
-    show (ImageScale v)         = "imagescale=" ++ show v
-    show (Label v)              = "label=" ++ show v
-    show (LabelURL v)           = "labelURL=" ++ show v
-    show (LabelAngle v)         = "labelangle=" ++ show v
-    show (LabelDistance v)      = "labeldistance=" ++ show v
-    show (LabelFloat v)         = "labelfloat=" ++ show v
-    show (LabelFontColor v)     = "labelfontcolor=" ++ show v
-    show (LabelFontName v)      = "labelfontname=" ++ v
-    show (LabelFontSize v)      = "labelfontsize=" ++ show v
-    show (LabelJust v)          = "labeljust=" ++ show v
-    show (LabelLoc v)           = "labelloc=" ++ show v
-    show (LabelTarget v)        = "labeltarget=" ++ v
-    show (LabelTooltip v)       = "labeltooltip=" ++ v
-    show (Landscape v)          = "landscape=" ++ show v
-    show (Layer v)              = "layer=" ++ show v
-    show (Layers v)             = "layers=" ++ show v
-    show (LayerSep v)           = "layersep=" ++ v
-    show (Layout v)             = "layout=" ++ v
-    show (Len v)                = "len=" ++ show v
-    show (Levels v)             = "levels=" ++ show v
-    show (LevelsGap v)          = "levelsgap=" ++ show v
-    show (LHead v)              = "lhead=" ++ v
-    show (LPos v)               = "lp=" ++ show v
-    show (LTail v)              = "ltail=" ++ v
-    show (Margin v)             = "margin=" ++ show v
-    show (MaxIter v)            = "maxiter=" ++ show v
-    show (MCLimit v)            = "mclimit=" ++ show v
-    show (MinDist v)            = "mindist=" ++ show v
-    show (MinLen v)             = "minlen=" ++ show v
-    show (Mode v)               = "mode=" ++ v
-    show (Model v)              = "model=" ++ v
-    show (Mosek v)              = "mosek=" ++ show v
-    show (NodeSep v)            = "nodesep=" ++ show v
-    show (NoJustify v)          = "nojustify=" ++ show v
-    show (Normalize v)          = "normalize=" ++ show v
-    show (Nslimit v)            = "nslimit=" ++ show v
-    show (Nslimit1 v)           = "nslimit1=" ++ show v
-    show (Ordering v)           = "ordering=" ++ v
-    show (Orientation v)        = "orientation=" ++ show v
-    show (OrientationGraph v)   = "orientation=" ++ v
-    show (OutputOrder v)        = "outputorder=" ++ show v
-    show (Overlap v)            = "overlap=" ++ show v
-    show (OverlapScaling v)     = "overlap_scaling=" ++ show v
-    show (Pack v)               = "pack=" ++ show v
-    show (PackMode v)           = "packmode=" ++ show v
-    show (Pad v)                = "pad=" ++ show v
-    show (Page v)               = "page=" ++ show v
-    show (PageDir v)            = "pagedir=" ++ show v
-    show (PenColor v)           = "pencolor=" ++ show v
-    show (PenWidth v)           = "penwidth=" ++ show v
-    show (Peripheries v)        = "peripheries=" ++ show v
-    show (Pin v)                = "pin=" ++ show v
-    show (Pos v)                = "pos=" ++ show v
-    show (QuadTree v)           = "quadtree=" ++ show v
-    show (Quantum v)            = "quantum=" ++ show v
-    show (Rank v)               = "rank=" ++ show v
-    show (RankDir v)            = "rankdir=" ++ show v
-    show (Ranksep v)            = "ranksep=" ++ show v
-    show (Ratio v)              = "ratio=" ++ show v
-    show (Rects v)              = "rects=" ++ show v
-    show (Regular v)            = "regular=" ++ show v
-    show (ReMinCross v)         = "remincross=" ++ show v
-    show (RepulsiveForce v)     = "repulsiveforce=" ++ show v
-    show (Resolution v)         = "resolution=" ++ show v
-    show (Root v)               = "root=" ++ show v
-    show (Rotate v)             = "rotate=" ++ show v
-    show (SameHead v)           = "samehead=" ++ v
-    show (SameTail v)           = "sametail=" ++ v
-    show (SamplePoints v)       = "samplepoints=" ++ show v
-    show (SearchSize v)         = "searchsize=" ++ show v
-    show (Sep v)                = "sep=" ++ show v
-    show (Shape v)              = "shape=" ++ show v
-    show (ShapeFile v)          = "shapefile=" ++ v
-    show (ShowBoxes v)          = "showboxes=" ++ show v
-    show (Sides v)              = "sides=" ++ show v
-    show (Size v)               = "size=" ++ show v
-    show (Skew v)               = "skew=" ++ show v
-    show (Smoothing v)          = "smoothing=" ++ show v
-    show (SortV v)              = "sortv=" ++ show v
-    show (Splines v)            = "splines=" ++ show v
-    show (Start v)              = "start=" ++ show v
-    show (Style v)              = "style=" ++ show v
-    show (StyleSheet v)         = "stylesheet=" ++ v
-    show (TailURL v)            = "tailURL=" ++ show v
-    show (TailClip v)           = "tailclip=" ++ show v
-    show (TailLabel v)          = "taillabel=" ++ show v
-    show (TailPort v)           = "tailport=" ++ show v
-    show (TailTarget v)         = "tailtarget=" ++ v
-    show (TailTooltip v)        = "tailtooltip=" ++ v
-    show (Target v)             = "target=" ++ v
-    show (Tooltip v)            = "tooltip=" ++ v
-    show (TrueColor v)          = "truecolor=" ++ show v
-    show (Vertices v)           = "vertices=" ++ show v
-    show (ViewPort v)           = "viewport=" ++ show v
-    show (VoroMargin v)         = "voro_margin=" ++ show v
-    show (Weight v)             = "weight=" ++ show v
-    show (Width v)              = "width=" ++ show v
-    show (Z v)                  = "z=" ++ show v
+instance PrintDot Attribute where
+    unqtDot (Damping v)            = printField "Damping" v
+    unqtDot (K v)                  = printField "K" v
+    unqtDot (URL v)                = printField "URL" v
+    unqtDot (ArrowHead v)          = printField "arrowhead" v
+    unqtDot (ArrowSize v)          = printField "arrowsize" v
+    unqtDot (ArrowTail v)          = printField "arrowtail" v
+    unqtDot (Aspect v)             = printField "aspect" v
+    unqtDot (Bb v)                 = printField "bb" v
+    unqtDot (BgColor v)            = printField "bgcolor" v
+    unqtDot (Center v)             = printField "center" v
+    unqtDot (Charset v)            = printField "charset" v
+    unqtDot (ClusterRank v)        = printField "clusterrank" v
+    unqtDot (Color v)              = printField "color" v
+    unqtDot (ColorScheme v)        = printField "colorscheme" v
+    unqtDot (Comment v)            = printField "comment" v
+    unqtDot (Compound v)           = printField "compound" v
+    unqtDot (Concentrate v)        = printField "concentrate" v
+    unqtDot (Constraint v)         = printField "constraint" v
+    unqtDot (Decorate v)           = printField "decorate" v
+    unqtDot (DefaultDist v)        = printField "defaultdist" v
+    unqtDot (Dim v)                = printField "dim" v
+    unqtDot (Dimen v)              = printField "dimen" v
+    unqtDot (Dir v)                = printField "dir" v
+    unqtDot (DirEdgeConstraints v) = printField "diredgeconstraints" v
+    unqtDot (Distortion v)         = printField "distortion" v
+    unqtDot (DPI v)                = printField "dpi" v
+    unqtDot (EdgeURL v)            = printField "edgeURL" v
+    unqtDot (EdgeTarget v)         = printField "edgetarget" v
+    unqtDot (EdgeTooltip v)        = printField "edgetooltip" v
+    unqtDot (Epsilon v)            = printField "epsilon" v
+    unqtDot (ESep v)               = printField "esep" v
+    unqtDot (FillColor v)          = printField "fillcolor" v
+    unqtDot (FixedSize v)          = printField "fixedsize" v
+    unqtDot (FontColor v)          = printField "fontcolor" v
+    unqtDot (FontName v)           = printField "fontname" v
+    unqtDot (FontNames v)          = printField "fontnames" v
+    unqtDot (FontPath v)           = printField "fontpath" v
+    unqtDot (FontSize v)           = printField "fontsize" v
+    unqtDot (Group v)              = printField "group" v
+    unqtDot (HeadURL v)            = printField "headURL" v
+    unqtDot (HeadClip v)           = printField "headclip" v
+    unqtDot (HeadLabel v)          = printField "headlabel" v
+    unqtDot (HeadPort v)           = printField "headport" v
+    unqtDot (HeadTarget v)         = printField "headtarget" v
+    unqtDot (HeadTooltip v)        = printField "headtooltip" v
+    unqtDot (Height v)             = printField "height" v
+    unqtDot (ID v)                 = printField "id" v
+    unqtDot (Image v)              = printField "image" v
+    unqtDot (ImageScale v)         = printField "imagescale" v
+    unqtDot (Label v)              = printField "label" v
+    unqtDot (LabelURL v)           = printField "labelURL" v
+    unqtDot (LabelAngle v)         = printField "labelangle" v
+    unqtDot (LabelDistance v)      = printField "labeldistance" v
+    unqtDot (LabelFloat v)         = printField "labelfloat" v
+    unqtDot (LabelFontColor v)     = printField "labelfontcolor" v
+    unqtDot (LabelFontName v)      = printField "labelfontname" v
+    unqtDot (LabelFontSize v)      = printField "labelfontsize" v
+    unqtDot (LabelJust v)          = printField "labeljust" v
+    unqtDot (LabelLoc v)           = printField "labelloc" v
+    unqtDot (LabelTarget v)        = printField "labeltarget" v
+    unqtDot (LabelTooltip v)       = printField "labeltooltip" v
+    unqtDot (Landscape v)          = printField "landscape" v
+    unqtDot (Layer v)              = printField "layer" v
+    unqtDot (Layers v)             = printField "layers" v
+    unqtDot (LayerSep v)           = printField "layersep" v
+    unqtDot (Layout v)             = printField "layout" v
+    unqtDot (Len v)                = printField "len" v
+    unqtDot (Levels v)             = printField "levels" v
+    unqtDot (LevelsGap v)          = printField "levelsgap" v
+    unqtDot (LHead v)              = printField "lhead" v
+    unqtDot (LPos v)               = printField "lp" v
+    unqtDot (LTail v)              = printField "ltail" v
+    unqtDot (Margin v)             = printField "margin" v
+    unqtDot (MaxIter v)            = printField "maxiter" v
+    unqtDot (MCLimit v)            = printField "mclimit" v
+    unqtDot (MinDist v)            = printField "mindist" v
+    unqtDot (MinLen v)             = printField "minlen" v
+    unqtDot (Mode v)               = printField "mode" v
+    unqtDot (Model v)              = printField "model" v
+    unqtDot (Mosek v)              = printField "mosek" v
+    unqtDot (NodeSep v)            = printField "nodesep" v
+    unqtDot (NoJustify v)          = printField "nojustify" v
+    unqtDot (Normalize v)          = printField "normalize" v
+    unqtDot (Nslimit v)            = printField "nslimit" v
+    unqtDot (Nslimit1 v)           = printField "nslimit1" v
+    unqtDot (Ordering v)           = printField "ordering" v
+    unqtDot (Orientation v)        = printField "orientation" v
+    unqtDot (OrientationGraph v)   = printField "orientation" v
+    unqtDot (OutputOrder v)        = printField "outputorder" v
+    unqtDot (Overlap v)            = printField "overlap" v
+    unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
+    unqtDot (Pack v)               = printField "pack" v
+    unqtDot (PackMode v)           = printField "packmode" v
+    unqtDot (Pad v)                = printField "pad" v
+    unqtDot (Page v)               = printField "page" v
+    unqtDot (PageDir v)            = printField "pagedir" v
+    unqtDot (PenColor v)           = printField "pencolor" v
+    unqtDot (PenWidth v)           = printField "penwidth" v
+    unqtDot (Peripheries v)        = printField "peripheries" v
+    unqtDot (Pin v)                = printField "pin" v
+    unqtDot (Pos v)                = printField "pos" v
+    unqtDot (QuadTree v)           = printField "quadtree" v
+    unqtDot (Quantum v)            = printField "quantum" v
+    unqtDot (Rank v)               = printField "rank" v
+    unqtDot (RankDir v)            = printField "rankdir" v
+    unqtDot (Ranksep v)            = printField "ranksep" v
+    unqtDot (Ratio v)              = printField "ratio" v
+    unqtDot (Rects v)              = printField "rects" v
+    unqtDot (Regular v)            = printField "regular" v
+    unqtDot (ReMinCross v)         = printField "remincross" v
+    unqtDot (RepulsiveForce v)     = printField "repulsiveforce" v
+    unqtDot (Resolution v)         = printField "resolution" v
+    unqtDot (Root v)               = printField "root" v
+    unqtDot (Rotate v)             = printField "rotate" v
+    unqtDot (SameHead v)           = printField "samehead" v
+    unqtDot (SameTail v)           = printField "sametail" v
+    unqtDot (SamplePoints v)       = printField "samplepoints" v
+    unqtDot (SearchSize v)         = printField "searchsize" v
+    unqtDot (Sep v)                = printField "sep" v
+    unqtDot (Shape v)              = printField "shape" v
+    unqtDot (ShapeFile v)          = printField "shapefile" v
+    unqtDot (ShowBoxes v)          = printField "showboxes" v
+    unqtDot (Sides v)              = printField "sides" v
+    unqtDot (Size v)               = printField "size" v
+    unqtDot (Skew v)               = printField "skew" v
+    unqtDot (Smoothing v)          = printField "smoothing" v
+    unqtDot (SortV v)              = printField "sortv" v
+    unqtDot (Splines v)            = printField "splines" v
+    unqtDot (Start v)              = printField "start" v
+    unqtDot (Style v)              = printField "style" v
+    unqtDot (StyleSheet v)         = printField "stylesheet" v
+    unqtDot (TailURL v)            = printField "tailURL" v
+    unqtDot (TailClip v)           = printField "tailclip" v
+    unqtDot (TailLabel v)          = printField "taillabel" v
+    unqtDot (TailPort v)           = printField "tailport" v
+    unqtDot (TailTarget v)         = printField "tailtarget" v
+    unqtDot (TailTooltip v)        = printField "tailtooltip" v
+    unqtDot (Target v)             = printField "target" v
+    unqtDot (Tooltip v)            = printField "tooltip" v
+    unqtDot (TrueColor v)          = printField "truecolor" v
+    unqtDot (Vertices v)           = printField "vertices" v
+    unqtDot (ViewPort v)           = printField "viewport" v
+    unqtDot (VoroMargin v)         = printField "voro_margin" v
+    unqtDot (Weight v)             = printField "weight" v
+    unqtDot (Width v)              = printField "width" v
+    unqtDot (Z v)                  = printField "z" v
+
+    listToDot = unqtListToDot
 
 instance ParseDot Attribute where
     parse = oneOf [ liftM Damping            $ parseField "Damping"
@@ -418,7 +429,7 @@ instance ParseDot Attribute where
                   , liftM Dim                $ parseField "dim"
                   , liftM Dimen              $ parseField "dimen"
                   , liftM Dir                $ parseField "dir"
-                  , liftM DirEdgeConstraints $ parseFieldDef (DEBool True) "diredgeconstraints"
+                  , liftM DirEdgeConstraints $ parseFieldDef EdgeConstraints "diredgeconstraints"
                   , liftM Distortion         $ parseField "distortion"
                   , liftM DPI                $ parseField "dpi"
                   , liftM EdgeURL            $ oneOf (map parseField ["edgeURL", "edgehref"])
@@ -766,10 +777,12 @@ usedByEdges _                = False
 -- -----------------------------------------------------------------------------
 
 newtype URL = UStr { urlString :: String }
-    deriving (Eq, Read)
+    deriving (Eq, Show, Read)
 
-instance Show URL where
-    show u = '<' : urlString u ++ ">"
+instance PrintDot URL where
+    unqtDot u = wrap (char '<') (char '>')
+                -- Explicitly use text here... no quotes!
+                . text $ urlString u
 
 instance ParseDot URL where
     parse = do character open
@@ -792,28 +805,28 @@ data ArrowType = Normal   | Inv
                | Box      | OBox
                | Open     | HalfOpen
                | Vee
-                 deriving (Eq, Read)
+                 deriving (Eq, Show, Read)
 
-instance Show ArrowType where
-    show Normal   = "normal"
-    show Inv      = "inv"
-    show DotArrow = "dot"
-    show InvDot   = "invdot"
-    show ODot     = "odot"
-    show InvODot  = "invodot"
-    show NoArrow  = "none"
-    show Tee      = "tee"
-    show Empty    = "empty"
-    show InvEmpty = "invempty"
-    show Diamond  = "diamond"
-    show ODiamond = "odiamond"
-    show EDiamond = "ediamond"
-    show Crow     = "crow"
-    show Box      = "box"
-    show OBox     = "obox"
-    show Open     = "open"
-    show HalfOpen = "halfopen"
-    show Vee      = "vee"
+instance PrintDot ArrowType where
+    unqtDot Normal   = unqtDot "normal"
+    unqtDot Inv      = unqtDot "inv"
+    unqtDot DotArrow = unqtDot "dot"
+    unqtDot InvDot   = unqtDot "invdot"
+    unqtDot ODot     = unqtDot "odot"
+    unqtDot InvODot  = unqtDot "invodot"
+    unqtDot NoArrow  = unqtDot "none"
+    unqtDot Tee      = unqtDot "tee"
+    unqtDot Empty    = unqtDot "empty"
+    unqtDot InvEmpty = unqtDot "invempty"
+    unqtDot Diamond  = unqtDot "diamond"
+    unqtDot ODiamond = unqtDot "odiamond"
+    unqtDot EDiamond = unqtDot "ediamond"
+    unqtDot Crow     = unqtDot "crow"
+    unqtDot Box      = unqtDot "box"
+    unqtDot OBox     = unqtDot "obox"
+    unqtDot Open     = unqtDot "open"
+    unqtDot HalfOpen = unqtDot "halfopen"
+    unqtDot Vee      = unqtDot "vee"
 
 instance ParseDot ArrowType where
     parse = optionalQuoted
@@ -842,28 +855,29 @@ instance ParseDot ArrowType where
 
 data AspectType = RatioOnly Double
                 | RatioPassCount Double Int
-                  deriving (Eq, Read)
+                  deriving (Eq, Show, Read)
 
-instance Show AspectType where
-    show (RatioOnly r)        = show r
-    show (RatioPassCount r p) = show $ show r ++ ',' : show p
+instance PrintDot AspectType where
+    unqtDot (RatioOnly r)        = unqtDot r
+    unqtDot (RatioPassCount r p) = commaDel r p
+
+    toDot at@RatioOnly{}      = unqtDot at
+    toDot at@RatioPassCount{} = doubleQuotes $ unqtDot at
 
 instance ParseDot AspectType where
-    parse = oneOf [ liftM RatioOnly parse
-                  , quotedParse $ do r <- parse
-                                     character ','
-                                     whitespace'
-                                     p <- parse
-                                     return $ RatioPassCount r p
+    parse = oneOf [ quotedParse $ liftM (uncurry RatioPassCount) commaSep
+                  , liftM RatioOnly parse
                   ]
 
 -- -----------------------------------------------------------------------------
 
 data Rect = Rect Point Point
-            deriving (Eq, Read)
+            deriving (Eq, Show, Read)
 
-instance Show Rect where
-    show (Rect p1 p2) = show $ show p1 ++ ',' : show p2
+instance PrintDot Rect where
+    unqtDot (Rect p1 p2) = commaDel p1 p2
+
+    toDot = doubleQuotes . unqtDot
 
 instance ParseDot Rect where
     parse = liftM (uncurry Rect) . quotedParse
@@ -885,25 +899,27 @@ data Color = RGB { red   :: Word8
                  , value      :: Int
                  }
            | ColorName String
-             deriving (Eq, Read)
+             deriving (Eq, Show, Read)
 
-instance Show Color where
-    show = show . showColor
+instance PrintDot Color where
+    unqtDot (RGB  r g b)     = hexColor [r,g,b]
+    unqtDot (RGBA r g b a)   = hexColor [r,g,b,a]
+    unqtDot (HSV  h s v)     = hcat . punctuate comma $ map unqtDot [h,s,v]
+    unqtDot (ColorName name) = unqtDot name
 
-    showList cs s = show $ go cs
-        where
-          go []      = s
-          go [c]     = showColor c ++ s
-          go (c:cs') = showColor c ++ ':' : go cs'
+    toDot (ColorName name) = toDot name
+    toDot c                = doubleQuotes $ unqtDot c
 
-showColor :: Color -> String
-showColor (RGB r g b)      = '#' : foldr showWord8Pad "" [r,g,b]
-showColor (RGBA r g b a)   = '#' : foldr showWord8Pad "" [r,g,b,a]
-showColor (HSV h s v)      = show h ++ " " ++ show s ++ " " ++ show v
-showColor (ColorName name) = name
+    unqtListToDot = hcat . punctuate colon . map unqtDot
 
-showWord8Pad :: Word8 -> String -> String
-showWord8Pad w s = padding ++ simple ++ s
+    -- This is the same as the default instance, but define it anyway.
+    listToDot = doubleQuotes . unqtListToDot
+
+hexColor :: [Word8] -> DotCode
+hexColor = (<>) (char '#') . hcat . map word8Doc
+
+word8Doc   :: Word8 -> DotCode
+word8Doc w = text $ padding ++ simple
     where
       simple = showHex w ""
       padding = replicate count '0'
@@ -951,12 +967,14 @@ parseColor = oneOf [ parseHexBased
 data ClusterMode = Local
                  | Global
                  | NoCluster
-                   deriving (Eq, Read)
+                   deriving (Eq, Show, Read)
 
-instance Show ClusterMode where
-    show Local     = "local"
-    show Global    = "global"
-    show NoCluster = "none"
+instance PrintDot ClusterMode where
+    unqtDot Local     = unqtDot "local"
+    unqtDot Global    = unqtDot "global"
+    unqtDot NoCluster = unqtDot "none"
+
+
 
 instance ParseDot ClusterMode where
     parse = optionalQuoted
@@ -969,13 +987,13 @@ instance ParseDot ClusterMode where
 -- -----------------------------------------------------------------------------
 
 data DirType = Forward | Back | Both | NoDir
-               deriving (Eq, Read)
+               deriving (Eq, Show, Read)
 
-instance Show DirType where
-    show Forward = "forward"
-    show Back    = "back"
-    show Both    = "both"
-    show NoDir   = "none"
+instance PrintDot DirType where
+    unqtDot Forward = unqtDot "forward"
+    unqtDot Back    = unqtDot "back"
+    unqtDot Both    = unqtDot "both"
+    unqtDot NoDir   = unqtDot "none"
 
 instance ParseDot DirType where
     parse = optionalQuoted
@@ -988,18 +1006,20 @@ instance ParseDot DirType where
 -- -----------------------------------------------------------------------------
 
 -- | Only when @mode=ipsep@.
-data DEConstraints = DEBool Bool
-                   | Hier
-                     deriving (Eq, Read)
+data DEConstraints = EdgeConstraints
+                   | NoConstraints
+                   | HierConstraints
+                     deriving (Eq, Show, Read)
 
-instance Show DEConstraints where
-    show (DEBool b) = show b
-    show Hier       = "hier"
+instance PrintDot DEConstraints where
+    unqtDot EdgeConstraints = unqtDot True
+    unqtDot NoConstraints   = unqtDot False
+    unqtDot HierConstraints = text "hier"
 
 instance ParseDot DEConstraints where
     parse = optionalQuoted
-            $ oneOf [ liftM DEBool parse
-                    , string "hier" >> return Hier
+            $ oneOf [ liftM (bool EdgeConstraints NoConstraints) parse
+                    , string "hier" >> return HierConstraints
                     ]
 
 -- -----------------------------------------------------------------------------
@@ -1007,11 +1027,14 @@ instance ParseDot DEConstraints where
 -- | Either a 'Double' or a 'Point'.
 data DPoint = DVal Double
             | PVal Point
-             deriving (Eq, Read)
+             deriving (Eq, Show, Read)
 
-instance Show DPoint where
-    show (DVal d) = show d
-    show (PVal p) = show p
+instance PrintDot DPoint where
+    unqtDot (DVal d) = unqtDot d
+    unqtDot (PVal p) = unqtDot p
+
+    toDot (DVal d) = toDot d
+    toDot (PVal p) = toDot p
 
 instance ParseDot DPoint where
     parse = oneOf [ liftM DVal parse
@@ -1022,11 +1045,14 @@ instance ParseDot DPoint where
 
 data Label = StrLabel String
            | URLLabel URL
-             deriving (Eq, Read)
+             deriving (Eq, Show, Read)
 
-instance Show Label where
-    show (StrLabel s) = s
-    show (URLLabel u) = show u
+instance PrintDot Label where
+    unqtDot (StrLabel s) = unqtDot s
+    unqtDot (URLLabel u) = unqtDot u
+
+    toDot (StrLabel s) = toDot s
+    toDot (URLLabel u) = toDot u
 
 instance ParseDot Label where
     parse = oneOf [ liftM StrLabel parse
@@ -1037,12 +1063,17 @@ instance ParseDot Label where
 
 data Point = Point Int Int
            | PointD Double Double
-             deriving (Eq, Read)
+             deriving (Eq, Show, Read)
 
-instance Show Point where
-    show = show . showPoint
+instance PrintDot Point where
+    unqtDot (Point  x y) = commaDel x y
+    unqtDot (PointD x y) = commaDel x y
 
-    showList ps s = unwords (map showPoint ps) ++ s
+    toDot = doubleQuotes . unqtDot
+
+    unqtListToDot = hcat . map unqtDot
+
+    listToDot = doubleQuotes . unqtListToDot
 
 showPoint :: Point -> String
 showPoint (Point  x y) = show x ++ ',' : show y
@@ -1064,21 +1095,21 @@ data Overlap = KeepOverlaps
              | RemoveOverlaps
              | ScaleOverlaps
              | ScaleXYOverlaps
-             | PrismOverlap (Maybe Int) -- ^ Only when sfdp is available, @Int@ is non-negative
+             | PrismOverlap (Maybe Int) -- ^ Only when sfdp is available, 'Int' is non-negative
              | CompressOverlap
              | VpscOverlap
              | IpsepOverlap -- ^ Only when @mode="ipsep"@
-               deriving (Eq, Read)
+               deriving (Eq, Show, Read)
 
-instance Show Overlap where
-    show KeepOverlaps     = "true"
-    show RemoveOverlaps   = "false"
-    show ScaleOverlaps    = "scale"
-    show ScaleXYOverlaps  = "scalexy"
-    show (PrismOverlap i) = maybe id (flip (++) . show) i $ "prism"
-    show CompressOverlap  = "compress"
-    show VpscOverlap      = "vpsc"
-    show IpsepOverlap     = "ipsep"
+instance PrintDot Overlap where
+    unqtDot KeepOverlaps     = unqtDot True
+    unqtDot RemoveOverlaps   = unqtDot False
+    unqtDot ScaleOverlaps    = text "scale"
+    unqtDot ScaleXYOverlaps  = text "scalexy"
+    unqtDot (PrismOverlap i) = maybe id (flip (<>) . unqtDot) i $ text "prism"
+    unqtDot CompressOverlap  = text "compress"
+    unqtDot VpscOverlap      = text "vpsc"
+    unqtDot IpsepOverlap     = text "ipsep"
 
 instance ParseDot Overlap where
     parse = optionalQuoted
@@ -1096,11 +1127,14 @@ instance ParseDot Overlap where
 
 data LayerRange = LRID LayerID
                 | LRS LayerID String LayerID
-                  deriving (Eq, Read)
+                  deriving (Eq, Show, Read)
 
-instance Show LayerRange where
-    show (LRID lid)        = show lid
-    show (LRS id1 sep id2) = show $ show id1 ++ sep ++ show id2
+instance PrintDot LayerRange where
+    unqtDot (LRID lid)        = unqtDot lid
+    unqtDot (LRS id1 sep id2) = unqtDot id1 <> unqtDot sep <> unqtDot id2
+
+    toDot (LRID lid) = toDot lid
+    toDot lrs        = doubleQuotes $ unqtDot lrs
 
 instance ParseDot LayerRange where
     parse = oneOf [ liftM LRID parse
@@ -1123,12 +1157,16 @@ parseLayerName = many1 $ satisfy (flip notElem defLayerSep)
 data LayerID = AllLayers
              | LRInt Int
              | LRName String
-               deriving (Eq, Read)
+               deriving (Eq, Show, Read)
 
-instance Show LayerID where
-    show AllLayers   = "all"
-    show (LRInt n)   = show n
-    show (LRName nm) = nm
+instance PrintDot LayerID where
+    unqtDot AllLayers   = text "all"
+    unqtDot (LRInt n)   = unqtDot n
+    unqtDot (LRName nm) = unqtDot nm
+
+    toDot (LRName nm) = toDot nm
+    -- Other two don't need quotes
+    toDot li          = unqtDot li
 
 instance ParseDot LayerID where
     parse = oneOf [ optionalQuotedString "all" >> return AllLayers
@@ -1138,10 +1176,15 @@ instance ParseDot LayerID where
 
 -- | The list represent (Separator, Name)
 data LayerList = LL String [(String, String)]
-                 deriving (Eq, Read)
+                 deriving (Eq, Show, Read)
 
-instance Show LayerList where
-    show (LL l1 ols) = l1 ++ concatMap (uncurry (++)) ols
+instance PrintDot LayerList where
+    unqtDot (LL l1 ols) = unqtDot l1 <> hsep (map subLL ols)
+        where
+          subLL (sep, l) = unqtDot sep <> unqtDot l
+
+    -- Might not need quotes, but probably will.
+    toDot = doubleQuotes . unqtDot
 
 instance ParseDot LayerList where
     parse = do l1 <- parseLayerName
@@ -1153,12 +1196,12 @@ instance ParseDot LayerList where
 -- -----------------------------------------------------------------------------
 
 data OutputMode = BreadthFirst | NodesFirst | EdgesFirst
-                  deriving (Eq, Read)
+                  deriving (Eq, Show, Read)
 
-instance Show OutputMode where
-    show BreadthFirst = "breadthfirst"
-    show NodesFirst = "nodesfirst"
-    show EdgesFirst = "edgesfirst"
+instance PrintDot OutputMode where
+    unqtDot BreadthFirst = text "breadthfirst"
+    unqtDot NodesFirst   = text "nodesfirst"
+    unqtDot EdgesFirst   = text "edgesfirst"
 
 instance ParseDot OutputMode where
     parse = optionalQuoted
@@ -1172,12 +1215,12 @@ instance ParseDot OutputMode where
 data Pack = DoPack
           | DontPack
           | PackMargin Int -- ^ If non-negative, then packs; otherwise doesn't.
-            deriving (Eq, Read)
+            deriving (Eq, Show, Read)
 
-instance Show Pack where
-    show DoPack         = "true"
-    show DontPack       = "false"
-    show (PackMargin m) = show m
+instance PrintDot Pack where
+    unqtDot DoPack         = unqtDot True
+    unqtDot DontPack       = unqtDot False
+    unqtDot (PackMargin m) = unqtDot m
 
 instance ParseDot Pack where
     parse = optionalQuoted
@@ -1193,24 +1236,24 @@ data PackMode = PackNode
               | PackArray Bool Bool (Maybe Int) -- ^ Sort by cols, sort
                                                 -- by user, number of
                                                 -- rows/cols
-                deriving (Eq, Read)
+                deriving (Eq, Show, Read)
 
-instance Show PackMode where
-    show PackNode           = "node"
-    show PackClust          = "clust"
-    show PackGraph          = "graph"
-    show (PackArray c u mi) = addNum . isU . isC . isUnder
-                              $ "array"
+instance PrintDot PackMode where
+    unqtDot PackNode           = text "node"
+    unqtDot PackClust          = text "clust"
+    unqtDot PackGraph          = text "graph"
+    unqtDot (PackArray c u mi) = addNum . isU . isC . isUnder
+                                 $ text "array"
         where
-          addNum = maybe id (flip (++) . show) mi
+          addNum = maybe id (flip (<>) . unqtDot) mi
           isUnder = if c || u
-                    then flip (++) "_"
+                    then flip (<>) $ char '_'
                     else id
           isC = if c
-                then flip (++) "c"
+                then flip (<>) $ char 'c'
                 else id
           isU = if u
-                then flip (++) "u"
+                then flip (<>) $ char 'u'
                 else id
 
 instance ParseDot PackMode where
@@ -1233,11 +1276,14 @@ instance ParseDot PackMode where
 
 data Pos = PointPos Point
          | SplinePos [Spline]
-           deriving (Eq, Read)
+           deriving (Eq, Show, Read)
 
-instance Show Pos where
-    show (PointPos p)   = show p
-    show (SplinePos ss) = show ss
+instance PrintDot Pos where
+    unqtDot (PointPos p)   = unqtDot p
+    unqtDot (SplinePos ss) = unqtDot ss
+
+    toDot (PointPos p)   = toDot p
+    toDot (SplinePos ss) = toDot ss
 
 instance ParseDot Pos where
     -- [Spline] must be quoted, so use the quoted parser for Point as
@@ -1254,14 +1300,17 @@ data EdgeType = SplineEdges
               | NoEdges
               | PolyLine
               | CompoundEdge -- ^ fdp only
-                deriving (Eq, Read)
+                deriving (Eq, Show, Read)
 
-instance Show EdgeType where
-    show SplineEdges  = "true"
-    show LineEdges    = "false"
-    show NoEdges      = "\"\""
-    show PolyLine     = "polyline"
-    show CompoundEdge = "compound"
+instance PrintDot EdgeType where
+    unqtDot SplineEdges  = toDot True
+    unqtDot LineEdges    = toDot False
+    unqtDot NoEdges      = empty
+    unqtDot PolyLine     = text "polyline"
+    unqtDot CompoundEdge = text "compound"
+
+    toDot NoEdges = doubleQuotes empty
+    toDot et      = unqtDot et
 
 instance ParseDot EdgeType where
     parse = optionalQuoted
@@ -1278,17 +1327,17 @@ instance ParseDot EdgeType where
 -- | Upper-case first character is major order;
 --   lower-case second character is minor order.
 data PageDir = Bl | Br | Tl | Tr | Rb | Rt | Lb | Lt
-               deriving (Eq, Read)
+               deriving (Eq, Show, Read)
 
-instance Show PageDir where
-    show Bl = "BL"
-    show Br = "BR"
-    show Tl = "TL"
-    show Tr = "TR"
-    show Rb = "RB"
-    show Rt = "RT"
-    show Lb = "LB"
-    show Lt = "LT"
+instance PrintDot PageDir where
+    unqtDot Bl = text "BL"
+    unqtDot Br = text "BR"
+    unqtDot Tl = text "TL"
+    unqtDot Tr = text "TR"
+    unqtDot Rb = text "RB"
+    unqtDot Rt = text "RT"
+    unqtDot Lb = text "LB"
+    unqtDot Lt = text "LT"
 
 instance ParseDot PageDir where
     parse = optionalQuoted
@@ -1307,25 +1356,22 @@ instance ParseDot PageDir where
 -- | The number of points in the list must be equivalent to 1 mod 3;
 --   note that this is not checked.
 data Spline = Spline (Maybe Point) (Maybe Point) [Point]
-              deriving (Eq, Read)
+              deriving (Eq, Show, Read)
 
-instance Show Spline where
-    show = show . showSpline
-
-    showList ss o = show $ go ss
+instance PrintDot Spline where
+    unqtDot (Spline ms me ps) = addS . addE
+                               . hsep
+                               $ map unqtDot ps
         where
-          go []      = o
-          go [s]     = showSpline s ++ o
-          go (s:ss') = showSpline s ++ ';' : go ss'
+          addP t = maybe id ((<>) . commaDel t)
+          addS = addP 's' ms
+          addE = addP 'e' me
 
-showSpline                   :: Spline -> String
-showSpline (Spline ms me ps) = addS . addE
-                               . unwords
-                               $ map showPoint ps
-    where
-      addP t = maybe id (\p -> (++) $ t : ',' : show p)
-      addS = addP 's' ms
-      addE = addP 'e' me
+    toDot = doubleQuotes . unqtDot
+
+    unqtListToDot = hsep . punctuate semi . map unqtDot
+
+    listToDot = doubleQuotes . unqtListToDot
 
 instance ParseDot Spline where
     parse = quotedParse parseSpline
@@ -1349,12 +1395,12 @@ parseSpline = do ms <- parseP 's'
 data QuadType = NormalQT
               | FastQT
               | NoQT
-                deriving (Eq, Read)
+                deriving (Eq, Show, Read)
 
-instance Show QuadType where
-    show NormalQT = "normal"
-    show FastQT   = "fast"
-    show NoQT     = "none"
+instance PrintDot QuadType where
+    unqtDot NormalQT = text "normal"
+    unqtDot FastQT   = text "fast"
+    unqtDot NoQT     = text "none"
 
 instance ParseDot QuadType where
     -- Have to take into account the slightly different interpretation
@@ -1363,22 +1409,25 @@ instance ParseDot QuadType where
             $ oneOf [ string "normal" >> return NormalQT
                     , string "fast"   >> return FastQT
                     , string "none"   >> return NoQT
-                    , character '2' >> return FastQT -- weird bool
+                    , character '2'   >> return FastQT -- weird bool
                     , liftM (bool NormalQT NoQT) parse
                     ]
 
 -- -----------------------------------------------------------------------------
 
 -- | Specify the root node either as a Node attribute or a Graph attribute.
-data Root = IsCentral -- ^ For Nodes only
-          | NotCentral -- ^ For Nodes only
+data Root = IsCentral       -- ^ For Nodes only
+          | NotCentral      -- ^ For Nodes only
           | NodeName String -- ^ For Graphs only
-            deriving (Eq, Read)
+            deriving (Eq, Show, Read)
 
-instance Show Root where
-    show IsCentral    = "true"
-    show NotCentral   = "false"
-    show (NodeName n) = n
+instance PrintDot Root where
+    unqtDot IsCentral    = unqtDot True
+    unqtDot NotCentral   = unqtDot False
+    unqtDot (NodeName n) = unqtDot n
+
+    toDot (NodeName n) = toDot n
+    toDot r            = unqtDot r
 
 instance ParseDot Root where
     parse = optionalQuoted
@@ -1393,14 +1442,14 @@ data RankType = SameRank
               | SourceRank
               | MaxRank
               | SinkRank
-                deriving (Eq, Read)
+                deriving (Eq, Show, Read)
 
-instance Show RankType where
-    show SameRank   = "same"
-    show MinRank    = "min"
-    show SourceRank = "source"
-    show MaxRank    = "max"
-    show SinkRank   = "sink"
+instance PrintDot RankType where
+    unqtDot SameRank   = text "same"
+    unqtDot MinRank    = text "min"
+    unqtDot SourceRank = text "source"
+    unqtDot MaxRank    = text "max"
+    unqtDot SinkRank   = text "sink"
 
 instance ParseDot RankType where
     parse = optionalQuoted
@@ -1417,13 +1466,13 @@ data RankDir = FromTop
              | FromLeft
              | FromBottom
              | FromRight
-               deriving (Eq, Read)
+               deriving (Eq, Show, Read)
 
-instance Show RankDir where
-    show FromTop    = "TB"
-    show FromLeft   = "LR"
-    show FromBottom = "BT"
-    show FromRight  = "RL"
+instance PrintDot RankDir where
+    unqtDot FromTop    = text "TB"
+    unqtDot FromLeft   = text "LR"
+    unqtDot FromBottom = text "BT"
+    unqtDot FromRight  = text "RL"
 
 instance ParseDot RankDir where
     parse = optionalQuoted
@@ -1468,41 +1517,41 @@ data Shape
     | Folder
     | Box3d
     | Component
-      deriving (Eq, Read)
+      deriving (Eq, Show, Read)
 
-instance Show Shape where
-    show BoxShape      = "box"
-    show Polygon       = "polygon"
-    show Ellipse       = "ellipse"
-    show Circle        = "circle"
-    show PointShape    = "point"
-    show Egg           = "egg"
-    show Triangle      = "triangle"
-    show Plaintext     = "plaintext"
-    show DiamondShape  = "diamond"
-    show Trapezium     = "trapezium"
-    show Parallelogram = "parallelogram"
-    show House         = "house"
-    show Pentagon      = "pentagon"
-    show Hexagon       = "hexagon"
-    show Septagon      = "septagon"
-    show Octagon       = "octagon"
-    show Doublecircle  = "doublecircle"
-    show Doubleoctagon = "doubleoctagon"
-    show Tripleoctagon = "tripleoctagon"
-    show Invtriangle   = "invtriangle"
-    show Invtrapezium  = "invtrapezium"
-    show Invhouse      = "invhouse"
-    show Mdiamond      = "mdiamond"
-    show Msquare       = "msquare"
-    show Mcircle       = "mcircle"
-    show Rectangle     = "rectangle"
-    show NoShape       = "none"
-    show Note          = "note"
-    show Tab           = "tab"
-    show Folder        = "folder"
-    show Box3d         = "box3d"
-    show Component     = "component"
+instance PrintDot Shape where
+    unqtDot BoxShape      = text "box"
+    unqtDot Polygon       = text "polygon"
+    unqtDot Ellipse       = text "ellipse"
+    unqtDot Circle        = text "circle"
+    unqtDot PointShape    = text "point"
+    unqtDot Egg           = text "egg"
+    unqtDot Triangle      = text "triangle"
+    unqtDot Plaintext     = text "plaintext"
+    unqtDot DiamondShape  = text "diamond"
+    unqtDot Trapezium     = text "trapezium"
+    unqtDot Parallelogram = text "parallelogram"
+    unqtDot House         = text "house"
+    unqtDot Pentagon      = text "pentagon"
+    unqtDot Hexagon       = text "hexagon"
+    unqtDot Septagon      = text "septagon"
+    unqtDot Octagon       = text "octagon"
+    unqtDot Doublecircle  = text "doublecircle"
+    unqtDot Doubleoctagon = text "doubleoctagon"
+    unqtDot Tripleoctagon = text "tripleoctagon"
+    unqtDot Invtriangle   = text "invtriangle"
+    unqtDot Invtrapezium  = text "invtrapezium"
+    unqtDot Invhouse      = text "invhouse"
+    unqtDot Mdiamond      = text "mdiamond"
+    unqtDot Msquare       = text "msquare"
+    unqtDot Mcircle       = text "mcircle"
+    unqtDot Rectangle     = text "rectangle"
+    unqtDot NoShape       = text "none"
+    unqtDot Note          = text "note"
+    unqtDot Tab           = text "tab"
+    unqtDot Folder        = text "folder"
+    unqtDot Box3d         = text "box3d"
+    unqtDot Component     = text "component"
 
 instance ParseDot Shape where
     parse = optionalQuoted
@@ -1549,16 +1598,16 @@ data SmoothType = NoSmooth
                 | RNG
                 | Spring
                 | TriangleSmooth
-                  deriving (Eq, Read)
+                  deriving (Eq, Show, Read)
 
-instance Show SmoothType where
-    show NoSmooth       = "none"
-    show AvgDist        = "avg_dist"
-    show GraphDist      = "graph_dist"
-    show PowerDist      = "power_dist"
-    show RNG            = "rng"
-    show Spring         = "spring"
-    show TriangleSmooth = "triangle"
+instance PrintDot SmoothType where
+    unqtDot NoSmooth       = text "none"
+    unqtDot AvgDist        = text "avg_dist"
+    unqtDot GraphDist      = text "graph_dist"
+    unqtDot PowerDist      = text "power_dist"
+    unqtDot RNG            = text "rng"
+    unqtDot Spring         = text "spring"
+    unqtDot TriangleSmooth = text "triangle"
 
 instance ParseDot SmoothType where
     parse = optionalQuoted
@@ -1573,58 +1622,64 @@ instance ParseDot SmoothType where
 
 -- -----------------------------------------------------------------------------
 
--- | It it assumed that at least one of these is @Just{}@.
-data StartType = ST (Maybe STStyle) (Maybe Int) -- Use a Word?
-                 deriving (Eq, Read)
+-- | It is assumed that at least one of these is @Just{}@.
+data StartType = StartStyle STStyle
+               | StartSeed Int
+               | StartStyleSeed STStyle Int
+                 deriving (Eq, Show, Read)
 
-instance Show StartType where
-    show (ST ms mi) = maybe id ((++) . show) ms
-                      $ maybe "" show mi
+instance PrintDot StartType where
+    unqtDot (StartStyle ss)       = unqtDot ss
+    unqtDot (StartSeed s)         = unqtDot s
+    unqtDot (StartStyleSeed ss s) = unqtDot ss <> unqtDot s
 
 instance ParseDot StartType where
     parse = optionalQuoted
-            $ do ms <- optional parse
-                 mi <- optional parse
-                 return $ ST ms mi
+            $ oneOf [ do ss <- parse
+                         s  <- parse
+                         return $ StartStyleSeed ss s
+                    , liftM StartStyle parse
+                    , liftM StartSeed parse
+                    ]
 
 data STStyle = RegularStyle
-             | Self
-             | Random
-               deriving (Eq, Read)
+             | SelfStyle
+             | RandomStyle
+               deriving (Eq, Show, Read)
 
-instance Show STStyle where
-    show RegularStyle = "regular"
-    show Self         = "self"
-    show Random       = "random"
+instance PrintDot STStyle where
+    unqtDot RegularStyle = text "regular"
+    unqtDot SelfStyle    = text "self"
+    unqtDot RandomStyle  = text "random"
 
 instance ParseDot STStyle where
     parse = oneOf [ string "regular" >> return RegularStyle
-                  , string "self"    >> return Self
-                  , string "random"  >> return Random
+                  , string "self"    >> return SelfStyle
+                  , string "random"  >> return RandomStyle
                   ]
 
 -- -----------------------------------------------------------------------------
 
-data Style = Stl StyleName (Maybe String)
-             deriving (Eq, Read)
+data StyleItem = SItem StyleName [String]
+             deriving (Eq, Show, Read)
 
-instance Show Style where
-    show (Stl nm marg) = maybe snm
-                               (\arg -> show $ snm ++ '(' : arg ++ ")")
-                               marg
+instance PrintDot StyleItem where
+    unqtDot (SItem nm args)
+        | null args = dnm
+        | otherwise = dnm <> (parens args')
         where
-          snm = show nm
+          dnm = unqtDot nm
+          args' = hcat . punctuate comma $ map unqtDot args
 
-instance ParseDot Style where
-    parse = oneOf [ optionalQuoted $ liftM (\nm -> Stl nm Nothing) parse
-                  , quotedParse $ do nm <- parse
-                                     character '('
-                                     arg <- many1
-                                            $ satisfy (flip notElem "()")
+    toDot si@(SItem nm args)
+        | null args = toDot args
+        | otherwise = doubleQuotes $ unqtDot si
 
-                                     character ')'
-                                     return $ Stl nm (Just arg)
-                  ]
+    unqtListToDot = hcat . punctuate comma . map unqtDot
+
+instance ParseDot StyleItem where
+    -- Need to fix this
+    parse = parse
 
 data StyleName = Dashed    -- ^ Nodes and Edges
                | Dotted    -- ^ Nodes and Edges
@@ -1634,17 +1689,22 @@ data StyleName = Dashed    -- ^ Nodes and Edges
                | Filled    -- ^ Nodes and Clusters
                | Diagonals -- ^ Nodes only
                | Rounded   -- ^ Nodes and Clusters
-                 deriving (Eq, Read)
+               | DD String -- ^ Device Dependent
+                 deriving (Eq, Show, Read)
 
-instance Show StyleName where
-    show Filled    = "filled"
-    show Invisible = "invis"
-    show Diagonals = "diagonals"
-    show Rounded   = "rounded"
-    show Dashed    = "dashed"
-    show Dotted    = "dotted"
-    show Solid     = "solid"
-    show Bold      = "bold"
+instance PrintDot StyleName where
+    unqtDot Filled    = text "filled"
+    unqtDot Invisible = text "invis"
+    unqtDot Diagonals = text "diagonals"
+    unqtDot Rounded   = text "rounded"
+    unqtDot Dashed    = text "dashed"
+    unqtDot Dotted    = text "dotted"
+    unqtDot Solid     = text "solid"
+    unqtDot Bold      = text "bold"
+    unqtDot (DD nm)   = unqtDot nm
+
+    toDot (DD nm) = toDot nm
+    toDot sn      = unqtDot sn
 
 instance ParseDot StyleName where
     parse = optionalQuoted
@@ -1656,15 +1716,19 @@ instance ParseDot StyleName where
                     , string "dotted"    >> return Dotted
                     , string "solid"     >> return Solid
                     , string "bold"      >> return Bold
+                    -- This isn't right, as it will never end...
+                    , liftM DD $ many1 (noneOf ['(', ',', ')'])
                     ]
 
 -- -----------------------------------------------------------------------------
 
 newtype PortPos = PP CompassPoint
-    deriving (Eq, Read)
+    deriving (Eq, Show, Read)
 
-instance Show PortPos where
-    show (PP cp) = show cp
+instance PrintDot PortPos where
+    unqtDot (PP cp) = unqtDot cp
+
+    toDot (PP cp) = toDot cp
 
 instance ParseDot PortPos where
     parse = liftM PP parse
@@ -1679,19 +1743,19 @@ data CompassPoint = North
                   | NorthWest
                   | CenterPoint
                   | NoCP
-                    deriving (Eq, Read)
+                    deriving (Eq, Show, Read)
 
-instance Show CompassPoint where
-    show North       = "n"
-    show NorthEast   = "ne"
-    show East        = "e"
-    show SouthEast   = "se"
-    show South       = "s"
-    show SouthWest   = "sw"
-    show West        = "w"
-    show NorthWest   = "nw"
-    show CenterPoint = "c"
-    show NoCP        = "_"
+instance PrintDot CompassPoint where
+    unqtDot North       = text "n"
+    unqtDot NorthEast   = text "ne"
+    unqtDot East        = text "e"
+    unqtDot SouthEast   = text "se"
+    unqtDot South       = text "s"
+    unqtDot SouthWest   = text "sw"
+    unqtDot West        = text "w"
+    unqtDot NorthWest   = text "nw"
+    unqtDot CenterPoint = text "c"
+    unqtDot NoCP        = text "_"
 
 instance ParseDot CompassPoint where
     parse = optionalQuoted
@@ -1714,14 +1778,16 @@ data ViewPort = VP { wVal  :: Double
                    , zVal  :: Double
                    , focus :: Maybe FocusType
                    }
-                deriving (Eq, Read)
+                deriving (Eq, Show, Read)
 
-instance Show ViewPort where
-    show vp = show
-              . maybe id (flip (++) . show) (focus vp)
-              $ show (wVal vp)
-              ++ ',' : show (hVal vp)
-              ++ ',' : show (zVal vp)
+instance PrintDot ViewPort where
+    unqtDot vp = maybe vs ((<>) (vs <> comma) . unqtDot)
+                 $ focus vp
+        where
+          vs = hcat . punctuate comma
+               $ map (unqtDot . flip ($) vp) [wVal, hVal, zVal]
+
+    toDot = doubleQuotes . unqtDot
 
 instance ParseDot ViewPort where
     parse = quotedParse
@@ -1735,11 +1801,14 @@ instance ParseDot ViewPort where
 
 data FocusType = XY Point
                | NodeFocus String
-                 deriving (Eq, Read)
+                 deriving (Eq, Show, Read)
 
-instance Show FocusType where
-    show (XY p)        = showPoint p
-    show (NodeFocus nm) = nm
+instance PrintDot FocusType where
+    unqtDot (XY p)         = unqtDot p
+    unqtDot (NodeFocus nm) = unqtDot nm
+
+    toDot (XY p)         = toDot p
+    toDot (NodeFocus nm) = toDot nm
 
 instance ParseDot FocusType where
     parse = oneOf [ liftM XY parsePoint
@@ -1752,12 +1821,12 @@ instance ParseDot FocusType where
 data VerticalPlacement = VTop
                        | VCenter
                        | VBottom
-                         deriving (Eq, Read)
+                         deriving (Eq, Show, Read)
 
-instance Show VerticalPlacement where
-    show VTop    = "t"
-    show VCenter = "c"
-    show VBottom = "b"
+instance PrintDot VerticalPlacement where
+    unqtDot VTop    = char 't'
+    unqtDot VCenter = char 'c'
+    unqtDot VBottom = char 'b'
 
 instance ParseDot VerticalPlacement where
     parse = optionalQuoted
@@ -1774,14 +1843,14 @@ data ScaleType = UniformScale
                | FillWidth
                | FillHeight
                | FillBoth
-                 deriving (Eq, Read)
+                 deriving (Eq, Show, Read)
 
-instance Show ScaleType where
-    show UniformScale = "true"
-    show NoScale      = "false"
-    show FillWidth    = "width"
-    show FillHeight   = "height"
-    show FillBoth     = "both"
+instance PrintDot ScaleType where
+    unqtDot UniformScale = unqtDot True
+    unqtDot NoScale      = unqtDot False
+    unqtDot FillWidth    = text "width"
+    unqtDot FillHeight   = text "height"
+    unqtDot FillBoth     = text "both"
 
 instance ParseDot ScaleType where
     parse = optionalQuoted
@@ -1797,12 +1866,12 @@ instance ParseDot ScaleType where
 data Justification = JLeft
                    | JRight
                    | JCenter
-                     deriving (Eq, Read)
+                     deriving (Eq, Show, Read)
 
-instance Show Justification where
-    show JLeft   = "l"
-    show JRight  = "r"
-    show JCenter = "c"
+instance PrintDot Justification where
+    unqtDot JLeft   = char 'l'
+    unqtDot JRight  = char 'r'
+    unqtDot JCenter = char 'c'
 
 instance ParseDot Justification where
     parse = optionalQuoted
@@ -1818,14 +1887,14 @@ data Ratios = AspectRatio Double
             | CompressRatio
             | ExpandRatio
             | AutoRatio
-              deriving (Eq, Read)
+              deriving (Eq, Show, Read)
 
-instance Show Ratios where
-    show (AspectRatio r) = show r
-    show FillRatio       = "fill"
-    show CompressRatio   = "compress"
-    show ExpandRatio     = "expand"
-    show AutoRatio       = "auto"
+instance PrintDot Ratios where
+    unqtDot (AspectRatio r) = unqtDot r
+    unqtDot FillRatio       = text "fill"
+    unqtDot CompressRatio   = text "compress"
+    unqtDot ExpandRatio     = text "expand"
+    unqtDot AutoRatio       = text "auto"
 
 instance ParseDot Ratios where
     parse = optionalQuoted
@@ -1835,18 +1904,6 @@ instance ParseDot Ratios where
                     , string "expand"   >> return ExpandRatio
                     , string "auto"     >> return AutoRatio
                     ]
-
--- -----------------------------------------------------------------------------
-
--- | Represents 'String's that definitely have quotes around them.
-newtype QuotedString = QS { qStr :: String }
-    deriving (Eq, Read)
-
-instance Show QuotedString where
-    show = show . qStr
-
-instance ParseDot QuotedString where
-    parse = liftM (QS . tail . init) quotedString
 
 -- -----------------------------------------------------------------------------
 

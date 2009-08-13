@@ -130,7 +130,7 @@ createDefn att = hdr $+$ constructors $+$ derivs
                      . firstOthers equals (char '|')
                      . map createDefn
                      $ atts att
-      derivs = nest (tab + 2) $ text "deriving (Eq, Read)"
+      derivs = nest (tab + 2) $ text "deriving (Eq, Show, Read)"
       createDefn a = [cnst a <+> vtypeCode a
                      , if isEmpty cm
                        then empty
@@ -140,23 +140,23 @@ createDefn att = hdr $+$ constructors $+$ derivs
             cm = comment a
 
 showInstance     :: Atts -> Code
-showInstance att = hdr $+$ insts
+showInstance att = hdr $+$ insts'
     where
-      hdr = text "instance" <+> text "Show" <+> tpNm att <+> text "where"
+      hdr = text "instance" <+> text "PrintDot" <+> tpNm att <+> text "where"
       var = char 'v'
-      sFunc = text "show"
-      cnct = text "++"
-      insts = nest tab
-              . asRows
+      sFunc = text "unqtDot"
+      cnct = text "<>"
+      insts = asRows
               . map mkInstance
               $ atts att
       mkInstance a = [ sFunc <+> parens (cnst a <+> var)
-                     , equals <+> doubleQuotes (name a <> equals) <+> cnct
-                                  <+> vFunc a
+                     , equals <+> text "printField" <+> doubleQuotes (name a)
+                                  <+>  var
                      ]
-      vFunc a = if valtype a == Strng
-                then var
-                else sFunc <+> var
+      insts' = nest tab
+              $ vsep [ insts
+                     , text "listToDot" <+> equals <+> text "unqtListToDot"
+                     ]
 
 parseInstance     :: Atts -> Code
 parseInstance att = hdr $+$ nest tab fn
@@ -280,7 +280,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Dim" ["dim"] "G" Integ Nothing (Just "2") (Just "2") (Just "sfdp, fdp, neato only")
              , makeAttr "Dimen" ["dimen"] "G" Integ Nothing (Just "2") (Just "2") (Just "sfdp, fdp, neato only")
              , makeAttr "Dir" ["dir"] "E" (Cust "DirType") Nothing (Just "forward(directed)/none(undirected)") Nothing Nothing
-             , makeAttr "DirEdgeConstraints" ["diredgeconstraints"] "G" (Cust "DEConstraints") (Just "(DEBool True)") (Just "false") Nothing (Just "neato only")
+             , makeAttr "DirEdgeConstraints" ["diredgeconstraints"] "G" (Cust "DEConstraints") (Just "EdgeConstraints") (Just "false") Nothing (Just "neato only")
              , makeAttr "Distortion" ["distortion"] "N" Dbl Nothing (Just "0.0") (Just "-100.0") Nothing
              , makeAttr "DPI" ["dpi"] "G" Dbl Nothing (Just "96.0 | 0.0") Nothing (Just "svg, bitmap output only")
              , makeAttr "EdgeURL" ["edgeURL", "edgehref"] "E" URL Nothing (Just "\\\"\\\"") Nothing (Just "svg, map only")
@@ -300,8 +300,8 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "HeadClip" ["headclip"] "E" Bl (Just "True") (Just "true") Nothing Nothing
              , makeAttr "HeadLabel" ["headlabel"] "E" (Cust "Label") Nothing (Just "\\\"\\\"") Nothing Nothing
              , makeAttr "HeadPort" ["headport"] "E" (Cust "PortPos") Nothing (Just "center") Nothing Nothing
-             , makeAttr "HeadTarget" ["headtarget"] "E" QStrng Nothing (Just "\\<none\\>") Nothing (Just "svg, map only")
-             , makeAttr "HeadTooltip" ["headtooltip"] "E" QStrng Nothing (Just "\\\"\\\"") Nothing (Just "svg, cmap only")
+             , makeAttr "HeadTarget" ["headtarget"] "E" Strng Nothing (Just "\\<none\\>") Nothing (Just "svg, map only")
+             , makeAttr "HeadTooltip" ["headtooltip"] "E" Strng Nothing (Just "\\\"\\\"") Nothing (Just "svg, cmap only")
              , makeAttr "Height" ["height"] "N" Dbl Nothing (Just "0.5") (Just "0.02") Nothing
              , makeAttr "ID" ["id"] "GNE" (Cust "Label") Nothing (Just "\\\"\\\"") Nothing (Just "svg, postscript, map only")
              , makeAttr "Image" ["image"] "N" Strng Nothing (Just "\\\"\\\"") Nothing Nothing
@@ -386,7 +386,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "SortV" ["sortv"] "GCN" Integ Nothing (Just "0") (Just "0") Nothing
              , makeAttr "Splines" ["splines"] "G" (Cust "EdgeType") (Just "SplineEdges") Nothing Nothing Nothing
              , makeAttr "Start" ["start"] "G" (Cust "StartType") Nothing (Just "\\\"\\\"") Nothing (Just "fdp, neato only")
-             , makeAttr "Style" ["style"] "ENC" (Cust "Style") Nothing Nothing Nothing Nothing
+             , makeAttr "Style" ["style"] "ENC" (Cust "[StyleItem]") Nothing Nothing Nothing Nothing
              , makeAttr "StyleSheet" ["stylesheet"] "G" Strng Nothing (Just "\\\"\\\"") Nothing (Just "svg only")
              , makeAttr "TailURL" ["tailURL", "tailhref"] "E" URL Nothing (Just "\\\"\\\"") Nothing (Just "svg, map only")
              , makeAttr "TailClip" ["tailclip"] "E" Bl (Just "True") (Just "true") Nothing Nothing
@@ -406,3 +406,5 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              ]
 
 attrs = take 10 attributes
+
+attrs' = AS (text "Attributes") attrs
