@@ -120,8 +120,7 @@ instance PrintDot Char where
 -- | Check to see if this 'Char' needs to be quoted or not.
 qtChar :: Char -> DotCode
 qtChar c
-    | frstIDString c = char c
-    | isDigit c      = char c -- Could be a number
+    | restIDString c = char c -- Could be a number as well.
     | otherwise      = doubleQuotes $ char c
 
 -- | Escape quotes in Strings that need them.
