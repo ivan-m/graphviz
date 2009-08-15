@@ -127,15 +127,17 @@ qtChar c
 -- | Escape quotes in Strings that need them.
 unqtString :: String -> DotCode
 unqtString str
-    | isIDString str = text str
-    | otherwise      = text $ escapeQuotes str
+    | isIDString str  = text str
+    | isNumString str = text str
+    | otherwise       = text $ escapeQuotes str
 
 -- | Escape quotes and quote Strings that need them.
 qtString :: String -> DotCode
 qtString str
-    | isIDString str = text str
+    | isIDString str  = text str
+    | isNumString str = text str
                        -- Don't use unqtString as it re-runs isIDString
-    | otherwise      = doubleQuotes . text $ escapeQuotes str
+    | otherwise       = doubleQuotes . text $ escapeQuotes str
 
 instance (PrintDot a) => PrintDot [a] where
     unqtDot = unqtListToDot

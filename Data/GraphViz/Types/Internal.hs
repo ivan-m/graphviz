@@ -31,6 +31,19 @@ frstIDString c = any ($c) [ isAsciiUpper
 restIDString   :: Char -> Bool
 restIDString c = frstIDString c || isDigit c
 
+-- | Determine if this String represents a number.
+isNumString     :: String -> Bool
+isNumString ""  = False
+isNumString str = case str of
+                    ('-':str') -> go str'
+                    _          -> go str
+    where
+      go [] = False
+      go cs = case dropWhile isDigit cs of
+                []       -> True
+                ('.':ds) -> not (null ds) && all isDigit ds
+                _        -> False
+
 -- | GraphViz requires double quotes to be explicitly escaped.
 escapeQuotes           :: String -> String
 escapeQuotes []        = []
