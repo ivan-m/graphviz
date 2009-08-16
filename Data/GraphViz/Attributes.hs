@@ -1071,13 +1071,9 @@ instance PrintDot Point where
 
     toDot = doubleQuotes . unqtDot
 
-    unqtListToDot = hcat . map unqtDot
+    unqtListToDot = hsep . map unqtDot
 
     listToDot = doubleQuotes . unqtListToDot
-
-showPoint :: Point -> String
-showPoint (Point  x y) = show x ++ ',' : show y
-showPoint (PointD x y) = show x ++ ',' : show y
 
 instance ParseDot Point where
     parse = quotedParse parsePoint
