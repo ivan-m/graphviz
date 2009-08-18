@@ -55,3 +55,9 @@ descapeQuotes                :: String -> String
 descapeQuotes []             = []
 descapeQuotes ('\\':'"':str) = '"' : descapeQuotes str
 descapeQuotes (c:str)        = c : descapeQuotes str
+
+-- | Fold over 'Bool's.
+bool       :: a -> a -> Bool -> a
+bool t f b = if b
+             then t
+             else f

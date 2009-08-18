@@ -117,6 +117,7 @@ module Data.GraphViz.Attributes
     , Ratios(..)
     ) where
 
+import Data.GraphViz.Types.Internal
 import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
 
@@ -1985,13 +1986,3 @@ instance ParseDot Ratios where
                       , stringRep ExpandRatio "expand"
                       , stringRep AutoRatio "auto"
                       ]
-
--- -----------------------------------------------------------------------------
-
--- Utility Functions
-
--- | Fold over 'Bool's.
-bool       :: a -> a -> Bool -> a
-bool t f b = if b
-             then t
-             else f
