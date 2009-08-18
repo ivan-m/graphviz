@@ -159,31 +159,33 @@ showInstance att = hdr $+$ insts'
                      ]
 
 parseInstance     :: Atts -> Code
-parseInstance att = hdr $+$ nest tab fn
+parseInstance att = hdr $+$ nest tab fns
     where
       hdr = text "instance" <+> text "ParseDot" <+> tpNm att <+> text "where"
       fn = pFunc <+> equals <+> text "oneOf" <+> ops
+      fns = vsep [ fn
+                 , text "parse" <+> equals <+> pFunc
+                 , text "parseList" <+> equals <+> text "parseUnqtList"
+                 ]
       ops = flip ($$) rbrack
             . asRows
             . firstOthers lbrack comma
             . map parseAttr
             $ atts att
-      pFunc = text "parse"
+      pFunc = text "parseUnqt"
       parseAttr a = [ text "liftM" <+> cnst a
                     , char '$' <+> pfFunc a
                     ]
       pType b a
-          | valtype a == Bl     = text "parseBoolField"
-          | isJust $ parseDef a = doParen $ text "parseFieldDef" <+> (fromJust $ parseDef a)
-          | otherwise           = text "parseField"
+          | valtype a == Bl     = pFld <> text "Bool"
+          | isJust $ parseDef a = pFld <> text "Def" <+> (fromJust $ parseDef a)
+          | otherwise           = pFld
           where
-            doParen = if b then parens else id
+            pFld = text "parseField" <> if b then (char 's') else empty
 
       pfFunc a = case map doubleQuotes $ parseNames a of
                    [n] -> pType False a <+> n
-                   ns  -> text "oneOf" <+> parens (text "map"
-                                                   <+> pType True a
-                                                   <+> docList ns)
+                   ns  -> pType True  a <+> docList ns
 
 usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code
 usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])

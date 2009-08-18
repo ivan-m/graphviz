@@ -68,7 +68,6 @@
    * Deprecated 'Overlap' algorithms are not defined.
 
  -}
-
 module Data.GraphViz.Attributes where
 
 import Data.GraphViz.Types.Parsing
@@ -406,153 +405,157 @@ instance PrintDot Attribute where
     listToDot = unqtListToDot
 
 instance ParseDot Attribute where
-    parse = oneOf [ liftM Damping            $ parseField "Damping"
-                  , liftM K                  $ parseField "K"
-                  , liftM URL                $ oneOf (map parseField ["URL", "href"])
-                  , liftM ArrowHead          $ parseField "arrowhead"
-                  , liftM ArrowSize          $ parseField "arrowsize"
-                  , liftM ArrowTail          $ parseField "arrowtail"
-                  , liftM Aspect             $ parseField "aspect"
-                  , liftM Bb                 $ parseField "bb"
-                  , liftM BgColor            $ parseField "bgcolor"
-                  , liftM Center             $ parseBoolField "center"
-                  , liftM Charset            $ parseField "charset"
-                  , liftM ClusterRank        $ parseField "clusterrank"
-                  , liftM Color              $ parseField "color"
-                  , liftM ColorScheme        $ parseField "colorscheme"
-                  , liftM Comment            $ parseField "comment"
-                  , liftM Compound           $ parseBoolField "compound"
-                  , liftM Concentrate        $ parseBoolField "concentrate"
-                  , liftM Constraint         $ parseBoolField "constraint"
-                  , liftM Decorate           $ parseBoolField "decorate"
-                  , liftM DefaultDist        $ parseField "defaultdist"
-                  , liftM Dim                $ parseField "dim"
-                  , liftM Dimen              $ parseField "dimen"
-                  , liftM Dir                $ parseField "dir"
-                  , liftM DirEdgeConstraints $ parseFieldDef EdgeConstraints "diredgeconstraints"
-                  , liftM Distortion         $ parseField "distortion"
-                  , liftM DPI                $ parseField "dpi"
-                  , liftM EdgeURL            $ oneOf (map parseField ["edgeURL", "edgehref"])
-                  , liftM EdgeTarget         $ parseField "edgetarget"
-                  , liftM EdgeTooltip        $ parseField "edgetooltip"
-                  , liftM Epsilon            $ parseField "epsilon"
-                  , liftM ESep               $ parseField "esep"
-                  , liftM FillColor          $ parseField "fillcolor"
-                  , liftM FixedSize          $ parseBoolField "fixedsize"
-                  , liftM FontColor          $ parseField "fontcolor"
-                  , liftM FontName           $ parseField "fontname"
-                  , liftM FontNames          $ parseField "fontnames"
-                  , liftM FontPath           $ parseField "fontpath"
-                  , liftM FontSize           $ parseField "fontsize"
-                  , liftM Group              $ parseField "group"
-                  , liftM HeadURL            $ oneOf (map parseField ["headURL", "headhref"])
-                  , liftM HeadClip           $ parseBoolField "headclip"
-                  , liftM HeadLabel          $ parseField "headlabel"
-                  , liftM HeadPort           $ parseField "headport"
-                  , liftM HeadTarget         $ parseField "headtarget"
-                  , liftM HeadTooltip        $ parseField "headtooltip"
-                  , liftM Height             $ parseField "height"
-                  , liftM ID                 $ parseField "id"
-                  , liftM Image              $ parseField "image"
-                  , liftM ImageScale         $ parseFieldDef UniformScale "imagescale"
-                  , liftM Label              $ parseField "label"
-                  , liftM LabelURL           $ oneOf (map parseField ["labelURL", "labelhref"])
-                  , liftM LabelAngle         $ parseField "labelangle"
-                  , liftM LabelDistance      $ parseField "labeldistance"
-                  , liftM LabelFloat         $ parseBoolField "labelfloat"
-                  , liftM LabelFontColor     $ parseField "labelfontcolor"
-                  , liftM LabelFontName      $ parseField "labelfontname"
-                  , liftM LabelFontSize      $ parseField "labelfontsize"
-                  , liftM LabelJust          $ parseField "labeljust"
-                  , liftM LabelLoc           $ parseField "labelloc"
-                  , liftM LabelTarget        $ parseField "labeltarget"
-                  , liftM LabelTooltip       $ parseField "labeltooltip"
-                  , liftM Landscape          $ parseBoolField "landscape"
-                  , liftM Layer              $ parseField "layer"
-                  , liftM Layers             $ parseField "layers"
-                  , liftM LayerSep           $ parseField "layersep"
-                  , liftM Layout             $ parseField "layout"
-                  , liftM Len                $ parseField "len"
-                  , liftM Levels             $ parseField "levels"
-                  , liftM LevelsGap          $ parseField "levelsgap"
-                  , liftM LHead              $ parseField "lhead"
-                  , liftM LPos               $ parseField "lp"
-                  , liftM LTail              $ parseField "ltail"
-                  , liftM Margin             $ parseField "margin"
-                  , liftM MaxIter            $ parseField "maxiter"
-                  , liftM MCLimit            $ parseField "mclimit"
-                  , liftM MinDist            $ parseField "mindist"
-                  , liftM MinLen             $ parseField "minlen"
-                  , liftM Mode               $ parseField "mode"
-                  , liftM Model              $ parseField "model"
-                  , liftM Mosek              $ parseBoolField "mosek"
-                  , liftM NodeSep            $ parseField "nodesep"
-                  , liftM NoJustify          $ parseBoolField "nojustify"
-                  , liftM Normalize          $ parseBoolField "normalize"
-                  , liftM Nslimit            $ parseField "nslimit"
-                  , liftM Nslimit1           $ parseField "nslimit1"
-                  , liftM Ordering           $ parseField "ordering"
-                  , liftM Orientation        $ parseField "orientation"
-                  , liftM OrientationGraph   $ parseField "orientation"
-                  , liftM OutputOrder        $ parseField "outputorder"
-                  , liftM Overlap            $ parseFieldDef KeepOverlaps "overlap"
-                  , liftM OverlapScaling     $ parseField "overlap_scaling"
-                  , liftM Pack               $ parseFieldDef DoPack "pack"
-                  , liftM PackMode           $ parseField "packmode"
-                  , liftM Pad                $ parseField "pad"
-                  , liftM Page               $ parseField "page"
-                  , liftM PageDir            $ parseField "pagedir"
-                  , liftM PenColor           $ parseField "pencolor"
-                  , liftM PenWidth           $ parseField "penwidth"
-                  , liftM Peripheries        $ parseField "peripheries"
-                  , liftM Pin                $ parseBoolField "pin"
-                  , liftM Pos                $ parseField "pos"
-                  , liftM QuadTree           $ parseFieldDef NormalQT "quadtree"
-                  , liftM Quantum            $ parseField "quantum"
-                  , liftM Rank               $ parseField "rank"
-                  , liftM RankDir            $ parseField "rankdir"
-                  , liftM Ranksep            $ parseField "ranksep"
-                  , liftM Ratio              $ parseField "ratio"
-                  , liftM Rects              $ parseField "rects"
-                  , liftM Regular            $ parseBoolField "regular"
-                  , liftM ReMinCross         $ parseBoolField "remincross"
-                  , liftM RepulsiveForce     $ parseField "repulsiveforce"
-                  , liftM Resolution         $ parseField "resolution"
-                  , liftM Root               $ parseFieldDef IsCentral "root"
-                  , liftM Rotate             $ parseField "rotate"
-                  , liftM SameHead           $ parseField "samehead"
-                  , liftM SameTail           $ parseField "sametail"
-                  , liftM SamplePoints       $ parseField "samplepoints"
-                  , liftM SearchSize         $ parseField "searchsize"
-                  , liftM Sep                $ parseField "sep"
-                  , liftM Shape              $ parseField "shape"
-                  , liftM ShapeFile          $ parseField "shapefile"
-                  , liftM ShowBoxes          $ parseField "showboxes"
-                  , liftM Sides              $ parseField "sides"
-                  , liftM Size               $ parseField "size"
-                  , liftM Skew               $ parseField "skew"
-                  , liftM Smoothing          $ parseField "smoothing"
-                  , liftM SortV              $ parseField "sortv"
-                  , liftM Splines            $ parseFieldDef SplineEdges "splines"
-                  , liftM Start              $ parseField "start"
-                  , liftM Style              $ parseField "style"
-                  , liftM StyleSheet         $ parseField "stylesheet"
-                  , liftM TailURL            $ oneOf (map parseField ["tailURL", "tailhref"])
-                  , liftM TailClip           $ parseBoolField "tailclip"
-                  , liftM TailLabel          $ parseField "taillabel"
-                  , liftM TailPort           $ parseField "tailport"
-                  , liftM TailTarget         $ parseField "tailtarget"
-                  , liftM TailTooltip        $ parseField "tailtooltip"
-                  , liftM Target             $ parseField "target"
-                  , liftM Tooltip            $ parseField "tooltip"
-                  , liftM TrueColor          $ parseBoolField "truecolor"
-                  , liftM Vertices           $ parseField "vertices"
-                  , liftM ViewPort           $ parseField "viewport"
-                  , liftM VoroMargin         $ parseField "voro_margin"
-                  , liftM Weight             $ parseField "weight"
-                  , liftM Width              $ parseField "width"
-                  , liftM Z                  $ parseField "z"
-                  ]
+    parseUnqt = oneOf [ liftM Damping            $ parseField "Damping"
+                      , liftM K                  $ parseField "K"
+                      , liftM URL                $ parseFields ["URL", "href"]
+                      , liftM ArrowHead          $ parseField "arrowhead"
+                      , liftM ArrowSize          $ parseField "arrowsize"
+                      , liftM ArrowTail          $ parseField "arrowtail"
+                      , liftM Aspect             $ parseField "aspect"
+                      , liftM Bb                 $ parseField "bb"
+                      , liftM BgColor            $ parseField "bgcolor"
+                      , liftM Center             $ parseFieldBool "center"
+                      , liftM Charset            $ parseField "charset"
+                      , liftM ClusterRank        $ parseField "clusterrank"
+                      , liftM Color              $ parseField "color"
+                      , liftM ColorScheme        $ parseField "colorscheme"
+                      , liftM Comment            $ parseField "comment"
+                      , liftM Compound           $ parseFieldBool "compound"
+                      , liftM Concentrate        $ parseFieldBool "concentrate"
+                      , liftM Constraint         $ parseFieldBool "constraint"
+                      , liftM Decorate           $ parseFieldBool "decorate"
+                      , liftM DefaultDist        $ parseField "defaultdist"
+                      , liftM Dim                $ parseField "dim"
+                      , liftM Dimen              $ parseField "dimen"
+                      , liftM Dir                $ parseField "dir"
+                      , liftM DirEdgeConstraints $ parseFieldDef EdgeConstraints "diredgeconstraints"
+                      , liftM Distortion         $ parseField "distortion"
+                      , liftM DPI                $ parseField "dpi"
+                      , liftM EdgeURL            $ parseFields ["edgeURL", "edgehref"]
+                      , liftM EdgeTarget         $ parseField "edgetarget"
+                      , liftM EdgeTooltip        $ parseField "edgetooltip"
+                      , liftM Epsilon            $ parseField "epsilon"
+                      , liftM ESep               $ parseField "esep"
+                      , liftM FillColor          $ parseField "fillcolor"
+                      , liftM FixedSize          $ parseFieldBool "fixedsize"
+                      , liftM FontColor          $ parseField "fontcolor"
+                      , liftM FontName           $ parseField "fontname"
+                      , liftM FontNames          $ parseField "fontnames"
+                      , liftM FontPath           $ parseField "fontpath"
+                      , liftM FontSize           $ parseField "fontsize"
+                      , liftM Group              $ parseField "group"
+                      , liftM HeadURL            $ parseFields ["headURL", "headhref"]
+                      , liftM HeadClip           $ parseFieldBool "headclip"
+                      , liftM HeadLabel          $ parseField "headlabel"
+                      , liftM HeadPort           $ parseField "headport"
+                      , liftM HeadTarget         $ parseField "headtarget"
+                      , liftM HeadTooltip        $ parseField "headtooltip"
+                      , liftM Height             $ parseField "height"
+                      , liftM ID                 $ parseField "id"
+                      , liftM Image              $ parseField "image"
+                      , liftM ImageScale         $ parseFieldDef UniformScale "imagescale"
+                      , liftM Label              $ parseField "label"
+                      , liftM LabelURL           $ parseFields ["labelURL", "labelhref"]
+                      , liftM LabelAngle         $ parseField "labelangle"
+                      , liftM LabelDistance      $ parseField "labeldistance"
+                      , liftM LabelFloat         $ parseFieldBool "labelfloat"
+                      , liftM LabelFontColor     $ parseField "labelfontcolor"
+                      , liftM LabelFontName      $ parseField "labelfontname"
+                      , liftM LabelFontSize      $ parseField "labelfontsize"
+                      , liftM LabelJust          $ parseField "labeljust"
+                      , liftM LabelLoc           $ parseField "labelloc"
+                      , liftM LabelTarget        $ parseField "labeltarget"
+                      , liftM LabelTooltip       $ parseField "labeltooltip"
+                      , liftM Landscape          $ parseFieldBool "landscape"
+                      , liftM Layer              $ parseField "layer"
+                      , liftM Layers             $ parseField "layers"
+                      , liftM LayerSep           $ parseField "layersep"
+                      , liftM Layout             $ parseField "layout"
+                      , liftM Len                $ parseField "len"
+                      , liftM Levels             $ parseField "levels"
+                      , liftM LevelsGap          $ parseField "levelsgap"
+                      , liftM LHead              $ parseField "lhead"
+                      , liftM LPos               $ parseField "lp"
+                      , liftM LTail              $ parseField "ltail"
+                      , liftM Margin             $ parseField "margin"
+                      , liftM MaxIter            $ parseField "maxiter"
+                      , liftM MCLimit            $ parseField "mclimit"
+                      , liftM MinDist            $ parseField "mindist"
+                      , liftM MinLen             $ parseField "minlen"
+                      , liftM Mode               $ parseField "mode"
+                      , liftM Model              $ parseField "model"
+                      , liftM Mosek              $ parseFieldBool "mosek"
+                      , liftM NodeSep            $ parseField "nodesep"
+                      , liftM NoJustify          $ parseFieldBool "nojustify"
+                      , liftM Normalize          $ parseFieldBool "normalize"
+                      , liftM Nslimit            $ parseField "nslimit"
+                      , liftM Nslimit1           $ parseField "nslimit1"
+                      , liftM Ordering           $ parseField "ordering"
+                      , liftM Orientation        $ parseField "orientation"
+                      , liftM OrientationGraph   $ parseField "orientation"
+                      , liftM OutputOrder        $ parseField "outputorder"
+                      , liftM Overlap            $ parseFieldDef KeepOverlaps "overlap"
+                      , liftM OverlapScaling     $ parseField "overlap_scaling"
+                      , liftM Pack               $ parseFieldDef DoPack "pack"
+                      , liftM PackMode           $ parseField "packmode"
+                      , liftM Pad                $ parseField "pad"
+                      , liftM Page               $ parseField "page"
+                      , liftM PageDir            $ parseField "pagedir"
+                      , liftM PenColor           $ parseField "pencolor"
+                      , liftM PenWidth           $ parseField "penwidth"
+                      , liftM Peripheries        $ parseField "peripheries"
+                      , liftM Pin                $ parseFieldBool "pin"
+                      , liftM Pos                $ parseField "pos"
+                      , liftM QuadTree           $ parseFieldDef NormalQT "quadtree"
+                      , liftM Quantum            $ parseField "quantum"
+                      , liftM Rank               $ parseField "rank"
+                      , liftM RankDir            $ parseField "rankdir"
+                      , liftM Ranksep            $ parseField "ranksep"
+                      , liftM Ratio              $ parseField "ratio"
+                      , liftM Rects              $ parseField "rects"
+                      , liftM Regular            $ parseFieldBool "regular"
+                      , liftM ReMinCross         $ parseFieldBool "remincross"
+                      , liftM RepulsiveForce     $ parseField "repulsiveforce"
+                      , liftM Resolution         $ parseField "resolution"
+                      , liftM Root               $ parseFieldDef IsCentral "root"
+                      , liftM Rotate             $ parseField "rotate"
+                      , liftM SameHead           $ parseField "samehead"
+                      , liftM SameTail           $ parseField "sametail"
+                      , liftM SamplePoints       $ parseField "samplepoints"
+                      , liftM SearchSize         $ parseField "searchsize"
+                      , liftM Sep                $ parseField "sep"
+                      , liftM Shape              $ parseField "shape"
+                      , liftM ShapeFile          $ parseField "shapefile"
+                      , liftM ShowBoxes          $ parseField "showboxes"
+                      , liftM Sides              $ parseField "sides"
+                      , liftM Size               $ parseField "size"
+                      , liftM Skew               $ parseField "skew"
+                      , liftM Smoothing          $ parseField "smoothing"
+                      , liftM SortV              $ parseField "sortv"
+                      , liftM Splines            $ parseFieldDef SplineEdges "splines"
+                      , liftM Start              $ parseField "start"
+                      , liftM Style              $ parseField "style"
+                      , liftM StyleSheet         $ parseField "stylesheet"
+                      , liftM TailURL            $ parseFields ["tailURL", "tailhref"]
+                      , liftM TailClip           $ parseFieldBool "tailclip"
+                      , liftM TailLabel          $ parseField "taillabel"
+                      , liftM TailPort           $ parseField "tailport"
+                      , liftM TailTarget         $ parseField "tailtarget"
+                      , liftM TailTooltip        $ parseField "tailtooltip"
+                      , liftM Target             $ parseField "target"
+                      , liftM Tooltip            $ parseField "tooltip"
+                      , liftM TrueColor          $ parseFieldBool "truecolor"
+                      , liftM Vertices           $ parseField "vertices"
+                      , liftM ViewPort           $ parseField "viewport"
+                      , liftM VoroMargin         $ parseField "voro_margin"
+                      , liftM Weight             $ parseField "weight"
+                      , liftM Width              $ parseField "width"
+                      , liftM Z                  $ parseField "z"
+                      ]
+
+    parse = parseUnqt
+
+    parseList = parseUnqtList
 
 -- | Determine if this Attribute is valid for use with Graphs.
 usedByGraphs                      :: Attribute -> Bool
@@ -785,13 +788,16 @@ instance PrintDot URL where
                 . text $ urlString u
 
 instance ParseDot URL where
-    parse = do character open
-               cnt <- many1 $ satisfy ((/=) close)
-               character close
-               return $ UStr cnt
+    parseUnqt = liftM UStr
+                $ bracket (character open)
+                          (character close)
+                          (liftM return $ satisfy ((/=) close))
         where
           open = '<'
           close = '>'
+
+    -- No quotes
+    parse = parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -829,27 +835,26 @@ instance PrintDot ArrowType where
     unqtDot Vee      = unqtDot "vee"
 
 instance ParseDot ArrowType where
-    parse = optionalQuoted
-            $ oneOf [ string "normal"   >> return Normal
-                    , string "inv"      >> return Inv
-                    , string "dot"      >> return DotArrow
-                    , string "invdot"   >> return InvDot
-                    , string "odot"     >> return ODot
-                    , string "invodot"  >> return InvODot
-                    , string "none"     >> return NoArrow
-                    , string "tee"      >> return Tee
-                    , string "empty"    >> return Empty
-                    , string "invempty" >> return InvEmpty
-                    , string "diamond"  >> return Diamond
-                    , string "odiamond" >> return ODiamond
-                    , string "ediamond" >> return EDiamond
-                    , string "crow"     >> return Crow
-                    , string "box"      >> return Box
-                    , string "obox"     >> return OBox
-                    , string "open"     >> return Open
-                    , string "halfopen" >> return HalfOpen
-                    , string "vee"      >> return Vee
-                    ]
+    parseUnqt = oneOf [ stringRep Normal "normal"
+                      , stringRep Inv "inv"
+                      , stringRep DotArrow "dot"
+                      , stringRep InvDot "invdot"
+                      , stringRep ODot "odot"
+                      , stringRep InvODot "invodot"
+                      , stringRep NoArrow "none"
+                      , stringRep Tee "tee"
+                      , stringRep Empty "empty"
+                      , stringRep InvEmpty "invempty"
+                      , stringRep Diamond "diamond"
+                      , stringRep ODiamond "odiamond"
+                      , stringRep EDiamond "ediamond"
+                      , stringRep Crow "crow"
+                      , stringRep Box "box"
+                      , stringRep OBox "obox"
+                      , stringRep Open "open"
+                      , stringRep HalfOpen "halfopen"
+                      , stringRep Vee "vee"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -865,9 +870,14 @@ instance PrintDot AspectType where
     toDot at@RatioPassCount{} = doubleQuotes $ unqtDot at
 
 instance ParseDot AspectType where
-    parse = oneOf [ quotedParse $ liftM (uncurry RatioPassCount) commaSep
-                  , liftM RatioOnly parse
-                  ]
+    parseUnqt = liftM (uncurry RatioPassCount) commaSep
+                `onFail`
+                liftM RatioOnly parse
+
+
+    parse = quotedParse (liftM (uncurry RatioPassCount) commaSep)
+            `onFail`
+            optionalQuoted (liftM RatioOnly parse)
 
 -- -----------------------------------------------------------------------------
 
@@ -880,8 +890,11 @@ instance PrintDot Rect where
     toDot = doubleQuotes . unqtDot
 
 instance ParseDot Rect where
+    parseUnqt = liftM (uncurry Rect)
+                $ commaSep' parseUnqt parseUnqt
+
     parse = liftM (uncurry Rect) . quotedParse
-            $ commaSep' parsePoint parsePoint
+            $ commaSep' parseUnqt parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -930,37 +943,40 @@ word8Doc w = text $ padding ++ simple
           | otherwise = findCols (c+1) (n `div` 16)
 
 instance ParseDot Color where
-    parse = quotedParse parseColor
+    parseUnqt = oneOf [ parseHexBased
+                      , parseHSV
+                      , liftM ColorName parse -- Should we check it
+                                              -- is a colour?
+                      ]
+        where
+          parseHexBased
+              = do character '#'
+                   cs <- many1 parse2Hex
+                   return $ case cs of
+                              [r,g,b] -> RGB r g b
+                              [r,g,b,a] -> RGBA r g b a
+                              _ -> error $ "Not a valid hex Color specification: "
+                                            ++ show cs
+          parseHSV = do h <- parse
+                        parseSep
+                        s <- parse
+                        parseSep
+                        v <- parse
+                        return $ HSV h s v
+          parseSep = oneOf [ string ","
+                           , whitespace
+                           ]
+          parse2Hex = do c1 <- satisfy isHexDigit
+                         c2 <- satisfy isHexDigit
+                         let [(n, [])] = readHex [c1, c2]
+                         return n
 
-    parseList = quotedParse $ sepBy1 parseColor (character ':')
 
-parseColor :: Parse Color
-parseColor = oneOf [ parseHexBased
-                   , parseHSV
-                   , liftM ColorName parse -- Should we check it is a colour?
-                   ]
-    where
-      parseHexBased
-          = do character '#'
-               cs <- many1 parse2Hex
-               return $ case cs of
-                          [r,g,b] -> RGB r g b
-                          [r,g,b,a] -> RGBA r g b a
-                          _ -> error $ "Not a valid hex Color specification: "
-                               ++ show cs
-      parseHSV = do h <- parse
-                    parseSep
-                    s <- parse
-                    parseSep
-                    v <- parse
-                    return $ HSV h s v
-      parseSep = oneOf [ string ","
-                       , whitespace
-                       ]
-      parse2Hex = do c1 <- satisfy isHexDigit
-                     c2 <- satisfy isHexDigit
-                     let [(n, [])] = readHex [c1, c2]
-                     return n
+    parse = quotedParse parseUnqt
+            `onFail`
+            liftM ColorName stringBlock -- unquoted Color Name
+
+    parseUnqtList = sepBy1 parseUnqt (character ':')
 
 -- -----------------------------------------------------------------------------
 
@@ -977,12 +993,10 @@ instance PrintDot ClusterMode where
 
 
 instance ParseDot ClusterMode where
-    parse = optionalQuoted
-            . oneOf
-            $ [ string "local"  >> return Local
-              , string "global" >> return Global
-              , string "none"   >> return NoCluster
-              ]
+    parseUnqt = oneOf [ stringRep Local "local"
+                      , stringRep Global "global"
+                      , stringRep NoCluster "none"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -996,12 +1010,11 @@ instance PrintDot DirType where
     unqtDot NoDir   = unqtDot "none"
 
 instance ParseDot DirType where
-    parse = optionalQuoted
-            $ oneOf [ string "forward" >> return Forward
-                    , string "back"    >> return Back
-                    , string "both"    >> return Both
-                    , string "none"    >> return NoDir
-                    ]
+    parseUnqt = oneOf [ stringRep Forward "forward"
+                      , stringRep Back "back"
+                      , stringRep Both "both"
+                      , stringRep NoDir "none"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1017,10 +1030,9 @@ instance PrintDot DEConstraints where
     unqtDot HierConstraints = text "hier"
 
 instance ParseDot DEConstraints where
-    parse = optionalQuoted
-            $ oneOf [ liftM (bool EdgeConstraints NoConstraints) parse
-                    , string "hier" >> return HierConstraints
-                    ]
+    parseUnqt = liftM (bool EdgeConstraints NoConstraints) parse
+                `onFail`
+                (stringRep HierConstraints "hier")
 
 -- -----------------------------------------------------------------------------
 
@@ -1037,9 +1049,13 @@ instance PrintDot DPoint where
     toDot (PVal p) = toDot p
 
 instance ParseDot DPoint where
-    parse = oneOf [ liftM DVal parse
-                  , liftM PVal parsePoint
-                  ]
+    parseUnqt = liftM DVal parseUnqt
+                `onFail`
+                liftM PVal parseUnqt
+
+    parse = liftM DVal parse
+            `onFail`
+            liftM PVal parse
 
 -- -----------------------------------------------------------------------------
 
@@ -1055,9 +1071,13 @@ instance PrintDot Label where
     toDot (URLLabel u) = toDot u
 
 instance ParseDot Label where
-    parse = oneOf [ liftM StrLabel parse
-                  , liftM URLLabel parse
-                  ]
+    parseUnqt = liftM StrLabel parseUnqt
+                `onFail`
+                liftM URLLabel parseUnqt
+
+    parse = liftM StrLabel parse
+            `onFail`
+            liftM URLLabel parse
 
 -- -----------------------------------------------------------------------------
 
@@ -1076,14 +1096,13 @@ instance PrintDot Point where
     listToDot = doubleQuotes . unqtListToDot
 
 instance ParseDot Point where
-    parse = quotedParse parsePoint
+    parseUnqt = liftM (uncurry Point)  commaSep
+                `onFail`
+                liftM (uncurry PointD) commaSep
 
-    parseList = quotedParse $ sepBy1 parsePoint whitespace
+    parse = quotedParse parseUnqt
 
-parsePoint :: Parse Point
-parsePoint = oneOf [ liftM (uncurry Point)  commaSep
-                   , liftM (uncurry PointD) commaSep
-                   ]
+    parseUnqtList = sepBy1 parseUnqt whitespace
 
 -- -----------------------------------------------------------------------------
 
@@ -1108,16 +1127,15 @@ instance PrintDot Overlap where
     unqtDot IpsepOverlap     = text "ipsep"
 
 instance ParseDot Overlap where
-    parse = optionalQuoted
-            $ oneOf [ string "true" >> return KeepOverlaps
-                    , string "false" >> return RemoveOverlaps
-                    , string "scale" >> return ScaleOverlaps
-                    , string "scalexy" >> return ScaleXYOverlaps
-                    , string "prism" >> liftM PrismOverlap (optional parse)
-                    , string "compress" >> return CompressOverlap
-                    , string "vpsc" >> return VpscOverlap
-                    , string "ipsep" >> return IpsepOverlap
-                    ]
+    parseUnqt = oneOf [ stringRep KeepOverlaps "true"
+                      , stringRep RemoveOverlaps "false"
+                      , stringRep ScaleOverlaps "scale"
+                      , stringRep ScaleXYOverlaps "scalexy"
+                      , string "prism" >> liftM PrismOverlap (optional parse)
+                      , stringRep CompressOverlap "compress"
+                      , stringRep VpscOverlap "vpsc"
+                      , stringRep IpsepOverlap "ipsep"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1133,12 +1151,20 @@ instance PrintDot LayerRange where
     toDot lrs        = doubleQuotes $ unqtDot lrs
 
 instance ParseDot LayerRange where
-    parse = oneOf [ liftM LRID parse
-                  , do id1 <- parse
-                       sep <- parseLayerSep
-                       id2 <- parse
-                       return $ LRS id1 sep id2
-                  ]
+    parseUnqt = liftM LRID parseUnqt
+                `onFail`
+                do id1 <- parseUnqt
+                   sep <- parseLayerSep
+                   id2 <- parseUnqt
+                   return $ LRS id1 sep id2
+
+    parse = liftM LRID parse
+            `onFail`
+            ( quotedParse $ do id1 <- parseUnqt
+                               sep <- parseLayerSep
+                               id2 <- parseUnqt
+                               return $ LRS id1 sep id2
+            )
 
 parseLayerSep :: Parse String
 parseLayerSep = many1 . oneOf
@@ -1165,9 +1191,14 @@ instance PrintDot LayerID where
     toDot li          = unqtDot li
 
 instance ParseDot LayerID where
-    parse = oneOf [ optionalQuotedString "all" >> return AllLayers
-                  , liftM LRInt $ optionalQuoted parse
-                  , liftM LRName parseLayerName
+    parseUnqt = oneOf [ stringRep AllLayers "all"
+                      , liftM LRInt parseUnqt
+                      , liftM LRName parseLayerName
+                      ]
+
+    parse = oneOf [ optionalQuoted $ stringRep AllLayers "all"
+                  , liftM LRInt parse -- Has optionalQuoted in it
+                  , quotedParse $ liftM LRName parseLayerName
                   ]
 
 -- | The list represent (Separator, Name)
@@ -1183,11 +1214,13 @@ instance PrintDot LayerList where
     toDot = doubleQuotes . unqtDot
 
 instance ParseDot LayerList where
-    parse = do l1 <- parseLayerName
-               ols <- many $ do sep <- parseLayerSep
-                                lnm <- parseLayerName
-                                return (sep, lnm)
-               return $ LL l1 ols
+    parseUnqt = do l1 <- parseLayerName
+                   ols <- many $ do sep <- parseLayerSep
+                                    lnm <- parseLayerName
+                                    return (sep, lnm)
+                   return $ LL l1 ols
+
+    parse = quotedParse parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -1200,11 +1233,10 @@ instance PrintDot OutputMode where
     unqtDot EdgesFirst   = text "edgesfirst"
 
 instance ParseDot OutputMode where
-    parse = optionalQuoted
-            $ oneOf [ string "breadthfirst" >> return BreadthFirst
-                    , string "nodesfirst"   >> return NodesFirst
-                    , string "edgesfirst"   >> return EdgesFirst
-                    ]
+    parseUnqt = oneOf [ stringRep BreadthFirst "breadthfirst"
+                      , stringRep NodesFirst "nodesfirst"
+                      , stringRep EdgesFirst "edgesfirst"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1219,10 +1251,10 @@ instance PrintDot Pack where
     unqtDot (PackMargin m) = unqtDot m
 
 instance ParseDot Pack where
-    parse = optionalQuoted
-            $ oneOf [ liftM (bool DoPack DontPack) parse
-                    , liftM PackMargin parse
-                    ]
+    -- What happens if it parses 0?  It's non-negative, but parses as False
+    parseUnqt = oneOf [ liftM (bool DoPack DontPack) parseUnqt
+                      , liftM PackMargin parseUnqt
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1253,18 +1285,17 @@ instance PrintDot PackMode where
                 else id
 
 instance ParseDot PackMode where
-    parse = optionalQuoted
-            $ oneOf [ string "node" >> return PackNode
-                    , string "clust" >> return PackClust
-                    , string "graph" >> return PackGraph
-                    , do string "array"
-                         mcu <- optional $ do character '_'
-                                              many1 $ satisfy (not . isDigit)
-                         let c = hasCharacter mcu 'c'
-                             u = hasCharacter mcu 'u'
-                         mi <- optional parse
-                         return $ PackArray c u mi
-                    ]
+    parseUnqt = oneOf [ stringRep PackNode "node"
+                      , stringRep PackClust "clust"
+                      , stringRep PackGraph "graph"
+                      , do string "array"
+                           mcu <- optional $ do character '_'
+                                                many1 $ satisfy (not . isDigit)
+                           let c = hasCharacter mcu 'c'
+                               u = hasCharacter mcu 'u'
+                           mi <- optional parseUnqt
+                           return $ PackArray c u mi
+                      ]
         where
           hasCharacter ms c = maybe False (elem c) ms
 
@@ -1282,11 +1313,11 @@ instance PrintDot Pos where
     toDot (SplinePos ss) = toDot ss
 
 instance ParseDot Pos where
-    -- [Spline] must be quoted, so use the quoted parser for Point as
-    -- well.
-    parse = oneOf [ liftM PointPos parse
-                  , liftM SplinePos parse
-                  ]
+    parseUnqt = oneOf [ liftM PointPos parseUnqt
+                      , liftM SplinePos parseUnqt
+                      ]
+
+    parse = quotedParse parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -1309,14 +1340,17 @@ instance PrintDot EdgeType where
     toDot et      = unqtDot et
 
 instance ParseDot EdgeType where
-    parse = optionalQuoted
-            $ oneOf [ liftM (bool SplineEdges LineEdges) parse
-                    , string "spline"   >> return SplineEdges
-                    , string "line"     >> return LineEdges
-                    , string "\"\""     >> return NoEdges
-                    , string "polyline" >> return PolyLine
-                    , string "compound" >> return CompoundEdge
-                    ]
+    -- Can't parse NoEdges without quotes.
+    parseUnqt = oneOf [ liftM (bool SplineEdges LineEdges) parse
+                      , stringRep SplineEdges "spline"
+                      , stringRep LineEdges "line"
+                      , stringRep PolyLine "polyline"
+                      , stringRep CompoundEdge "compound"
+                      ]
+
+    parse = stringRep NoEdges "\"\""
+            `onFail`
+            optionalQuoted parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -1336,16 +1370,15 @@ instance PrintDot PageDir where
     unqtDot Lt = text "LT"
 
 instance ParseDot PageDir where
-    parse = optionalQuoted
-            $ oneOf [ string "BL" >> return Bl
-                    , string "BR" >> return Br
-                    , string "TL" >> return Tl
-                    , string "TR" >> return Tr
-                    , string "RB" >> return Rb
-                    , string "RT" >> return Rt
-                    , string "LB" >> return Lb
-                    , string "LT" >> return Lt
-                    ]
+    parseUnqt = oneOf [ stringRep Bl "BL"
+                      , stringRep Br "BR"
+                      , stringRep Tl "TL"
+                      , stringRep Tr "TR"
+                      , stringRep Rb "RB"
+                      , stringRep Rt "RT"
+                      , stringRep Lb "LB"
+                      , stringRep Lt "LT"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1370,21 +1403,20 @@ instance PrintDot Spline where
     listToDot = doubleQuotes . unqtListToDot
 
 instance ParseDot Spline where
-    parse = quotedParse parseSpline
+    parseUnqt = do ms <- parseP 's'
+                   whitespace
+                   me <- parseP 'e'
+                   whitespace
+                   ps <- sepBy1 parseUnqt whitespace
+                   return $ Spline ms me ps
+        where
+          parseP t = optional $ do character t
+                                   character ';'
+                                   parse
 
-    parseList = quotedParse $ sepBy1 parseSpline (character ';')
+    parse = quotedParse parseUnqt
 
-parseSpline :: Parse Spline
-parseSpline = do ms <- parseP 's'
-                 whitespace
-                 me <- parseP 'e'
-                 whitespace
-                 ps <- sepBy1 parsePoint whitespace
-                 return $ Spline ms me ps
-    where
-      parseP t = optional $ do character t
-                               character ';'
-                               parse
+    parseUnqtList = sepBy1 parseUnqt (character ';')
 
 -- -----------------------------------------------------------------------------
 
@@ -1401,13 +1433,12 @@ instance PrintDot QuadType where
 instance ParseDot QuadType where
     -- Have to take into account the slightly different interpretation
     -- of Bool used as an option for parsing QuadType
-    parse = optionalQuoted
-            $ oneOf [ string "normal" >> return NormalQT
-                    , string "fast"   >> return FastQT
-                    , string "none"   >> return NoQT
-                    , character '2'   >> return FastQT -- weird bool
-                    , liftM (bool NormalQT NoQT) parse
-                    ]
+    parseUnqt = oneOf [ stringRep NormalQT "normal"
+                      , stringRep FastQT "fast"
+                      , stringRep NoQT "none"
+                      , character '2'   >> return FastQT -- weird bool
+                      , liftM (bool NormalQT NoQT) parse
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1426,10 +1457,9 @@ instance PrintDot Root where
     toDot r            = unqtDot r
 
 instance ParseDot Root where
-    parse = optionalQuoted
-            $ oneOf [ liftM (bool IsCentral NotCentral) parse
-                    , liftM NodeName parse
-                    ]
+    parseUnqt = liftM (bool IsCentral NotCentral) parse
+                `onFail`
+                liftM NodeName parse
 
 -- -----------------------------------------------------------------------------
 
@@ -1448,13 +1478,12 @@ instance PrintDot RankType where
     unqtDot SinkRank   = text "sink"
 
 instance ParseDot RankType where
-    parse = optionalQuoted
-            $ oneOf [ string "same"   >> return SameRank
-                    , string "min"    >> return MinRank
-                    , string "source" >> return SourceRank
-                    , string "max"    >> return MaxRank
-                    , string "sink"   >> return SinkRank
-                    ]
+    parseUnqt = oneOf [ stringRep SameRank "same"
+                      , stringRep MinRank "min"
+                      , stringRep SourceRank "source"
+                      , stringRep MaxRank "max"
+                      , stringRep SinkRank "sink"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1471,12 +1500,11 @@ instance PrintDot RankDir where
     unqtDot FromRight  = text "RL"
 
 instance ParseDot RankDir where
-    parse = optionalQuoted
-            $ oneOf [ string "TB" >> return FromTop
-                    , string "LR" >> return FromLeft
-                    , string "BT" >> return FromBottom
-                    , string "RL" >> return FromRight
-                    ]
+    parseUnqt = oneOf [ stringRep FromTop "TB"
+                      , stringRep FromLeft "LR"
+                      , stringRep FromBottom "BT"
+                      , stringRep FromRight "RL"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1550,40 +1578,39 @@ instance PrintDot Shape where
     unqtDot Component     = text "component"
 
 instance ParseDot Shape where
-    parse = optionalQuoted
-            $ oneOf [ string "box"           >> return BoxShape
-                    , string "polygon"       >> return Polygon
-                    , string "ellipse"       >> return Ellipse
-                    , string "circle"        >> return Circle
-                    , string "point"         >> return PointShape
-                    , string "egg"           >> return Egg
-                    , string "triangle"      >> return Triangle
-                    , string "plaintext"     >> return Plaintext
-                    , string "diamond"       >> return DiamondShape
-                    , string "trapezium"     >> return Trapezium
-                    , string "parallelogram" >> return Parallelogram
-                    , string "house"         >> return House
-                    , string "pentagon"      >> return Pentagon
-                    , string "hexagon"       >> return Hexagon
-                    , string "septagon"      >> return Septagon
-                    , string "octagon"       >> return Octagon
-                    , string "doublecircle"  >> return Doublecircle
-                    , string "doubleoctagon" >> return Doubleoctagon
-                    , string "tripleoctagon" >> return Tripleoctagon
-                    , string "invtriangle"   >> return Invtriangle
-                    , string "invtrapezium"  >> return Invtrapezium
-                    , string "invhouse"      >> return Invhouse
-                    , string "mdiamond"      >> return Mdiamond
-                    , string "msquare"       >> return Msquare
-                    , string "mcircle"       >> return Mcircle
-                    , string "rectangle"     >> return Rectangle
-                    , string "none"          >> return NoShape
-                    , string "note"          >> return Note
-                    , string "tab"           >> return Tab
-                    , string "folder"        >> return Folder
-                    , string "box3d"         >> return Box3d
-                    , string "component"     >> return Component
-                    ]
+    parseUnqt = oneOf [ stringRep BoxShape "box"
+                      , stringRep Polygon "polygon"
+                      , stringRep Ellipse "ellipse"
+                      , stringRep Circle "circle"
+                      , stringRep PointShape "point"
+                      , stringRep Egg "egg"
+                      , stringRep Triangle "triangle"
+                      , stringRep Plaintext "plaintext"
+                      , stringRep DiamondShape "diamond"
+                      , stringRep Trapezium "trapezium"
+                      , stringRep Parallelogram "parallelogram"
+                      , stringRep House "house"
+                      , stringRep Pentagon "pentagon"
+                      , stringRep Hexagon "hexagon"
+                      , stringRep Septagon "septagon"
+                      , stringRep Octagon "octagon"
+                      , stringRep Doublecircle "doublecircle"
+                      , stringRep Doubleoctagon "doubleoctagon"
+                      , stringRep Tripleoctagon "tripleoctagon"
+                      , stringRep Invtriangle "invtriangle"
+                      , stringRep Invtrapezium "invtrapezium"
+                      , stringRep Invhouse "invhouse"
+                      , stringRep Mdiamond "mdiamond"
+                      , stringRep Msquare "msquare"
+                      , stringRep Mcircle "mcircle"
+                      , stringRep Rectangle "rectangle"
+                      , stringRep NoShape "none"
+                      , stringRep Note "note"
+                      , stringRep Tab "tab"
+                      , stringRep Folder "folder"
+                      , stringRep Box3d "box3d"
+                      , stringRep Component "component"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1606,15 +1633,14 @@ instance PrintDot SmoothType where
     unqtDot TriangleSmooth = text "triangle"
 
 instance ParseDot SmoothType where
-    parse = optionalQuoted
-            $ oneOf [ string "none"       >> return NoSmooth
-                    , string "avg_dist"   >> return AvgDist
-                    , string "graph_dist" >> return GraphDist
-                    , string "power_dist" >> return PowerDist
-                    , string "rng"        >> return RNG
-                    , string "spring"     >> return Spring
-                    , string "triangle"   >> return TriangleSmooth
-                    ]
+    parseUnqt = oneOf [ stringRep NoSmooth "none"
+                      , stringRep AvgDist "avg_dist"
+                      , stringRep GraphDist "graph_dist"
+                      , stringRep PowerDist "power_dist"
+                      , stringRep RNG "rng"
+                      , stringRep Spring "spring"
+                      , stringRep TriangleSmooth "triangle"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1630,13 +1656,12 @@ instance PrintDot StartType where
     unqtDot (StartStyleSeed ss s) = unqtDot ss <> unqtDot s
 
 instance ParseDot StartType where
-    parse = optionalQuoted
-            $ oneOf [ do ss <- parse
-                         s  <- parse
-                         return $ StartStyleSeed ss s
-                    , liftM StartStyle parse
-                    , liftM StartSeed parse
-                    ]
+    parseUnqt = oneOf [ do ss <- parseUnqt
+                           s  <- parseUnqt
+                           return $ StartStyleSeed ss s
+                      , liftM StartStyle parseUnqt
+                      , liftM StartSeed parseUnqt
+                      ]
 
 data STStyle = RegularStyle
              | SelfStyle
@@ -1649,10 +1674,10 @@ instance PrintDot STStyle where
     unqtDot RandomStyle  = text "random"
 
 instance ParseDot STStyle where
-    parse = oneOf [ string "regular" >> return RegularStyle
-                  , string "self"    >> return SelfStyle
-                  , string "random"  >> return RandomStyle
-                  ]
+    parseUnqt = oneOf [ stringRep RegularStyle "regular"
+                      , stringRep SelfStyle "self"
+                      , stringRep RandomStyle "random"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1674,8 +1699,20 @@ instance PrintDot StyleItem where
     unqtListToDot = hcat . punctuate comma . map unqtDot
 
 instance ParseDot StyleItem where
-    -- Need to fix this
-    parse = parse
+    parseUnqt = do nm <- parseUnqt
+                   args <- optional parseArgs
+                   let args' = fromMaybe [] args
+                   return $ SItem nm args'
+        where
+          parseArgs = bracketSep (character '(')
+                                 parseComma
+                                 (character ')')
+                                 parseStyleName
+
+    -- Never used on its own, so not bothering with a separate parse
+    -- implementation (which is iffy due to the DD case).
+
+    parseUnqtList = sepBy1 parseUnqt parseComma
 
 data StyleName = Dashed    -- ^ Nodes and Edges
                | Dotted    -- ^ Nodes and Edges
@@ -1703,18 +1740,24 @@ instance PrintDot StyleName where
     toDot sn      = unqtDot sn
 
 instance ParseDot StyleName where
-    parse = optionalQuoted
-            $ oneOf [ string "filled"    >> return Filled
-                    , string "invis"     >> return Invisible
-                    , string "diagonals" >> return Diagonals
-                    , string "rounded"   >> return Rounded
-                    , string "dashed"    >> return Dashed
-                    , string "dotted"    >> return Dotted
-                    , string "solid"     >> return Solid
-                    , string "bold"      >> return Bold
-                    -- This isn't right, as it will never end...
-                    , liftM DD $ many1 (noneOf ['(', ',', ')'])
-                    ]
+    parseUnqt = oneOf [ stringRep Filled "filled"
+                      , stringRep Invisible "invis"
+                      , stringRep Diagonals "diagonals"
+                      , stringRep Rounded "rounded"
+                      , stringRep Dashed "dashed"
+                      , stringRep Dotted "dotted"
+                      , stringRep Solid "solid"
+                      , stringRep Bold "bold"
+                      , liftM DD parseStyleName
+                      ]
+
+    -- Never used on its own, so not bothering with a separate parse
+    -- implementation (which is iffy due to the DD case).
+
+parseStyleName :: Parse String
+parseStyleName = do f <- noneOf ['(', ')', ',', ' ']
+                    r <- many (noneOf ['(', ')', ','])
+                    return $ f:r
 
 -- -----------------------------------------------------------------------------
 
@@ -1727,7 +1770,7 @@ instance PrintDot PortPos where
     toDot (PP cp) = toDot cp
 
 instance ParseDot PortPos where
-    parse = liftM PP parse
+    parseUnqt = liftM PP parseUnqt
 
 data CompassPoint = North
                   | NorthEast
@@ -1754,18 +1797,17 @@ instance PrintDot CompassPoint where
     unqtDot NoCP        = text "_"
 
 instance ParseDot CompassPoint where
-    parse = optionalQuoted
-            $ oneOf [ string "n"  >> return North
-                    , string "ne" >> return NorthEast
-                    , string "e"  >> return East
-                    , string "se" >> return SouthEast
-                    , string "s"  >> return South
-                    , string "sw" >> return SouthWest
-                    , string "w"  >> return West
-                    , string "nw" >> return NorthWest
-                    , string "c"  >> return CenterPoint
-                    , string "_"  >> return NoCP
-                    ]
+    parseUnqt = oneOf [ stringRep North "n"
+                      , stringRep NorthEast "ne"
+                      , stringRep East "e"
+                      , stringRep SouthEast "se"
+                      , stringRep South "s"
+                      , stringRep SouthWest "sw"
+                      , stringRep West "w"
+                      , stringRep NorthWest "nw"
+                      , stringRep CenterPoint "c"
+                      , stringRep NoCP "_"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1786,14 +1828,15 @@ instance PrintDot ViewPort where
     toDot = doubleQuotes . unqtDot
 
 instance ParseDot ViewPort where
-    parse = quotedParse
-            $ do wv <- parse
-                 character ','
-                 hv <- parse
-                 character ','
-                 zv <- parse
-                 mf <- optional $ character ',' >> parse
-                 return $ VP wv hv zv mf
+    parseUnqt = do wv <- parseUnqt
+                   parseComma
+                   hv <- parseUnqt
+                   parseComma
+                   zv <- parseUnqt
+                   mf <- optional $ parseComma >> parseUnqt
+                   return $ VP wv hv zv mf
+
+    parse = quotedParse parseUnqt
 
 data FocusType = XY Point
                | NodeFocus String
@@ -1807,15 +1850,14 @@ instance PrintDot FocusType where
     toDot (NodeFocus nm) = toDot nm
 
 instance ParseDot FocusType where
-    parse = oneOf [ liftM XY parsePoint
-                  , liftM NodeFocus stringBlock
-                  ]
+    parseUnqt = liftM XY parseUnqt
+                `onFail`
+                liftM NodeFocus stringBlock
 
 -- -----------------------------------------------------------------------------
 
--- | Note that 'VCenter' is only valid for Nodes.
 data VerticalPlacement = VTop
-                       | VCenter
+                       | VCenter -- ^ Only valid for Nodes.
                        | VBottom
                          deriving (Eq, Show, Read)
 
@@ -1825,12 +1867,10 @@ instance PrintDot VerticalPlacement where
     unqtDot VBottom = char 'b'
 
 instance ParseDot VerticalPlacement where
-    parse = optionalQuoted
-            $ oneOf [ string "t" >> return VTop
-                    , string "c" >> return VCenter
-                    , string "b" >> return VBottom
-                    ]
-
+    parseUnqt = oneOf [ stringRep VTop "t"
+                      , stringRep VCenter "c"
+                      , stringRep VBottom "b"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1849,13 +1889,12 @@ instance PrintDot ScaleType where
     unqtDot FillBoth     = text "both"
 
 instance ParseDot ScaleType where
-    parse = optionalQuoted
-            $ oneOf [ string "true"   >> return UniformScale
-                    , string "false"  >> return NoScale
-                    , string "width"  >> return FillWidth
-                    , string "height" >> return FillHeight
-                    , string "both"   >> return FillBoth
-                    ]
+    parseUnqt = oneOf [ stringRep UniformScale "true"
+                      , stringRep NoScale "false"
+                      , stringRep FillWidth "width"
+                      , stringRep FillHeight "height"
+                      , stringRep FillBoth "both"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1870,11 +1909,10 @@ instance PrintDot Justification where
     unqtDot JCenter = char 'c'
 
 instance ParseDot Justification where
-    parse = optionalQuoted
-            $ oneOf [ string "l" >> return JLeft
-                    , string "r" >> return JRight
-                    , string "c" >> return JCenter
-                    ]
+    parseUnqt = oneOf [ stringRep JLeft "l"
+                      , stringRep JRight "r"
+                      , stringRep JCenter "c"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
@@ -1893,13 +1931,12 @@ instance PrintDot Ratios where
     unqtDot AutoRatio       = text "auto"
 
 instance ParseDot Ratios where
-    parse = optionalQuoted
-            $ oneOf [ liftM AspectRatio parse
-                    , string "fill"     >> return FillRatio
-                    , string "compress" >> return CompressRatio
-                    , string "expand"   >> return ExpandRatio
-                    , string "auto"     >> return AutoRatio
-                    ]
+    parseUnqt = oneOf [ liftM AspectRatio parseUnqt
+                      , stringRep FillRatio "fill"
+                      , stringRep CompressRatio "compress"
+                      , stringRep ExpandRatio "expand"
+                      , stringRep AutoRatio "auto"
+                      ]
 
 -- -----------------------------------------------------------------------------
 
