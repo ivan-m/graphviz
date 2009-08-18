@@ -1834,14 +1834,14 @@ data CompassPoint = North
                     deriving (Eq, Show, Read)
 
 instance PrintDot CompassPoint where
-    unqtDot North       = text "n"
     unqtDot NorthEast   = text "ne"
+    unqtDot NorthWest   = text "nw"
+    unqtDot North       = text "n"
     unqtDot East        = text "e"
     unqtDot SouthEast   = text "se"
-    unqtDot South       = text "s"
     unqtDot SouthWest   = text "sw"
+    unqtDot South       = text "s"
     unqtDot West        = text "w"
-    unqtDot NorthWest   = text "nw"
     unqtDot CenterPoint = text "c"
     unqtDot NoCP        = text "_"
 
