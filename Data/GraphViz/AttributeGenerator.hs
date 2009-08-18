@@ -28,6 +28,7 @@ genCode     :: Atts -> Doc
 genCode att = vsep $ map ($att) cds
     where
       cds = [ createDefn
+            , createAlias
             , showInstance
             , parseInstance
             , usedByFunc "Graphs" forGraphs
@@ -139,6 +140,14 @@ createDefn att = hdr $+$ constructors $+$ derivs
                      ]
           where
             cm = comment a
+
+createAlias     :: Atts -> Code
+createAlias att = text "type"
+                  <+> tp <> char 's'
+                  <+> equals
+                  <+> brackets tp
+    where
+      tp = tpNm att
 
 showInstance     :: Atts -> Code
 showInstance att = hdr $+$ insts'
@@ -410,4 +419,4 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
 
 attrs = take 10 attributes
 
-attrs' = AS (text "Attributes") attrs
+attrs' = AS (text "Attribute") attrs

@@ -70,6 +70,7 @@
  -}
 module Data.GraphViz.Attributes
     ( Attribute(..)
+    , Attributes
     , usedByGraphs
     , usedByClusters
     , usedByNodes
@@ -298,6 +299,8 @@ data Attribute
     | Width Double                     -- ^ /Valid for/: N; /Default/: 0.75; /Minimum/: 0.01
     | Z Double                         -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -MAXFLOAT | -1000
       deriving (Eq, Show, Read)
+
+type Attributes = [Attribute]
 
 instance PrintDot Attribute where
     unqtDot (Damping v)            = printField "Damping" v
