@@ -48,9 +48,9 @@ module Data.GraphViz.Types.Printing
 import Data.GraphViz.Types.Internal
 
 -- Only implicitly import and re-export combinators.
-import Text.PrettyPrint hiding ( Style
-                               , Mode
-                               , TextDetails
+import Text.PrettyPrint hiding ( Style(..)
+                               , Mode(..)
+                               , TextDetails(..)
                                , render
                                , style
                                , renderStyle
