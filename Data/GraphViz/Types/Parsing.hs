@@ -267,4 +267,4 @@ commaSep' pa pb = do a <- pa
                      return (a,b)
 
 parseComma :: Parse Char
-parseComma = parseComma
+parseComma = character ','
