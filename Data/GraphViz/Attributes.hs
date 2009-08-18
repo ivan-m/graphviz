@@ -120,10 +120,9 @@ import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
 
 import Data.Char(isDigit, isHexDigit)
-import Data.Word
-import Numeric
-import Control.Monad
-import Data.Maybe
+import Data.Word(Word8)
+import Numeric(showHex, readHex)
+import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
 
