@@ -8,7 +8,6 @@
    This module is a stand-alone that generates the correct code for
    Data.GraphViz.Attributes.
   -}
-
 module Data.GraphViz.AttributeGenerator where
 
 import Text.PrettyPrint
@@ -80,6 +79,7 @@ makeAttr c ns u v df d m cm = A { cnst         = text c
       ns' = map text ns
       isFor f = f `elem` u
       forSG = isFor 'S'
+      df' = if v == Bl then Just "'True'" else fmap ( \ t -> '\'' : t ++ "'") df
       mDoc (f,fc) = f <> colon <+> text fc
       addF f = fmap (\ dc -> (wrap (char '/') (text f), dc))
       cm' = hsep
@@ -87,6 +87,7 @@ makeAttr c ns u v df d m cm = A { cnst         = text c
             . map mDoc
             $ catMaybes [ addF "Valid for" (Just u)
                         , addF "Default" d
+                        , addF "Parsing Default" df'
                         , addF "Minimum" m
                         , addF "Notes" cm
                         ]

@@ -161,21 +161,21 @@ data Attribute
     | Aspect AspectType                -- ^ /Valid for/: G; /Notes/: dot only
     | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
     | BgColor Color                    -- ^ /Valid for/: GC; /Default/: \<none\>
-    | Center Bool                      -- ^ /Valid for/: G; /Default/: false
+    | Center Bool                      -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'True'
     | Charset String                   -- ^ /Valid for/: G; /Default/: \"UTF-8\"
     | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: local; /Notes/: dot only
     | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: black
     | ColorScheme String               -- ^ /Valid for/: ENCG; /Default/: \"\"
     | Comment String                   -- ^ /Valid for/: ENG; /Default/: \"\"
-    | Compound Bool                    -- ^ /Valid for/: G; /Default/: false; /Notes/: dot only
-    | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: false
-    | Constraint Bool                  -- ^ /Valid for/: E; /Default/: true; /Notes/: dot only
-    | Decorate Bool                    -- ^ /Valid for/: E; /Default/: false
+    | Compound Bool                    -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'True'; /Notes/: dot only
+    | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'True'
+    | Constraint Bool                  -- ^ /Valid for/: E; /Default/: true; /Parsing Default/: 'True'; /Notes/: dot only
+    | Decorate Bool                    -- ^ /Valid for/: E; /Default/: false; /Parsing Default/: 'True'
     | DefaultDist Double               -- ^ /Valid for/: G; /Default/: 1+(avg. len)*sqrt(|V|); /Minimum/: epsilon; /Notes/: neato only
     | Dim Int                          -- ^ /Valid for/: G; /Default/: 2; /Minimum/: 2; /Notes/: sfdp, fdp, neato only
     | Dimen Int                        -- ^ /Valid for/: G; /Default/: 2; /Minimum/: 2; /Notes/: sfdp, fdp, neato only
     | Dir DirType                      -- ^ /Valid for/: E; /Default/: forward(directed)/none(undirected)
-    | DirEdgeConstraints DEConstraints -- ^ /Valid for/: G; /Default/: false; /Notes/: neato only
+    | DirEdgeConstraints DEConstraints -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
     | Distortion Double                -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -100.0
     | DPI Double                       -- ^ /Valid for/: G; /Default/: 96.0 | 0.0; /Notes/: svg, bitmap output only
     | EdgeURL URL                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
@@ -184,7 +184,7 @@ data Attribute
     | Epsilon Double                   -- ^ /Valid for/: G; /Default/: .0001 * # nodes(mode == KK) | .0001(mode == major); /Notes/: neato only
     | ESep DPoint                      -- ^ /Valid for/: G; /Default/: +3; /Notes/: not dot
     | FillColor Color                  -- ^ /Valid for/: NC; /Default/: lightgrey(nodes) | black(clusters)
-    | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: false
+    | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: false; /Parsing Default/: 'True'
     | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: black
     | FontName String                  -- ^ /Valid for/: ENGC; /Default/: \"Times-Roman\"
     | FontNames String                 -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: svg only
@@ -192,7 +192,7 @@ data Attribute
     | FontSize Double                  -- ^ /Valid for/: ENGC; /Default/: 14.0; /Minimum/: 1.0
     | Group String                     -- ^ /Valid for/: N; /Default/: \"\"; /Notes/: dot only
     | HeadURL URL                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: true
+    | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: true; /Parsing Default/: 'True'
     | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: \"\"
     | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: center
     | HeadTarget String                -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
@@ -200,12 +200,12 @@ data Attribute
     | Height Double                    -- ^ /Valid for/: N; /Default/: 0.5; /Minimum/: 0.02
     | ID Label                         -- ^ /Valid for/: GNE; /Default/: \"\"; /Notes/: svg, postscript, map only
     | Image String                     -- ^ /Valid for/: N; /Default/: \"\"
-    | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: false
+    | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: false; /Parsing Default/: 'UniformScale'
     | Label Label                      -- ^ /Valid for/: ENGC; /Default/: \"\N\" (nodes) Nothing | \"\" (otherwise) Nothing
     | LabelURL URL                     -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
     | LabelAngle Double                -- ^ /Valid for/: E; /Default/: -25.0; /Minimum/: -180.0
     | LabelDistance Double             -- ^ /Valid for/: E; /Default/: 1.0; /Minimum/: 0.0
-    | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: false
+    | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: false; /Parsing Default/: 'True'
     | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: black
     | LabelFontName String             -- ^ /Valid for/: E; /Default/: \"Times-Roman\"
     | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: 14.0; /Minimum/: 1.0
@@ -213,7 +213,7 @@ data Attribute
     | LabelLoc VerticalPlacement       -- ^ /Valid for/: GCN; /Default/: \"t\"(clusters) | \"b\"(root graphs) | \"c\"(clusters)
     | LabelTarget String               -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
     | LabelTooltip String              -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
-    | Landscape Bool                   -- ^ /Valid for/: G; /Default/: false
+    | Landscape Bool                   -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'True'
     | Layer LayerRange                 -- ^ /Valid for/: EN; /Default/: \"\"
     | Layers LayerList                 -- ^ /Valid for/: G; /Default/: \"\"
     | LayerSep String                  -- ^ /Valid for/: G; /Default/: \" :\t\"
@@ -231,19 +231,19 @@ data Attribute
     | MinLen Int                       -- ^ /Valid for/: E; /Default/: 1; /Minimum/: 0; /Notes/: dot only
     | Mode String                      -- ^ /Valid for/: G; /Default/: \"major\"; /Notes/: neato only
     | Model String                     -- ^ /Valid for/: G; /Default/: \"shortpath\"; /Notes/: neato only
-    | Mosek Bool                       -- ^ /Valid for/: G; /Default/: false; /Notes/: neato only; requires the Mosek software
+    | Mosek Bool                       -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'True'; /Notes/: neato only; requires the Mosek software
     | NodeSep Double                   -- ^ /Valid for/: G; /Default/: 0.25; /Minimum/: 0.02; /Notes/: dot only
-    | NoJustify Bool                   -- ^ /Valid for/: GCNE; /Default/: false
-    | Normalize Bool                   -- ^ /Valid for/: G; /Default/: false; /Notes/: not dot
+    | NoJustify Bool                   -- ^ /Valid for/: GCNE; /Default/: false; /Parsing Default/: 'True'
+    | Normalize Bool                   -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'True'; /Notes/: not dot
     | Nslimit Double                   -- ^ /Valid for/: G; /Notes/: dot only
     | Nslimit1 Double                  -- ^ /Valid for/: G; /Notes/: dot only
     | Ordering String                  -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: dot only
     | Orientation Double               -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: 360.0
     | OrientationGraph String          -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: Landscape if \"[lL]*\" and rotate not defined
     | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: breadthfirst
-    | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: true; /Notes/: not dot
+    | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: true; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
     | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: -4; /Minimum/: -1.0e10; /Notes/: prism only
-    | Pack Pack                        -- ^ /Valid for/: G; /Default/: false; /Notes/: not dot
+    | Pack Pack                        -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'DoPack'; /Notes/: not dot
     | PackMode PackMode                -- ^ /Valid for/: G; /Default/: node; /Notes/: not dot
     | Pad DPoint                       -- ^ /Valid for/: G; /Default/: 0.0555 (4 points)
     | Page Point                       -- ^ /Valid for/: G
@@ -251,20 +251,20 @@ data Attribute
     | PenColor Color                   -- ^ /Valid for/: C; /Default/: black
     | PenWidth Double                  -- ^ /Valid for/: CNE; /Default/: 1.0; /Minimum/: 0.0
     | Peripheries Int                  -- ^ /Valid for/: NC; /Default/: shape default(nodes) | 1(clusters); /Minimum/: 0
-    | Pin Bool                         -- ^ /Valid for/: N; /Default/: false; /Notes/: fdp, neato only
+    | Pin Bool                         -- ^ /Valid for/: N; /Default/: false; /Parsing Default/: 'True'; /Notes/: fdp, neato only
     | Pos Pos                          -- ^ /Valid for/: EN
-    | QuadTree QuadType                -- ^ /Valid for/: G; /Default/: \"normal\"; /Notes/: sfdp only
+    | QuadTree QuadType                -- ^ /Valid for/: G; /Default/: \"normal\"; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
     | Quantum Double                   -- ^ /Valid for/: G; /Default/: 0.0; /Minimum/: 0.0
     | Rank RankType                    -- ^ /Valid for/: S; /Notes/: dot only
     | RankDir RankDir                  -- ^ /Valid for/: G; /Default/: TB; /Notes/: dot only
     | Ranksep Double                   -- ^ /Valid for/: G; /Default/: 0.5(dot) | 1.0(twopi); /Minimum/: 0.02; /Notes/: twopi, dot only
     | Ratio Ratios                     -- ^ /Valid for/: G
     | Rects Rect                       -- ^ /Valid for/: N; /Notes/: write only
-    | Regular Bool                     -- ^ /Valid for/: N; /Default/: false
-    | ReMinCross Bool                  -- ^ /Valid for/: G; /Default/: false; /Notes/: dot only
+    | Regular Bool                     -- ^ /Valid for/: N; /Default/: false; /Parsing Default/: 'True'
+    | ReMinCross Bool                  -- ^ /Valid for/: G; /Default/: false; /Parsing Default/: 'True'; /Notes/: dot only
     | RepulsiveForce Double            -- ^ /Valid for/: G; /Default/: 1.0; /Minimum/: 0.0; /Notes/: sfdp only
     | Resolution Double                -- ^ /Valid for/: G; /Default/: 96.0 | 0.0; /Notes/: svg, bitmap output only
-    | Root Root                        -- ^ /Valid for/: GN; /Default/: \"\"(graphs) | false(nodes); /Notes/: circo, twopi only
+    | Root Root                        -- ^ /Valid for/: GN; /Default/: \"\"(graphs) | false(nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
     | Rotate Int                       -- ^ /Valid for/: G; /Default/: 0
     | SameHead String                  -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
     | SameTail String                  -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: dot only
@@ -279,19 +279,19 @@ data Attribute
     | Skew Double                      -- ^ /Valid for/: N; /Default/: 0.0; /Minimum/: -100.0
     | Smoothing SmoothType             -- ^ /Valid for/: G; /Default/: \"none\"; /Notes/: sfdp only
     | SortV Int                        -- ^ /Valid for/: GCN; /Default/: 0; /Minimum/: 0
-    | Splines EdgeType                 -- ^ /Valid for/: G
+    | Splines EdgeType                 -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
     | Start StartType                  -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: fdp, neato only
     | Style [StyleItem]                -- ^ /Valid for/: ENC
     | StyleSheet String                -- ^ /Valid for/: G; /Default/: \"\"; /Notes/: svg only
     | TailURL URL                      -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, map only
-    | TailClip Bool                    -- ^ /Valid for/: E; /Default/: true
+    | TailClip Bool                    -- ^ /Valid for/: E; /Default/: true; /Parsing Default/: 'True'
     | TailLabel Label                  -- ^ /Valid for/: E; /Default/: \"\"
     | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: center
     | TailTarget String                -- ^ /Valid for/: E; /Default/: \<none\>; /Notes/: svg, map only
     | TailTooltip String               -- ^ /Valid for/: E; /Default/: \"\"; /Notes/: svg, cmap only
     | Target String                    -- ^ /Valid for/: ENGC; /Default/: \<none\>; /Notes/: svg, map only
     | Tooltip String                   -- ^ /Valid for/: NEC; /Default/: \"\"; /Notes/: svg, cmap only
-    | TrueColor Bool                   -- ^ /Valid for/: G; /Notes/: bitmap output only
+    | TrueColor Bool                   -- ^ /Valid for/: G; /Parsing Default/: 'True'; /Notes/: bitmap output only
     | Vertices [Point]                 -- ^ /Valid for/: N; /Notes/: write only
     | ViewPort ViewPort                -- ^ /Valid for/: G; /Default/: \"\"
     | VoroMargin Double                -- ^ /Valid for/: G; /Default/: 0.05; /Minimum/: 0.0; /Notes/: not dot
