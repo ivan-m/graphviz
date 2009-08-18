@@ -1747,9 +1747,8 @@ instance PrintDot StyleItem where
 
 instance ParseDot StyleItem where
     parseUnqt = do nm <- parseUnqt
-                   args <- optional parseArgs
-                   let args' = fromMaybe [] args
-                   return $ SItem nm args'
+                   args <- tryParseList' parseArgs
+                   return $ SItem nm args
         where
           parseArgs = bracketSep (character '(')
                                  parseComma

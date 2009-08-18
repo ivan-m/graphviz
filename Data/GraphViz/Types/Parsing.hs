@@ -38,6 +38,8 @@ module Data.GraphViz.Types.Parsing
     , quotedParse
     , newline
     , parseComma
+    , tryParseList
+    , tryParseList'
     , skipToNewline
     , parseField
     , parseFields
@@ -61,7 +63,7 @@ import Data.Char( digitToInt
                 , toLower
                 )
 import Data.Function(on)
-import Data.Maybe(isJust)
+import Data.Maybe(isJust, fromMaybe)
 import Data.Ratio((%))
 import Control.Monad
 
@@ -268,3 +270,9 @@ commaSep' pa pb = do a <- pa
 
 parseComma :: Parse Char
 parseComma = character ','
+
+tryParseList :: (ParseDot a) => Parse [a]
+tryParseList = tryParseList' parse
+
+tryParseList' :: Parse [a] -> Parse [a]
+tryParseList' = liftM (fromMaybe []) . optional
