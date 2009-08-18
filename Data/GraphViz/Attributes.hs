@@ -68,7 +68,53 @@
    * Deprecated 'Overlap' algorithms are not defined.
 
  -}
-module Data.GraphViz.Attributes where
+module Data.GraphViz.Attributes
+    ( Attribute(..)
+    , usedByGraphs
+    , usedByClusters
+    , usedByNodes
+    , usedByEdges
+    , URL(..)
+    , ArrowType(..)
+    , AspectType(..)
+    , Rect(..)
+    , Color(..)
+    , ClusterMode(..)
+    , DirType(..)
+    , DEConstraints(..)
+    , DPoint(..)
+    , Label(..)
+    , Point(..)
+    , Overlap(..)
+    , LayerRange(..)
+    , LayerID(..)
+    , LayerList(..)
+    , OutputMode(..)
+    , Pack(..)
+    , PackMode(..)
+    , Pos(..)
+    , EdgeType(..)
+    , PageDir(..)
+    , Spline(..)
+    , QuadType(..)
+    , Root(..)
+    , RankType(..)
+    , RankDir(..)
+    , Shape(..)
+    , SmoothType(..)
+    , StartType(..)
+    , STStyle(..)
+    , StyleItem(..)
+    , StyleName(..)
+    , PortPos(..)
+    , CompassPoint(..)
+    , ViewPort(..)
+    , FocusType(..)
+    , VerticalPlacement(..)
+    , ScaleType(..)
+    , Justification(..)
+    , Ratios(..)
+    ) where
 
 import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
