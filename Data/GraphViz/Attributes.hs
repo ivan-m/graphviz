@@ -829,9 +829,9 @@ newtype URL = UStr { urlString :: String }
     deriving (Eq, Show, Read)
 
 instance PrintDot URL where
-    unqtDot u = wrap (char '<') (char '>')
-                -- Explicitly use text here... no quotes!
-                . text $ urlString u
+    unqtDot = wrap (char '<') (char '>')
+              -- Explicitly use text here... no quotes!
+              . text . urlString
 
 instance ParseDot URL where
     parseUnqt = liftM UStr
@@ -1078,7 +1078,7 @@ instance PrintDot DEConstraints where
 instance ParseDot DEConstraints where
     parseUnqt = liftM (bool EdgeConstraints NoConstraints) parse
                 `onFail`
-                (stringRep HierConstraints "hier")
+                stringRep HierConstraints "hier"
 
 -- -----------------------------------------------------------------------------
 
@@ -1206,11 +1206,12 @@ instance ParseDot LayerRange where
 
     parse = liftM LRID parse
             `onFail`
-            ( quotedParse $ do id1 <- parseUnqt
-                               sep <- parseLayerSep
-                               id2 <- parseUnqt
-                               return $ LRS id1 sep id2
-            )
+            quotedParse ( do id1 <- parseUnqt
+                             sep <- parseLayerSep
+                             id2 <- parseUnqt
+                             return $ LRS id1 sep id2
+                        )
+
 
 parseLayerSep :: Parse String
 parseLayerSep = many1 . oneOf
@@ -1733,7 +1734,7 @@ data StyleItem = SItem StyleName [String]
 instance PrintDot StyleItem where
     unqtDot (SItem nm args)
         | null args = dnm
-        | otherwise = dnm <> (parens args')
+        | otherwise = dnm <> parens args'
         where
           dnm = unqtDot nm
           args' = hcat . punctuate comma $ map unqtDot args

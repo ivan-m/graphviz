@@ -178,10 +178,10 @@ parseInstance att = hdr $+$ nest tab fns
                     ]
       pType b a
           | valtype a == Bl     = pFld <> text "Bool"
-          | isJust $ parseDef a = pFld <> text "Def" <+> (fromJust $ parseDef a)
+          | isJust $ parseDef a = pFld <> text "Def" <+> fromJust (parseDef a)
           | otherwise           = pFld
           where
-            pFld = text "parseField" <> if b then (char 's') else empty
+            pFld = text "parseField" <> if b then char 's' else empty
 
       pfFunc a = case map doubleQuotes $ parseNames a of
                    [n] -> pType False a <+> n
