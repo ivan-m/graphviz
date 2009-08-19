@@ -37,6 +37,7 @@ module Data.GraphViz.Types.Parsing
     , optionalQuoted
     , quotedParse
     , newline
+    , newline'
     , parseComma
     , tryParseList
     , tryParseList'
@@ -227,6 +228,12 @@ quotedParse p = bracket quote quote p
 
 newline :: Parse String
 newline = oneOf $ map string ["\r\n", "\n", "\r"]
+
+-- | Consume all whitespace and newlinews until a line with
+--   non-whitespace is reached.  The whitespace on that line is
+--   not consumed.
+newline' :: Parse ()
+newline' = many1 (whitespace' >> newline) >> return ()
 
 skipToNewline :: Parse ()
 skipToNewline = many (noneOf ['\n','\r']) >> newline >> return ()
