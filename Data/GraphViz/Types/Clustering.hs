@@ -15,10 +15,6 @@ module Data.GraphViz.Types.Clustering
     , clustersToNodes
     ) where
 
--- LT is defined in Attributes
-import Prelude hiding (LT)
-import qualified Prelude as P
-
 import Data.GraphViz.Types
 import Data.GraphViz.Attributes
 
@@ -63,7 +59,7 @@ sameClust _         _         = False
 -- | Singleton nodes come first, and then ordering based upon the cluster.
 clustOrder :: (Ord c) => ClusterTree c a -> ClusterTree c a -> Ordering
 clustOrder (NT _)    (NT _)    = EQ
-clustOrder (NT _)    (CT _ _)  = P.LT -- don't use the attribute LT
+clustOrder (NT _)    (CT _ _)  = LT
 clustOrder (CT _ _)  (NT _)    = GT
 clustOrder (CT c1 _) (CT c2 _) = compare c1 c2
 
