@@ -15,20 +15,27 @@
 
    A summary of known current constraints\/limitations\/differences:
 
-   * Parsing of quoted strings might not always work if they are a
-     sub-part of another Attribute (e.g. a quoted name in 'LayerList').
-     In fact, parsing with quotes is iffy for everything; specifically
-     when they are and aren't allowed.
+   * There might still be a few cases where quotes are still not
+     escaped/parsed correctly; if you find such a situation, please
+     let me know; however, you should be able to use 'String' values
+     directly without having to worry about when quotes are required
+     or extra escaping of quote characters as 'PrintDot' and
+     'ParseDot' instances for 'String' should take care of that
+     for you.
 
-   * GraphViz says that a number like /.02/ is valid; this library
+   * GraphViz says that a number like @/.02/@ is valid; this library
      disagrees.
 
-   * 'ColorScheme' is ignored when parsing 'Color' values
+   * When parsing named 'Color' values, the entire value entered is
+     kept as-is; this library as yet has no understanding of different
+     color schemes, etc.
 
    * ColorList and PointfList are defined as actual lists (but
-     'LayerList' is not).  Note that for the Color 'Attribute', only
-     a single Color is valid; edges are allowed multiple colors with
-     one spline/arrow per color in the list.
+     'LayerList' is not).  Note that for the Color 'Attribute' for
+     node values, only a single Color is valid; edges are allowed
+     multiple colors with one spline/arrow per color in the list (but
+     you must have at least one 'Color' in the list).  This might be
+     changed in future.
 
    * Style is implemented as a list of 'StyleItem' values; note that
      empty lists are not allowed.
@@ -55,27 +62,27 @@
 
    * Only polygon-based 'Shape's are available.
 
-   * Device-dependent 'StyleName' values are not available.
-
    * 'PortPos' only has the 'CompassPoint' option, not
      @PortName[:CompassPoint]@ (since record shapes aren't allowed,
      and parsing HTML-like labels could be problematic).
 
-   * Not every 'Attribute' is fully documented/described.  In
-     particular, a lot of them are listed as having a 'String' value,
-     when actually only certain Strings are allowed.
+   * Not every 'Attribute' is fully documented/described.  However,
+     all those which have specific allowed values should be covered.
 
    * Deprecated 'Overlap' algorithms are not defined.
 
  -}
 module Data.GraphViz.Attributes
-    ( Attribute(..)
+    ( -- * The actual /Dot/ attributes.
+      Attribute(..)
     , Attributes
+      -- ** Validity functions on 'Attribute' values.
     , usedByGraphs
     , usedBySubGraphs
     , usedByClusters
     , usedByNodes
     , usedByEdges
+      -- * Value types for 'Attribute's.
     , URL(..)
     , ArrowType(..)
     , AspectType(..)
