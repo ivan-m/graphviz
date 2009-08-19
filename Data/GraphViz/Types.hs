@@ -10,7 +10,16 @@
    loosely upon the information available at:
      <http://graphviz.org/doc/info/lang.html>
 
+   Printing of /Dot/ code is done as strictly as possible, whilst
+   parsing is as permissive as possible.  For example, if the types
+   allow it then @\"2\"@ will be parsed as an 'Int' value.  Note that
+   quoting and escaping of 'String' values is done automagically.
+
    A summary of known limitations\/differences:
+
+   * Whilst 'DotGraph', etc. are polymorphic in their node type, you
+     should ensure that you use a relatively simple node type (that
+     is, it only covers a single line, etc.).
 
    * Cannot create edges with subgraphs\/clusters as one of the
      end points.
@@ -63,65 +72,65 @@ import Control.Monad(liftM)
 -- -----------------------------------------------------------------------------
 
 -- | The internal representation of a graph in Dot form.
-data DotGraph = DotGraph { strictGraph     :: Bool
-                         , directedGraph   :: Bool
-                         , graphID         :: Maybe GraphID
-                         , graphStatements :: DotStatements
-                         }
-                deriving (Eq, Show, Read)
+data DotGraph a = DotGraph { strictGraph     :: Bool
+                           , directedGraph   :: Bool
+                           , graphID         :: Maybe GraphID
+                           , graphStatements :: DotStatements a
+                           }
+                  deriving (Eq, Show, Read)
 
 -- | A strict graph disallows multiple edges.
-makeStrict   :: DotGraph -> DotGraph
+makeStrict   :: DotGraph a -> DotGraph a
 makeStrict g = g { strictGraph = True }
 
 -- | Set the ID of the graph.
-setID     :: GraphID -> DotGraph -> DotGraph
+setID     :: GraphID -> DotGraph a -> DotGraph a
 setID i g = g { graphID = Just i }
 
 -- | Return all the 'DotNode's contained within this 'DotGraph'.  Note
 --   that it does not yet return all implicitly defined nodes
 --   contained only within 'DotEdge's.
-graphNodes :: DotGraph -> [DotNode]
+graphNodes :: DotGraph a -> [DotNode a]
 graphNodes = statementNodes . graphStatements
 
 -- | Return all the 'DotEdge's contained within this 'DotGraph'.
-graphEdges :: DotGraph -> [DotEdge]
+graphEdges :: DotGraph a -> [DotEdge a]
 graphEdges = statementEdges . graphStatements
 
 -- | The actual /Dot/ code for a 'DotGraph'.  Note that it is expected
 --   that @'parseDotGraph' . 'printDotGraph' == 'id'@ (this might not
 --   be true the other way around due to un-parseable components).
-printDotGraph :: DotGraph -> String
+printDotGraph :: (PrintDot a) => DotGraph a -> String
 printDotGraph = renderDot . toDot
 
 -- | Parse a limited subset of the Dot language to form a 'DotGraph'
 --   (that is, the caveats listed in "Data.GraphViz.Attributes" aside,
 --   Dot graphs are parsed if they match the layout of DotGraph).
-parseDotGraph :: String -> DotGraph
+parseDotGraph :: (ParseDot a) => String -> DotGraph a
 parseDotGraph = fst . runParser parse
 
 -- | Check if all the @Attribute@s are being used correctly.
-isValidGraph :: DotGraph -> Bool
+isValidGraph :: DotGraph a -> Bool
 isValidGraph = null . graphErrors
 
 -- | Return detectable errors in the 'DotGraph'.
-graphErrors :: DotGraph -> [DotError]
+graphErrors :: DotGraph a -> [DotError a]
 graphErrors = invalidStmts usedByGraphs . graphStatements
 
-instance PrintDot DotGraph where
+instance (PrintDot a) => PrintDot (DotGraph a) where
     unqtDot = printStmtBased printGraphID graphStatements
 
-printGraphID   :: DotGraph -> DotCode
+printGraphID   :: (PrintDot a) => DotGraph a -> DotCode
 printGraphID g = bool strGraph' empty (strictGraph g)
                  <+> bool dirGraph' undirGraph' (directedGraph g)
                  <+> maybe empty toDot (graphID g)
 
-instance ParseDot DotGraph where
+instance (ParseDot a) => ParseDot (DotGraph a) where
     parseUnqt = parseStmtBased parseGraphID
 
     parse = parseUnqt -- Don't want the option of quoting
 
-parseGraphID :: Parse (DotStatements -> DotGraph)
+parseGraphID :: (ParseDot a) => Parse (DotStatements a -> DotGraph a)
 parseGraphID = do str <- liftM isJust
                          $ optional (parseAndSpace $ string strGraph)
                   dir <- parseAndSpace ( stringRep True dirGraph
@@ -154,9 +163,9 @@ strGraph' = text strGraph
 -- | Used to record invalid 'Attribute' usage.  A 'Just' value denotes
 --   that it was used in an explicit 'DotNode' or 'DotEdge' usage;
 --   'Nothing' means that it was used in a 'GlobalAttributes' value.
-data DotError = GraphError Attribute
-              | NodeError (Maybe Int) Attribute
-              | EdgeError (Maybe (Int,Int)) Attribute
+data DotError a = GraphError Attribute
+                | NodeError (Maybe a) Attribute
+                | EdgeError (Maybe (a,a)) Attribute
                 deriving (Eq, Show, Read)
 
 -- -----------------------------------------------------------------------------
@@ -192,21 +201,21 @@ instance ParseDot GraphID where
 
 -- -----------------------------------------------------------------------------
 
-data DotStatements = DotStmts { attrStmts :: [GlobalAttributes]
-                              , subGraphs :: [DotSubGraph]
-                              , nodeStmts :: [DotNode]
-                              , edgeStmts :: [DotEdge]
-                              }
+data DotStatements a = DotStmts { attrStmts :: [GlobalAttributes]
+                                , subGraphs :: [DotSubGraph a]
+                                , nodeStmts :: [DotNode a]
+                                , edgeStmts :: [DotEdge a]
+                                }
                      deriving (Eq, Show, Read)
 
-instance PrintDot DotStatements where
+instance (PrintDot a) => PrintDot (DotStatements a) where
     unqtDot stmts = vcat [ toDot $ attrStmts stmts
                          , toDot $ subGraphs stmts
                          , toDot $ nodeStmts stmts
                          , toDot $ edgeStmts stmts
                          ]
 
-instance ParseDot DotStatements where
+instance (ParseDot a) => ParseDot (DotStatements a) where
     parseUnqt = do attrs <- parse
                    newline'
                    subGraphs <- parse
@@ -218,8 +227,8 @@ instance ParseDot DotStatements where
 
     parse = parseUnqt -- Don't want the option of quoting
 
-printStmtBased          :: (a -> DotCode) -> (a -> DotStatements)
-                           -> a -> DotCode
+printStmtBased          :: (PrintDot n) => (a -> DotCode)
+                           -> (a -> DotStatements n) -> a -> DotCode
 printStmtBased ff fss a = vcat [ ff a <+> lbrace
                                , indent stmts
                                , rbrace
@@ -228,11 +237,11 @@ printStmtBased ff fss a = vcat [ ff a <+> lbrace
       indent = nest 4
       stmts = toDot $ fss a
 
-printStmtBasedList        :: (a -> DotCode) -> (a -> DotStatements)
-                             -> [a] -> DotCode
+printStmtBasedList        :: (PrintDot n) => (a -> DotCode)
+                             -> (a -> DotStatements n) -> [a] -> DotCode
 printStmtBasedList ff fss = vcat . map (printStmtBased ff fss)
 
-parseStmtBased   :: Parse (DotStatements -> a) -> Parse a
+parseStmtBased   :: (ParseDot n) => Parse (DotStatements n -> a) -> Parse a
 parseStmtBased p = do f <- p
                       whitespace'
                       character '{'
@@ -243,22 +252,23 @@ parseStmtBased p = do f <- p
                       character '}'
                       return $ f stmts
 
-parseStmtBasedList   :: Parse (DotStatements -> a) -> Parse [a]
+parseStmtBasedList   :: (ParseDot n) => Parse (DotStatements n -> a)
+                        -> Parse [a]
 parseStmtBasedList p = sepBy (whitespace' >> parseStmtBased p) newline'
 
 -- | The function represents which function to use to check the
 --   'GraphAttrs' values.
-invalidStmts         :: (Attribute -> Bool) -> DotStatements -> [DotError]
+invalidStmts         :: (Attribute -> Bool) -> DotStatements a -> [DotError a]
 invalidStmts f stmts = concatMap (invalidGlobal f) (attrStmts stmts)
                        ++ concatMap invalidSubGraph (subGraphs stmts)
                        ++ concatMap invalidNode (nodeStmts stmts)
                        ++ concatMap invalidEdge (edgeStmts stmts)
 
-statementNodes       :: DotStatements -> [DotNode]
+statementNodes       :: DotStatements a -> [DotNode a]
 statementNodes stmts = concatMap subGraphNodes (subGraphs stmts)
                        ++ nodeStmts stmts
 
-statementEdges       :: DotStatements -> [DotEdge]
+statementEdges       :: DotStatements a -> [DotEdge a]
 statementEdges stmts = concatMap subGraphEdges (subGraphs stmts)
                        ++ edgeStmts stmts
 
@@ -299,7 +309,7 @@ parseGlobAttrType = oneOf [ stringRep GraphAttrs "graph"
                           ]
 
 invalidGlobal                   :: (Attribute -> Bool) -> GlobalAttributes
-                                   -> [DotError]
+                                   -> [DotError a]
 invalidGlobal f (GraphAttrs as) = map GraphError $ filter (not . f) as
 invalidGlobal _ (NodeAttrs  as) = map (NodeError Nothing)
                                   $ filter (not . usedByNodes) as
@@ -308,20 +318,20 @@ invalidGlobal _ (EdgeAttrs  as) = map (EdgeError Nothing)
 
 -- -----------------------------------------------------------------------------
 
-data DotSubGraph = DotSG { isCluster     :: Bool
-                         , subGraphID    :: Maybe GraphID
-                         , subGraphStmts :: DotStatements
-                         }
+data DotSubGraph a = DotSG { isCluster     :: Bool
+                           , subGraphID    :: Maybe GraphID
+                           , subGraphStmts :: DotStatements a
+                           }
                    deriving (Eq, Show, Read)
 
-instance PrintDot DotSubGraph where
+instance (PrintDot a) => PrintDot (DotSubGraph a) where
     unqtDot = printStmtBased printSubGraphID subGraphStmts
 
     unqtListToDot = printStmtBasedList printSubGraphID subGraphStmts
 
     listToDot = unqtListToDot
 
-printSubGraphID   :: DotSubGraph -> DotCode
+printSubGraphID   :: DotSubGraph a -> DotCode
 printSubGraphID s = sGraph'
                     <+> bool clust' empty isCl
                     <+> maybe empty dtID (subGraphID s)
@@ -330,7 +340,7 @@ printSubGraphID s = sGraph'
       dtID sId = bool (char '_') empty isCl
                  <> toDot sId
 
-instance ParseDot DotSubGraph where
+instance (ParseDot a) => ParseDot (DotSubGraph a) where
     parseUnqt = parseStmtBased parseSubGraphID
 
     parse = parseUnqt -- Don't want the option of quoting
@@ -339,7 +349,7 @@ instance ParseDot DotSubGraph where
 
     parseList = parseUnqtList
 
-parseSubGraphID :: Parse (DotStatements -> DotSubGraph)
+parseSubGraphID :: Parse (DotStatements a -> DotSubGraph a)
 parseSubGraphID = do string sGraph
                      whitespace'
                      isCl <- liftM isJust
@@ -360,15 +370,15 @@ clust = "cluster"
 clust' :: DotCode
 clust' = text clust
 
-invalidSubGraph    :: DotSubGraph -> [DotError]
+invalidSubGraph    :: DotSubGraph a -> [DotError a]
 invalidSubGraph sg = invalidStmts valFunc (subGraphStmts sg)
     where
       valFunc = bool usedByClusters usedBySubGraphs (isCluster sg)
 
-subGraphNodes :: DotSubGraph -> [DotNode]
+subGraphNodes :: DotSubGraph a -> [DotNode a]
 subGraphNodes = statementNodes . subGraphStmts
 
-subGraphEdges :: DotSubGraph -> [DotEdge]
+subGraphEdges :: DotSubGraph a -> [DotEdge a]
 subGraphEdges = statementEdges . subGraphStmts
 
 -- -----------------------------------------------------------------------------
@@ -376,22 +386,22 @@ subGraphEdges = statementEdges . subGraphStmts
 -- | A node in 'DotGraph' is either a singular node, or a cluster
 --   containing nodes (or more clusters) within it.
 --   At the moment, clusters are not parsed.
-data DotNode = DotNode { nodeID :: Int
-                       , nodeAttributes :: Attributes
-                       }
-               deriving (Eq, Show, Read)
+data DotNode a = DotNode { nodeID :: a
+                         , nodeAttributes :: Attributes
+                         }
+                 deriving (Eq, Show, Read)
 
-instance PrintDot DotNode where
+instance (PrintDot a) => PrintDot (DotNode a) where
     unqtDot = printAttrBased printNodeID nodeAttributes
 
     unqtListToDot = printAttrBasedList printNodeID nodeAttributes
 
     listToDot = unqtListToDot
 
-printNodeID :: DotNode -> DotCode
-printNodeID = unqtDot . nodeID
+printNodeID :: (PrintDot a) => DotNode a -> DotCode
+printNodeID = toDot . nodeID
 
-instance ParseDot DotNode where
+instance (ParseDot a) => ParseDot (DotNode a) where
     parseUnqt = parseAttrBased parseNodeID
 
     parse = parseUnqt -- Don't want the option of quoting
@@ -400,37 +410,37 @@ instance ParseDot DotNode where
 
     parseList = parseUnqtList
 
-parseNodeID :: Parse (Attributes -> DotNode)
+parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
 parseNodeID = liftM DotNode parseUnqt
 
-invalidNode   :: DotNode -> [DotError]
+invalidNode   :: DotNode a -> [DotError a]
 invalidNode n = map (NodeError (Just $ nodeID n))
                 $ filter (not . usedByNodes) (nodeAttributes n)
 
 -- -----------------------------------------------------------------------------
 
 -- | An edge in 'DotGraph'.
-data DotEdge = DotEdge { edgeHeadNodeID :: Int
-                       , edgeTailNodeID :: Int
-                       , directedEdge   :: Bool
-                       , edgeAttributes :: Attributes
-                       }
+data DotEdge a = DotEdge { edgeHeadNodeID :: a
+                         , edgeTailNodeID :: a
+                         , directedEdge   :: Bool
+                         , edgeAttributes :: Attributes
+                         }
              deriving (Eq, Show, Read)
 
-instance PrintDot DotEdge where
+instance (PrintDot a) => PrintDot (DotEdge a) where
     unqtDot = printAttrBased printEdgeID edgeAttributes
 
     unqtListToDot = printAttrBasedList printEdgeID edgeAttributes
 
     listToDot = unqtListToDot
 
-printEdgeID   :: DotEdge -> DotCode
+printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
 printEdgeID e = unqtDot (edgeHeadNodeID e)
                 <+> bool dirEdge' undirEdge' (directedEdge e)
                 <+> unqtDot (edgeTailNodeID e)
 
 
-instance ParseDot DotEdge where
+instance (ParseDot a) => ParseDot (DotEdge a) where
     parseUnqt = parseAttrBased parseEdgeID
 
     parse = parseUnqt -- Don't want the option of quoting
@@ -439,7 +449,7 @@ instance ParseDot DotEdge where
 
     parseList = parseUnqtList
 
-parseEdgeID :: Parse (Attributes -> DotEdge)
+parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
 parseEdgeID = do eHead <- parse
                  whitespace'
                  edgeType <- strings [dirEdge, undirEdge]
@@ -447,11 +457,6 @@ parseEdgeID = do eHead <- parse
                  whitespace'
                  eTail <- parse
                  return $ DotEdge eHead eTail eType
-
-invalidEdgeAttributes   :: DotEdge -> [(DotEdge, Attribute)]
-invalidEdgeAttributes e = map ((,) e)
-                          . filter (not . usedByEdges)
-                          $ edgeAttributes e
 
 dirEdge :: String
 dirEdge = "->"
@@ -465,7 +470,7 @@ undirEdge = "--"
 undirEdge' :: DotCode
 undirEdge' = text undirEdge
 
-invalidEdge   :: DotEdge -> [DotError]
+invalidEdge   :: DotEdge a -> [DotError a]
 invalidEdge e = map (EdgeError eID)
                 $ filter (not . usedByEdges) (edgeAttributes e)
     where
