@@ -14,7 +14,7 @@
    You should not be using this module; rather, it is here for
    informative/documentative reasons.  If you want to print a
    @'Data.GraphViz.Types.DotGraph'@, you should use
-   @'Data.GraphViz.Types.renderDotGraph'@ (which produces a
+   @'Data.GraphViz.Types.printDotGraph'@ (which produces a
    'String' value) rather than its 'PrintDot' instance.
 
    The Dot language specification specifies that any identifier is in
