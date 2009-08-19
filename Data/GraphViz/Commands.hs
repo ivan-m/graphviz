@@ -33,6 +33,7 @@ import Control.Concurrent
 import Control.Exception.Extensible
 
 import Data.GraphViz.Types
+import Data.GraphViz.Types.Printing
 
 -- | The available Graphviz commands.
 data GraphvizCommand = Dot | Neato | TwoPi | Circo | Fdp
@@ -53,7 +54,7 @@ undirCommand :: GraphvizCommand
 undirCommand = Neato
 
 -- | The appropriate (default) GraphViz command for the given graph.
-commandFor    :: DotGraph -> GraphvizCommand
+commandFor    :: DotGraph a -> GraphvizCommand
 commandFor dg = if (directedGraph dg)
                 then dirCommand
                 else undirCommand
@@ -149,14 +150,15 @@ instance Show GraphvizOutput where
 -- | Run the recommended Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
 --   Returns @True@ if successful, @False@ otherwise.
-runGraphviz         :: DotGraph -> GraphvizOutput -> FilePath -> IO Bool
+runGraphviz         :: (PrintDot n) => DotGraph n -> GraphvizOutput -> FilePath
+                       -> IO Bool
 runGraphviz gr t fp = runGraphvizCommand (commandFor gr) gr t fp
 
 -- | Run the chosen Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
 --   Returns @True@ if successful, @False@ otherwise.
-runGraphvizCommand :: GraphvizCommand -> DotGraph -> GraphvizOutput
-                   -> FilePath -> IO Bool
+runGraphvizCommand :: (PrintDot n) => GraphvizCommand -> DotGraph n
+                      -> GraphvizOutput -> FilePath -> IO Bool
 runGraphvizCommand  cmd gr t fp
     = do pipe <- tryJust (\(SomeException _) -> return ())
                  $ openFile fp WriteMode
@@ -174,11 +176,11 @@ runGraphvizCommand  cmd gr t fp
 -- | Run the chosen Graphviz command on this graph, but send the result to the
 --   given handle rather than to a file.
 --   The result is wrapped in 'Maybe' rather than throwing an error.
-graphvizWithHandle :: (Show a) => GraphvizCommand -> DotGraph -> GraphvizOutput
-                      -> (Handle -> IO a) -> IO (Maybe a)
+graphvizWithHandle :: (PrintDot n, Show a) => GraphvizCommand -> DotGraph n
+                      -> GraphvizOutput -> (Handle -> IO a) -> IO (Maybe a)
 graphvizWithHandle cmd gr t f
     = do (inp, outp, errp, prc) <- runInteractiveCommand command
-         forkIO $ hPrint inp gr >> hClose inp
+         forkIO $ hPutStrLn inp (printDotGraph gr) >> hClose inp
          forkIO $ (hGetContents errp >>= hPutStr stderr >> hClose errp)
          a <- f outp
          -- Don't close outp until f finishes.
