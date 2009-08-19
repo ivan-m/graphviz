@@ -6,16 +6,16 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module defines simple helper functions for use with
-   "Text.PrettyPrint".
+   "Text.PrettyPrint".  It also re-exports all the pretty-printing
+   combinators from that module.
 
    Note that the 'PrintDot' instances for 'Bool', etc. match those
    specified for use with GraphViz.
 
-   You should not be using this module; rather, it is here for
-   informative/documentative reasons.  If you want to print a
-   @'Data.GraphViz.Types.DotGraph'@, you should use
-   @'Data.GraphViz.Types.printDotGraph'@ (which produces a
-   'String' value) rather than its 'PrintDot' instance.
+   You should only be using this module if you are writing custom node
+   types for use with "Data.GraphViz.Types".  For actual printing of
+   code, use @'Data.GraphViz.Types.printDotGraph'@ (which produces a
+   'String' value).
 
    The Dot language specification specifies that any identifier is in
    one of four forms:
