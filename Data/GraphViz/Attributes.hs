@@ -72,6 +72,7 @@ module Data.GraphViz.Attributes
     ( Attribute(..)
     , Attributes
     , usedByGraphs
+    , usedBySubGraphs
     , usedByClusters
     , usedByNodes
     , usedByEdges
