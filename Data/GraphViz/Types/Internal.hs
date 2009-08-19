@@ -1,7 +1,7 @@
 {- |
    Module      : Data.GraphViz.Types.Internal
    Description : Internal functions
-   Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
+   Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
