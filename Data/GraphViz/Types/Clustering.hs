@@ -18,7 +18,7 @@ import Data.GraphViz.Types
 import Data.GraphViz.Attributes
 
 import Data.Either(partitionEithers)
-import Data.List(groupBy, sortBy, mapAccumL)
+import Data.List(groupBy, sortBy)
 import Data.Graph.Inductive.Graph(Graph, Node, LNode, labNodes)
 
 -- -----------------------------------------------------------------------------

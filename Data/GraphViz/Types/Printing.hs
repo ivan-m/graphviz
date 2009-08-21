@@ -58,8 +58,6 @@ import Text.PrettyPrint hiding ( Style(..)
                                )
 import qualified Text.PrettyPrint as PP
 
-import Data.Char(isDigit)
-
 -- -----------------------------------------------------------------------------
 
 -- | A type alias to indicate what is being produced.

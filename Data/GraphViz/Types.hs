@@ -222,14 +222,14 @@ instance (PrintDot a) => PrintDot (DotStatements a) where
                          ]
 
 instance (ParseDot a) => ParseDot (DotStatements a) where
-    parseUnqt = do attrs <- parse
+    parseUnqt = do atts <- parse
                    newline'
-                   subGraphs <- parse
+                   sGraphs <- parse
                    newline'
                    nodes <- parse
                    newline'
                    edges <- parse
-                   return $ DotStmts attrs subGraphs nodes edges
+                   return $ DotStmts atts sGraphs nodes edges
 
     parse = parseUnqt -- Don't want the option of quoting
 
@@ -242,11 +242,11 @@ instance Functor DotStatements where
 printStmtBased          :: (PrintDot n) => (a -> DotCode)
                            -> (a -> DotStatements n) -> a -> DotCode
 printStmtBased ff fss a = vcat [ ff a <+> lbrace
-                               , indent stmts
+                               , ind stmts
                                , rbrace
                                ]
     where
-      indent = nest 4
+      ind = nest 4
       stmts = toDot $ fss a
 
 printStmtBasedList        :: (PrintDot n) => (a -> DotCode)
@@ -519,10 +519,10 @@ printAttrBasedList ff fas = vcat . map (printAttrBased ff fas)
 parseAttrBased   :: Parse (Attributes -> a) -> Parse a
 parseAttrBased p = do f <- p
                       whitespace'
-                      attrs <- tryParseList
+                      atts <- tryParseList
                       whitespace'
                       character ';'
-                      return $ f attrs
+                      return $ f atts
 
 parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
 parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) newline'

@@ -1201,8 +1201,8 @@ data LayerRange = LRID LayerID
                   deriving (Eq, Show, Read)
 
 instance PrintDot LayerRange where
-    unqtDot (LRID lid)        = unqtDot lid
-    unqtDot (LRS id1 sep id2) = unqtDot id1 <> unqtDot sep <> unqtDot id2
+    unqtDot (LRID lid)      = unqtDot lid
+    unqtDot (LRS id1 s id2) = unqtDot id1 <> unqtDot s <> unqtDot id2
 
     toDot (LRID lid) = toDot lid
     toDot lrs        = doubleQuotes $ unqtDot lrs
@@ -1211,16 +1211,16 @@ instance ParseDot LayerRange where
     parseUnqt = liftM LRID parseUnqt
                 `onFail`
                 do id1 <- parseUnqt
-                   sep <- parseLayerSep
+                   s   <- parseLayerSep
                    id2 <- parseUnqt
-                   return $ LRS id1 sep id2
+                   return $ LRS id1 s id2
 
     parse = liftM LRID parse
             `onFail`
             quotedParse ( do id1 <- parseUnqt
-                             sep <- parseLayerSep
+                             s   <- parseLayerSep
                              id2 <- parseUnqt
-                             return $ LRS id1 sep id2
+                             return $ LRS id1 s id2
                         )
 
 
@@ -1266,16 +1266,16 @@ data LayerList = LL String [(String, String)]
 instance PrintDot LayerList where
     unqtDot (LL l1 ols) = unqtDot l1 <> hsep (map subLL ols)
         where
-          subLL (sep, l) = unqtDot sep <> unqtDot l
+          subLL (s, l) = unqtDot s <> unqtDot l
 
     -- Might not need quotes, but probably will.
     toDot = doubleQuotes . unqtDot
 
 instance ParseDot LayerList where
     parseUnqt = do l1 <- parseLayerName
-                   ols <- many $ do sep <- parseLayerSep
+                   ols <- many $ do s   <- parseLayerSep
                                     lnm <- parseLayerName
-                                    return (sep, lnm)
+                                    return (s, lnm)
                    return $ LL l1 ols
 
     parse = quotedParse parseUnqt
@@ -1751,7 +1751,7 @@ instance PrintDot StyleItem where
           args' = hcat . punctuate comma $ map unqtDot args
 
     toDot si@(SItem nm args)
-        | null args = toDot args
+        | null args = toDot nm
         | otherwise = doubleQuotes $ unqtDot si
 
     unqtListToDot = hcat . punctuate comma . map unqtDot

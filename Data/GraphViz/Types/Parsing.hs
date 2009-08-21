@@ -57,8 +57,6 @@ import Data.GraphViz.Types.Internal
 
 import Text.ParserCombinators.Poly.Lazy
 import Data.Char( digitToInt
-                , isAsciiLower
-                , isAsciiUpper
                 , isDigit
                 , isSpace
                 , toLower
@@ -155,7 +153,7 @@ parseInt = do cs <- many1 (satisfy isDigit)
     where
       radix = 10
 
-parseInt' :: (Integral a) => Parse a
+parseInt' :: Parse Int
 parseInt' = parseSigned parseInt
 
 parseFloat :: (RealFrac a) => Parse a
@@ -179,7 +177,7 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                               `onFail`
                               parseSigned parseInt)
 
-parseFloat' :: (RealFrac a) => Parse a
+parseFloat' :: Parse Double
 parseFloat' = parseSigned parseFloat
 
 -- -----------------------------------------------------------------------------
@@ -229,7 +227,7 @@ quotedParse p = bracket quote quote p
 newline :: Parse String
 newline = oneOf $ map string ["\r\n", "\n", "\r"]
 
--- | Consume all whitespace and newlinews until a line with
+-- | Consume all whitespace and newlines until a line with
 --   non-whitespace is reached.  The whitespace on that line is
 --   not consumed.
 newline' :: Parse ()
