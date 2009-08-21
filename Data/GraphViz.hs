@@ -76,9 +76,9 @@ isDirected = not . isUndirected
 
 -- | Convert a graph to GraphViz's /Dot/ format.  The 'Bool' value is
 --   'True' for directed graphs, 'False' otherwise.
-graphToDot :: (Graph gr) => Bool -> gr a b -> [Attribute]
-              -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute])
-              -> DotGraph
+graphToDot :: (Graph gr) => Bool -> gr a b -> [GlobalAttributes]
+              -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
+              -> DotGraph Node
 graphToDot isDir graph gAttributes fmtNode fmtEdge
     = clusterGraphToDot isDir graph gAttributes clusterBy fmtCluster fmtNode fmtEdge
       where
@@ -88,9 +88,9 @@ graphToDot isDir graph gAttributes fmtNode fmtEdge
 
 -- | Convert a graph to GraphViz's /Dot/ format with automatic
 --   direction detection.
-graphToDot'       :: (Ord b, Graph gr) => gr a b -> [Attribute]
-                     -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute])
-                     -> DotGraph
+graphToDot'       :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
+                     -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
+                     -> DotGraph Node
 graphToDot' graph = graphToDot (isDirected graph) graph
 
 -- | Convert a graph to /Dot/ format, using the specified clustering function
@@ -98,19 +98,22 @@ graphToDot' graph = graphToDot (isDirected graph) graph
 --   Clusters can be nested to arbitrary depth.
 --   The 'Bool' argument is 'True' for directed graphs, 'False' otherwise.
 clusterGraphToDot :: (Ord c, Graph gr) => Bool -> gr a b
-                     -> [Attribute] -> (LNode a -> NodeCluster c a)
-                     -> (c -> [Attribute]) -> (LNode a -> [Attribute])
-                     -> (LEdge b -> [Attribute]) -> DotGraph
+                     -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                     -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
+                     -> (LEdge b -> Attributes) -> DotGraph Node
 clusterGraphToDot dirGraph graph gAttrs clusterBy fmtCluster fmtNode fmtEdge
     = DotGraph { strictGraph     = False
                , directedGraph   = dirGraph
                , graphID         = Nothing
-               , graphAttributes = gAttrs
-               , graphNodes      = ns
-               , graphEdges      = es
+               , graphStatements = stmts
                }
       where
-        ns = clustersToNodes clusterBy fmtCluster fmtNode graph
+        stmts = DotStmts { attrStmts = gAttrs
+                         , subGraphs = cs
+                         , nodeStmts = ns
+                         , edgeStmts = es
+                         }
+        (cs, ns) = clustersToNodes clusterBy fmtCluster fmtNode graph
         es = mapMaybe mkDotEdge . labEdges $ graph
         mkDotEdge e@(f,t,_) = if dirGraph || f <= t
                               then Just DotEdge { edgeHeadNodeID = f
@@ -125,15 +128,15 @@ clusterGraphToDot dirGraph graph gAttrs clusterBy fmtCluster fmtNode fmtEdge
 --   Clusters can be nested to arbitrary depth.
 --   Graph direction is automatically inferred.
 clusterGraphToDot'       :: (Ord c, Ord b, Graph gr) => gr a b
-                            -> [Attribute] -> (LNode a -> NodeCluster c a)
-                            -> (c -> [Attribute]) -> (LNode a -> [Attribute])
-                            -> (LEdge b -> [Attribute]) -> DotGraph
+                            -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                            -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
+                            -> (LEdge b -> Attributes) -> DotGraph Node
 clusterGraphToDot' graph = clusterGraphToDot (isDirected graph) graph
 
 -- -----------------------------------------------------------------------------
 
-type AttributeNode a = ([Attribute], a)
-type AttributeEdge b = ([Attribute], b)
+type AttributeNode a = (Attributes, a)
+type AttributeEdge b = (Attributes, b)
 
 -- | Run the graph via dot to get positional information and then
 --   combine that information back into the original graph.
@@ -142,8 +145,8 @@ type AttributeEdge b = ([Attribute], b)
 --   The 'Bool' argument is 'True' for directed graphs, 'False'
 --   otherwise.  Directed graphs are passed through /dot/, and
 --   undirected graphs through /neato/.
-graphToGraph :: (Graph gr) => Bool -> gr a b -> [Attribute]
-                -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute])
+graphToGraph :: (Graph gr) => Bool -> gr a b -> [GlobalAttributes]
+                -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                 -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph isDir gr gAttributes fmtNode fmtEdge
     = do output <- graphvizWithHandle command dot DotOutput hGetContents
@@ -163,8 +166,9 @@ graphToGraph isDir gr gAttributes fmtNode fmtEdge
                                     else (f, t, getLabel (t,f))
                 where
                   getLabel c = (fromJust $ Map.lookup c edgeMap, l)
-            DotGraph { graphNodes = ns, graphEdges = es}
-                = fst . runParser parseDotGraph $ dotResult
+            g' = parseDotGraph dotResult
+            ns = graphNodes g'
+            es = graphEdges g'
             nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
             edgeMap = Map.fromList $ map (\e -> ( ( edgeTailNodeID e
                                                   , edgeHeadNodeID e)
@@ -175,8 +179,8 @@ graphToGraph isDir gr gAttributes fmtNode fmtEdge
 --   combine that information back into the original graph.
 --   Note that this doesn't support graphs with clusters.
 --   Graph direction is automatically inferred.
-graphToGraph'    :: (Ord b, Graph gr) => gr a b -> [Attribute]
-                    -> (LNode a -> [Attribute]) -> (LEdge b -> [Attribute])
+graphToGraph'    :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
+                    -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                     -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph' gr = graphToGraph (isDirected gr) gr
 
