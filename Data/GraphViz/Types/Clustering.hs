@@ -91,14 +91,14 @@ treesToDot fmtCluster fmtNode
 -- | Convert this 'ClusterTree' into its /Dot/ representation.
 treeToDot :: (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
              -> ClusterTree c a -> Either (DotSubGraph Node) (DotNode Node)
-treeToDot _ fmtNode (NT ln) = Right $ DotNode { nodeID         = fst ln
-                                              , nodeAttributes = fmtNode ln
-                                              }
+treeToDot _ fmtNode (NT ln) = Right DotNode { nodeID         = fst ln
+                                            , nodeAttributes = fmtNode ln
+                                            }
 treeToDot fmtCluster fmtNode (CT c nts)
-    = Left $ DotSG { isCluster     = True
-                   , subGraphID    = Nothing
-                   , subGraphStmts = stmts
-                   }
+    = Left DotSG { isCluster     = True
+                 , subGraphID    = Nothing
+                 , subGraphStmts = stmts
+                 }
     where
       stmts = DotStmts { attrStmts = fmtCluster c
                        , subGraphs = cs
