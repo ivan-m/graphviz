@@ -21,6 +21,9 @@
      should ensure that you use a relatively simple node type (that
      is, it only covers a single line, etc.).
 
+   * Also, whilst GraphViz allows you to mix the types used for nodes,
+     this library requires\/assumes that they are all the same type.
+
    * Cannot create edges with subgraphs\/clusters as one of the
      end points.
 
@@ -275,7 +278,8 @@ statementEdges stmts = concatMap subGraphEdges (subGraphs stmts)
 -- -----------------------------------------------------------------------------
 
 -- | Represents a list of top-level list of 'Attribute's for the
---   entire graph/sub-graph.
+--   entire graph/sub-graph.  Note that 'GraphAttrs' also applies to
+--   'DotSubGraph's.
 data GlobalAttributes = GraphAttrs { attrs :: Attributes }
                       | NodeAttrs  { attrs :: Attributes }
                       | EdgeAttrs  { attrs :: Attributes }
