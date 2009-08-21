@@ -161,6 +161,9 @@ strGraph = "strict"
 strGraph' :: DotCode
 strGraph' = text strGraph
 
+instance Functor DotGraph where
+    fmap f g = g { graphStatements = fmap f $ graphStatements g }
+
 -- -----------------------------------------------------------------------------
 
 -- | Used to record invalid 'Attribute' usage.  A 'Just' value denotes
@@ -229,6 +232,12 @@ instance (ParseDot a) => ParseDot (DotStatements a) where
                    return $ DotStmts attrs subGraphs nodes edges
 
     parse = parseUnqt -- Don't want the option of quoting
+
+instance Functor DotStatements where
+    fmap f stmts = stmts { subGraphs = map (fmap f) $ subGraphs stmts
+                         , nodeStmts = map (fmap f) $ nodeStmts stmts
+                         , edgeStmts = map (fmap f) $ edgeStmts stmts
+                         }
 
 printStmtBased          :: (PrintDot n) => (a -> DotCode)
                            -> (a -> DotStatements n) -> a -> DotCode
@@ -374,6 +383,9 @@ clust = "cluster"
 clust' :: DotCode
 clust' = text clust
 
+instance Functor DotSubGraph where
+    fmap f sg = sg { subGraphStmts = fmap f $ subGraphStmts sg }
+
 invalidSubGraph    :: DotSubGraph a -> [DotError a]
 invalidSubGraph sg = invalidStmts valFunc (subGraphStmts sg)
     where
@@ -417,6 +429,9 @@ instance (ParseDot a) => ParseDot (DotNode a) where
 parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
 parseNodeID = liftM DotNode parseUnqt
 
+instance Functor DotNode where
+    fmap f n = n { nodeID = f $ nodeID n }
+
 invalidNode   :: DotNode a -> [DotError a]
 invalidNode n = map (NodeError (Just $ nodeID n))
                 $ filter (not . usedByNodes) (nodeAttributes n)
@@ -452,6 +467,11 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
     parseUnqtList = parseAttrBasedList parseEdgeID
 
     parseList = parseUnqtList
+
+instance Functor DotEdge where
+    fmap f e = e { edgeHeadNodeID = f $ edgeHeadNodeID e
+                 , edgeTailNodeID = f $ edgeTailNodeID e
+                 }
 
 parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
 parseEdgeID = do eHead <- parse
