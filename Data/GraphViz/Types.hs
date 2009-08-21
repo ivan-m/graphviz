@@ -53,6 +53,8 @@ module Data.GraphViz.Types
     , makeStrict
     , graphNodes
     , graphEdges
+      -- ** Reporting of errors in a 'DotGraph'.
+    , DotError(..)
     , isValidGraph
     , graphErrors
       -- * Sub-components of a 'DotGraph'.
