@@ -45,14 +45,13 @@ module Data.GraphViz
 
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Clustering
-import Data.GraphViz.Types.Parsing(runParser)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
 import Control.Arrow((&&&))
-import Data.Maybe
+import Data.Maybe(mapMaybe, fromJust)
 import qualified Data.Map as Map
 import System.IO(hGetContents)
 import System.IO.Unsafe(unsafePerformIO)
@@ -170,10 +169,8 @@ graphToGraph isDir gr gAttributes fmtNode fmtEdge
             ns = graphNodes g'
             es = graphEdges g'
             nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
-            edgeMap = Map.fromList $ map (\e -> ( ( edgeTailNodeID e
-                                                  , edgeHeadNodeID e)
-                                                , edgeAttributes e)
-                                         ) es
+            edgeMap = Map.fromList $ map ( (edgeHeadNodeID &&& edgeTailNodeID)
+                                           &&& edgeAttributes) es
 
 -- | Run the graph via dot to get positional information and then
 --   combine that information back into the original graph.
