@@ -9,7 +9,6 @@
 
    This module defines types for creating clusters.
 -}
-
 module Data.GraphViz.Types.Clustering
     ( NodeCluster(..)
     , clustersToNodes
@@ -18,22 +17,23 @@ module Data.GraphViz.Types.Clustering
 import Data.GraphViz.Types
 import Data.GraphViz.Attributes
 
+import Data.Either(partitionEithers)
 import Data.List(groupBy, sortBy, mapAccumL)
-import Data.Graph.Inductive.Graph(Graph, LNode, labNodes)
+import Data.Graph.Inductive.Graph(Graph, Node, LNode, labNodes)
 
 -- -----------------------------------------------------------------------------
 
 -- | Define into which cluster a particular node belongs.
---   Nodes can be nested to arbitrary depth.
+--   Clusters can be nested to arbitrary depth.
 data NodeCluster c a = N (LNode a) | C c (NodeCluster c a)
                         deriving (Show)
 
--- | Create the @'DotNode'@s for the given graph.
+-- | Create the /Dot/ representation for the given graph.
 clustersToNodes :: (Ord c, Graph gr) => (LNode a -> NodeCluster c a)
-                   -> (c -> [Attribute]) -> (LNode a -> [Attribute])
-                   -> gr a b -> [DotNode]
+                   -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
+                   -> gr a b -> ([DotSubGraph Node], [DotNode Node])
 clustersToNodes clusterBy fmtCluster fmtNode
-    = treesToNodes fmtCluster fmtNode
+    = treesToDot fmtCluster fmtNode
       . collapseNClusts
       . map (clustToTree . clusterBy)
       . labNodes
@@ -41,7 +41,8 @@ clustersToNodes clusterBy fmtCluster fmtNode
 -- -----------------------------------------------------------------------------
 
 -- | A tree representation of a cluster.
-data ClusterTree c a = NT (LNode a) | CT c [ClusterTree c a]
+data ClusterTree c a = NT (LNode a)
+                     | CT c [ClusterTree c a]
                        deriving (Show)
 
 -- | Convert a single node cluster into its tree representation.
@@ -78,33 +79,30 @@ collapseNClusts = concatMap grpCls
       grpCls ns@((NT _):_)   = ns
       grpCls cs@((CT c _):_) = [CT c (collapseNClusts $ concatMap getNodes cs)]
 
+-- | Convert the cluster representation of the trees into 'DotNode's
+--   and 'DotSubGraph's (with @'isCluster' = 'True'@, and
+--   @'subGraphID' = 'Nothing'@).
+treesToDot :: (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
+              -> [ClusterTree c a] -> ([DotSubGraph Node], [DotNode Node])
+treesToDot fmtCluster fmtNode
+    = partitionEithers
+      . map (treeToDot fmtCluster fmtNode)
 
--- | Convert the cluster representation of the trees into @'DotNode'@s.
---   Clusters will be labelled with @'Int'@s.
-treesToNodes :: (c -> [Attribute]) -> (LNode a -> [Attribute])
-             -> [ClusterTree c a] -> [DotNode]
-treesToNodes fmtCluster fmtNode = snd . treesToNodesFrom fmtCluster fmtNode 0
-
--- | Start labelling the clusters with this @'Int'@.
-treesToNodesFrom :: (c -> [Attribute]) -> (LNode a -> [Attribute])
-                 -> Int -> [ClusterTree c a] -> (Int,[DotNode])
-treesToNodesFrom fmtCluster fmtNode n = mapAccumL mkNodes n
+-- | Convert this 'ClusterTree' into its /Dot/ representation.
+treeToDot :: (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
+             -> ClusterTree c a -> Either (DotSubGraph Node) (DotNode Node)
+treeToDot _ fmtNode (NT ln) = Right $ DotNode { nodeID         = fst ln
+                                              , nodeAttributes = fmtNode ln
+                                              }
+treeToDot fmtCluster fmtNode (CT c nts)
+    = Left $ DotSG { isCluster     = True
+                   , subGraphID    = Nothing
+                   , subGraphStmts = stmts
+                   }
     where
-      mkNodes = treeToNode fmtCluster fmtNode
-
--- | Convert this 'ClusterTree' into its 'DotNode' representation.
-treeToNode :: (c -> [Attribute]) -> (LNode a -> [Attribute])
-           -> Int -> ClusterTree c a -> (Int, DotNode)
-treeToNode _ fmtNode n (NT ln) = ( n
-                                 , DotNode { nodeID = fst ln
-                                           , nodeAttributes = fmtNode ln
-                                           }
-                                 )
-
-treeToNode fmtCluster fmtNode n (CT c nts) = (n',clust)
-    where
-      (n', nts') = treesToNodesFrom fmtCluster fmtNode (n+1) nts
-      clust = DotCluster { clusterID = show n
-                         , clusterAttributes = fmtCluster c
-                         , clusterElems = nts'
-                         }
+      stmts = DotStmts { attrStmts = fmtCluster c
+                       , subGraphs = cs
+                       , nodeStmts = ns
+                       , edgeStmts = []
+                       }
+      (cs, ns) = treesToDot fmtCluster fmtNode nts
