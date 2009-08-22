@@ -231,7 +231,7 @@ newline = oneOf $ map string ["\r\n", "\n", "\r"]
 --   non-whitespace is reached.  The whitespace on that line is
 --   not consumed.
 newline' :: Parse ()
-newline' = many1 (whitespace' >> newline) >> return ()
+newline' = many (whitespace' >> newline) >> return ()
 
 skipToNewline :: Parse ()
 skipToNewline = many (noneOf ['\n','\r']) >> newline >> return ()
