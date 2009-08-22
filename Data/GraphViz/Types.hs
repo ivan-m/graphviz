@@ -327,7 +327,7 @@ instance ParseDot GlobalAttributes where
 
     parse = parseUnqt -- Don't want the option of quoting
             `adjustErr`
-            (++ "Not a valid listing of global attributes")
+            (++ "\n\nNot a valid listing of global attributes")
 
     -- Have to do this manually because of the special case
     parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'

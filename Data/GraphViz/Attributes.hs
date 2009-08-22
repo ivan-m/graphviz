@@ -982,8 +982,8 @@ instance PrintDot Color where
 
     unqtListToDot = hcat . punctuate colon . map unqtDot
 
-    -- This is the same as the default instance, but define it anyway.
-    listToDot = doubleQuotes . unqtListToDot
+    listToDot [ColorName nm] = toDot nm
+    listToDot cs             = doubleQuotes $ unqtListToDot cs
 
 hexColor :: [Word8] -> DotCode
 hexColor = (<>) (char '#') . hcat . map word8Doc
@@ -1029,11 +1029,16 @@ instance ParseDot Color where
                          return n
 
 
-    parse = quotedParse parseUnqt
+    parse = liftM ColorName stringBlock -- unquoted Color Name
             `onFail`
-            liftM ColorName stringBlock -- unquoted Color Name
+            quotedParse parseUnqt
 
     parseUnqtList = sepBy1 parseUnqt (character ':')
+
+    parseList = liftM (return . ColorName) stringBlock -- unquoted single
+                                                       -- ColorName
+                `onFail`
+                quotedParse parseUnqtList
 
 -- -----------------------------------------------------------------------------
 
@@ -1756,6 +1761,9 @@ instance PrintDot StyleItem where
 
     unqtListToDot = hcat . punctuate comma . map unqtDot
 
+    listToDot [SItem nm []] = toDot nm
+    listToDot sis           = doubleQuotes $ unqtListToDot sis
+
 instance ParseDot StyleItem where
     parseUnqt = do nm <- parseUnqt
                    args <- tryParseList' parseArgs
@@ -1766,10 +1774,15 @@ instance ParseDot StyleItem where
                                  (character ')')
                                  parseStyleName
 
-    -- Never used on its own, so not bothering with a separate parse
-    -- implementation (which is iffy due to the DD case).
+    -- Ignore quotations for the DD case atm, since I'm not sure how
+    -- to deal with it.
 
     parseUnqtList = sepBy1 parseUnqt parseComma
+
+    -- Might not necessarily need to be quoted if a singleton...
+    parseList = liftM return parse
+                `onFail`
+                parseUnqtList
 
 data StyleName = Dashed    -- ^ Nodes and Edges
                | Dotted    -- ^ Nodes and Edges

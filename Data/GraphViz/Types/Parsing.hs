@@ -115,8 +115,10 @@ instance ParseDot Char where
                           , quotedString
                           ]
 
-    parseList = optionalQuoted (oneOf [numString, stringBlock])
+    parseList = oneOf [numString, stringBlock]
                 `onFail`
+                -- This will also take care of quoted versions of
+                -- above.
                 quotedParse quotedString
 
 instance (ParseDot a) => ParseDot [a] where
