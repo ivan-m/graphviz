@@ -291,6 +291,10 @@ statementEdges stmts = concatMap subGraphEdges (subGraphs stmts)
 -- | Represents a list of top-level list of 'Attribute's for the
 --   entire graph/sub-graph.  Note that 'GraphAttrs' also applies to
 --   'DotSubGraph's.
+--
+--   Note that Dot allows a single 'Attribute' to be listen on a line;
+--   if this is the case then when parsing, the type of 'Attribute' it
+--   is determined and that type of 'GlobalAttribute' is created.
 data GlobalAttributes = GraphAttrs { attrs :: Attributes }
                       | NodeAttrs  { attrs :: Attributes }
                       | EdgeAttrs  { attrs :: Attributes }
@@ -310,10 +314,13 @@ printGlobAttrType EdgeAttrs{}  = text "edge"
 
 instance ParseDot GlobalAttributes where
     parseUnqt = parseAttrBased parseGlobAttrType
+                `onFail`
+                liftM determineType parse `discard` optional lineEnd
 
     parse = parseUnqt -- Don't want the option of quoting
 
-    parseUnqtList = parseAttrBasedList parseGlobAttrType
+    -- Have to do this manually because of the special case
+    parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
 
     parseList = parseUnqtList
 
@@ -322,6 +329,15 @@ parseGlobAttrType = oneOf [ stringRep GraphAttrs "graph"
                           , stringRep NodeAttrs "node"
                           , stringRep EdgeAttrs "edge"
                           ]
+
+determineType :: Attribute -> GlobalAttributes
+determineType attr
+    | usedByGraphs attr   = GraphAttrs attr'
+    | usedByClusters attr = GraphAttrs attr' -- Also covers SubGraph case
+    | usedByNodes attr    = NodeAttrs attr'
+    | otherwise           = EdgeAttrs attr' -- Must be for edges.
+    where
+      attr' = [attr]
 
 invalidGlobal                   :: (Attribute -> Bool) -> GlobalAttributes
                                    -> [DotError a]
@@ -522,9 +538,11 @@ parseAttrBased   :: Parse (Attributes -> a) -> Parse a
 parseAttrBased p = do f <- p
                       whitespace'
                       atts <- tryParseList
-                      whitespace'
-                      character ';'
+                      lineEnd
                       return $ f atts
 
 parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
 parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) newline'
+
+lineEnd :: Parse ()
+lineEnd = whitespace' >> character ';' >> return ()
