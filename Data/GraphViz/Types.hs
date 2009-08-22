@@ -24,6 +24,13 @@
    * Also, whilst GraphViz allows you to mix the types used for nodes,
      this library requires\/assumes that they are all the same type.
 
+   * It is commmn to see multiple edges defined on the one line in Dot
+     (e.g. @n1 -> n2 -> n3@ means to create a directed edge from @n1@
+     to @n2@ and from @n2@ to @n3@).  This is not yet parseable (as it
+     requires having multiple definitions of a list of edges, with the
+     parse-each-line definition using the multiple-edges-per-line
+     definition).
+
    * Cannot create edges with subgraphs\/clusters as one of the
      end points.
 
