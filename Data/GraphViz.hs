@@ -138,8 +138,10 @@ type AttributeNode a = (Attributes, a)
 type AttributeEdge b = (Attributes, b)
 
 -- | Run the graph via dot to get positional information and then
---   combine that information back into the original graph.
---   Note that this doesn't support graphs with clusters.
+--   combine that information back into the original graph.  Note that
+--   this doesn't support graphs with clusters, and that for the edge
+--   information to be parsed properly when using multiple edges, each
+--   edge between two nodes needs to have a unique label.
 --
 --   The 'Bool' argument is 'True' for directed graphs, 'False'
 --   otherwise.  Directed graphs are passed through /dot/, and
