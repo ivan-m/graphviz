@@ -25,7 +25,10 @@ import Data.Graph.Inductive.Graph(Graph, Node, LNode, labNodes)
 
 -- | Define into which cluster a particular node belongs.
 --   Clusters can be nested to arbitrary depth.
-data NodeCluster c a = N (LNode a) | C c (NodeCluster c a)
+data NodeCluster c a = N (LNode a) -- ^ Indicates the actual Node in the Graph.
+                     | C c (NodeCluster c a) -- ^ Indicates that the
+                                             --   'NodeCluster' is in
+                                             --   the Cluster /c/.
                         deriving (Show)
 
 -- | Create the /Dot/ representation for the given graph.

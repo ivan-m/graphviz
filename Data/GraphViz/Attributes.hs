@@ -40,7 +40,7 @@
    * Style is implemented as a list of 'StyleItem' values; note that
      empty lists are not allowed.
 
-   * A lot of values have a possible value of @"none"@.  These now
+   * A lot of values have a possible value of @none@.  These now
      have custom constructors.  In fact, most constructors have been
      expanded upon to give an idea of what they represent rather than
      using generic terms.
@@ -1170,7 +1170,7 @@ data Overlap = KeepOverlaps
              | PrismOverlap (Maybe Int) -- ^ Only when sfdp is available, 'Int' is non-negative
              | CompressOverlap
              | VpscOverlap
-             | IpsepOverlap -- ^ Only when @mode="ipsep"@
+             | IpsepOverlap -- ^ Only when @mode=\"ipsep\"@
                deriving (Eq, Show, Read)
 
 instance PrintDot Overlap where

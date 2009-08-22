@@ -6,9 +6,9 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This is the top-level module for the graphviz library.  It provides
-   functions to convert 'Data.Graph.Inductive.Graph.Graph's into
-   the /Dot/ language used by the /GraphViz/ program (as well as a
-   limited ability to perform the reverse operation).
+   functions to convert 'Data.Graph.Inductive.Graph.Graph's into the
+   /Dot/ language used by the /GraphViz/ suite of programs (as well as
+   a limited ability to perform the reverse operation).
 
    Information about GraphViz and the Dot language can be found at:
    <http://graphviz.org/>
@@ -181,7 +181,7 @@ graphToGraph'    :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
                     -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph' gr = graphToGraph (isDirected gr) gr
 
--- | Pass the plain graph through 'graphToGraph'.  This is an @IO@ action,
+-- | Pass the plain graph through 'graphToGraph'.  This is an @'IO'@ action,
 --   however since the state doesn't change it's safe to use 'unsafePerformIO'
 --   to convert this to a normal function.
 --
@@ -196,7 +196,7 @@ dotizeGraph isDir g = unsafePerformIO
       gAttrs = []
       noAttrs = const []
 
--- | Pass the plain graph through 'graphToGraph'.  This is an @IO@ action,
+-- | Pass the plain graph through 'graphToGraph'.  This is an @'IO'@ action,
 --   however since the state doesn't change it's safe to use 'unsafePerformIO'
 --   to convert this to a normal function.
 --   The graph direction is automatically inferred.

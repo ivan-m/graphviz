@@ -77,7 +77,7 @@ import Control.Monad(liftM)
 -- -----------------------------------------------------------------------------
 
 -- | The internal representation of a graph in Dot form.
-data DotGraph a = DotGraph { strictGraph     :: Bool
+data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multiple edges are drawn.
                            , directedGraph   :: Bool
                            , graphID         :: Maybe GraphID
                            , graphStatements :: DotStatements a
@@ -110,11 +110,11 @@ printDotGraph = renderDot . toDot
 
 -- | Parse a limited subset of the Dot language to form a 'DotGraph'
 --   (that is, the caveats listed in "Data.GraphViz.Attributes" aside,
---   Dot graphs are parsed if they match the layout of DotGraph).
+--   Dot graphs are parsed if they match the layout of 'DotGraph').
 parseDotGraph :: (ParseDot a) => String -> DotGraph a
 parseDotGraph = fst . runParser parse
 
--- | Check if all the @Attribute@s are being used correctly.
+-- | Check if all the 'Attribute's are being used correctly.
 isValidGraph :: DotGraph a -> Bool
 isValidGraph = null . graphErrors
 
