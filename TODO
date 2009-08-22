@@ -2,15 +2,6 @@ Areas to work on:
 
 * Utilise the generic graph class once it is finalised.
 
-* Allow user to choose whether or not the graph is meant to be
-  directed or undirected.
-
-* Improve parsing to fully (or at least follow more closely) support Dot.
-
-* Improve clustering/subgraph support.
-
-* Use a PrettyPrinter rather than Show to generate Dot output.
-
 * Improve Output support.
 
 * Find and fix the handle closing bug with graphvizWithHandle.
