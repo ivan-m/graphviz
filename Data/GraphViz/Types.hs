@@ -134,6 +134,8 @@ instance (ParseDot a) => ParseDot (DotGraph a) where
     parseUnqt = parseStmtBased parseGraphID
 
     parse = parseUnqt -- Don't want the option of quoting
+            `adjustErr`
+            (++ "\n\nNot a valid DotGraph")
 
 parseGraphID :: (ParseDot a) => Parse (DotStatements a -> DotGraph a)
 parseGraphID = do str <- liftM isJust
@@ -206,6 +208,8 @@ instance ParseDot GraphID where
                   -- Parse last so that quoted numbers are parsed as numbers.
                   , liftM Str parse
                   ]
+            `adjustErr`
+            (++ "Not a valid GraphID")
 
 -- -----------------------------------------------------------------------------
 
@@ -224,16 +228,18 @@ instance (PrintDot a) => PrintDot (DotStatements a) where
                          ]
 
 instance (ParseDot a) => ParseDot (DotStatements a) where
-    parseUnqt = do atts <- parse
+    parseUnqt = do atts <- tryParseList
                    newline'
-                   sGraphs <- parse
+                   sGraphs <- tryParseList
                    newline'
-                   nodes <- parse
+                   nodes <- tryParseList
                    newline'
-                   edges <- parse
+                   edges <- tryParseList
                    return $ DotStmts atts sGraphs nodes edges
 
     parse = parseUnqt -- Don't want the option of quoting
+            `adjustErr`
+            (++ "Not a valid set of statements")
 
 instance Functor DotStatements where
     fmap f stmts = stmts { subGraphs = map (fmap f) $ subGraphs stmts
@@ -265,6 +271,8 @@ parseStmtBased p = do f <- p
                       whitespace'
                       character '}'
                       return $ f stmts
+                   `adjustErr`
+                   (++ "\n\nNot a valid statement-based structure")
 
 parseStmtBasedList   :: (ParseDot n) => Parse (DotStatements n -> a)
                         -> Parse [a]
@@ -318,6 +326,8 @@ instance ParseDot GlobalAttributes where
                 liftM determineType parse `discard` optional lineEnd
 
     parse = parseUnqt -- Don't want the option of quoting
+            `adjustErr`
+            (++ "Not a valid listing of global attributes")
 
     -- Have to do this manually because of the special case
     parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
@@ -365,16 +375,18 @@ instance (PrintDot a) => PrintDot (DotSubGraph a) where
 printSubGraphID   :: DotSubGraph a -> DotCode
 printSubGraphID s = sGraph'
                     <+> bool clust' empty isCl
-                    <+> maybe empty dtID (subGraphID s)
+                    <> maybe empty dtID (subGraphID s)
     where
       isCl = isCluster s
-      dtID sId = bool (char '_') empty isCl
+      dtID sId = bool (char '_') space isCl
                  <> toDot sId
 
 instance (ParseDot a) => ParseDot (DotSubGraph a) where
     parseUnqt = parseStmtBased parseSubGraphID
 
     parse = parseUnqt -- Don't want the option of quoting
+            `adjustErr`
+            (++ "\n\nNot a valid Sub Graph")
 
     parseUnqtList = parseStmtBasedList parseSubGraphID
 
@@ -385,7 +397,7 @@ parseSubGraphID = do string sGraph
                      whitespace'
                      isCl <- liftM isJust
                              $ optional (string clust)
-                               `discard` character '_'
+                               `discard` optional (character '_')
                      sId <- optional parse
                      return $ DotSG isCl sId
 
@@ -540,6 +552,8 @@ parseAttrBased p = do f <- p
                       atts <- tryParseList
                       lineEnd
                       return $ f atts
+                   `adjustErr`
+                   (++ "\n\nNot a valid attribute-based structure")
 
 parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
 parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) newline'
