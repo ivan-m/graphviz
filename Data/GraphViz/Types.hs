@@ -24,12 +24,10 @@
    * Also, whilst GraphViz allows you to mix the types used for nodes,
      this library requires\/assumes that they are all the same type.
 
-   * It is commmn to see multiple edges defined on the one line in Dot
+   * It is common to see multiple edges defined on the one line in Dot
      (e.g. @n1 -> n2 -> n3@ means to create a directed edge from @n1@
-     to @n2@ and from @n2@ to @n3@).  This is not yet parseable (as it
-     requires having multiple definitions of a list of edges, with the
-     parse-each-line definition using the multiple-edges-per-line
-     definition).
+     to @n2@ and from @n2@ to @n3@).  These types of edge definitions
+     are parseable; however, they are converted to singleton edges.
 
    * Cannot create edges with subgraphs\/clusters as one of the
      end points.
@@ -501,23 +499,45 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
 
     parse = parseUnqt -- Don't want the option of quoting
 
-    parseUnqtList = parseAttrBasedList parseEdgeID
+    -- Have to take into account edges of the type "n1 -> n2 -> n3", etc.
+    parseUnqtList = liftM concat
+                    $ sepBy (whitespace' >> parseEdgeLine) newline'
 
     parseList = parseUnqtList
+
+parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
+parseEdgeID = do eHead <- parse
+                 whitespace'
+                 eType <- parseEdgeType
+                 whitespace'
+                 eTail <- parse
+                 return $ DotEdge eHead eTail eType
+
+parseEdgeType :: Parse Bool
+parseEdgeType = stringRep True dirEdge
+                `onFail`
+                stringRep False undirEdge
+
+parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
+parseEdgeLine = liftM return parse
+                `onFail`
+                do n1 <- parse
+                   ens <- many1 $ do whitespace'
+                                     eType <- parseEdgeType
+                                     whitespace'
+                                     n <- parse
+                                     return (eType, n)
+                   let ens' = (True, n1) : ens
+                       efs = zipWith mkEdg ens' (tail ens')
+                       ef = return $ \ as -> map ($as) efs
+                   parseAttrBased ef
+    where
+      mkEdg (_, hn) (et, tn) = DotEdge hn tn et
 
 instance Functor DotEdge where
     fmap f e = e { edgeHeadNodeID = f $ edgeHeadNodeID e
                  , edgeTailNodeID = f $ edgeTailNodeID e
                  }
-
-parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
-parseEdgeID = do eHead <- parse
-                 whitespace'
-                 edgeType <- strings [dirEdge, undirEdge]
-                 let eType = edgeType == dirEdge
-                 whitespace'
-                 eTail <- parse
-                 return $ DotEdge eHead eTail eType
 
 dirEdge :: String
 dirEdge = "->"
