@@ -337,7 +337,7 @@ instance ParseDot GlobalAttributes where
             (++ "\n\nNot a valid listing of global attributes")
 
     -- Have to do this manually because of the special case
-    parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
+    parseUnqtList = sepBy (whitespace' >> parse) newline'
 
     parseList = parseUnqtList
 
@@ -464,7 +464,7 @@ instance (ParseDot a) => ParseDot (DotNode a) where
     parseList = parseUnqtList
 
 parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
-parseNodeID = liftM DotNode parseUnqt
+parseNodeID = liftM DotNode parse
 
 instance Functor DotNode where
     fmap f n = n { nodeID = f $ nodeID n }
