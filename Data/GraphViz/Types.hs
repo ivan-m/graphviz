@@ -24,6 +24,13 @@
    * Also, whilst GraphViz allows you to mix the types used for nodes,
      this library requires\/assumes that they are all the same type.
 
+   * 'DotEdge' defines an edge @(a, b)@ (with an edge going from @a@
+     to @b@) with @a@ being the head node and @b@ being the tail node;
+     in /Dot/ parlance these are switched around.  Care must be taken
+     when using the related @Head*@ and @Tail*@ 'Attribute's.  See the
+     differences section in "Data.GraphViz.Attributes" for more
+     information.
+
    * It is common to see multiple edges defined on the one line in Dot
      (e.g. @n1 -> n2 -> n3@ means to create a directed edge from @n1@
      to @n2@ and from @n2@ to @n3@).  These types of edge definitions

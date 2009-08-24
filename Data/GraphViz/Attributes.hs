@@ -22,6 +22,10 @@
      'ParseDot' instances for 'String' should take care of that
      for you.
 
+   * Note that for an edge, in /Dot/ parlance if the edge goes from
+     /A/ to /B/, then /A/ is the tail node and /B/ is the head node
+     (since /A/ is at the tail end of the arrow).
+
    * GraphViz says that a number like @/.02/@ is valid; this library
      disagrees.
 
