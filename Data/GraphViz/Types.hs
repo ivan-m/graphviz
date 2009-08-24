@@ -32,6 +32,10 @@
    * Cannot create edges with subgraphs\/clusters as one of the
      end points.
 
+   * When either creating a 'DotGraph' by hand or parsing one, it is
+     possible to specify that @'directedGraph' = d@, but at lease one
+     'DotEdge' has @'directedEdge' = 'not' d@.
+
    * Nodes cannot have Port values.
 
    * Cannot place items in an arbitrary order: in particular, this
