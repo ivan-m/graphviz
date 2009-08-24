@@ -86,6 +86,7 @@ module Data.GraphViz.Attributes
     , usedByNodes
     , usedByEdges
       -- * Value types for 'Attribute's.
+    , EscString
     , URL(..)
     , ArrowType(..)
     , AspectType(..)
@@ -211,8 +212,8 @@ data Attribute
     | Distortion Double                -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
     | DPI Double                       -- ^ /Valid for/: G; /Default/: @96.0@, @0.0@; /Notes/: svg, bitmap output only; \"resolution\" is a synonym
     | EdgeURL URL                      -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-    | EdgeTarget String                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-    | EdgeTooltip String               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+    | EdgeTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+    | EdgeTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Epsilon Double                   -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
     | ESep DPoint                      -- ^ /Valid for/: G; /Default/: @+3@; /Notes/: not dot
     | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @lightgrey@ (nodes), @black@ (clusters)
@@ -227,8 +228,8 @@ data Attribute
     | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
     | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: @\"\"@
     | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: @'PP' 'CenterPoint'@
-    | HeadTarget String                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-    | HeadTooltip String               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+    | HeadTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+    | HeadTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Height Double                    -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
     | ID Label                         -- ^ /Valid for/: GNE; /Default/: @\"\"@; /Notes/: svg, postscript, map only
     | Image String                     -- ^ /Valid for/: N; /Default/: @\"\"@
@@ -243,8 +244,8 @@ data Attribute
     | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: @14.0@; /Minimum/: @1.0@
     | LabelJust Justification          -- ^ /Valid for/: GC; /Default/: @'JCenter'@
     | LabelLoc VerticalPlacement       -- ^ /Valid for/: GCN; /Default/: @'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)
-    | LabelTarget String               -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-    | LabelTooltip String              -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+    | LabelTarget EscString            -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+    | LabelTooltip EscString           -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Landscape Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
     | Layer LayerRange                 -- ^ /Valid for/: EN; /Default/: @\"\"@
     | Layers LayerList                 -- ^ /Valid for/: G; /Default/: @\"\"@
@@ -318,10 +319,10 @@ data Attribute
     | TailClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
     | TailLabel Label                  -- ^ /Valid for/: E; /Default/: @\"\"@
     | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: center
-    | TailTarget String                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-    | TailTooltip String               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-    | Target String                    -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, map only
-    | Tooltip String                   -- ^ /Valid for/: NEC; /Default/: @\"\"@; /Notes/: svg, cmap only
+    | TailTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+    | TailTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+    | Target EscString                 -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, map only
+    | Tooltip EscString                -- ^ /Valid for/: NEC; /Default/: @\"\"@; /Notes/: svg, cmap only
     | TrueColor Bool                   -- ^ /Valid for/: G; /Parsing Default/: 'True'; /Notes/: bitmap output only
     | Vertices [Point]                 -- ^ /Valid for/: N; /Notes/: write only
     | ViewPort ViewPort                -- ^ /Valid for/: G; /Default/: none
@@ -856,7 +857,44 @@ usedByEdges _                = False
 {- Delete to here -}
 -- -----------------------------------------------------------------------------
 
-newtype URL = UStr { urlString :: String }
+{- |
+
+   Some 'Attribute's (mainly label-like ones) take a 'String' argument
+   that allows for extra escape codes.  This library doesn't do any
+   extra checks or special parsing for these escape codes, but usage
+   of 'EscString' rather than 'String' indicates that the GraphViz
+   tools will recognise these extra escape codes for these
+   'Attribute's.
+
+   The extra escape codes include (note that these are all 'String's):
+
+     [@\\N@] Replace with the name of the node (for Node 'Attribute's).
+
+     [@\\G@] Replace with the name of the graph (for Node 'Attribute's)
+             or the name of the graph or cluster, whichever is
+             applicable (for Graph, Cluster and Edge 'Attribute's).
+
+     [@\\E@] Replace with the name of the edge, formed by the two
+             adjoining nodes and the edge type (for Edge 'Attribute's).
+
+     [@\\T@] Replace with the name of the tail node (for Edge
+             'Attribute's).
+
+     [@\\H@] Replace with the name of the head node (for Edge
+             'Attribute's).
+
+     [@\\L@] Replace with the object's label (for all 'Attribute's).
+
+   Also, if the 'Attribute' in question is 'Label', 'HeadLabel' or
+   'TailLabel', then @\\n@, @\\l@ and @\\r@ split the label into lines
+   centered, left-justified and right-justified respectively.
+
+ -}
+type EscString = String
+
+-- -----------------------------------------------------------------------------
+
+newtype URL = UStr { urlString :: EscString }
     deriving (Eq, Show, Read)
 
 instance PrintDot URL where
@@ -1279,7 +1317,7 @@ instance ParseDot Model where
 
 -- -----------------------------------------------------------------------------
 
-data Label = StrLabel String
+data Label = StrLabel EscString
            | URLLabel URL
              deriving (Eq, Show, Read)
 

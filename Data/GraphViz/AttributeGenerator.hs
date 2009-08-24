@@ -103,7 +103,7 @@ type Comment = String
 data VType = Dbl
            | Integ
            | Strng
-           | QStrng
+           | EStrng
            | URL
            | Bl
            | Cust String
@@ -113,7 +113,7 @@ vtype           :: VType -> Doc
 vtype Dbl       = text "Double"
 vtype Integ     = text "Int"
 vtype Strng     = text "String"
-vtype QStrng    = text "QuotedString"
+vtype EStrng    = text "EscString"
 vtype URL       = text "URL"
 vtype Bl        = text "Bool"
 vtype (Cust t)  = text t
@@ -296,8 +296,8 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "Distortion" ["distortion"] "N" Dbl Nothing (Just "@0.0@") (Just "@-100.0@") Nothing
              , makeAttr "DPI" ["dpi", "resolution"] "G" Dbl Nothing (Just "@96.0@, @0.0@") Nothing (Just "svg, bitmap output only; \\\"resolution\\\" is a synonym")
              , makeAttr "EdgeURL" ["edgeURL", "edgehref"] "E" URL Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
-             , makeAttr "EdgeTarget" ["edgetarget"] "E" Strng Nothing (Just "none") Nothing (Just "svg, map only")
-             , makeAttr "EdgeTooltip" ["edgetooltip"] "E" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
+             , makeAttr "EdgeTarget" ["edgetarget"] "E" EStrng Nothing (Just "none") Nothing (Just "svg, map only")
+             , makeAttr "EdgeTooltip" ["edgetooltip"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
              , makeAttr "Epsilon" ["epsilon"] "G" Dbl Nothing (Just "@.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@)") Nothing (Just "neato only")
              , makeAttr "ESep" ["esep"] "G" (Cust "DPoint") Nothing (Just "@+3@") Nothing (Just "not dot")
              , makeAttr "FillColor" ["fillcolor"] "NC" (Cust "Color") Nothing (Just "@lightgrey@ (nodes), @black@ (clusters)") Nothing Nothing
@@ -312,8 +312,8 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "HeadClip" ["headclip"] "E" Bl (Just "True") (Just "@'True'@") Nothing Nothing
              , makeAttr "HeadLabel" ["headlabel"] "E" (Cust "Label") Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "HeadPort" ["headport"] "E" (Cust "PortPos") Nothing (Just "@'PP' 'CenterPoint'@") Nothing Nothing
-             , makeAttr "HeadTarget" ["headtarget"] "E" Strng Nothing (Just "none") Nothing (Just "svg, map only")
-             , makeAttr "HeadTooltip" ["headtooltip"] "E" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
+             , makeAttr "HeadTarget" ["headtarget"] "E" EStrng Nothing (Just "none") Nothing (Just "svg, map only")
+             , makeAttr "HeadTooltip" ["headtooltip"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
              , makeAttr "Height" ["height"] "N" Dbl Nothing (Just "@0.5@") (Just "@0.02@") Nothing
              , makeAttr "ID" ["id"] "GNE" (Cust "Label") Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, postscript, map only")
              , makeAttr "Image" ["image"] "N" Strng Nothing (Just "@\\\"\\\"@") Nothing Nothing
@@ -328,8 +328,8 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "LabelFontSize" ["labelfontsize"] "E" Dbl Nothing (Just "@14.0@") (Just "@1.0@") Nothing
              , makeAttr "LabelJust" ["labeljust"] "GC" (Cust "Justification") Nothing (Just "@'JCenter'@") Nothing Nothing
              , makeAttr "LabelLoc" ["labelloc"] "GCN" (Cust "VerticalPlacement") Nothing (Just "@'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)") Nothing Nothing
-             , makeAttr "LabelTarget" ["labeltarget"] "E" Strng Nothing (Just "none") Nothing (Just "svg, map only")
-             , makeAttr "LabelTooltip" ["labeltooltip"] "E" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
+             , makeAttr "LabelTarget" ["labeltarget"] "E" EStrng Nothing (Just "none") Nothing (Just "svg, map only")
+             , makeAttr "LabelTooltip" ["labeltooltip"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
              , makeAttr "Landscape" ["landscape"] "G" Bl (Just "True") (Just "@'False'@") Nothing Nothing
              , makeAttr "Layer" ["layer"] "EN" (Cust "LayerRange") Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "Layers" ["layers"] "G" (Cust "LayerList") Nothing (Just "@\\\"\\\"@") Nothing Nothing
@@ -403,10 +403,10 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "TailClip" ["tailclip"] "E" Bl (Just "True") (Just "@'True'@") Nothing Nothing
              , makeAttr "TailLabel" ["taillabel"] "E" (Cust "Label") Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "TailPort" ["tailport"] "E" (Cust "PortPos") Nothing (Just "center") Nothing Nothing
-             , makeAttr "TailTarget" ["tailtarget"] "E" Strng Nothing (Just "none") Nothing (Just "svg, map only")
-             , makeAttr "TailTooltip" ["tailtooltip"] "E" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
-             , makeAttr "Target" ["target"] "ENGC" Strng Nothing (Just "none") Nothing (Just "svg, map only")
-             , makeAttr "Tooltip" ["tooltip"] "NEC" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
+             , makeAttr "TailTarget" ["tailtarget"] "E" EStrng Nothing (Just "none") Nothing (Just "svg, map only")
+             , makeAttr "TailTooltip" ["tailtooltip"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
+             , makeAttr "Target" ["target"] "ENGC" EStrng Nothing (Just "none") Nothing (Just "svg, map only")
+             , makeAttr "Tooltip" ["tooltip"] "NEC" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
              , makeAttr "TrueColor" ["truecolor"] "G" Bl (Just "True") Nothing Nothing (Just "bitmap output only")
              , makeAttr "Vertices" ["vertices"] "N" (Cust "[Point]") Nothing Nothing Nothing (Just "write only")
              , makeAttr "ViewPort" ["viewport"] "G" (Cust "ViewPort") Nothing (Just "none") Nothing Nothing
