@@ -1195,7 +1195,7 @@ instance ParseDot DirType where
 
 -- -----------------------------------------------------------------------------
 
--- | Only when @mode=ipsep@.
+-- | Only when @mode == 'IpSep'@.
 data DEConstraints = EdgeConstraints
                    | NoConstraints
                    | HierConstraints
@@ -1329,7 +1329,7 @@ data Overlap = KeepOverlaps
              | PrismOverlap (Maybe Int) -- ^ Only when sfdp is available, 'Int' is non-negative
              | CompressOverlap
              | VpscOverlap
-             | IpsepOverlap -- ^ Only when @mode=\"ipsep\"@
+             | IpsepOverlap -- ^ Only when @mode == 'IpSep'@
                deriving (Eq, Show, Read)
 
 instance PrintDot Overlap where
