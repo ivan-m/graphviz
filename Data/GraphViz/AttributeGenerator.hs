@@ -271,7 +271,7 @@ dot = char '.'
 attributes :: [Attribute]
 attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (Just "@0.0@") (Just "neato only")
              , makeAttr "K" ["K"] "GC" Dbl Nothing (Just "@0.3@") (Just "@0@") (Just "sfdp, fdp only")
-             , makeAttr "URL" ["URL", "href"] "ENGC" URL Nothing Nothing (Just "none") (Just "svg, postscript, map only")
+             , makeAttr "URL" ["URL", "href"] "ENGC" URL Nothing (Just "none") Nothing (Just "svg, postscript, map only")
              , makeAttr "ArrowHead" ["arrowhead"] "E" (Cust "ArrowType") Nothing (Just "@'normal'@") Nothing Nothing
              , makeAttr "ArrowSize" ["arrowsize"] "E" Dbl Nothing (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "ArrowTail" ["arrowtail"] "E" (Cust "ArrowType") Nothing (Just "@'normal'@") Nothing Nothing

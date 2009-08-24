@@ -187,7 +187,7 @@ import Control.Monad(liftM)
 data Attribute
     = Damping Double                   -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
     | K Double                         -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
-    | URL URL                          -- ^ /Valid for/: ENGC; /Minimum/: none; /Notes/: svg, postscript, map only
+    | URL URL                          -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
     | ArrowHead ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
     | ArrowSize Double                 -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
     | ArrowTail ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
