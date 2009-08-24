@@ -123,6 +123,20 @@ module Data.GraphViz.Attributes
     , ScaleType(..)
     , Justification(..)
     , Ratios(..)
+    -- * Types representing the Dot grammar for 'ArrowType'.
+    , ArrowShape(..)
+    , ArrowModifier(..)
+    , ArrowFill(..)
+    , ArrowSide(..)
+    -- ** Default 'ArrowType' aliases.
+    -- *** The 9 primitive 'ArrowShape's.
+    , box, crow, diamond, dotArrow, inv, noArrow, normal, tee, vee
+    -- *** 5 derived Arrows.
+    , oDot, invDot, invODot, oBox, oDiamond
+    -- *** 5 supported cases for backwards compatibility
+    , eDiamond, openArr, halfOpen, emptyArr, invEmpty
+    -- ** 'ArrowModifier' instances
+    , noMods, openMod
     ) where
 
 import Data.GraphViz.Types.Internal
@@ -130,6 +144,7 @@ import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
 
 import Data.Char(isDigit, isHexDigit)
+import Data.Maybe(isJust, maybe)
 import Data.Word(Word8)
 import Numeric(showHex, readHex)
 import Control.Monad(liftM)
@@ -858,60 +873,159 @@ instance ParseDot URL where
 
 -- -----------------------------------------------------------------------------
 
-data ArrowType = Normal   | Inv
-               | DotArrow | InvDot
-               | ODot     | InvODot
-               | NoArrow  | Tee
-               | Empty    | InvEmpty
-               | Diamond  | ODiamond
-               | EDiamond | Crow
-               | Box      | OBox
-               | Open     | HalfOpen
-               | Vee
-                 deriving (Eq, Show, Read)
+-- | /Dot/ has a basic grammar of arrow shapes which allows usage of
+--   up to 1,544,761 different shapes from 9 different basic
+--   'ArrowShape's.  Note that whilst an explicit list is used in the
+--   definition of 'ArrowType', there must be at least one tuple and a
+--   maximum of 4 (since that is what is required by Dot).  For more
+--   information, see: <http://graphviz.org/doc/info/arrows.html>
+--
+--   The 19 basic arrows shown on the overall attributes page have
+--   been defined below as a convenience.  Parsing of the 5
+--   backward-compatible special cases is also supported.
+newtype ArrowType = AType [(ArrowModifier, ArrowShape)]
+    deriving (Eq, Show, Read)
+
+box, crow, diamond, dotArrow, inv, noArrow, normal, tee, vee :: ArrowType
+oDot, invDot, invODot, oBox, oDiamond :: ArrowType
+eDiamond, openArr, halfOpen, emptyArr, invEmpty :: ArrowType
+
+normal = AType [(noMods, Normal)]
+inv = AType [(noMods, Inv)]
+dotArrow = AType [(noMods, DotArrow)]
+invDot = AType [ (noMods, Inv)
+               , (noMods, DotArrow)]
+oDot = AType [(ArrMod OpenArrow BothSides, DotArrow)]
+invODot = AType [ (noMods, Inv)
+                , (openMod, DotArrow)]
+noArrow = AType [(noMods, NoArrow)]
+tee = AType [(noMods, Tee)]
+emptyArr = AType [(openMod, Normal)]
+invEmpty = AType [ (noMods, Inv)
+                 , (openMod, Normal)]
+diamond = AType [(noMods, Diamond)]
+oDiamond = AType [(openMod, Diamond)]
+eDiamond = oDiamond
+crow = AType [(noMods, Crow)]
+box = AType [(noMods, Box)]
+oBox = AType [(openMod, Box)]
+openArr = vee
+halfOpen = AType [(ArrMod FilledArrow LeftSide, Vee)]
+vee = AType [(noMods, Vee)]
 
 instance PrintDot ArrowType where
-    unqtDot Normal   = unqtDot "normal"
-    unqtDot Inv      = unqtDot "inv"
-    unqtDot DotArrow = unqtDot "dot"
-    unqtDot InvDot   = unqtDot "invdot"
-    unqtDot ODot     = unqtDot "odot"
-    unqtDot InvODot  = unqtDot "invodot"
-    unqtDot NoArrow  = unqtDot "none"
-    unqtDot Tee      = unqtDot "tee"
-    unqtDot Empty    = unqtDot "empty"
-    unqtDot InvEmpty = unqtDot "invempty"
-    unqtDot Diamond  = unqtDot "diamond"
-    unqtDot ODiamond = unqtDot "odiamond"
-    unqtDot EDiamond = unqtDot "ediamond"
-    unqtDot Crow     = unqtDot "crow"
-    unqtDot Box      = unqtDot "box"
-    unqtDot OBox     = unqtDot "obox"
-    unqtDot Open     = unqtDot "open"
-    unqtDot HalfOpen = unqtDot "halfopen"
-    unqtDot Vee      = unqtDot "vee"
+    unqtDot (AType mas) = hcat $ map appMod mas
+        where
+          appMod (m, a) = unqtDot m <> unqtDot a
 
 instance ParseDot ArrowType where
-    parseUnqt = oneOf [ stringRep Normal "normal"
-                      , stringRep Inv "inv"
-                      , stringRep DotArrow "dot"
-                      , stringRep InvDot "invdot"
-                      , stringRep ODot "odot"
-                      , stringRep InvODot "invodot"
-                      , stringRep NoArrow "none"
-                      , stringRep Tee "tee"
-                      , stringRep Empty "empty"
-                      , stringRep InvEmpty "invempty"
-                      , stringRep Diamond "diamond"
-                      , stringRep ODiamond "odiamond"
-                      , stringRep EDiamond "ediamond"
+    parseUnqt = do mas <- many1 $ do m <- parseUnqt
+                                     a <- parseUnqt
+                                     return (m,a)
+                   return $ AType mas
+                `onFail`
+                specialArrowParse
+
+specialArrowParse :: Parse ArrowType
+specialArrowParse = oneOf [ stringRep eDiamond "ediamond"
+                          , stringRep openArr "open"
+                          , stringRep halfOpen "halfopen"
+                          , stringRep emptyArr "empty"
+                          , stringRep invEmpty "invempty"
+                          ]
+
+data ArrowShape = Box
+                | Crow
+                | Diamond
+                | DotArrow
+                | Inv
+                | NoArrow
+                | Normal
+                | Tee
+                | Vee
+                  deriving (Eq, Show, Read)
+
+instance PrintDot ArrowShape where
+    unqtDot Box      = unqtDot "box"
+    unqtDot Crow     = unqtDot "crow"
+    unqtDot Diamond  = unqtDot "diamond"
+    unqtDot DotArrow = unqtDot "dot"
+    unqtDot Inv      = unqtDot "inv"
+    unqtDot NoArrow  = unqtDot "none"
+    unqtDot Normal   = unqtDot "normal"
+    unqtDot Tee      = unqtDot "tee"
+    unqtDot Vee      = unqtDot "vee"
+
+instance ParseDot ArrowShape where
+    parseUnqt = oneOf [ stringRep Box "box"
                       , stringRep Crow "crow"
-                      , stringRep Box "box"
-                      , stringRep OBox "obox"
-                      , stringRep Open "open"
-                      , stringRep HalfOpen "halfopen"
+                      , stringRep Diamond "diamond"
+                      , stringRep DotArrow "dot"
+                      , stringRep Inv "inv"
+                      , stringRep NoArrow "none"
+                      , stringRep Normal "normal"
+                      , stringRep Tee "tee"
                       , stringRep Vee "vee"
                       ]
+
+-- | What modifications to apply to an 'ArrowShape'.
+data ArrowModifier = ArrMod { arrowFill :: ArrowFill
+                            , arrowSide :: ArrowSide
+                            }
+                     deriving (Eq, Show, Read)
+
+-- | Apply no modifications to an 'ArrowShape'.
+noMods :: ArrowModifier
+noMods = ArrMod FilledArrow BothSides
+
+-- | 'OpenArrow' and 'BothSides'
+openMod :: ArrowModifier
+openMod = ArrMod OpenArrow BothSides
+
+instance PrintDot ArrowModifier where
+    unqtDot (ArrMod f s) = unqtDot f <> unqtDot s
+
+instance ParseDot ArrowModifier where
+    parseUnqt = do f <- parseUnqt
+                   s <- parseUnqt
+                   return $ ArrMod f s
+
+data ArrowFill = OpenArrow
+               | FilledArrow
+                 deriving (Eq, Show, Read)
+
+instance PrintDot ArrowFill where
+    unqtDot OpenArrow   = char 'o'
+    unqtDot FilledArrow = empty
+
+instance ParseDot ArrowFill where
+    parseUnqt = liftM (bool OpenArrow FilledArrow . isJust)
+                $ optional (character 'o')
+
+    -- Not used individually
+    parse = parseUnqt
+
+-- | Represents which side (when looking towards the node the arrow is
+--   pointing to) is drawn.
+data ArrowSide = LeftSide
+               | RightSide
+               | BothSides
+                 deriving (Eq, Show, Read)
+
+instance PrintDot ArrowSide where
+    unqtDot LeftSide  = char 'l'
+    unqtDot RightSide = char 'r'
+    unqtDot BothSides = empty
+
+instance ParseDot ArrowSide where
+    parseUnqt = liftM getSideType
+                $ optional (oneOf $ map character ['l', 'r'])
+        where
+          getSideType = maybe BothSides
+                              (bool LeftSide RightSide . (==) 'l')
+
+    -- Not used individually
+    parse = parseUnqt
 
 -- -----------------------------------------------------------------------------
 
