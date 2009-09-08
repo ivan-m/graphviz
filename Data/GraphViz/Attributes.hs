@@ -1121,9 +1121,9 @@ data Color = RGB { red   :: Word8
                   , blue  :: Word8
                   , alpha :: Word8
                   }
-           | HSV { hue        :: Int
-                 , saturation :: Int
-                 , value      :: Int
+           | HSV { hue        :: Double
+                 , saturation :: Double
+                 , value      :: Double
                  }
            | ColorName String
              deriving (Eq, Show, Read)
