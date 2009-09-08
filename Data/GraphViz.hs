@@ -190,7 +190,7 @@ graphToGraph' gr = graphToGraph (isDirected gr) gr
 --   The 'Bool' argument is 'True' for directed graphs, 'False'
 --   otherwise.  Directed graphs are passed through /dot/, and
 --   undirected graphs through /neato/.
-dotizeGraph         :: (DynGraph gr) => Bool -> gr a b
+dotizeGraph         :: (Graph gr) => Bool -> gr a b
                        -> gr (AttributeNode a) (AttributeEdge b)
 dotizeGraph isDir g = unsafePerformIO
                       $ graphToGraph isDir g gAttrs noAttrs noAttrs
@@ -202,6 +202,6 @@ dotizeGraph isDir g = unsafePerformIO
 --   however since the state doesn't change it's safe to use 'unsafePerformIO'
 --   to convert this to a normal function.
 --   The graph direction is automatically inferred.
-dotizeGraph'   :: (DynGraph gr, Ord b) => gr a b
+dotizeGraph'   :: (Graph gr, Ord b) => gr a b
                   -> gr (AttributeNode a) (AttributeEdge b)
 dotizeGraph' g = dotizeGraph (isDirected g) g
