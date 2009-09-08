@@ -31,12 +31,19 @@ module Data.GraphViz
     , clusterGraphToDot
     , clusterGraphToDot'
       -- * Passing the graph through GraphViz.
+      -- ** Type aliases for 'Node' and 'Edge' labels.
     , AttributeNode
     , AttributeEdge
+      -- ** For normal graphs.
     , graphToGraph
     , graphToGraph'
     , dotizeGraph
     , dotizeGraph'
+      -- ** For clustered graphs.
+    , clusterGraphToGraph
+    , clusterGraphToGraph'
+    , dotizeClusterGraph
+    , dotizeClusterGraph'
       -- * Re-exporting other modules.
     , module Data.GraphViz.Types
     , module Data.GraphViz.Attributes
@@ -139,9 +146,9 @@ type AttributeEdge b = (Attributes, b)
 
 -- | Run the graph via dot to get positional information and then
 --   combine that information back into the original graph.  Note that
---   this doesn't support graphs with clusters, and that for the edge
---   information to be parsed properly when using multiple edges, each
---   edge between two nodes needs to have a unique label.
+--   for the edge information to be parsed properly when using
+--   multiple edges, each edge between two nodes needs to have a
+--   unique label.
 --
 --   The 'Bool' argument is 'True' for directed graphs, 'False'
 --   otherwise.  Directed graphs are passed through /dot/, and
@@ -150,13 +157,19 @@ graphToGraph :: (Graph gr) => Bool -> gr a b -> [GlobalAttributes]
                 -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                 -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph isDir gr gAttributes fmtNode fmtEdge
+    = dotAttributes isDir gr dot
+    where
+      dot = graphToDot isDir gr gAttributes fmtNode fmtEdge
+
+dotAttributes :: (Graph gr) => Bool -> gr a b -> DotGraph Node
+                 -> IO (gr (AttributeNode a) (AttributeEdge b))
+dotAttributes isDir gr dot
     = do output <- graphvizWithHandle command dot DotOutput hGetContents
          let res = fromJust output
          length res `seq` return ()
          return $ rebuildGraphWithAttributes res
     where
       command = if isDir then dirCommand else undirCommand
-      dot = graphToDot isDir gr gAttributes fmtNode fmtEdge
       rebuildGraphWithAttributes dotResult = mkGraph lnodes ledges
           where
             lnodes = map (\(n, l) -> (n, (fromJust $ Map.lookup n nodeMap, l)))
@@ -176,16 +189,47 @@ graphToGraph isDir gr gAttributes fmtNode fmtEdge
 
 -- | Run the graph via dot to get positional information and then
 --   combine that information back into the original graph.
---   Note that this doesn't support graphs with clusters.
 --   Graph direction is automatically inferred.
 graphToGraph'    :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
                     -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                     -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph' gr = graphToGraph (isDirected gr) gr
 
--- | Pass the plain graph through 'graphToGraph'.  This is an @'IO'@ action,
---   however since the state doesn't change it's safe to use 'unsafePerformIO'
---   to convert this to a normal function.
+-- | Run the clustered graph via dot to get positional information and
+--   then combine that information back into the original graph.  Note
+--   that for the edge information to be parsed properly when using
+--   multiple edges, each edge between two nodes needs to have a
+--   unique label.
+--
+--   The 'Bool' argument is 'True' for directed graphs, 'False'
+--   otherwise.  Directed graphs are passed through /dot/, and
+--   undirected graphs through /neato/.
+clusterGraphToGraph :: (Ord c, Graph gr) => Bool -> gr a b
+                       -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                       -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
+                       -> (LEdge b -> Attributes)
+                       -> IO (gr (AttributeNode a) (AttributeEdge b))
+clusterGraphToGraph isDir gr gAtts clustBy fmtCluster fmtNode fmtEdge
+    = dotAttributes isDir gr dot
+    where
+      dot = clusterGraphToDot isDir gr gAtts clustBy fmtCluster fmtNode fmtEdge
+
+-- | Run the clustered graph via dot to get positional information and
+--   then combine that information back into the original
+--   graph.
+--   Graph direction is automatically inferred.
+clusterGraphToGraph'    :: (Ord b, Ord c, Graph gr) => gr a b
+                           -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                           -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
+                           -> (LEdge b -> Attributes)
+                           -> IO (gr (AttributeNode a) (AttributeEdge b))
+clusterGraphToGraph' gr = clusterGraphToGraph (isDirected gr) gr
+
+
+-- | Pass the graph through 'graphToGraph' with no 'Attribute's.  This
+--   is an @'IO'@ action, however since the state doesn't change it's
+--   safe to use 'unsafePerformIO' to convert this to a normal
+--   function.
 --
 --   The 'Bool' argument is 'True' for directed graphs, 'False'
 --   otherwise.  Directed graphs are passed through /dot/, and
@@ -198,10 +242,41 @@ dotizeGraph isDir g = unsafePerformIO
       gAttrs = []
       noAttrs = const []
 
--- | Pass the plain graph through 'graphToGraph'.  This is an @'IO'@ action,
---   however since the state doesn't change it's safe to use 'unsafePerformIO'
---   to convert this to a normal function.
+-- | Pass the graph through 'graphToGraph' with no 'Attribute's.  This
+--   is an @'IO'@ action, however since the state doesn't change it's
+--   safe to use 'unsafePerformIO' to convert this to a normal
+--   function.
 --   The graph direction is automatically inferred.
 dotizeGraph'   :: (Graph gr, Ord b) => gr a b
                   -> gr (AttributeNode a) (AttributeEdge b)
 dotizeGraph' g = dotizeGraph (isDirected g) g
+
+-- | Pass the clustered graph through 'clusterGraphToGraph' with no
+--   'Attribute's.  This is an @'IO'@ action, however since the state
+--   doesn't change it's safe to use 'unsafePerformIO' to convert this
+--   to a normal function.
+--
+--   The 'Bool' argument is 'True' for directed graphs, 'False'
+--   otherwise.  Directed graphs are passed through /dot/, and
+--   undirected graphs through /neato/.
+dotizeClusterGraph                 :: (Ord c, Graph gr) => Bool -> gr a b
+                                      -> (LNode a -> NodeCluster c a)
+                                      -> gr (AttributeNode a) (AttributeEdge b)
+dotizeClusterGraph isDir g clustBy = unsafePerformIO
+                                     $ clusterGraphToGraph isDir g gAttrs
+                                                           clustBy cAttrs
+                                                           noAttrs noAttrs
+    where
+      gAttrs = []
+      cAttrs = const gAttrs
+      noAttrs = const []
+
+-- | Pass the clustered graph through 'graphToGraph' with no
+--   'Attribute's.  This is an @'IO'@ action, however since the state
+--   doesn't change it's safe to use 'unsafePerformIO' to convert this
+--   to a normal function.
+--   The graph direction is automatically inferred.
+dotizeClusterGraph'   :: (Ord b, Ord c, Graph gr) => gr a b
+                         -> (LNode a -> NodeCluster c a)
+                         -> gr (AttributeNode a) (AttributeEdge b)
+dotizeClusterGraph' g = dotizeClusterGraph (isDirected g) g
