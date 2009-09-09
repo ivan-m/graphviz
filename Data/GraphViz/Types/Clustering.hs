@@ -33,10 +33,11 @@ data NodeCluster c a = N (LNode a) -- ^ Indicates the actual Node in the Graph.
 
 -- | Create the /Dot/ representation for the given graph.
 clustersToNodes :: (Ord c, Graph gr) => (LNode a -> NodeCluster c a)
-                   -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
-                   -> gr a b -> ([DotSubGraph Node], [DotNode Node])
-clustersToNodes clusterBy fmtCluster fmtNode
-    = treesToDot fmtCluster fmtNode
+                   -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+                   -> (LNode a -> Attributes) -> gr a b
+                   -> ([DotSubGraph Node], [DotNode Node])
+clustersToNodes clusterBy cID fmtCluster fmtNode
+    = treesToDot cID fmtCluster fmtNode
       . collapseNClusts
       . map (clustToTree . clusterBy)
       . labNodes
@@ -85,21 +86,24 @@ collapseNClusts = concatMap grpCls
 -- | Convert the cluster representation of the trees into 'DotNode's
 --   and 'DotSubGraph's (with @'isCluster' = 'True'@, and
 --   @'subGraphID' = 'Nothing'@).
-treesToDot :: (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
-              -> [ClusterTree c a] -> ([DotSubGraph Node], [DotNode Node])
-treesToDot fmtCluster fmtNode
+treesToDot :: (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+              -> (LNode a -> Attributes) -> [ClusterTree c a]
+              -> ([DotSubGraph Node], [DotNode Node])
+treesToDot cID fmtCluster fmtNode
     = partitionEithers
-      . map (treeToDot fmtCluster fmtNode)
+      . map (treeToDot cID fmtCluster fmtNode)
 
 -- | Convert this 'ClusterTree' into its /Dot/ representation.
-treeToDot :: (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
-             -> ClusterTree c a -> Either (DotSubGraph Node) (DotNode Node)
-treeToDot _ fmtNode (NT ln) = Right DotNode { nodeID         = fst ln
-                                            , nodeAttributes = fmtNode ln
-                                            }
-treeToDot fmtCluster fmtNode (CT c nts)
+treeToDot :: (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+             -> (LNode a -> Attributes) -> ClusterTree c a
+             -> Either (DotSubGraph Node) (DotNode Node)
+treeToDot _ _ fmtNode (NT ln)
+    = Right DotNode { nodeID         = fst ln
+                    , nodeAttributes = fmtNode ln
+                    }
+treeToDot cID fmtCluster fmtNode (CT c nts)
     = Left DotSG { isCluster     = True
-                 , subGraphID    = Nothing
+                 , subGraphID    = cID c
                  , subGraphStmts = stmts
                  }
     where
@@ -108,4 +112,4 @@ treeToDot fmtCluster fmtNode (CT c nts)
                        , nodeStmts = ns
                        , edgeStmts = []
                        }
-      (cs, ns) = treesToDot fmtCluster fmtNode nts
+      (cs, ns) = treesToDot cID fmtCluster fmtNode nts

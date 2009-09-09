@@ -17,6 +17,10 @@
 
    A summary of known limitations\/differences:
 
+   * When creating 'GraphID' values for 'graphID' and 'subGraphID',
+     you should ensure that none of them have the same printed value
+     as one of the 'nodeID' values to avoid any possible problems.
+
    * Whilst 'DotGraph', etc. are polymorphic in their node type, you
      should ensure that you use a relatively simple node type (that
      is, it only covers a single line, etc.).
@@ -195,6 +199,10 @@ data DotError a = GraphError Attribute
 
 -- -----------------------------------------------------------------------------
 
+-- | A polymorphic type that covers all possible ID values allowed by
+--   Dot syntax.  Note that whilst the 'ParseDot' and 'PrintDot'
+--   instances for 'String' will properly take care of the special
+--   cases for numbers, they are treated differently here.
 data GraphID = Str String
              | Int Int
              | Dbl Double
@@ -211,17 +219,17 @@ instance PrintDot GraphID where
     toDot gID       = unqtDot gID
 
 instance ParseDot GraphID where
-    parseUnqt = oneOf [ liftM Str parseUnqt
-                      , liftM Int parseUnqt
-                      , liftM Dbl parseUnqt
+    parseUnqt = oneOf [ liftM Str  parseUnqt
+                      , liftM Int  parseUnqt
+                      , liftM Dbl  parseUnqt
                       , liftM HTML parseUnqt
                       ]
 
-    parse = oneOf [ liftM Int parse
-                  , liftM Dbl parse
+    parse = oneOf [ liftM Int  parse
+                  , liftM Dbl  parse
                   , liftM HTML parse
                   -- Parse last so that quoted numbers are parsed as numbers.
-                  , liftM Str parse
+                  , liftM Str  parse
                   ]
             `adjustErr`
             (++ "Not a valid GraphID")

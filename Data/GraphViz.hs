@@ -21,7 +21,6 @@
    duplicated (or at least that if there exists an edge from /n1/ to
    /n2/, then /n1 <= n2/).
  -}
-
 module Data.GraphViz
     ( -- * Conversion from graphs to /Dot/ format.
       graphToDot
@@ -85,12 +84,13 @@ isDirected = not . isUndirected
 graphToDot :: (Graph gr) => Bool -> gr a b -> [GlobalAttributes]
               -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
               -> DotGraph Node
-graphToDot isDir graph gAttributes fmtNode fmtEdge
-    = clusterGraphToDot isDir graph gAttributes clusterBy fmtCluster fmtNode fmtEdge
+graphToDot isDir graph gAttributes
+    = clusterGraphToDot isDir graph gAttributes clustBy cID fmtClust
       where
-        clusterBy :: LNode a -> NodeCluster () a
-        clusterBy = N
-        fmtCluster _ = []
+        clustBy :: LNode a -> NodeCluster () a
+        clustBy = N
+        cID = const Nothing
+        fmtClust = const []
 
 -- | Convert a graph to GraphViz's /Dot/ format with automatic
 --   direction detection.
@@ -105,9 +105,10 @@ graphToDot' graph = graphToDot (isDirected graph) graph
 --   The 'Bool' argument is 'True' for directed graphs, 'False' otherwise.
 clusterGraphToDot :: (Ord c, Graph gr) => Bool -> gr a b
                      -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
-                     -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
-                     -> (LEdge b -> Attributes) -> DotGraph Node
-clusterGraphToDot dirGraph graph gAttrs clusterBy fmtCluster fmtNode fmtEdge
+                     -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+                     -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
+                     -> DotGraph Node
+clusterGraphToDot dirGraph graph gAttrs clusterBy cID fmtCluster fmtNode fmtEdge
     = DotGraph { strictGraph     = False
                , directedGraph   = dirGraph
                , graphID         = Nothing
@@ -119,7 +120,7 @@ clusterGraphToDot dirGraph graph gAttrs clusterBy fmtCluster fmtNode fmtEdge
                          , nodeStmts = ns
                          , edgeStmts = es
                          }
-        (cs, ns) = clustersToNodes clusterBy fmtCluster fmtNode graph
+        (cs, ns) = clustersToNodes clusterBy cID fmtCluster fmtNode graph
         es = mapMaybe mkDotEdge . labEdges $ graph
         mkDotEdge e@(f,t,_) = if dirGraph || f <= t
                               then Just DotEdge { edgeFromNodeID = f
@@ -133,11 +134,12 @@ clusterGraphToDot dirGraph graph gAttrs clusterBy fmtCluster fmtNode fmtEdge
 --   to group nodes into clusters.
 --   Clusters can be nested to arbitrary depth.
 --   Graph direction is automatically inferred.
-clusterGraphToDot'       :: (Ord c, Ord b, Graph gr) => gr a b
-                            -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
-                            -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
-                            -> (LEdge b -> Attributes) -> DotGraph Node
-clusterGraphToDot' graph = clusterGraphToDot (isDirected graph) graph
+clusterGraphToDot'    :: (Ord c, Ord b, Graph gr) => gr a b
+                         -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                         -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+                         -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
+                         -> DotGraph Node
+clusterGraphToDot' gr = clusterGraphToDot (isDirected gr) gr
 
 -- -----------------------------------------------------------------------------
 
@@ -206,13 +208,13 @@ graphToGraph' gr = graphToGraph (isDirected gr) gr
 --   undirected graphs through /neato/.
 clusterGraphToGraph :: (Ord c, Graph gr) => Bool -> gr a b
                        -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
-                       -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
-                       -> (LEdge b -> Attributes)
+                       -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+                       -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                        -> IO (gr (AttributeNode a) (AttributeEdge b))
-clusterGraphToGraph isDir gr gAtts clustBy fmtCluster fmtNode fmtEdge
+clusterGraphToGraph isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
     = dotAttributes isDir gr dot
     where
-      dot = clusterGraphToDot isDir gr gAtts clustBy fmtCluster fmtNode fmtEdge
+      dot = clusterGraphToDot isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
 
 -- | Run the clustered graph via dot to get positional information and
 --   then combine that information back into the original
@@ -220,8 +222,8 @@ clusterGraphToGraph isDir gr gAtts clustBy fmtCluster fmtNode fmtEdge
 --   Graph direction is automatically inferred.
 clusterGraphToGraph'    :: (Ord b, Ord c, Graph gr) => gr a b
                            -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
-                           -> (c -> [GlobalAttributes]) -> (LNode a -> Attributes)
-                           -> (LEdge b -> Attributes)
+                           -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+                           -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                            -> IO (gr (AttributeNode a) (AttributeEdge b))
 clusterGraphToGraph' gr = clusterGraphToGraph (isDirected gr) gr
 
@@ -263,11 +265,13 @@ dotizeClusterGraph                 :: (Ord c, Graph gr) => Bool -> gr a b
                                       -> (LNode a -> NodeCluster c a)
                                       -> gr (AttributeNode a) (AttributeEdge b)
 dotizeClusterGraph isDir g clustBy = unsafePerformIO
-                                     $ clusterGraphToGraph isDir g gAttrs
-                                                           clustBy cAttrs
+                                     $ clusterGraphToGraph isDir   g
+                                                           gAttrs  clustBy
+                                                           cID     cAttrs
                                                            noAttrs noAttrs
     where
       gAttrs = []
+      cID = const Nothing
       cAttrs = const gAttrs
       noAttrs = const []
 
