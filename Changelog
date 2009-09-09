@@ -1,3 +1,56 @@
+Changes since 2999.1.0.2
+========================
+
+A major re-write occured; these are the highlights:
+
+* Re-write parsing and printing of Dot code using the new ParseDot and
+  PrintDot classes.  This should finally fix all quoting issues, as
+  well as leaving Show as the code representation for hacking
+  purposes.  As part of this, the Data.GraphViz.ParserCombinators
+  module has been moved to Data.GraphViz.Types.Parsing.
+
+* Re-write the various Dot* datatypes in Data.GraphViz.Types.
+  Sub-graphs/clusters are now their own entity rather than being part
+  of DotNode and the Node ID type is now a type parameter rather than
+  being just Int.  Sub-graphs/clusters can now also be parsed.
+
+* The various conversion functions in Data.GraphViz now come in two
+  flavours: the unprimed versions take in a Bool indicating if the
+  graph is directed or not; the primed versions attempt to
+  automatically detect this.  Also add cluster support for the graph
+  -> dot -> graph conversion-style functions, as requested by Nikolas
+  Mayr.
+
+* Allow custom arrow types as supported by GraphViz; as requested by
+  Han Joosten.
+
+* Fixed a bug in HSV-style Color values where Int was used instead of
+  Double; spotted by Michael deLorimier.
+
+* Properly resolved the situation initially spotted by Neil Brown:
+  Matthew Sackman was following Dot terminology for an edge `a -> b'
+  when using "head" for `b' and "tail" for `a' (this is presumably
+  because the head/tail of the arrow are at those nodes).  DotEdge now
+  uses "from" and "to" avoid ambiguity; the various Attribute values
+  still follow upstream usage.
+
+Changes since 2999.1.0.1
+========================
+
+* Fix a bug spotted by Srihari Ramanathan where Color values were
+  double-quoted.
+
+Changes since 2999.1.0.0
+========================
+
+* The Color Attribute should take [Color], not just a single Color.
+
+Changes since 2999.0.0.0
+========================
+
+* Stop using Either for composite Attributes and use a custom type:
+  this avoids problems with the Show instance.
+
 Changes since 2009.5.1
 ======================
 
