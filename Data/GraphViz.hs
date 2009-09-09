@@ -30,7 +30,7 @@ module Data.GraphViz
     , clusterGraphToDot
     , clusterGraphToDot'
       -- * Passing the graph through GraphViz.
-      -- ** Type aliases for 'Node' and 'Edge' labels.
+      -- ** Type aliases for @Node@ and @Edge@ labels.
     , AttributeNode
     , AttributeEdge
       -- ** For normal graphs.
@@ -146,11 +146,11 @@ clusterGraphToDot' gr = clusterGraphToDot (isDirected gr) gr
 type AttributeNode a = (Attributes, a)
 type AttributeEdge b = (Attributes, b)
 
--- | Run the graph via dot to get positional information and then
---   combine that information back into the original graph.  Note that
---   for the edge information to be parsed properly when using
---   multiple edges, each edge between two nodes needs to have a
---   unique label.
+-- | Run the appropriate GraphViz command on the graph to get
+--   positional information and then combine that information back
+--   into the original graph.  Note that for the edge information to
+--   be parsed properly when using multiple edges, each edge between
+--   two nodes needs to have a unique label.
 --
 --   The 'Bool' argument is 'True' for directed graphs, 'False'
 --   otherwise.  Directed graphs are passed through /dot/, and
@@ -189,19 +189,21 @@ dotAttributes isDir gr dot
             edgeMap = Map.fromList $ map ( (edgeFromNodeID &&& edgeToNodeID)
                                            &&& edgeAttributes) es
 
--- | Run the graph via dot to get positional information and then
---   combine that information back into the original graph.
+-- | Run the appropriate GraphViz command on the graph to get
+--   positional information and then combine that information back
+--   into the original graph.
+--
 --   Graph direction is automatically inferred.
 graphToGraph'    :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
                     -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                     -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph' gr = graphToGraph (isDirected gr) gr
 
--- | Run the clustered graph via dot to get positional information and
---   then combine that information back into the original graph.  Note
---   that for the edge information to be parsed properly when using
---   multiple edges, each edge between two nodes needs to have a
---   unique label.
+-- | Run the appropriate GraphViz command on the clustered graph to
+--   get positional information and then combine that information back
+--   into the original graph.  Note that for the edge information to
+--   be parsed properly when using multiple edges, each edge between
+--   two nodes needs to have a unique label.
 --
 --   The 'Bool' argument is 'True' for directed graphs, 'False'
 --   otherwise.  Directed graphs are passed through /dot/, and
@@ -216,9 +218,10 @@ clusterGraphToGraph isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
     where
       dot = clusterGraphToDot isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
 
--- | Run the clustered graph via dot to get positional information and
---   then combine that information back into the original
---   graph.
+-- | Run the appropriate GraphViz command on the clustered graph to
+--   get positional information and then combine that information back
+--   into the original graph.
+--
 --   Graph direction is automatically inferred.
 clusterGraphToGraph'    :: (Ord b, Ord c, Graph gr) => gr a b
                            -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
@@ -248,6 +251,7 @@ dotizeGraph isDir g = unsafePerformIO
 --   is an @'IO'@ action, however since the state doesn't change it's
 --   safe to use 'unsafePerformIO' to convert this to a normal
 --   function.
+--
 --   The graph direction is automatically inferred.
 dotizeGraph'   :: (Graph gr, Ord b) => gr a b
                   -> gr (AttributeNode a) (AttributeEdge b)
@@ -279,6 +283,7 @@ dotizeClusterGraph isDir g clustBy = unsafePerformIO
 --   'Attribute's.  This is an @'IO'@ action, however since the state
 --   doesn't change it's safe to use 'unsafePerformIO' to convert this
 --   to a normal function.
+--
 --   The graph direction is automatically inferred.
 dotizeClusterGraph'   :: (Ord b, Ord c, Graph gr) => gr a b
                          -> (LNode a -> NodeCluster c a)

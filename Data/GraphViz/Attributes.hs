@@ -79,13 +79,13 @@ module Data.GraphViz.Attributes
     ( -- * The actual /Dot/ attributes.
       Attribute(..)
     , Attributes
-      -- ** Validity functions on 'Attribute' values.
+      -- ** Validity functions on @Attribute@ values.
     , usedByGraphs
     , usedBySubGraphs
     , usedByClusters
     , usedByNodes
     , usedByEdges
-      -- * Value types for 'Attribute's.
+      -- * Value types for @Attribute@s.
     , EscString
     , URL(..)
     , ArrowType(..)
@@ -129,19 +129,19 @@ module Data.GraphViz.Attributes
     , ScaleType(..)
     , Justification(..)
     , Ratios(..)
-    -- * Types representing the Dot grammar for 'ArrowType'.
+    -- * Types representing the Dot grammar for @ArrowType@.
     , ArrowShape(..)
     , ArrowModifier(..)
     , ArrowFill(..)
     , ArrowSide(..)
-    -- ** Default 'ArrowType' aliases.
-    -- *** The 9 primitive 'ArrowShape's.
+    -- ** Default @ArrowType@ aliases.
+    -- *** The 9 primitive @ArrowShape@s.
     , box, crow, diamond, dotArrow, inv, noArrow, normal, tee, vee
     -- *** 5 derived Arrows.
     , oDot, invDot, invODot, oBox, oDiamond
     -- *** 5 supported cases for backwards compatibility
     , eDiamond, openArr, halfOpen, emptyArr, invEmpty
-    -- ** 'ArrowModifier' instances
+    -- ** @ArrowModifier@ instances
     , noMods, openMod
     ) where
 

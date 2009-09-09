@@ -64,19 +64,19 @@
 module Data.GraphViz.Types
     ( -- * The overall representation of a graph in /Dot/ format.
       DotGraph(..)
-      -- ** Printing and parsing a 'DotGraph'.
+      -- ** Printing and parsing a @DotGraph@.
     , printDotGraph
     , parseDotGraph
-      -- ** Functions acting on a 'DotGraph'.
+      -- ** Functions acting on a @DotGraph@.
     , setID
     , makeStrict
     , graphNodes
     , graphEdges
-      -- ** Reporting of errors in a 'DotGraph'.
+      -- ** Reporting of errors in a @DotGraph@.
     , DotError(..)
     , isValidGraph
     , graphErrors
-      -- * Sub-components of a 'DotGraph'.
+      -- * Sub-components of a @DotGraph@.
     , GraphID(..)
     , DotStatements(..)
     , GlobalAttributes(..)
