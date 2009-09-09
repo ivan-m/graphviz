@@ -4,7 +4,7 @@ Stability:          Beta
 Synopsis:           GraphViz bindings for Haskell.
 Description:        Provides convenient functions to convert FGL
                       graphs into the Dot language used by the
-                      GraphViz <http://graphviz.org/> suite of
+                      GraphViz (<http://graphviz.org/>) suite of
                       programs with a large degree of customisation
                       for layout, etc.
 
@@ -33,15 +33,18 @@ Library {
                            process,
                            array,
                            fgl,
-                           polyparse >= 1.1
+                           polyparse >= 1.1,
+                           pretty
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types
                            Data.GraphViz.Types.Parsing
+                           Data.GraphViz.Types.Printing
                            Data.GraphViz.Commands
                            Data.GraphViz.Attributes
 
         Other-Modules:     Data.GraphViz.Types.Clustering
+                           Data.GraphViz.Types.Internal
 
         Ghc-Options:       -Wall
         Ghc-Prof-Options:  -prof -auto-all
