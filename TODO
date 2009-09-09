@@ -5,3 +5,5 @@ Areas to work on:
 * Improve Output support.
 
 * Find and fix the handle closing bug with graphvizWithHandle.
+
+* Improve support for named Colors.
