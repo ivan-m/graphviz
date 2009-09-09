@@ -122,8 +122,8 @@ clusterGraphToDot dirGraph graph gAttrs clusterBy fmtCluster fmtNode fmtEdge
         (cs, ns) = clustersToNodes clusterBy fmtCluster fmtNode graph
         es = mapMaybe mkDotEdge . labEdges $ graph
         mkDotEdge e@(f,t,_) = if dirGraph || f <= t
-                              then Just DotEdge { edgeHeadNodeID = f
-                                                , edgeTailNodeID = t
+                              then Just DotEdge { edgeFromNodeID = f
+                                                , edgeToNodeID   = t
                                                 , edgeAttributes = fmtEdge e
                                                 , directedEdge   = dirGraph
                                                 }
@@ -184,7 +184,7 @@ dotAttributes isDir gr dot
             ns = graphNodes g'
             es = graphEdges g'
             nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
-            edgeMap = Map.fromList $ map ( (edgeHeadNodeID &&& edgeTailNodeID)
+            edgeMap = Map.fromList $ map ( (edgeFromNodeID &&& edgeToNodeID)
                                            &&& edgeAttributes) es
 
 -- | Run the graph via dot to get positional information and then

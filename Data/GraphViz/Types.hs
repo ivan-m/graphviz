@@ -25,11 +25,10 @@
      this library requires\/assumes that they are all the same type.
 
    * 'DotEdge' defines an edge @(a, b)@ (with an edge going from @a@
-     to @b@) with @a@ being the head node and @b@ being the tail node;
-     in /Dot/ parlance these are switched around.  Care must be taken
-     when using the related @Head*@ and @Tail*@ 'Attribute's.  See the
-     differences section in "Data.GraphViz.Attributes" for more
-     information.
+     to @b@); in /Dot/ parlance the edge has a head at @a@ and a tail
+     at @b@.  Care must be taken when using the related @Head*@ and
+     @Tail*@ 'Attribute's.  See the differences section in
+     "Data.GraphViz.Attributes" for more information.
 
    * It is common to see multiple edges defined on the one line in Dot
      (e.g. @n1 -> n2 -> n3@ means to create a directed edge from @n1@
@@ -485,8 +484,8 @@ invalidNode n = map (NodeError (Just $ nodeID n))
 -- -----------------------------------------------------------------------------
 
 -- | An edge in 'DotGraph'.
-data DotEdge a = DotEdge { edgeHeadNodeID :: a
-                         , edgeTailNodeID :: a
+data DotEdge a = DotEdge { edgeFromNodeID :: a
+                         , edgeToNodeID   :: a
                          , directedEdge   :: Bool
                          , edgeAttributes :: Attributes
                          }
@@ -500,9 +499,9 @@ instance (PrintDot a) => PrintDot (DotEdge a) where
     listToDot = unqtListToDot
 
 printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
-printEdgeID e = unqtDot (edgeHeadNodeID e)
+printEdgeID e = unqtDot (edgeFromNodeID e)
                 <+> bool dirEdge' undirEdge' (directedEdge e)
-                <+> unqtDot (edgeTailNodeID e)
+                <+> unqtDot (edgeToNodeID e)
 
 
 instance (ParseDot a) => ParseDot (DotEdge a) where
@@ -546,8 +545,8 @@ parseEdgeLine = liftM return parse
       mkEdg (_, hn) (et, tn) = DotEdge hn tn et
 
 instance Functor DotEdge where
-    fmap f e = e { edgeHeadNodeID = f $ edgeHeadNodeID e
-                 , edgeTailNodeID = f $ edgeTailNodeID e
+    fmap f e = e { edgeFromNodeID = f $ edgeFromNodeID e
+                 , edgeToNodeID   = f $ edgeToNodeID e
                  }
 
 dirEdge :: String
@@ -566,7 +565,7 @@ invalidEdge   :: DotEdge a -> [DotError a]
 invalidEdge e = map (EdgeError eID)
                 $ filter (not . usedByEdges) (edgeAttributes e)
     where
-      eID = Just (edgeHeadNodeID e, edgeTailNodeID e)
+      eID = Just (edgeFromNodeID e, edgeToNodeID e)
 
 -- -----------------------------------------------------------------------------
 
