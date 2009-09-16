@@ -26,9 +26,6 @@
      /A/ to /B/, then /A/ is the tail node and /B/ is the head node
      (since /A/ is at the tail end of the arrow).
 
-   * GraphViz says that a number like @/.02/@ is valid; this library
-     disagrees.
-
    * When parsing named 'Color' values, the entire value entered is
      kept as-is; this library as yet has no understanding of different
      color schemes, etc.

@@ -30,6 +30,7 @@ module Data.GraphViz.Types.Parsing
     , strings
     , hasString
     , character
+    , parseStrictFloat
     , noneOf
     , whitespace
     , whitespace'
@@ -158,29 +159,28 @@ parseInt = do cs <- many1 (satisfy isDigit)
 parseInt' :: Parse Int
 parseInt' = parseSigned parseInt
 
+-- | Parse a floating point number that actually contains decimals.
+parseStrictFloat :: (RealFrac a) => Parse a
+parseStrictFloat = parseSigned parseFloat
+
 parseFloat :: (RealFrac a) => Parse a
-parseFloat = do ds   <- many1 (satisfy isDigit)
-                frac <- (do '.' <- next
-                            many (satisfy isDigit)
-                              `adjustErrBad` (++"expected digit after .")
-                         `onFail` return [] )
-                expn  <- parseExp `onFail` return 0
-                ( return . fromRational . (* (10^^(expn - length frac)))
+parseFloat = do ds   <- many (satisfy isDigit)
+                frac <- do character '.'
+                           many (satisfy isDigit)
+                                    `adjustErrBad` (++ "\nexpected digit after .")
+                       `adjustErr` (++ "expected decimal component")
+                let nDs = length frac
+                ( return . fromRational . (* (10^^(-nDs)))
                   . (%1) . fst
                   . runParser parseInt) (ds++frac)
              `onFail`
-             do w <- many (satisfy (not.isSpace))
-                case map toLower w of
-                  "nan"      -> return (0/0)
-                  "infinity" -> return (1/0)
-                  _          -> fail "expected a floating point number"
-  where parseExp = do 'e' <- fmap toLower next
-                      commit (do '+' <- next; parseInt
-                              `onFail`
-                              parseSigned parseInt)
+             fail "Expected a floating point number"
 
 parseFloat' :: Parse Double
-parseFloat' = parseSigned parseFloat
+parseFloat' = parseSigned ( parseFloat
+                            `onFail`
+                            liftM fromIntegral parseInt
+                          )
 
 -- -----------------------------------------------------------------------------
 
