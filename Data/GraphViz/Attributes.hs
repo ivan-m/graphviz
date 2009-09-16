@@ -150,6 +150,7 @@ import Data.Char(isDigit, isHexDigit)
 import Data.Maybe(isJust, maybe)
 import Data.Word(Word8)
 import Numeric(showHex, readHex)
+import Control.Arrow(first)
 import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
@@ -1351,9 +1352,20 @@ instance PrintDot Point where
     listToDot = doubleQuotes . unqtListToDot
 
 instance ParseDot Point where
-    parseUnqt = liftM (uncurry Point)  commaSep
+    -- Need to take into account the situation where first value is an
+    -- integer, second a double: if Point parsing first, then it won't
+    -- parse the second number properly; but if PointD first then it
+    -- will treat Int/Int as Double/Double.
+    parseUnqt = intDblPoint
+                `onFail`
+                liftM (uncurry Point)  commaSep
                 `onFail`
                 liftM (uncurry PointD) commaSep
+        where
+          intDblPoint = liftM (uncurry PointD . first fI)
+                        $ commaSep' parse parseStrictFloat
+          fI :: Int -> Double
+          fI = fromIntegral
 
     parse = quotedParse parseUnqt
 
