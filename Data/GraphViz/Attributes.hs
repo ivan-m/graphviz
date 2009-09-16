@@ -1082,14 +1082,14 @@ instance PrintDot AspectType where
     toDot at@RatioPassCount{} = doubleQuotes $ unqtDot at
 
 instance ParseDot AspectType where
-    parseUnqt = liftM (uncurry RatioPassCount) commaSep
+    parseUnqt = liftM (uncurry RatioPassCount) commaSepUnqt
                 `onFail`
-                liftM RatioOnly parse
+                liftM RatioOnly parseUnqt
 
 
-    parse = quotedParse (liftM (uncurry RatioPassCount) commaSep)
+    parse = quotedParse (liftM (uncurry RatioPassCount) commaSepUnqt)
             `onFail`
-            optionalQuoted (liftM RatioOnly parse)
+            liftM RatioOnly parse
 
 -- -----------------------------------------------------------------------------
 
@@ -1102,11 +1102,9 @@ instance PrintDot Rect where
     toDot = doubleQuotes . unqtDot
 
 instance ParseDot Rect where
-    parseUnqt = liftM (uncurry Rect)
-                $ commaSep' parseUnqt parseUnqt
+    parseUnqt = liftM (uncurry Rect) commaSepUnqt
 
-    parse = liftM (uncurry Rect) . quotedParse
-            $ commaSep' parseUnqt parseUnqt
+    parse = quotedParse parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -1358,12 +1356,12 @@ instance ParseDot Point where
     -- will treat Int/Int as Double/Double.
     parseUnqt = intDblPoint
                 `onFail`
-                liftM (uncurry Point)  commaSep
+                liftM (uncurry Point)  commaSepUnqt
                 `onFail`
-                liftM (uncurry PointD) commaSep
+                liftM (uncurry PointD) commaSepUnqt
         where
           intDblPoint = liftM (uncurry PointD . first fI)
-                        $ commaSep' parse parseStrictFloat
+                        $ commaSep' parseUnqt parseStrictFloat
           fI :: Int -> Double
           fI = fromIntegral
 

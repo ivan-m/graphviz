@@ -50,6 +50,7 @@ module Data.GraphViz.Types.Parsing
     , parseFieldDef
     , parseFieldsDef
     , commaSep
+    , commaSepUnqt
     , commaSep'
     , stringRep
     ) where
@@ -266,6 +267,9 @@ parseFieldsDef d = oneOf . map (parseFieldDef d)
 
 commaSep :: (ParseDot a, ParseDot b) => Parse (a, b)
 commaSep = commaSep' parse parse
+
+commaSepUnqt :: (ParseDot a, ParseDot b) => Parse (a, b)
+commaSepUnqt = commaSep' parseUnqt parseUnqt
 
 commaSep'       :: Parse a -> Parse b -> Parse (a,b)
 commaSep' pa pb = do a <- pa
