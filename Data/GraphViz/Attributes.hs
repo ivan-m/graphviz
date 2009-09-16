@@ -1663,15 +1663,13 @@ instance PrintDot Spline where
 
 instance ParseDot Spline where
     parseUnqt = do ms <- parseP 's'
-                   whitespace
                    me <- parseP 'e'
-                   whitespace
                    ps <- sepBy1 parseUnqt whitespace
                    return $ Spline ms me ps
         where
           parseP t = optional $ do character t
-                                   character ';'
-                                   parse
+                                   character ','
+                                   parseUnqt `discard` whitespace
 
     parse = quotedParse parseUnqt
 
