@@ -178,12 +178,16 @@ parseFloat = do ds   <- many (satisfy isDigit)
                            many (satisfy isDigit)
                                     `adjustErrBad` (++ "\nexpected digit after .")
                        `adjustErr` (++ "expected decimal component")
-                let nDs = length frac
-                ( return . fromRational . (* (10^^(-nDs)))
+                expn  <- parseExp `onFail` return 0
+                ( return . fromRational . (* (10^^(expn - length frac)))
                   . (%1) . fst
                   . runParser parseInt) (ds++frac)
              `onFail`
              fail "Expected a floating point number"
+    where parseExp = do character 'e'
+                        commit ((character '+' >> parseInt)
+                                `onFail`
+                                parseSigned parseInt)
 
 parseFloat' :: Parse Double
 parseFloat' = parseSigned ( parseFloat
