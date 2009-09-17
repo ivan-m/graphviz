@@ -56,6 +56,8 @@ module Data.GraphViz.Types.Parsing
     , commaSepUnqt
     , commaSep'
     , stringRep
+    -- * Pre-processing
+    , preprocess
     ) where
 
 import Data.GraphViz.Types.Internal
@@ -299,3 +301,53 @@ tryParseList = tryParseList' parse
 
 tryParseList' :: Parse [a] -> Parse [a]
 tryParseList' = liftM (fromMaybe []) . optional
+
+-- -----------------------------------------------------------------------------
+-- Filtering out unwanted Dot items such as comments
+
+-- | Remove unparseable features of Dot, such as comments and
+--   multi-line strings (which are converted to single-line strings).
+preprocess :: String -> String
+preprocess = fst . runParser parseOutUnwanted
+
+-- | Parse out comments and make quoted strings spread over multiple
+--   lines only over a single line.  Should parse the /entire/ input
+--   'String'.
+parseOutUnwanted :: Parse String
+parseOutUnwanted = liftM concat (many getNext)
+    where
+      getNext :: Parse String
+      getNext = (oneOf [ parseLineComment, parseMultiLineComment ] >> return [])
+                `onFail`
+                parseSplitStrings
+                `onFail`
+                liftM return next
+
+-- | Parse @//@-style comments.
+parseLineComment :: Parse String
+parseLineComment = string "//" >> newline
+
+-- | Parse @/* ... */@-style comments.
+parseMultiLineComment :: Parse String
+parseMultiLineComment = bracket start end (liftM concat $ many inner)
+    where
+      start = string "/*"
+      end = string "*/"
+      inner = many1 (satisfy ((/=) '*'))
+              `onFail`
+              do ast <- character '*'
+                 n <- satisfy ((/=) '/')
+                 liftM ((:) ast . (:) n) inner
+-- | Parse out @\<newline>@ from a quoted string.
+parseSplitStrings :: Parse String
+parseSplitStrings = do oq <- parseQuote
+                       inner <- liftM concat $ many parseInner
+                       cq <- parseQuote
+                       return $ oq : inner ++ [cq]
+    where
+      parseInner = string "\\\""
+                   `onFail`
+                   (character '\\' >> newline >> return [])
+                   `onFail`
+                   liftM return (satisfy ((/=) quoteChar))
+

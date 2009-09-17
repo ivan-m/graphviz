@@ -53,10 +53,9 @@
      having graph attributes that do not apply to subgraphs\/clusters
      by listing them /after/ the subgraphs\/clusters.
 
-   * The parser cannot as yet parse comments (in that it doesn't even
-     know what comments are, and will throw an error).  Multiline
-     statements and C pre-processor lines (that is, lines beginning
-     with a @#@) are also not parseable.
+   * The parser will strip out comments and convert multiline strings
+     into a single line string.  Pre-processor lines (i.e. those
+     started by @#@) and string concatenation are not yet supported.
 
    See "Data.GraphViz.Attributes" for more limitations.
 
@@ -130,8 +129,10 @@ printDotGraph = renderDot . toDot
 -- | Parse a limited subset of the Dot language to form a 'DotGraph'
 --   (that is, the caveats listed in "Data.GraphViz.Attributes" aside,
 --   Dot graphs are parsed if they match the layout of 'DotGraph').
+--
+--   Also removes any comments, etc. before parsing.
 parseDotGraph :: (ParseDot a) => String -> DotGraph a
-parseDotGraph = fst . runParser parse
+parseDotGraph = fst . runParser parse . preprocess
 
 -- | Check if all the 'Attribute's are being used correctly.
 isValidGraph :: DotGraph a -> Bool
