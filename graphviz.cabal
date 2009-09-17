@@ -33,6 +33,7 @@ Library {
                            process,
                            array,
                            fgl,
+                           parallel >= 1.1 && < 1.2,
                            polyparse >= 1.1,
                            pretty
 

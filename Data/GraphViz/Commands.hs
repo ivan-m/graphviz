@@ -164,17 +164,23 @@ runGraphvizCommand  cmd gr t fp
                  $ openFile fp WriteMode
          case pipe of
            (Left _)  -> return False
-           (Right f) -> do file <- graphvizWithHandle cmd gr t (flip squirt f)
-                           hClose f
+           (Right f) -> do file <- graphvizWithHandle cmd gr t (toFile f)
                            case file of
                              (Just _) -> return True
                              _        -> return False
+    where
+      toFile f h = do squirt h f
+                      hClose h
+                      hClose f
 
 -- graphvizWithHandle sometimes throws an error about handles not
 -- being closed properly: investigate (now on the official TODO).
 
--- | Run the chosen Graphviz command on this graph, but send the result to the
---   given handle rather than to a file.
+-- | Run the chosen Graphviz command on this graph, but send the
+--   result to the given handle rather than to a file.  The @'Handle'
+--   -> 'IO' a@ function should close the 'Handle' once it is
+--   finished.
+--
 --   The result is wrapped in 'Maybe' rather than throwing an error.
 graphvizWithHandle :: (PrintDot n, Show a) => GraphvizCommand -> DotGraph n
                       -> GraphvizOutput -> (Handle -> IO a) -> IO (Maybe a)
@@ -183,8 +189,6 @@ graphvizWithHandle cmd gr t f
          forkIO $ hPutStrLn inp (printDotGraph gr) >> hClose inp
          forkIO $ (hGetContents errp >>= hPutStr stderr >> hClose errp)
          a <- f outp
-         -- Don't close outp until f finishes.
-         a `seq` hClose outp
          exitCode <- waitForProcess prc
          case exitCode of
            ExitSuccess -> return (Just a)

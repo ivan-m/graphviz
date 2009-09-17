@@ -59,6 +59,7 @@ import qualified Data.Set as Set
 import Control.Arrow((&&&))
 import Data.Maybe(mapMaybe, fromJust)
 import qualified Data.Map as Map
+import Control.Parallel.Strategies(rnf)
 import System.IO(hGetContents)
 import System.IO.Unsafe(unsafePerformIO)
 
@@ -166,13 +167,13 @@ graphToGraph isDir gr gAttributes fmtNode fmtEdge
 dotAttributes :: (Graph gr) => Bool -> gr a b -> DotGraph Node
                  -> IO (gr (AttributeNode a) (AttributeEdge b))
 dotAttributes isDir gr dot
-    = do output <- graphvizWithHandle command dot DotOutput hGetContents
-         let res = fromJust output
-         length res `seq` return ()
-         return $ rebuildGraphWithAttributes res
+    = do (Just output) <- graphvizWithHandle command dot DotOutput hToString
+         return $ rebuildGraphWithAttributes output
     where
       command = if isDir then dirCommand else undirCommand
-      rebuildGraphWithAttributes dotResult = mkGraph lnodes ledges
+      hToString h = do s <- hGetContents h
+                       rnf s `seq` return s
+      rebuildGraphWithAttributes dotResult =  mkGraph lnodes ledges
           where
             lnodes = map (\(n, l) -> (n, (fromJust $ Map.lookup n nodeMap, l)))
                      $ labNodes gr
