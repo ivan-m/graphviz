@@ -71,7 +71,7 @@ import Data.Char( digitToInt
 import Data.Function(on)
 import Data.Maybe(isJust, fromMaybe)
 import Data.Ratio((%))
-import Control.Monad
+import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
 -- Based off code from Text.Parse in the polyparse library
@@ -153,7 +153,7 @@ stringInterior = stringRep quoteChar "\\\""
                  satisfy ((/=) quoteChar)
 
 parseSigned :: Real a => Parse a -> Parse a
-parseSigned p = do '-' <- next; commit (fmap negate p)
+parseSigned p = (character '-' >> liftM negate p)
                 `onFail`
                 p
 
@@ -345,6 +345,7 @@ parseMultiLineComment = bracket start end (liftM concat $ many inner)
               do ast <- character '*'
                  n <- satisfy ((/=) '/')
                  liftM ((:) ast . (:) n) inner
+
 -- | Parse out @\<newline>@ from a quoted string.
 parseSplitStrings :: Parse String
 parseSplitStrings = do oq <- parseQuote
