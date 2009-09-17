@@ -43,8 +43,8 @@
      end points.
 
    * When either creating a 'DotGraph' by hand or parsing one, it is
-     possible to specify that @'directedGraph' = d@, but at lease one
-     'DotEdge' has @'directedEdge' = 'not' d@.
+     possible to specify that @'directedGraph' = d@, but 'DotEdge'
+     values with @'directedEdge' = 'not' d@.
 
    * Nodes cannot have Port values.
 
