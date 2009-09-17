@@ -100,7 +100,13 @@ instance PrintDot Int where
     unqtDot = int
 
 instance PrintDot Double where
-    unqtDot = double
+    -- If it's an "integral" double, then print as an integer.
+    -- This seems to match how GraphViz apps use Dot.
+    unqtDot d = if d == fromIntegral di
+                then int di
+                else double d
+        where
+          di = round d
 
 instance PrintDot Bool where
     unqtDot True  = text "true"
