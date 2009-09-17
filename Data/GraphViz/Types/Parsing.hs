@@ -188,8 +188,11 @@ parseFloat = do ds   <- many (satisfy isDigit)
 parseFloat' :: Parse Double
 parseFloat' = parseSigned ( parseFloat
                             `onFail`
-                            liftM fromIntegral parseInt
+                            liftM fI parseInt
                           )
+    where
+      fI :: Integer -> Double
+      fI = fromIntegral
 
 -- -----------------------------------------------------------------------------
 
