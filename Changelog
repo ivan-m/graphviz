@@ -1,3 +1,17 @@
+Changes in 2999.5.1.0
+=====================
+
+* Potentially fixed the graphvizWithHandle bug; correct approach
+  spotted by Nikolas Mayr.
+
+* Fixed up Parsing of various Attribute sub-values, especially Point and
+  Spline (and hence Pos, which uses them).
+
+* Pre-process out comments and join together multi-line strings before
+  parsing.
+
+* Properly parse Doubles like ".2".
+
 Changes in 2999.5.0.0
 =====================
 
