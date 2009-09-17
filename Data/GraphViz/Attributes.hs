@@ -1675,7 +1675,7 @@ instance ParseDot Spline where
                    return $ Spline ms me ps
         where
           parseP t = optional $ do character t
-                                   character ','
+                                   parseComma
                                    parseUnqt `discard` whitespace
 
     parse = quotedParse parseUnqt
