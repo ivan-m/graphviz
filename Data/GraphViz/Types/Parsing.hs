@@ -19,9 +19,12 @@
    instance.
 -}
 module Data.GraphViz.Types.Parsing
-    ( module Text.ParserCombinators.Poly.Lazy
+    ( -- * Re-exporting pertinent parts of Polyparse.
+      module Text.ParserCombinators.Poly.Lazy
+      -- * The ParseDot class.
     , Parse
     , ParseDot(..)
+      -- * Convenience parsing combinators.
     , stringBlock
     , numString
     , quotedString
@@ -106,7 +109,7 @@ instance ParseDot Bool where
 
 instance ParseDot Char where
     -- Can't be a quote character.
-    parseUnqt = satisfy ((/=) '"')
+    parseUnqt = satisfy ((/=) quoteChar)
 
     parse = satisfy restIDString
             `onFail`
@@ -140,9 +143,12 @@ stringBlock = do frst <- satisfy frstIDString
 
 -- | Used when quotes are explicitly required;
 quotedString :: Parse String
-quotedString = many $ oneOf [ stringRep '"' "\\\""
-                            , satisfy ((/=) '"')
-                            ]
+quotedString = many stringInterior
+
+stringInterior :: Parse Char
+stringInterior = stringRep quoteChar "\\\""
+                 `onFail`
+                 satisfy ((/=) quoteChar)
 
 parseSigned :: Real a => Parse a -> Parse a
 parseSigned p = do '-' <- next; commit (fmap negate p)
@@ -223,9 +229,13 @@ optionalQuoted p = p
                    quotedParse p
 
 quotedParse   :: Parse a -> Parse a
-quotedParse p = bracket quote quote p
-    where
-      quote = character '"'
+quotedParse p = bracket parseQuote parseQuote p
+
+parseQuote :: Parse Char
+parseQuote = character quoteChar
+
+quoteChar :: Char
+quoteChar = '"'
 
 newline :: Parse String
 newline = oneOf $ map string ["\r\n", "\n", "\r"]
@@ -236,8 +246,10 @@ newline = oneOf $ map string ["\r\n", "\n", "\r"]
 newline' :: Parse ()
 newline' = many (whitespace' >> newline) >> return ()
 
-skipToNewline :: Parse ()
-skipToNewline = many (noneOf ['\n','\r']) >> newline >> return ()
+-- | Parses and returns all characters up till the end of the line,
+--   then skips to the beginning of the next line.
+skipToNewline :: Parse String
+skipToNewline = many (noneOf ['\n','\r']) `discard` newline
 
 parseField     :: (ParseDot a) => String -> Parse a
 parseField fld = do string fld
