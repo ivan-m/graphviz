@@ -1,5 +1,5 @@
 Name:               graphviz
-Version:            2999.5.1.0
+Version:            2999.5.1.1
 Stability:          Beta
 Synopsis:           GraphViz bindings for Haskell.
 Description:        Provides convenient functions to convert FGL

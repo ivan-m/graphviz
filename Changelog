@@ -1,3 +1,10 @@
+Changes in 2999.5.1.1
+=====================
+
+* When used as labels, etc., the Dot keywords node, edge, graph,
+  digraph, subgraph, and strict need to be quoted.  Spotted by
+  Kathleen Fisher.
+
 Changes in 2999.5.1.0
 =====================
 
