@@ -12,7 +12,11 @@ module Data.GraphViz.Types.Internal where
 import Data.Char( isAsciiUpper
                 , isAsciiLower
                 , isDigit
+                , toLower
                 )
+
+import qualified Data.Set as Set
+import Data.Set(Set)
 
 isIDString        :: String -> Bool
 isIDString []     = True
@@ -55,6 +59,19 @@ descapeQuotes                :: String -> String
 descapeQuotes []             = []
 descapeQuotes ('\\':'"':str) = '"' : descapeQuotes str
 descapeQuotes (c:str)        = c : descapeQuotes str
+
+isKeyword :: String -> Bool
+isKeyword = flip Set.member keywords . map toLower
+
+-- | The following are Dot keywords and are not valid as labels, etc. unquoted.
+keywords :: Set String
+keywords = Set.fromList [ "node"
+                        , "edge"
+                        , "graph"
+                        , "digraph"
+                        , "subgraph"
+                        , "strict"
+                        ]
 
 -- | Fold over 'Bool's.
 bool       :: a -> a -> Bool -> a

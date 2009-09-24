@@ -134,9 +134,10 @@ unqtString str
     | isNumString str = text str
     | otherwise       = text $ escapeQuotes str
 
--- | Escape quotes and quote Strings that need them.
+-- | Escape quotes and quote Strings that need them (including keywords).
 qtString :: String -> DotCode
 qtString str
+    | isKeyword str   = doubleQuotes $ text str
     | isIDString str  = text str
     | isNumString str = text str
                        -- Don't use unqtString as it re-runs isIDString
