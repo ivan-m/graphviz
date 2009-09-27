@@ -32,9 +32,9 @@ data NodeCluster c a = N (LNode a) -- ^ Indicates the actual Node in the Graph.
                         deriving (Show)
 
 -- | Create the /Dot/ representation for the given graph.
-clustersToNodes :: (Ord c, Graph gr) => (LNode a -> NodeCluster c a)
+clustersToNodes :: (Ord c, Graph gr) => (LNode a -> NodeCluster c l)
                    -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-                   -> (LNode a -> Attributes) -> gr a b
+                   -> (LNode l -> Attributes) -> gr a b
                    -> ([DotSubGraph Node], [DotNode Node])
 clustersToNodes clusterBy cID fmtCluster fmtNode
     = treesToDot cID fmtCluster fmtNode

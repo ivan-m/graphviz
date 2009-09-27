@@ -105,9 +105,9 @@ graphToDot' graph = graphToDot (isDirected graph) graph
 --   Clusters can be nested to arbitrary depth.
 --   The 'Bool' argument is 'True' for directed graphs, 'False' otherwise.
 clusterGraphToDot :: (Ord c, Graph gr) => Bool -> gr a b
-                     -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                     -> [GlobalAttributes] -> (LNode a -> NodeCluster c l)
                      -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-                     -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
+                     -> (LNode l -> Attributes) -> (LEdge b -> Attributes)
                      -> DotGraph Node
 clusterGraphToDot dirGraph graph gAttrs clusterBy cID fmtCluster fmtNode fmtEdge
     = DotGraph { strictGraph     = False
@@ -136,9 +136,9 @@ clusterGraphToDot dirGraph graph gAttrs clusterBy cID fmtCluster fmtNode fmtEdge
 --   Clusters can be nested to arbitrary depth.
 --   Graph direction is automatically inferred.
 clusterGraphToDot'    :: (Ord c, Ord b, Graph gr) => gr a b
-                         -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                         -> [GlobalAttributes] -> (LNode a -> NodeCluster c l)
                          -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-                         -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
+                         -> (LNode l -> Attributes) -> (LEdge b -> Attributes)
                          -> DotGraph Node
 clusterGraphToDot' gr = clusterGraphToDot (isDirected gr) gr
 
@@ -175,7 +175,7 @@ dotAttributes isDir gr dot
                        rnf s `seq` return s
       rebuildGraphWithAttributes dotResult =  mkGraph lnodes ledges
           where
-            lnodes = map (\(n, l) -> (n, (fromJust $ Map.lookup n nodeMap, l)))
+            lnodes = map (\(n, l) -> (n, (nodeMap Map.! n, l)))
                      $ labNodes gr
             ledges = map createEdges $ labEdges gr
             createEdges (f, t, l) = if isDir || f <= t
@@ -210,9 +210,9 @@ graphToGraph' gr = graphToGraph (isDirected gr) gr
 --   otherwise.  Directed graphs are passed through /dot/, and
 --   undirected graphs through /neato/.
 clusterGraphToGraph :: (Ord c, Graph gr) => Bool -> gr a b
-                       -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                       -> [GlobalAttributes] -> (LNode a -> NodeCluster c l)
                        -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-                       -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
+                       -> (LNode l -> Attributes) -> (LEdge b -> Attributes)
                        -> IO (gr (AttributeNode a) (AttributeEdge b))
 clusterGraphToGraph isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
     = dotAttributes isDir gr dot
@@ -225,9 +225,9 @@ clusterGraphToGraph isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
 --
 --   Graph direction is automatically inferred.
 clusterGraphToGraph'    :: (Ord b, Ord c, Graph gr) => gr a b
-                           -> [GlobalAttributes] -> (LNode a -> NodeCluster c a)
+                           -> [GlobalAttributes] -> (LNode a -> NodeCluster c l)
                            -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-                           -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
+                           -> (LNode l -> Attributes) -> (LEdge b -> Attributes)
                            -> IO (gr (AttributeNode a) (AttributeEdge b))
 clusterGraphToGraph' gr = clusterGraphToGraph (isDirected gr) gr
 
@@ -267,7 +267,7 @@ dotizeGraph' g = dotizeGraph (isDirected g) g
 --   otherwise.  Directed graphs are passed through /dot/, and
 --   undirected graphs through /neato/.
 dotizeClusterGraph                 :: (Ord c, Graph gr) => Bool -> gr a b
-                                      -> (LNode a -> NodeCluster c a)
+                                      -> (LNode a -> NodeCluster c l)
                                       -> gr (AttributeNode a) (AttributeEdge b)
 dotizeClusterGraph isDir g clustBy = unsafePerformIO
                                      $ clusterGraphToGraph isDir   g
@@ -287,6 +287,6 @@ dotizeClusterGraph isDir g clustBy = unsafePerformIO
 --
 --   The graph direction is automatically inferred.
 dotizeClusterGraph'   :: (Ord b, Ord c, Graph gr) => gr a b
-                         -> (LNode a -> NodeCluster c a)
+                         -> (LNode a -> NodeCluster c l)
                          -> gr (AttributeNode a) (AttributeEdge b)
 dotizeClusterGraph' g = dotizeClusterGraph (isDirected g) g
