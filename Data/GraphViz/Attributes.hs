@@ -1773,14 +1773,14 @@ instance ParseDot RankDir where
 -- -----------------------------------------------------------------------------
 
 data Shape
-    = BoxShape
+    = BoxShape -- ^ Has synonyms of /rect/ and /rectangle/.
     | Polygon
     | Ellipse
     | Circle
     | PointShape
     | Egg
     | Triangle
-    | Plaintext
+    | PlainText -- ^ Has synonym of /none/.
     | DiamondShape
     | Trapezium
     | Parallelogram
@@ -1798,8 +1798,6 @@ data Shape
     | Mdiamond
     | Msquare
     | Mcircle
-    | Rectangle
-    | NoShape
     | Note
     | Tab
     | Folder
@@ -1815,7 +1813,7 @@ instance PrintDot Shape where
     unqtDot PointShape    = text "point"
     unqtDot Egg           = text "egg"
     unqtDot Triangle      = text "triangle"
-    unqtDot Plaintext     = text "plaintext"
+    unqtDot PlainText     = text "plaintext"
     unqtDot DiamondShape  = text "diamond"
     unqtDot Trapezium     = text "trapezium"
     unqtDot Parallelogram = text "parallelogram"
@@ -1833,8 +1831,6 @@ instance PrintDot Shape where
     unqtDot Mdiamond      = text "Mdiamond"
     unqtDot Msquare       = text "Msquare"
     unqtDot Mcircle       = text "Mcircle"
-    unqtDot Rectangle     = text "rectangle"
-    unqtDot NoShape       = text "none"
     unqtDot Note          = text "note"
     unqtDot Tab           = text "tab"
     unqtDot Folder        = text "folder"
@@ -1842,14 +1838,14 @@ instance PrintDot Shape where
     unqtDot Component     = text "component"
 
 instance ParseDot Shape where
-    parseUnqt = oneOf [ stringRep BoxShape "box"
+    parseUnqt = oneOf [ stringReps BoxShape ["box","rect","rectangle"]
                       , stringRep Polygon "polygon"
                       , stringRep Ellipse "ellipse"
                       , stringRep Circle "circle"
                       , stringRep PointShape "point"
                       , stringRep Egg "egg"
                       , stringRep Triangle "triangle"
-                      , stringRep Plaintext "plaintext"
+                      , stringReps PlainText ["plaintext","none"]
                       , stringRep DiamondShape "diamond"
                       , stringRep Trapezium "trapezium"
                       , stringRep Parallelogram "parallelogram"
@@ -1867,8 +1863,6 @@ instance ParseDot Shape where
                       , stringRep Mdiamond "Mdiamond"
                       , stringRep Msquare "Msquare"
                       , stringRep Mcircle "Mcircle"
-                      , stringRep Rectangle "rectangle"
-                      , stringRep NoShape "none"
                       , stringRep Note "note"
                       , stringRep Tab "tab"
                       , stringRep Folder "folder"

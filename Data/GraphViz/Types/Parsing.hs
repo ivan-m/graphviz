@@ -56,6 +56,7 @@ module Data.GraphViz.Types.Parsing
     , commaSepUnqt
     , commaSep'
     , stringRep
+    , stringReps
     -- * Pre-processing
     , preprocess
     ) where
@@ -206,8 +207,11 @@ parseAndSpace p = p `discard` whitespace'
 string :: String -> Parse String
 string = mapM character
 
-stringRep     :: a -> String -> Parse a
-stringRep v s = string s >> return v
+stringRep   :: a -> String -> Parse a
+stringRep v = stringReps v . return
+
+stringReps      :: a -> [String] -> Parse a
+stringReps v ss = (oneOf $ map string ss) >> return v
 
 strings :: [String] -> Parse String
 strings = oneOf . map string
