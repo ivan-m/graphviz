@@ -1789,19 +1789,19 @@ data Shape
     | Hexagon
     | Septagon
     | Octagon
-    | Doublecircle
-    | Doubleoctagon
-    | Tripleoctagon
-    | Invtriangle
-    | Invtrapezium
-    | Invhouse
-    | Mdiamond
-    | Msquare
-    | Mcircle
+    | DoubleCircle
+    | DoubleOctagon
+    | TripleOctagon
+    | InvTriangle
+    | InvTrapezium
+    | InvHouse
+    | MDiamond
+    | MSquare
+    | MCircle
     | Note
     | Tab
     | Folder
-    | Box3d
+    | Box3D
     | Component
       deriving (Eq, Show, Read)
 
@@ -1822,19 +1822,19 @@ instance PrintDot Shape where
     unqtDot Hexagon       = text "hexagon"
     unqtDot Septagon      = text "septagon"
     unqtDot Octagon       = text "octagon"
-    unqtDot Doublecircle  = text "doublecircle"
-    unqtDot Doubleoctagon = text "doubleoctagon"
-    unqtDot Tripleoctagon = text "tripleoctagon"
-    unqtDot Invtriangle   = text "invtriangle"
-    unqtDot Invtrapezium  = text "invtrapezium"
-    unqtDot Invhouse      = text "invhouse"
-    unqtDot Mdiamond      = text "Mdiamond"
-    unqtDot Msquare       = text "Msquare"
-    unqtDot Mcircle       = text "Mcircle"
+    unqtDot DoubleCircle  = text "doublecircle"
+    unqtDot DoubleOctagon = text "doubleoctagon"
+    unqtDot TripleOctagon = text "tripleoctagon"
+    unqtDot InvTriangle   = text "invtriangle"
+    unqtDot InvTrapezium  = text "invtrapezium"
+    unqtDot InvHouse      = text "invhouse"
+    unqtDot MDiamond      = text "Mdiamond"
+    unqtDot MSquare       = text "Msquare"
+    unqtDot MCircle       = text "Mcircle"
     unqtDot Note          = text "note"
     unqtDot Tab           = text "tab"
     unqtDot Folder        = text "folder"
-    unqtDot Box3d         = text "box3d"
+    unqtDot Box3D         = text "box3d"
     unqtDot Component     = text "component"
 
 instance ParseDot Shape where
@@ -1854,19 +1854,19 @@ instance ParseDot Shape where
                       , stringRep Hexagon "hexagon"
                       , stringRep Septagon "septagon"
                       , stringRep Octagon "octagon"
-                      , stringRep Doublecircle "doublecircle"
-                      , stringRep Doubleoctagon "doubleoctagon"
-                      , stringRep Tripleoctagon "tripleoctagon"
-                      , stringRep Invtriangle "invtriangle"
-                      , stringRep Invtrapezium "invtrapezium"
-                      , stringRep Invhouse "invhouse"
-                      , stringRep Mdiamond "Mdiamond"
-                      , stringRep Msquare "Msquare"
-                      , stringRep Mcircle "Mcircle"
+                      , stringRep DoubleCircle "doublecircle"
+                      , stringRep DoubleOctagon "doubleoctagon"
+                      , stringRep TripleOctagon "tripleoctagon"
+                      , stringRep InvTriangle "invtriangle"
+                      , stringRep InvTrapezium "invtrapezium"
+                      , stringRep InvHouse "invhouse"
+                      , stringRep MDiamond "Mdiamond"
+                      , stringRep MSquare "Msquare"
+                      , stringRep MCircle "Mcircle"
                       , stringRep Note "note"
                       , stringRep Tab "tab"
                       , stringRep Folder "folder"
-                      , stringRep Box3d "box3d"
+                      , stringRep Box3D "box3d"
                       , stringRep Component "component"
                       ]
 
