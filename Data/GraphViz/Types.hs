@@ -20,6 +20,12 @@
    * When creating 'GraphID' values for 'graphID' and 'subGraphID',
      you should ensure that none of them have the same printed value
      as one of the 'nodeID' values to avoid any possible problems.
+     Note that if the 'DotSubGraph' has @'isCluster' = 'True'@ then
+     this isn't a problem.
+
+   * If you want any 'GlobalAttributes' in a 'DotSubGraph' and want
+     them to only apply to that 'DotSubGraph', then you must ensure it
+     does indeed have a valid 'GraphID'.
 
    * Whilst 'DotGraph', etc. are polymorphic in their node type, you
      should ensure that you use a relatively simple node type (that
@@ -398,12 +404,19 @@ instance (PrintDot a) => PrintDot (DotSubGraph a) where
 
 printSubGraphID   :: DotSubGraph a -> DotCode
 printSubGraphID s = sGraph'
-                    <+> bool clust' empty isCl
-                    <> maybe empty dtID (subGraphID s)
+                    <+> maybe cl dtID (subGraphID s)
     where
       isCl = isCluster s
-      dtID sId = bool (char '_') space isCl
-                 <> toDot sId
+      cl = bool clust' empty isCl
+      dtID = printSGID isCl
+
+-- | Print the actual ID for a 'DotSubGraph'.
+printSGID          :: Bool -> GraphID -> DotCode
+printSGID isCl sID = bool addClust noClust isCl
+    where
+      noClust = toDot sID
+      addClust = toDot . (++) clust . (:) '_'
+                 . renderDot $ unqtDot sID
 
 instance (ParseDot a) => ParseDot (DotSubGraph a) where
     parseUnqt = parseStmtBased parseSubGraphID
@@ -419,11 +432,19 @@ instance (ParseDot a) => ParseDot (DotSubGraph a) where
 parseSubGraphID :: Parse (DotStatements a -> DotSubGraph a)
 parseSubGraphID = do string sGraph
                      whitespace'
-                     isCl <- liftM isJust
-                             $ optional (string clust)
-                               `discard` optional (character '_')
-                     sId <- optional parse
-                     return $ DotSG isCl sId
+                     (isCl,sID) <- parseSGID
+                     return $ DotSG isCl sID
+
+parseSGID :: Parse (Bool, Maybe GraphID)
+parseSGID = do s <- parse
+               return (fst $ runParser pStr s)
+            `onFail`
+            liftM (flip (,) Nothing) checkCl
+  where
+    checkCl = liftM isJust $ optional (string clust)
+    pStr = do isCl <- checkCl `discard`optional (character '_')
+              sID <- parseUnqt
+              return (isCl, Just sID)
 
 sGraph :: String
 sGraph = "subgraph"
