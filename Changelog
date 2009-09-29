@@ -1,3 +1,13 @@
+Changes in 2999.6.0.0
+=====================
+
+* Remove some Shape aliases and change capitalisation of others.
+
+* Properly parse and print IDs of clusters.
+
+* Allow NodeCluster values have node types different from the LNode
+  they come from.
+
 Changes in 2999.5.1.1
 =====================
 
