@@ -27,6 +27,10 @@
      them to only apply to that 'DotSubGraph', then you must ensure it
      does indeed have a valid 'GraphID'.
 
+   * If eventually outputting to a format such as SVG, then you should
+     make sure that your 'DotGraph' has a 'graphID', as that is used
+     as the title of the resulting image.
+
    * Whilst 'DotGraph', etc. are polymorphic in their node type, you
      should ensure that you use a relatively simple node type (that
      is, it only covers a single line, etc.).
