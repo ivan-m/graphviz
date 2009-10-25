@@ -242,9 +242,6 @@ addExtension cmd t fp = cmd t fp'
     where
       fp' = fp <.> defaultExtension t
 
--- graphvizWithHandle sometimes throws an error about handles not
--- being closed properly: investigate (now on the official TODO).
-
 -- | Run the chosen Graphviz command on this graph, but send the
 --   result to the given handle rather than to a file.  The @'Handle'
 --   -> 'IO' a@ function should close the 'Handle' once it is
