@@ -1902,7 +1902,6 @@ instance ParseDot SmoothType where
 
 -- -----------------------------------------------------------------------------
 
--- | It is assumed that at least one of these is @Just{}@.
 data StartType = StartStyle STStyle
                | StartSeed Int
                | StartStyleSeed STStyle Int
