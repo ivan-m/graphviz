@@ -16,14 +16,20 @@
 -}
 
 module Data.GraphViz.Commands
-    ( GraphvizCommand(..)
+    ( -- * The different GraphViz tools available.
+      GraphvizCommand(..)
     , dirCommand
     , undirCommand
     , commandFor
+      -- * The possible outputs that GraphViz supports.
+    , GraphvizResult
     , GraphvizOutput(..)
+    , GraphvizCanvas(..)
+      -- * Running GraphViz.
     , runGraphviz
     , runGraphvizCommand
     , addExtension
+    , runGraphvizCanvas
     , graphvizWithHandle
     )
     where
@@ -43,6 +49,8 @@ import Control.Concurrent(forkIO)
 import Control.Exception.Extensible(SomeException(..), tryJust)
 import Control.Monad(liftM,unless)
 import System.FilePath(FilePath, (<.>))
+
+-- -----------------------------------------------------------------------------
 
 -- | The available GraphViz commands.  The following directions are
 --   based upon those in the GraphViz man page (available online at
@@ -79,19 +87,22 @@ commandFor dg = if directedGraph dg
                 then dirCommand
                 else undirCommand
 
+-- -----------------------------------------------------------------------------
+
+-- | This class is for those data types that are valid options for the
+--   GraphViz tools to use with the @-T@ argument.  Note that not all
+--   valid output types are necessarily available on your system: to
+--   determine which actual formats are supported on your system, run
+--   @dot -T?@.  For more information, see:
+--     <http://graphviz.org/doc/info/output.html>
+class GraphvizResult o where
+    outputCall :: o -> String
+
 -- | The possible GraphViz output formats.  Note that which formats
 --   are available on your system depend on how it was built (e.g. if
 --   it wasn't built with PNG support, then using 'Png' will probably
---   result in an error.  To determine which formats your install of
---   GraphViz supports, run @dot -T?@.  For more information, see:
---     <http://graphviz.org/doc/info/output.html>
---
---   Note that for 'Gtk' and 'Xlib', these immediately draw the result
---   onto the appropriate canvas (i.e. creates a window with the
---   image) and as such produce no files.  To be able to use these
---   output types with the conversion functions here, you may wish to
---   use a temporary file or \/dev\/null to store the \"output\" of
---   the 'GraphvizCommand'.
+--   result in an error.  See the documentation for 'GraphvizResult'
+--   for more information.
 data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                     | Canon     -- ^ Pretty-printed Dot output with no
                                 --   layout performed.
@@ -105,7 +116,6 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                     | Gd        -- ^ Internal GD library format.
                     | Gd2       -- ^ Compressed version of 'Gd'.
                     | Gif       -- ^ Graphics Interchange Format.
-                    | Gtk       -- ^ GTK canvas.
                     | Ico       -- ^ Icon image file format.
                     | Imap      -- ^ Server-side imagemap.
                     | Cmapx     -- ^ Client-side imagemap.
@@ -137,42 +147,37 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                     | WBmp      -- ^ Wireless BitMap format;
                                 --   monochrome format usually used
                                 --   for mobile computing devices.
-                    | Xlib      -- ^ Xlib canvas.
                       deriving (Eq, Ord, Show, Read)
 
--- | The format GraphViz expects the 'GraphvizOutput' value to be
---   printed as when used with the @-T@ argument.
-outputCall           :: GraphvizOutput -> String
-outputCall Bmp       = "bmp"
-outputCall Canon     = "canon"
-outputCall DotOutput = "dot"
-outputCall XDot      = "xdot"
-outputCall Eps       = "eps"
-outputCall Fig       = "fig"
-outputCall Gd        = "gd"
-outputCall Gd2       = "gd2"
-outputCall Gif       = "gif"
-outputCall Gtk       = "gtk_canvas"
-outputCall Ico       = "ico"
-outputCall Imap      = "imap"
-outputCall Cmapx     = "cmapx"
-outputCall ImapNP    = "imap_np"
-outputCall CmapxNP   = "cmapx_np"
-outputCall Jpeg      = "jpeg"
-outputCall Pdf       = "pdf"
-outputCall Plain     = "plain"
-outputCall PlainExt  = "plain-ext"
-outputCall Png       = "png"
-outputCall Ps        = "ps"
-outputCall Ps2       = "ps2"
-outputCall Svg       = "svg"
-outputCall SvgZ      = "svgz"
-outputCall Tiff      = "tiff"
-outputCall Vml       = "vml"
-outputCall VmlZ      = "vmlz"
-outputCall Vrml      = "vrml"
-outputCall WBmp      = "wbmp"
-outputCall Xlib      = "xlib"
+instance GraphvizResult GraphvizOutput where
+    outputCall Bmp       = "bmp"
+    outputCall Canon     = "canon"
+    outputCall DotOutput = "dot"
+    outputCall XDot      = "xdot"
+    outputCall Eps       = "eps"
+    outputCall Fig       = "fig"
+    outputCall Gd        = "gd"
+    outputCall Gd2       = "gd2"
+    outputCall Gif       = "gif"
+    outputCall Ico       = "ico"
+    outputCall Imap      = "imap"
+    outputCall Cmapx     = "cmapx"
+    outputCall ImapNP    = "imap_np"
+    outputCall CmapxNP   = "cmapx_np"
+    outputCall Jpeg      = "jpeg"
+    outputCall Pdf       = "pdf"
+    outputCall Plain     = "plain"
+    outputCall PlainExt  = "plain-ext"
+    outputCall Png       = "png"
+    outputCall Ps        = "ps"
+    outputCall Ps2       = "ps2"
+    outputCall Svg       = "svg"
+    outputCall SvgZ      = "svgz"
+    outputCall Tiff      = "tiff"
+    outputCall Vml       = "vml"
+    outputCall VmlZ      = "vmlz"
+    outputCall Vrml      = "vrml"
+    outputCall WBmp      = "wbmp"
 
 -- | A default file extension for each 'GraphvizOutput'.  Note that
 --   for cases such as 'Gtk' where there is no actual file produced,
@@ -187,7 +192,6 @@ defaultExtension Fig       = "fig"
 defaultExtension Gd        = "gd"
 defaultExtension Gd2       = "gd2"
 defaultExtension Gif       = "gif"
-defaultExtension Gtk       = "gtk_canvas"
 defaultExtension Ico       = "ico"
 defaultExtension Imap      = "map"
 defaultExtension Cmapx     = "map"
@@ -207,7 +211,19 @@ defaultExtension Vml       = "vml"
 defaultExtension VmlZ      = "vmlz"
 defaultExtension Vrml      = "vrml"
 defaultExtension WBmp      = "wbmp"
-defaultExtension Xlib      = "xlib_canvas"
+
+-- | Unlike 'GraphvizOutput', these items do not produce an output
+--   file; instead, they directly draw a canvas (i.e. a window) with
+--   the resulting image.  See the documentation for 'GraphvizResult'
+--   for more information.
+data GraphvizCanvas = Gtk | Xlib
+                      deriving (Eq, Ord, Read, Show)
+
+instance GraphvizResult GraphvizCanvas where
+    outputCall Gtk       = "gtk"
+    outputCall Xlib      = "xlib"
+
+-- -----------------------------------------------------------------------------
 
 -- | Run the recommended Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
@@ -248,9 +264,17 @@ addExtension cmd t fp = cmd t fp'
 --   finished.
 --
 --   The result is wrapped in 'Maybe' rather than throwing an error.
-graphvizWithHandle :: (PrintDot n, Show a) => GraphvizCommand -> DotGraph n
-                      -> GraphvizOutput -> (Handle -> IO a) -> IO (Maybe a)
-graphvizWithHandle cmd gr t f
+graphvizWithHandle :: (PrintDot n)  => GraphvizCommand
+                      -> DotGraph n -> GraphvizOutput
+                      -> (Handle -> IO a) -> IO (Maybe a)
+graphvizWithHandle = graphvizWithHandle'
+
+-- This version is not exported as we don't want to let arbitrary
+-- @Handle -> IO a@ functions to be used for GraphvizCanvas outputs.
+graphvizWithHandle' :: (PrintDot n, GraphvizResult o)
+                       => GraphvizCommand -> DotGraph n -> o
+                       -> (Handle -> IO a) -> IO (Maybe a)
+graphvizWithHandle' cmd gr t f
     = do (inp, outp, errp, prc) <- runInteractiveCommand command
          forkIO $ hPutStrLn inp (printDotGraph gr) >> hClose inp
          forkIO $ hGetContents errp >>= hPutStr stderr >> hClose errp
@@ -261,6 +285,17 @@ graphvizWithHandle cmd gr t f
            _           -> return Nothing
     where
       command = showCmd cmd ++ " -T" ++ outputCall t
+
+-- | Run the chosen Graphviz command on this graph and render it using
+--   the given canvas type.  The @'Bool'@ indicates whether or not the
+--   canvas was correctly rendered with no errors or not.
+runGraphvizCanvas          :: (PrintDot n) => GraphvizCommand -> DotGraph n
+                              -> GraphvizCanvas -> IO Bool
+runGraphvizCanvas cmd gr c = liftM isJust
+                             $ graphvizWithHandle' cmd gr c nullHandle
+    where
+      nullHandle :: Handle -> IO ()
+      nullHandle = const (return ())
 
 {- |
    This function is based upon code taken from the /mohws/ project,
