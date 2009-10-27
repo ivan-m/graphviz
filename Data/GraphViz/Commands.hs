@@ -12,7 +12,11 @@
 
    Whilst various output formats are supported (see 'GraphvizOutput'
    for a complete list), it is not yet possible to choose a desired
-   renderer and formatter.
+   renderer and formatter.  Being able to determine which renderers
+   and formatters are applicable for a specific 'GraphvizOutput' is
+   not easy (there is no listing of available renderers or formatters
+   on the GraphViz website), and for the most part the default ones do
+   the job well.
 -}
 
 module Data.GraphViz.Commands
