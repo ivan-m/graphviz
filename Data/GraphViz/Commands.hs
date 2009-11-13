@@ -48,7 +48,7 @@ import Data.Maybe(isJust)
 import System.IO( Handle, IOMode(WriteMode), hClose, hPutStrLn
                 , hGetContents, hPutStr, stderr, openFile)
 import System.Exit(ExitCode(ExitSuccess))
-import System.Process(runInteractiveCommand, waitForProcess)
+import System.Process(runInteractiveProcess, waitForProcess)
 import Data.Array.IO(newArray_, hGetArray, hPutArray)
 import Control.Concurrent(forkIO)
 import Control.Exception.Extensible(SomeException(..), tryJust)
@@ -280,7 +280,7 @@ graphvizWithHandle' :: (PrintDot n, GraphvizResult o)
                        => GraphvizCommand -> DotGraph n -> o
                        -> (Handle -> IO a) -> IO (Maybe a)
 graphvizWithHandle' cmd gr t f
-    = do (inp, outp, errp, prc) <- runInteractiveCommand command
+    = do (inp, outp, errp, prc) <- runInteractiveProcess cmd' args Nothing Nothing
          forkIO $ hPutStrLn inp (printDotGraph gr) >> hClose inp
          forkIO $ hGetContents errp >>= hPutStr stderr >> hClose errp
          a <- f outp
@@ -289,7 +289,8 @@ graphvizWithHandle' cmd gr t f
            ExitSuccess -> return (Just a)
            _           -> return Nothing
     where
-      command = showCmd cmd ++ " -T" ++ outputCall t
+      cmd' = showCmd cmd
+      args = ["-T" ++ outputCall t]
 
 -- | Run the chosen Graphviz command on this graph and render it using
 --   the given canvas type.  The @'Bool'@ indicates whether or not the
