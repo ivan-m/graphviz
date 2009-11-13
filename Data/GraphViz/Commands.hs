@@ -30,6 +30,7 @@ module Data.GraphViz.Commands
     , GraphvizOutput(..)
     , GraphvizCanvas(..)
       -- * Running GraphViz.
+    , RunResult(..)
     , runGraphviz
     , runGraphvizCommand
     , addExtension
@@ -44,14 +45,15 @@ import Data.GraphViz.Types.Printing
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
 
-import Data.Maybe(isJust)
 import System.IO( Handle, IOMode(WriteMode), hClose, hPutStrLn
-                , hGetContents, hPutStr, stderr, openFile)
+                , hGetContents, openFile, hSetBinaryMode)
 import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
 import Data.Array.IO(newArray_, hGetArray, hPutArray)
 import Control.Concurrent(forkIO)
-import Control.Exception.Extensible(SomeException(..), tryJust)
+import Control.Concurrent(newEmptyMVar, putMVar, takeMVar)
+import Control.Exception.Extensible( SomeException(..), finally
+                                   , tryJust, bracket, evaluate, handle)
 import Control.Monad(liftM,unless)
 import System.FilePath(FilePath, (<.>))
 
@@ -230,24 +232,31 @@ instance GraphvizResult GraphvizCanvas where
 
 -- -----------------------------------------------------------------------------
 
+-- | Represents the result of running a command.
+data RunResult = Error String
+               | Success
+               deriving (Eq, Ord, Read, Show)
+
+-- | Return the error if there is one, otherwise return Success.
+maybeErr :: Either String a -> RunResult
+maybeErr = either Error (const Success)
+
 -- | Run the recommended Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
---   Returns @True@ if successful, @False@ otherwise.
 runGraphviz    :: (PrintDot n) => DotGraph n -> GraphvizOutput -> FilePath
-                  -> IO Bool
+                  -> IO RunResult
 runGraphviz gr = runGraphvizCommand (commandFor gr) gr
 
 -- | Run the chosen Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
---   Returns @True@ if successful, @False@ otherwise.
 runGraphvizCommand :: (PrintDot n) => GraphvizCommand -> DotGraph n
-                      -> GraphvizOutput -> FilePath -> IO Bool
+                      -> GraphvizOutput -> FilePath -> IO RunResult
 runGraphvizCommand cmd gr t fp
     = do pipe <- tryJust (\(SomeException _) -> return ())
                  $ openFile fp WriteMode
          case pipe of
-           (Left _)  -> return False
-           (Right f) -> liftM isJust $ graphvizWithHandle cmd gr t (toFile f)
+           (Left _)  -> return $ Error $ "Unable to open file " ++ fp
+           (Right f) -> liftM maybeErr $ graphvizWithHandle cmd gr t (toFile f)
     where
       toFile f h = do squirt h f
                       hClose h
@@ -268,46 +277,77 @@ addExtension cmd t fp = cmd t fp'
 --   -> 'IO' a@ function should close the 'Handle' once it is
 --   finished.
 --
---   The result is wrapped in 'Maybe' rather than throwing an error.
+--   If the command was unsuccessful, then @Left error@ is returned.
 graphvizWithHandle :: (PrintDot n)  => GraphvizCommand
                       -> DotGraph n -> GraphvizOutput
-                      -> (Handle -> IO a) -> IO (Maybe a)
+                      -> (Handle -> IO a) -> IO (Either String a)
 graphvizWithHandle = graphvizWithHandle'
 
 -- This version is not exported as we don't want to let arbitrary
 -- @Handle -> IO a@ functions to be used for GraphvizCanvas outputs.
 graphvizWithHandle' :: (PrintDot n, GraphvizResult o)
                        => GraphvizCommand -> DotGraph n -> o
-                       -> (Handle -> IO a) -> IO (Maybe a)
+                       -> (Handle -> IO a) -> IO (Either String a)
 graphvizWithHandle' cmd gr t f
-    = do (inp, outp, errp, prc) <- runInteractiveProcess cmd' args Nothing Nothing
-         forkIO $ hPutStrLn inp (printDotGraph gr) >> hClose inp
-         forkIO $ hGetContents errp >>= hPutStr stderr >> hClose errp
-         a <- f outp
-         exitCode <- waitForProcess prc
-         case exitCode of
-           ExitSuccess -> return (Just a)
-           _           -> return Nothing
+  = handle notRunnable
+    $ bracket
+        (runInteractiveProcess cmd' args Nothing Nothing)
+        (\(inh,outh,errh,_) -> hClose inh >> hClose outh >> hClose errh)
+        $ \(inp,outp,errp,prc) -> do
+          -- The input and error are text, not binary
+          hSetBinaryMode inp False
+          forkIO $ hPutStrLn inp $ printDotGraph gr
+
+          hSetBinaryMode errp False
+
+          -- Need to make sure both the output and error handles are
+          -- really fully consumed
+          mvOutput <- newEmptyMVar -- Actually get the value out
+          mvError <- newEmptyMVar
+          mvDone <- newEmptyMVar
+          let force mv with = (with mv >> return ())
+                              `finally`
+                              putMVar mvDone ()
+          -- There's apparently a new GHC warning if you don't use the
+          -- output in IO ...
+          _ <- forkIO $ force mvError $ \ mv -> do er <- hGetContents errp
+                                                   evaluate $ length er
+                                                   putMVar mv er
+          _ <- forkIO $ force mvOutput $ (f outp >>=) . putMVar
+          takeMVar mvDone
+          takeMVar mvDone
+
+          err <- takeMVar mvError
+          output <- takeMVar mvOutput
+
+          exitCode <- waitForProcess prc
+
+          case exitCode of
+            ExitSuccess -> return $ Right output
+            _           -> return $ Left err
     where
+      notRunnable SomeException{} = return . Left $
+                                    "Unable to call the GraphViz command "
+                                    ++ showCmd cmd ++
+                                    " with the arguments: "
+                                    ++ unwords args
       cmd' = showCmd cmd
       args = ["-T" ++ outputCall t]
 
 -- | Run the chosen Graphviz command on this graph and render it using
---   the given canvas type.  The @'Bool'@ indicates whether or not the
---   canvas was correctly rendered with no errors or not.
+--   the given canvas type.
 runGraphvizCanvas          :: (PrintDot n) => GraphvizCommand -> DotGraph n
-                              -> GraphvizCanvas -> IO Bool
-runGraphvizCanvas cmd gr c = liftM isJust
+                              -> GraphvizCanvas -> IO RunResult
+runGraphvizCanvas cmd gr c = liftM maybeErr
                              $ graphvizWithHandle' cmd gr c nullHandle
     where
       nullHandle :: Handle -> IO ()
       nullHandle = const (return ())
 
 -- | Run the recommended Graphviz command on this graph and render it
---   using the given canvas type.  The @'Bool'@ indicates whether or
---   not the canvas was correctly rendered with no errors or not.
+--   using the given canvas type.
 runGraphvizCanvas'   :: (PrintDot n) => DotGraph n -> GraphvizCanvas
-                        -> IO Bool
+                        -> IO RunResult
 runGraphvizCanvas' d = runGraphvizCanvas (commandFor d) d
 
 {- |
@@ -330,4 +370,3 @@ squirt rd wr = do
       -- This was originally separate
       bufsize :: Int
       bufsize = 4 * 1024
-

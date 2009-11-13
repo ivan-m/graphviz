@@ -167,7 +167,7 @@ graphToGraph isDir gr gAttributes fmtNode fmtEdge
 dotAttributes :: (Graph gr) => Bool -> gr a b -> DotGraph Node
                  -> IO (gr (AttributeNode a) (AttributeEdge b))
 dotAttributes isDir gr dot
-    = do (Just output) <- graphvizWithHandle command dot DotOutput hToString
+    = do (Right output) <- graphvizWithHandle command dot DotOutput hToString
          return $ rebuildGraphWithAttributes output
     where
       command = if isDir then dirCommand else undirCommand
