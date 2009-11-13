@@ -50,8 +50,7 @@ import System.IO( Handle, IOMode(WriteMode), hClose, hPutStrLn
 import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
 import Data.Array.IO(newArray_, hGetArray, hPutArray)
-import Control.Concurrent(forkIO)
-import Control.Concurrent(newEmptyMVar, putMVar, takeMVar)
+import Control.Concurrent(forkIO, newEmptyMVar, putMVar, takeMVar)
 import Control.Exception.Extensible( SomeException(..), finally
                                    , tryJust, bracket, evaluate, handle)
 import Control.Monad(liftM,unless)
