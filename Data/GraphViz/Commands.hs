@@ -34,6 +34,7 @@ module Data.GraphViz.Commands
     , runGraphvizCommand
     , addExtension
     , runGraphvizCanvas
+    , runGraphvizCanvas'
     , graphvizWithHandle
     )
     where
@@ -300,6 +301,13 @@ runGraphvizCanvas cmd gr c = liftM isJust
     where
       nullHandle :: Handle -> IO ()
       nullHandle = const (return ())
+
+-- | Run the recommended Graphviz command on this graph and render it
+--   using the given canvas type.  The @'Bool'@ indicates whether or
+--   not the canvas was correctly rendered with no errors or not.
+runGraphvizCanvas'   :: (PrintDot n) => DotGraph n -> GraphvizCanvas
+                        -> IO Bool
+runGraphvizCanvas' d = runGraphvizCanvas (commandFor d) d
 
 {- |
    This function is based upon code taken from the /mohws/ project,
