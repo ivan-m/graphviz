@@ -104,6 +104,7 @@ commandFor dg = if directedGraph dg
 --     <http://graphviz.org/doc/info/output.html>
 class GraphvizResult o where
     outputCall :: o -> String
+    isBinary :: o -> Bool
 
 -- | The possible GraphViz output formats.  Note that which formats
 --   are available on your system depend on how it was built (e.g. if
@@ -186,6 +187,24 @@ instance GraphvizResult GraphvizOutput where
     outputCall Vrml      = "vrml"
     outputCall WBmp      = "wbmp"
 
+    -- These are the known text-based outputs.
+    isBinary Canon     = False
+    isBinary DotOutput = False
+    isBinary XDot      = False
+    isBinary Eps       = False
+    isBinary Fig       = False
+    isBinary Imap      = False
+    isBinary Cmapx     = False
+    isBinary ImapNP    = False
+    isBinary CmapxNP   = False
+    isBinary Plain     = False
+    isBinary PlainExt  = False
+    isBinary Ps        = False
+    isBinary Svg       = False
+    isBinary Vml       = False
+    isBinary Vrml      = False
+    isBinary _         = True
+
 -- | A default file extension for each 'GraphvizOutput'.  Note that
 --   for cases such as 'Gtk' where there is no actual file produced,
 --   the value returned isn't necessarily sensible.
@@ -230,6 +249,9 @@ instance GraphvizResult GraphvizCanvas where
     outputCall Gtk       = "gtk"
     outputCall Xlib      = "xlib"
 
+    -- Since there's no output, we arbitrarily choose binary mode.
+    isBinary _ = True
+
 -- -----------------------------------------------------------------------------
 
 -- | Represents the result of running a command.
@@ -255,8 +277,10 @@ runGraphvizCommand cmd gr t fp
     = do pipe <- tryJust (\(SomeException _) -> return ())
                  $ openFile fp WriteMode
          case pipe of
-           (Left _)  -> return $ Error $ "Unable to open file " ++ fp
-           (Right f) -> liftM maybeErr $ graphvizWithHandle cmd gr t (toFile f)
+           (Left  _) -> return $ Error $ "Unable to open file " ++ fp
+           (Right f) -> do hSetBinaryMode f $ isBinary t
+                           liftM maybeErr
+                             $ graphvizWithHandle cmd gr t (toFile f)
     where
       toFile f h = do squirt h f
                       hClose h
@@ -298,6 +322,7 @@ graphvizWithHandle' cmd gr t f
           hSetBinaryMode inp False
           forkIO $ hPutStrLn inp $ printDotGraph gr
 
+          hSetBinaryMode outp $ isBinary t
           hSetBinaryMode errp False
 
           -- Need to make sure both the output and error handles are
