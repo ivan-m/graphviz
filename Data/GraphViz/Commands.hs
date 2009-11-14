@@ -324,24 +324,22 @@ graphvizWithHandle' cmd gr t f
           hSetBinaryMode outp $ isBinary t
           hSetBinaryMode errp False
 
+          err <- hGetContents errp
+
           -- Need to make sure both the output and error handles are
           -- really fully consumed
           mvOutput <- newEmptyMVar -- Actually get the value out
-          mvError <- newEmptyMVar
-          mvDone <- newEmptyMVar
-          let force mv with = (with mv >> return ())
-                              `finally`
-                              putMVar mvDone ()
-          -- There's apparently a new GHC warning if you don't use the
-          -- output in IO ...
-          _ <- forkIO $ force mvError $ \ mv -> do er <- hGetContents errp
-                                                   evaluate $ length er
-                                                   putMVar mv er
-          _ <- forkIO $ force mvOutput $ (f outp >>=) . putMVar
+          mvDone   <- newEmptyMVar
+          -- Need to consider what to do if action throws an error,
+          -- e.g. disk full
+          let signalWhenDone action = (action >> return ())
+                                        `finally` putMVar mvDone ()
+
+          _ <- forkIO $ signalWhenDone $ evaluate (length err)
+          _ <- forkIO $ signalWhenDone $ f outp >>= putMVar mvOutput
           takeMVar mvDone
           takeMVar mvDone
 
-          err <- takeMVar mvError
           output <- takeMVar mvOutput
 
           exitCode <- waitForProcess prc
