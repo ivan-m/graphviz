@@ -1,12 +1,12 @@
 {- |
    Module      : Data.GraphViz.Types
-   Description : Definition of the GraphViz types.
+   Description : Definition of the Graphviz types.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module defines the overall types and methods that interact
-   with them for the GraphViz library.  The specifications are based
+   with them for the Graphviz library.  The specifications are based
    loosely upon the information available at:
      <http://graphviz.org/doc/info/lang.html>
 
@@ -35,7 +35,7 @@
      should ensure that you use a relatively simple node type (that
      is, it only covers a single line, etc.).
 
-   * Also, whilst GraphViz allows you to mix the types used for nodes,
+   * Also, whilst Graphviz allows you to mix the types used for nodes,
      this library requires\/assumes that they are all the same type.
 
    * 'DotEdge' defines an edge @(a, b)@ (with an edge going from @a@
@@ -59,7 +59,7 @@
    * Nodes cannot have Port values.
 
    * Cannot place items in an arbitrary order: in particular, this
-     means that it is not possible to use the normal GraphViz hack of
+     means that it is not possible to use the normal Graphviz hack of
      having graph attributes that do not apply to subgraphs\/clusters
      by listing them /after/ the subgraphs\/clusters.
 

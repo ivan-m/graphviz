@@ -9,7 +9,7 @@
    "Text.ParserCombinators.Poly.Lazy".
 
    Note that the 'ParseDot' instances for 'Bool', etc. match those
-   specified for use with GraphViz (e.g. non-zero integers are
+   specified for use with Graphviz (e.g. non-zero integers are
    equivalent to 'True').
 
    You should not be using this module; rather, it is here for

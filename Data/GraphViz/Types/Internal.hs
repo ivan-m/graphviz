@@ -48,7 +48,7 @@ isNumString str = case str of
                 ('.':ds) -> not (null ds) && all isDigit ds
                 _        -> False
 
--- | GraphViz requires double quotes to be explicitly escaped.
+-- | Graphviz requires double quotes to be explicitly escaped.
 escapeQuotes           :: String -> String
 escapeQuotes []        = []
 escapeQuotes ('"':str) = '\\':'"': escapeQuotes str

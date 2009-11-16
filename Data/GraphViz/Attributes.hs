@@ -1,12 +1,12 @@
 {- |
    Module      : Data.GraphViz.Attributes
-   Description : Definition of the GraphViz attributes.
+   Description : Definition of the Graphviz attributes.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module defines the various attributes that different parts of
-   a GraphViz graph can have.  These attributes are based on the
+   a Graphviz graph can have.  These attributes are based on the
    documentation found at:
      <http://graphviz.org/doc/info/attrs.html>
 
@@ -175,7 +175,7 @@ import Control.Monad(liftM)
 
      [@E@] Valid for Edges.
 
-   The /Default/ listings are those that the various GraphViz commands
+   The /Default/ listings are those that the various Graphviz commands
    use if that 'Attribute' isn't specified (in cases where this is
    /none/, this is equivalent to a 'Nothing' value; that is, no value
    is used).  The /Parsing Default/ listings represent what value is
@@ -860,7 +860,7 @@ usedByEdges _                = False
    Some 'Attribute's (mainly label-like ones) take a 'String' argument
    that allows for extra escape codes.  This library doesn't do any
    extra checks or special parsing for these escape codes, but usage
-   of 'EscString' rather than 'String' indicates that the GraphViz
+   of 'EscString' rather than 'String' indicates that the Graphviz
    tools will recognise these extra escape codes for these
    'Attribute's.
 

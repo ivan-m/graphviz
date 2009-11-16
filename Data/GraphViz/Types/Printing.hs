@@ -10,7 +10,7 @@
    combinators from that module.
 
    Note that the 'PrintDot' instances for 'Bool', etc. match those
-   specified for use with GraphViz.
+   specified for use with Graphviz.
 
    You should only be using this module if you are writing custom node
    types for use with "Data.GraphViz.Types".  For actual printing of
@@ -63,13 +63,13 @@ import qualified Text.PrettyPrint as PP
 -- | A type alias to indicate what is being produced.
 type DotCode = Doc
 
--- | Correctly render GraphViz output.
+-- | Correctly render Graphviz output.
 renderDot :: DotCode -> String
 renderDot = PP.renderStyle style'
     where
       style' = PP.style { PP.mode = PP.ZigZagMode }
 
--- | A class used to correctly print parts of the GraphViz Dot language.
+-- | A class used to correctly print parts of the Graphviz Dot language.
 --   Minimal implementation is 'unqtDot'.
 class PrintDot a where
     -- | The unquoted representation, for use when composing values to
@@ -101,7 +101,7 @@ instance PrintDot Int where
 
 instance PrintDot Double where
     -- If it's an "integral" double, then print as an integer.
-    -- This seems to match how GraphViz apps use Dot.
+    -- This seems to match how Graphviz apps use Dot.
     unqtDot d = if d == fromIntegral di
                 then int di
                 else double d

@@ -1,16 +1,16 @@
 {- |
    Module      : Data.GraphViz
-   Description : GraphViz bindings for Haskell.
+   Description : Graphviz bindings for Haskell.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This is the top-level module for the graphviz library.  It provides
    functions to convert 'Data.Graph.Inductive.Graph.Graph's into the
-   /Dot/ language used by the /GraphViz/ suite of programs (as well as
+   /Dot/ language used by the /Graphviz/ suite of programs (as well as
    a limited ability to perform the reverse operation).
 
-   Information about GraphViz and the Dot language can be found at:
+   Information about Graphviz and the Dot language can be found at:
    <http://graphviz.org/>
 
    Commands for converting graphs to Dot format have two options: one
@@ -29,7 +29,7 @@ module Data.GraphViz
     , NodeCluster(..)
     , clusterGraphToDot
     , clusterGraphToDot'
-      -- * Passing the graph through GraphViz.
+      -- * Passing the graph through Graphviz.
       -- ** Type aliases for @Node@ and @Edge@ labels.
     , AttributeNode
     , AttributeEdge
@@ -80,7 +80,7 @@ isDirected = not . isUndirected
 
 -- -----------------------------------------------------------------------------
 
--- | Convert a graph to GraphViz's /Dot/ format.  The 'Bool' value is
+-- | Convert a graph to Graphviz's /Dot/ format.  The 'Bool' value is
 --   'True' for directed graphs, 'False' otherwise.
 graphToDot :: (Graph gr) => Bool -> gr a b -> [GlobalAttributes]
               -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
@@ -93,7 +93,7 @@ graphToDot isDir graph gAttributes
         cID = const Nothing
         fmtClust = const []
 
--- | Convert a graph to GraphViz's /Dot/ format with automatic
+-- | Convert a graph to Graphviz's /Dot/ format with automatic
 --   direction detection.
 graphToDot'       :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
                      -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
@@ -147,7 +147,7 @@ clusterGraphToDot' gr = clusterGraphToDot (isDirected gr) gr
 type AttributeNode a = (Attributes, a)
 type AttributeEdge b = (Attributes, b)
 
--- | Run the appropriate GraphViz command on the graph to get
+-- | Run the appropriate Graphviz command on the graph to get
 --   positional information and then combine that information back
 --   into the original graph.  Note that for the edge information to
 --   be parsed properly when using multiple edges, each edge between
@@ -190,7 +190,7 @@ dotAttributes isDir gr dot
             edgeMap = Map.fromList $ map ( (edgeFromNodeID &&& edgeToNodeID)
                                            &&& edgeAttributes) es
 
--- | Run the appropriate GraphViz command on the graph to get
+-- | Run the appropriate Graphviz command on the graph to get
 --   positional information and then combine that information back
 --   into the original graph.
 --
@@ -200,7 +200,7 @@ graphToGraph'    :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
                     -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph' gr = graphToGraph (isDirected gr) gr
 
--- | Run the appropriate GraphViz command on the clustered graph to
+-- | Run the appropriate Graphviz command on the clustered graph to
 --   get positional information and then combine that information back
 --   into the original graph.  Note that for the edge information to
 --   be parsed properly when using multiple edges, each edge between
@@ -219,7 +219,7 @@ clusterGraphToGraph isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
     where
       dot = clusterGraphToDot isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
 
--- | Run the appropriate GraphViz command on the clustered graph to
+-- | Run the appropriate Graphviz command on the clustered graph to
 --   get positional information and then combine that information back
 --   into the original graph.
 --

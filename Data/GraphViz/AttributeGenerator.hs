@@ -1,6 +1,6 @@
 {- |
    Module      : Data.GraphViz.AttributeGenerator
-   Description : Definition of the GraphViz attributes.
+   Description : Definition of the Graphviz attributes.
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com

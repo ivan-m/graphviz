@@ -2,7 +2,7 @@
 
 {- |
    Module      : Data.GraphViz.Types.Clustering
-   Description : Definition of the clustering types for GraphViz.
+   Description : Definition of the clustering types for Graphviz.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com

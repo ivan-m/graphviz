@@ -1,11 +1,11 @@
 {- |
    Module      : Data.GraphViz.Commands
-   Description : Functions to run GraphViz commands.
+   Description : Functions to run Graphviz commands.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
-   This module defines functions to call the various GraphViz
+   This module defines functions to call the various Graphviz
    commands.  It is based upon code originally written for version 0.5
    of /Graphalyze/:
      <http://hackage.haskell.org/cgi-bin/hackage-scripts/package/Graphalyze-0.5>
@@ -15,20 +15,20 @@
    renderer and formatter.  Being able to determine which renderers
    and formatters are applicable for a specific 'GraphvizOutput' is
    not easy (there is no listing of available renderers or formatters
-   on the GraphViz website), and for the most part the default ones do
+   on the Graphviz website), and for the most part the default ones do
    the job well.
 -}
 module Data.GraphViz.Commands
-    ( -- * The different GraphViz tools available.
+    ( -- * The different Graphviz tools available.
       GraphvizCommand(..)
     , dirCommand
     , undirCommand
     , commandFor
-      -- * The possible outputs that GraphViz supports.
+      -- * The possible outputs that Graphviz supports.
     , GraphvizResult
     , GraphvizOutput(..)
     , GraphvizCanvas(..)
-      -- * Running GraphViz.
+      -- * Running Graphviz.
     , RunResult(..)
     , runGraphviz
     , runGraphvizCommand
@@ -60,8 +60,8 @@ import System.FilePath(FilePath, (<.>))
 
 -- -----------------------------------------------------------------------------
 
--- | The available GraphViz commands.  The following directions are
---   based upon those in the GraphViz man page (available online at
+-- | The available Graphviz commands.  The following directions are
+--   based upon those in the Graphviz man page (available online at
 --   <http://graphviz.org/pdf/dot.1.pdf>, or if installed on your
 --   system @man graphviz@).  Note that any command can be used on
 --   both directed and undirected graphs.
@@ -89,7 +89,7 @@ dirCommand = Dot
 undirCommand :: GraphvizCommand
 undirCommand = Neato
 
--- | The appropriate (default) GraphViz command for the given graph.
+-- | The appropriate (default) Graphviz command for the given graph.
 commandFor    :: DotGraph a -> GraphvizCommand
 commandFor dg = if directedGraph dg
                 then dirCommand
@@ -98,7 +98,7 @@ commandFor dg = if directedGraph dg
 -- -----------------------------------------------------------------------------
 
 -- | This class is for those data types that are valid options for the
---   GraphViz tools to use with the @-T@ argument.  Note that not all
+--   Graphviz tools to use with the @-T@ argument.  Note that not all
 --   valid output types are necessarily available on your system: to
 --   determine which actual formats are supported on your system, run
 --   @dot -T?@.  For more information, see:
@@ -107,7 +107,7 @@ class GraphvizResult o where
     outputCall :: o -> String
     isBinary :: o -> Bool
 
--- | The possible GraphViz output formats.  Note that which formats
+-- | The possible Graphviz output formats.  Note that which formats
 --   are available on your system depend on how it was built (e.g. if
 --   it wasn't built with PNG support, then using 'Png' will probably
 --   result in an error.  See the documentation for 'GraphvizResult'
@@ -347,7 +347,7 @@ graphvizWithHandle' cmd gr t f
             _           -> return $ Left $ othErr ++ err
     where
       notRunnable SomeException{} = return . Left $
-                                    "Unable to call the GraphViz command "
+                                    "Unable to call the Graphviz command "
                                     ++ showCmd cmd ++
                                     " with the arguments: "
                                     ++ unwords args
