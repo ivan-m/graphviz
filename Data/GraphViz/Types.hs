@@ -110,7 +110,7 @@ data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multipl
                            , graphID         :: Maybe GraphID
                            , graphStatements :: DotStatements a
                            }
-                  deriving (Eq, Show, Read)
+                  deriving (Eq, Ord, Show, Read)
 
 -- | A strict graph disallows multiple edges.
 makeStrict   :: DotGraph a -> DotGraph a
@@ -206,7 +206,7 @@ instance Functor DotGraph where
 data DotError a = GraphError Attribute
                 | NodeError (Maybe a) Attribute
                 | EdgeError (Maybe (a,a)) Attribute
-                deriving (Eq, Show, Read)
+                deriving (Eq, Ord, Show, Read)
 
 -- -----------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ data GraphID = Str String
              | Int Int
              | Dbl Double
              | HTML URL
-               deriving (Eq, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GraphID where
     unqtDot (Str str) = unqtDot str
@@ -252,7 +252,7 @@ data DotStatements a = DotStmts { attrStmts :: [GlobalAttributes]
                                 , nodeStmts :: [DotNode a]
                                 , edgeStmts :: [DotEdge a]
                                 }
-                     deriving (Eq, Show, Read)
+                     deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotStatements a) where
     unqtDot stmts = vcat [ toDot $ attrStmts stmts
@@ -340,7 +340,7 @@ statementEdges stmts = concatMap subGraphEdges (subGraphs stmts)
 data GlobalAttributes = GraphAttrs { attrs :: Attributes }
                       | NodeAttrs  { attrs :: Attributes }
                       | EdgeAttrs  { attrs :: Attributes }
-                        deriving (Eq, Show, Read)
+                        deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GlobalAttributes where
     unqtDot = printAttrBased printGlobAttrType attrs
@@ -397,7 +397,7 @@ data DotSubGraph a = DotSG { isCluster     :: Bool
                            , subGraphID    :: Maybe GraphID
                            , subGraphStmts :: DotStatements a
                            }
-                   deriving (Eq, Show, Read)
+                   deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotSubGraph a) where
     unqtDot = printStmtBased printSubGraphID subGraphStmts
@@ -484,7 +484,7 @@ subGraphEdges = statementEdges . subGraphStmts
 data DotNode a = DotNode { nodeID :: a
                          , nodeAttributes :: Attributes
                          }
-                 deriving (Eq, Show, Read)
+                 deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotNode a) where
     unqtDot = printAttrBased printNodeID nodeAttributes
@@ -523,7 +523,7 @@ data DotEdge a = DotEdge { edgeFromNodeID :: a
                          , directedEdge   :: Bool
                          , edgeAttributes :: Attributes
                          }
-             deriving (Eq, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotEdge a) where
     unqtDot = printAttrBased printEdgeID edgeAttributes

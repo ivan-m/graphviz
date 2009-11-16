@@ -328,7 +328,7 @@ data Attribute
     | Weight Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
     | Width Double                     -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
     | Z Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
-      deriving (Eq, Show, Read)
+      deriving (Eq, Ord, Show, Read)
 
 type Attributes = [Attribute]
 
@@ -898,7 +898,7 @@ type EscString = String
 --   properly, but for the purposes of this library the presence of
 --   these characters will make it harder to parse URLs.
 newtype URL = UStr { urlString :: EscString }
-    deriving (Eq, Show, Read)
+    deriving (Eq, Ord, Show, Read)
 
 instance PrintDot URL where
     unqtDot = wrap (char '<') (char '>')
@@ -930,7 +930,7 @@ instance ParseDot URL where
 --   been defined below as a convenience.  Parsing of the 5
 --   backward-compatible special cases is also supported.
 newtype ArrowType = AType [(ArrowModifier, ArrowShape)]
-    deriving (Eq, Show, Read)
+    deriving (Eq, Ord, Show, Read)
 
 box, crow, diamond, dotArrow, inv, noArrow, normal, tee, vee :: ArrowType
 oDot, invDot, invODot, oBox, oDiamond :: ArrowType
@@ -989,7 +989,7 @@ data ArrowShape = Box
                 | Normal
                 | Tee
                 | Vee
-                  deriving (Eq, Show, Read)
+                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot ArrowShape where
     unqtDot Box      = unqtDot "box"
@@ -1018,7 +1018,7 @@ instance ParseDot ArrowShape where
 data ArrowModifier = ArrMod { arrowFill :: ArrowFill
                             , arrowSide :: ArrowSide
                             }
-                     deriving (Eq, Show, Read)
+                     deriving (Eq, Ord, Show, Read)
 
 -- | Apply no modifications to an 'ArrowShape'.
 noMods :: ArrowModifier
@@ -1038,7 +1038,7 @@ instance ParseDot ArrowModifier where
 
 data ArrowFill = OpenArrow
                | FilledArrow
-                 deriving (Eq, Show, Read)
+                 deriving (Eq, Ord, Show, Read)
 
 instance PrintDot ArrowFill where
     unqtDot OpenArrow   = char 'o'
@@ -1056,7 +1056,7 @@ instance ParseDot ArrowFill where
 data ArrowSide = LeftSide
                | RightSide
                | BothSides
-                 deriving (Eq, Show, Read)
+                 deriving (Eq, Ord, Show, Read)
 
 instance PrintDot ArrowSide where
     unqtDot LeftSide  = char 'l'
@@ -1077,7 +1077,7 @@ instance ParseDot ArrowSide where
 
 data AspectType = RatioOnly Double
                 | RatioPassCount Double Int
-                  deriving (Eq, Show, Read)
+                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot AspectType where
     unqtDot (RatioOnly r)        = unqtDot r
@@ -1099,7 +1099,7 @@ instance ParseDot AspectType where
 -- -----------------------------------------------------------------------------
 
 data Rect = Rect Point Point
-            deriving (Eq, Show, Read)
+            deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Rect where
     unqtDot (Rect p1 p2) = commaDel p1 p2
@@ -1127,7 +1127,7 @@ data Color = RGB { red   :: Word8
                  , value      :: Double
                  }
            | ColorName String
-             deriving (Eq, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Color where
     unqtDot (RGB  r g b)     = hexColor [r,g,b]
@@ -1203,7 +1203,7 @@ instance ParseDot Color where
 data ClusterMode = Local
                  | Global
                  | NoCluster
-                   deriving (Eq, Show, Read)
+                   deriving (Eq, Ord, Show, Read)
 
 instance PrintDot ClusterMode where
     unqtDot Local     = unqtDot "local"
@@ -1221,7 +1221,7 @@ instance ParseDot ClusterMode where
 -- -----------------------------------------------------------------------------
 
 data DirType = Forward | Back | Both | NoDir
-               deriving (Eq, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance PrintDot DirType where
     unqtDot Forward = unqtDot "forward"
@@ -1242,7 +1242,7 @@ instance ParseDot DirType where
 data DEConstraints = EdgeConstraints
                    | NoConstraints
                    | HierConstraints
-                     deriving (Eq, Show, Read)
+                     deriving (Eq, Ord, Show, Read)
 
 instance PrintDot DEConstraints where
     unqtDot EdgeConstraints = unqtDot True
@@ -1259,7 +1259,7 @@ instance ParseDot DEConstraints where
 -- | Either a 'Double' or a 'Point'.
 data DPoint = DVal Double
             | PVal Point
-             deriving (Eq, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot DPoint where
     unqtDot (DVal d) = unqtDot d
@@ -1283,7 +1283,7 @@ data ModeType = Major
               | KK
               | Hier
               | IpSep
-                deriving (Eq, Show, Read)
+                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot ModeType where
     unqtDot Major = text "major"
@@ -1303,7 +1303,7 @@ instance ParseDot ModeType where
 data Model = ShortPath
            | SubSet
            | Circuit
-             deriving (Eq, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Model where
     unqtDot ShortPath = text "shortpath"
@@ -1320,7 +1320,7 @@ instance ParseDot Model where
 
 data Label = StrLabel EscString
            | URLLabel URL
-             deriving (Eq, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Label where
     unqtDot (StrLabel s) = unqtDot s
@@ -1342,7 +1342,7 @@ instance ParseDot Label where
 
 data Point = Point Int Int
            | PointD Double Double
-             deriving (Eq, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Point where
     unqtDot (Point  x y) = commaDel x y
@@ -1384,7 +1384,7 @@ data Overlap = KeepOverlaps
              | CompressOverlap
              | VpscOverlap
              | IpsepOverlap -- ^ Only when @mode == 'IpSep'@
-               deriving (Eq, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Overlap where
     unqtDot KeepOverlaps     = unqtDot True
@@ -1411,7 +1411,7 @@ instance ParseDot Overlap where
 
 data LayerRange = LRID LayerID
                 | LRS LayerID String LayerID
-                  deriving (Eq, Show, Read)
+                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerRange where
     unqtDot (LRID lid)      = unqtDot lid
@@ -1450,7 +1450,7 @@ parseLayerName = many1 $ satisfy (flip notElem defLayerSep)
 data LayerID = AllLayers
              | LRInt Int
              | LRName String
-               deriving (Eq, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerID where
     unqtDot AllLayers   = text "all"
@@ -1474,7 +1474,7 @@ instance ParseDot LayerID where
 
 -- | The list represent (Separator, Name)
 data LayerList = LL String [(String, String)]
-                 deriving (Eq, Show, Read)
+                 deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerList where
     unqtDot (LL l1 ols) = unqtDot l1 <> hsep (map subLL ols)
@@ -1496,7 +1496,7 @@ instance ParseDot LayerList where
 -- -----------------------------------------------------------------------------
 
 data OutputMode = BreadthFirst | NodesFirst | EdgesFirst
-                  deriving (Eq, Show, Read)
+                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot OutputMode where
     unqtDot BreadthFirst = text "breadthfirst"
@@ -1514,7 +1514,7 @@ instance ParseDot OutputMode where
 data Pack = DoPack
           | DontPack
           | PackMargin Int -- ^ If non-negative, then packs; otherwise doesn't.
-            deriving (Eq, Show, Read)
+            deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Pack where
     unqtDot DoPack         = unqtDot True
@@ -1535,7 +1535,7 @@ data PackMode = PackNode
               | PackArray Bool Bool (Maybe Int) -- ^ Sort by cols, sort
                                                 -- by user, number of
                                                 -- rows/cols
-                deriving (Eq, Show, Read)
+                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot PackMode where
     unqtDot PackNode           = text "node"
@@ -1574,7 +1574,7 @@ instance ParseDot PackMode where
 
 data Pos = PointPos Point
          | SplinePos [Spline]
-           deriving (Eq, Show, Read)
+           deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Pos where
     unqtDot (PointPos p)   = unqtDot p
@@ -1598,7 +1598,7 @@ data EdgeType = SplineEdges
               | NoEdges
               | PolyLine
               | CompoundEdge -- ^ fdp only
-                deriving (Eq, Show, Read)
+                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot EdgeType where
     unqtDot SplineEdges  = toDot True
@@ -1628,7 +1628,7 @@ instance ParseDot EdgeType where
 -- | Upper-case first character is major order;
 --   lower-case second character is minor order.
 data PageDir = Bl | Br | Tl | Tr | Rb | Rt | Lb | Lt
-               deriving (Eq, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance PrintDot PageDir where
     unqtDot Bl = text "BL"
@@ -1656,7 +1656,7 @@ instance ParseDot PageDir where
 -- | The number of points in the list must be equivalent to 1 mod 3;
 --   note that this is not checked.
 data Spline = Spline (Maybe Point) (Maybe Point) [Point]
-              deriving (Eq, Show, Read)
+              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Spline where
     unqtDot (Spline ms me ps) = addS . addE
@@ -1692,7 +1692,7 @@ instance ParseDot Spline where
 data QuadType = NormalQT
               | FastQT
               | NoQT
-                deriving (Eq, Show, Read)
+                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot QuadType where
     unqtDot NormalQT = text "normal"
@@ -1715,7 +1715,7 @@ instance ParseDot QuadType where
 data Root = IsCentral       -- ^ For Nodes only
           | NotCentral      -- ^ For Nodes only
           | NodeName String -- ^ For Graphs only
-            deriving (Eq, Show, Read)
+            deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Root where
     unqtDot IsCentral    = unqtDot True
@@ -1737,7 +1737,7 @@ data RankType = SameRank
               | SourceRank
               | MaxRank
               | SinkRank
-                deriving (Eq, Show, Read)
+                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot RankType where
     unqtDot SameRank   = text "same"
@@ -1760,7 +1760,7 @@ data RankDir = FromTop
              | FromLeft
              | FromBottom
              | FromRight
-               deriving (Eq, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance PrintDot RankDir where
     unqtDot FromTop    = text "TB"
@@ -1808,7 +1808,7 @@ data Shape
     | Folder
     | Box3D
     | Component
-      deriving (Eq, Show, Read)
+      deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Shape where
     unqtDot BoxShape      = text "box"
@@ -1884,7 +1884,7 @@ data SmoothType = NoSmooth
                 | RNG
                 | Spring
                 | TriangleSmooth
-                  deriving (Eq, Show, Read)
+                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot SmoothType where
     unqtDot NoSmooth       = text "none"
@@ -1910,7 +1910,7 @@ instance ParseDot SmoothType where
 data StartType = StartStyle STStyle
                | StartSeed Int
                | StartStyleSeed STStyle Int
-                 deriving (Eq, Show, Read)
+                 deriving (Eq, Ord, Show, Read)
 
 instance PrintDot StartType where
     unqtDot (StartStyle ss)       = unqtDot ss
@@ -1928,7 +1928,7 @@ instance ParseDot StartType where
 data STStyle = RegularStyle
              | SelfStyle
              | RandomStyle
-               deriving (Eq, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance PrintDot STStyle where
     unqtDot RegularStyle = text "regular"
@@ -1944,7 +1944,7 @@ instance ParseDot STStyle where
 -- -----------------------------------------------------------------------------
 
 data StyleItem = SItem StyleName [String]
-             deriving (Eq, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot StyleItem where
     unqtDot (SItem nm args)
@@ -1992,7 +1992,7 @@ data StyleName = Dashed    -- ^ Nodes and Edges
                | Diagonals -- ^ Nodes only
                | Rounded   -- ^ Nodes and Clusters
                | DD String -- ^ Device Dependent
-                 deriving (Eq, Show, Read)
+                 deriving (Eq, Ord, Show, Read)
 
 instance PrintDot StyleName where
     unqtDot Filled    = text "filled"
@@ -2031,7 +2031,7 @@ parseStyleName = do f <- noneOf ['(', ')', ',', ' ']
 -- -----------------------------------------------------------------------------
 
 newtype PortPos = PP CompassPoint
-    deriving (Eq, Show, Read)
+    deriving (Eq, Ord, Show, Read)
 
 instance PrintDot PortPos where
     unqtDot (PP cp) = unqtDot cp
@@ -2051,7 +2051,7 @@ data CompassPoint = North
                   | NorthWest
                   | CenterPoint
                   | NoCP
-                    deriving (Eq, Show, Read)
+                    deriving (Eq, Ord, Show, Read)
 
 instance PrintDot CompassPoint where
     unqtDot NorthEast   = text "ne"
@@ -2085,7 +2085,7 @@ data ViewPort = VP { wVal  :: Double
                    , zVal  :: Double
                    , focus :: Maybe FocusType
                    }
-                deriving (Eq, Show, Read)
+                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot ViewPort where
     unqtDot vp = maybe vs ((<>) (vs <> comma) . unqtDot)
@@ -2109,7 +2109,7 @@ instance ParseDot ViewPort where
 
 data FocusType = XY Point
                | NodeFocus String
-                 deriving (Eq, Show, Read)
+                 deriving (Eq, Ord, Show, Read)
 
 instance PrintDot FocusType where
     unqtDot (XY p)         = unqtDot p
@@ -2128,7 +2128,7 @@ instance ParseDot FocusType where
 data VerticalPlacement = VTop
                        | VCenter -- ^ Only valid for Nodes.
                        | VBottom
-                         deriving (Eq, Show, Read)
+                         deriving (Eq, Ord, Show, Read)
 
 instance PrintDot VerticalPlacement where
     unqtDot VTop    = char 't'
@@ -2148,7 +2148,7 @@ data ScaleType = UniformScale
                | FillWidth
                | FillHeight
                | FillBoth
-                 deriving (Eq, Show, Read)
+                 deriving (Eq, Ord, Show, Read)
 
 instance PrintDot ScaleType where
     unqtDot UniformScale = unqtDot True
@@ -2170,7 +2170,7 @@ instance ParseDot ScaleType where
 data Justification = JLeft
                    | JRight
                    | JCenter
-                     deriving (Eq, Show, Read)
+                     deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Justification where
     unqtDot JLeft   = char 'l'
@@ -2190,7 +2190,7 @@ data Ratios = AspectRatio Double
             | CompressRatio
             | ExpandRatio
             | AutoRatio
-              deriving (Eq, Show, Read)
+              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Ratios where
     unqtDot (AspectRatio r) = unqtDot r

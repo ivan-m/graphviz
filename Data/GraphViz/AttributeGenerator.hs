@@ -107,7 +107,7 @@ data VType = Dbl
            | URL
            | Bl
            | Cust String
-             deriving (Eq, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 vtype           :: VType -> Doc
 vtype Dbl       = text "Double"
@@ -132,7 +132,7 @@ createDefn att = hdr $+$ constructors $+$ derivs
                      . firstOthers equals (char '|')
                      . map createDefn
                      $ atts att
-      derivs = nest (tab + 2) $ text "deriving (Eq, Show, Read)"
+      derivs = nest (tab + 2) $ text "deriving (Eq, Ord, Show, Read)"
       createDefn a = [cnst a <+> vtypeCode a
                      , if isEmpty cm
                        then empty
