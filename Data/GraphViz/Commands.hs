@@ -18,7 +18,6 @@
    on the GraphViz website), and for the most part the default ones do
    the job well.
 -}
-
 module Data.GraphViz.Commands
     ( -- * The different GraphViz tools available.
       GraphvizCommand(..)
@@ -40,6 +39,9 @@ module Data.GraphViz.Commands
     )
     where
 
+-- Want to use the extensible-exception version
+import Prelude hiding (catch)
+
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Printing
 -- This is here just for Haddock linking purposes.
@@ -51,7 +53,7 @@ import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
 import Data.Array.IO(newArray_, hGetArray, hPutArray)
 import Control.Concurrent(forkIO, newEmptyMVar, putMVar, takeMVar)
-import Control.Exception.Extensible( SomeException(..), finally
+import Control.Exception.Extensible( SomeException(..), finally, catch
                                    , tryJust, bracket, evaluate, handle)
 import Control.Monad(liftM,unless)
 import System.FilePath(FilePath, (<.>))
@@ -294,9 +296,7 @@ addExtension cmd t fp = cmd t fp'
       fp' = fp <.> defaultExtension t
 
 -- | Run the chosen Graphviz command on this graph, but send the
---   result to the given handle rather than to a file.  The @'Handle'
---   -> 'IO' a@ function should close the 'Handle' once it is
---   finished.
+--   result to the given handle rather than to a file.
 --
 --   If the command was unsuccessful, then @Left error@ is returned.
 graphvizWithHandle :: (PrintDot n)  => GraphvizCommand
@@ -334,7 +334,7 @@ graphvizWithHandle' cmd gr t f
                                         `finally` putMVar mvDone ()
 
           _ <- forkIO $ signalWhenDone $ evaluate (length err)
-          _ <- forkIO $ signalWhenDone $ f outp >>= putMVar mvOutput
+          _ <- forkIO $ signalWhenDone $ f' mvOutput outp
           takeMVar mvDone
           takeMVar mvDone
 
@@ -343,8 +343,8 @@ graphvizWithHandle' cmd gr t f
           exitCode <- waitForProcess prc
 
           case exitCode of
-            ExitSuccess -> return $ Right output
-            _           -> return $ Left err
+            ExitSuccess -> return output
+            _           -> return $ Left $ othErr ++ err
     where
       notRunnable SomeException{} = return . Left $
                                     "Unable to call the GraphViz command "
@@ -353,6 +353,14 @@ graphvizWithHandle' cmd gr t f
                                     ++ unwords args
       cmd' = showCmd cmd
       args = ["-T" ++ outputCall t]
+
+      -- Augmenting the f function to let it work within the forkIO:
+      f' mv h = (f h >>= (putMVar mv . Right))
+                `catch`
+                (\SomeException{} -> putMVar mv $ Left fErr)
+      fErr = "Error re-directing the output from " ++ cmd'
+
+      othErr = "Error messages from " ++ cmd' ++ ":\n"
 
 -- | Run the chosen Graphviz command on this graph and render it using
 --   the given canvas type.
