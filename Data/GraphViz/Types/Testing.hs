@@ -157,8 +157,13 @@ instance Arbitrary PackMode where
 
 instance Arbitrary Pos where
   arbitrary = oneof [ liftM PointPos arbitrary
-                    , liftM SplinePos (listOf1 arbitrary)
+                      -- A single spline with only one point overall
+                      -- is just a point...
+                    , liftM SplinePos $ suchThat (listOf1 arbitrary) isValid
                     ]
+    where
+      isValid [Spline Nothing Nothing [_]] = False
+      isValid _                            = True
 
 instance Arbitrary Spline where
   arbitrary = liftM3 Spline arbitrary arbitrary
