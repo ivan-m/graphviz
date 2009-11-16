@@ -892,6 +892,11 @@ type EscString = String
 
 -- -----------------------------------------------------------------------------
 
+-- | No checks are placed on the content of a 'URL' value; however,
+--   you should ensure that it does not contain any \'@>@\' or \'@<@\'
+--   characters; Graphviz might care about escaping other characters
+--   properly, but for the purposes of this library the presence of
+--   these characters will make it harder to parse URLs.
 newtype URL = UStr { urlString :: EscString }
     deriving (Eq, Show, Read)
 
