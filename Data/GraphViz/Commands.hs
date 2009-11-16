@@ -286,9 +286,7 @@ runGraphvizCommand cmd gr t fp
                       hClose f
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
---   the provided 'FilePath' for the output file.  Note that for
---   'GraphvizOutput' values like 'Gtk' and 'Xlib', this is probably a
---   useless function since those don't actually produce any files...
+--   the provided 'FilePath' for the output file.
 addExtension          :: (GraphvizOutput -> FilePath -> IO a)
                          -> GraphvizOutput -> FilePath -> IO a
 addExtension cmd t fp = cmd t fp'
