@@ -1603,9 +1603,14 @@ instance PrintDot Pos where
     toDot (SplinePos ss) = toDot ss
 
 instance ParseDot Pos where
-    parseUnqt = oneOf [ liftM PointPos parseUnqt
-                      , liftM SplinePos parseUnqt
-                      ]
+    -- Have to be careful with this: if we try to parse points first,
+    -- then a spline with no start and end points will erroneously get
+    -- parsed as a point and then the parser will crash as it expects
+    -- a closing quote character...
+    parseUnqt = do splns <- parseUnqt
+                   case splns of
+                     [Spline Nothing Nothing [p]] -> return $ PointPos p
+                     _                            -> return $ SplinePos splns
 
     parse = quotedParse parseUnqt
 
@@ -1682,13 +1687,13 @@ instance PrintDot Spline where
                                . hsep
                                $ map unqtDot ps
         where
-          addP t = maybe id ((<>) . commaDel t)
+          addP t = maybe id ((<+>) . commaDel t)
           addS = addP 's' ms
           addE = addP 'e' me
 
     toDot = doubleQuotes . unqtDot
 
-    unqtListToDot = hsep . punctuate semi . map unqtDot
+    unqtListToDot = hcat . punctuate semi . map unqtDot
 
     listToDot = doubleQuotes . unqtListToDot
 
