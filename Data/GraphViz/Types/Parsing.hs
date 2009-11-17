@@ -211,7 +211,7 @@ stringRep   :: a -> String -> Parse a
 stringRep v = stringReps v . return
 
 stringReps      :: a -> [String] -> Parse a
-stringReps v ss = (oneOf $ map string ss) >> return v
+stringReps v ss = oneOf (map string ss) >> return v
 
 strings :: [String] -> Parse String
 strings = oneOf . map string
@@ -241,8 +241,8 @@ optionalQuoted p = p
                    `onFail`
                    quotedParse p
 
-quotedParse   :: Parse a -> Parse a
-quotedParse p = bracket parseQuote parseQuote p
+quotedParse :: Parse a -> Parse a
+quotedParse = bracket parseQuote parseQuote
 
 parseQuote :: Parse Char
 parseQuote = character quoteChar
