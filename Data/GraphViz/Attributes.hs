@@ -928,7 +928,7 @@ instance ParseDot URL where
     parseUnqt = liftM UStr
                 $ bracket (character open)
                           (character close)
-                          (liftM return $ satisfy ((/=) close))
+                          (many1 $ satisfy ((/=) close))
         where
           open = '<'
           close = '>'
