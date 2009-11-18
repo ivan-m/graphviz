@@ -1488,7 +1488,7 @@ instance ParseDot PackMode where
                       , stringRep PackGraph "graph"
                       , do string "array"
                            mcu <- optional $ do character '_'
-                                                many1 $ satisfy (not . isDigit)
+                                                many1 $ satisfy notNum
                            let c = hasCharacter mcu 'c'
                                u = hasCharacter mcu 'u'
                            mi <- optional parseUnqt
@@ -1496,6 +1496,7 @@ instance ParseDot PackMode where
                       ]
         where
           hasCharacter ms c = maybe False (elem c) ms
+          notNum c = not $ c == '-' || isDigit c
 
 -- -----------------------------------------------------------------------------
 
