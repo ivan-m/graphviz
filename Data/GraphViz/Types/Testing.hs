@@ -9,7 +9,7 @@
 module Data.GraphViz.Types.Testing where
 
 import Data.GraphViz.Types.Printing(PrintDot(..), renderDot)
-import Data.GraphViz.Types.Parsing(ParseDot(..), runParser)
+import Data.GraphViz.Types.Parsing(ParseDot(..), runParser, quoteChar)
 
 import Data.GraphViz.Attributes
 
@@ -419,12 +419,18 @@ instance Arbitrary LayerList where
                  oths <- listOf $ liftM2 (,) arbLayerSep arbLayerName
                  return $ LL fst oths
 
+  shrink (LL _ [(_,fst')]) = [LL fst' []]
+  shrink (LL fst oths) = map (LL fst) $ shrink oths
+
 instance Arbitrary LayerRange where
   arbitrary = oneof [ liftM  LRID arbitrary
                     , liftM3 LRS arbitrary arbLayerSep arbitrary
                     ]
     where
       arbLayerSep = listOf1 (elements defLayerSep)
+
+  shrink LRID{}        = []
+  shrink (LRS l1 _ l2) = [LRID l1, LRID l2]
 
 instance Arbitrary LayerID where
   arbitrary = oneof [ return AllLayers
@@ -593,9 +599,8 @@ arbLayerSep :: Gen [Char]
 arbLayerSep = listOf1 (elements defLayerSep)
 
 arbLayerName :: Gen String
-arbLayerName = suchThat arbString (all notLayerSep)
-    where
-      notLayerSep = flip notElem defLayerSep
+arbLayerName = suchThat arbString
+               $ liftM2 (&&) (all notLayerSep) (all ((/=) quoteChar))
 
 arbStyleName :: Gen String
 arbStyleName = suchThat arbString (all notBrackCom)

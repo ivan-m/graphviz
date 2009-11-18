@@ -54,6 +54,10 @@
    * The defined 'LayerSep' is not used to parse 'LayerRange' or
      'LayerList'; the default (@[' ', ':', '\t']@) is instead used.
 
+   * Quotes cannot be contained withing layer names (for one of the
+     'LayerID' values in 'LayerRange' or 'LayerList'), since they
+     cannot be properly parsed.
+
    * @SplineType@ has been replaced with @['Spline']@.
 
    * Only polygon-based 'Shape's are available.
@@ -155,6 +159,7 @@ module Data.GraphViz.Attributes
     , openMod
       -- * Other exported functions\/values
     , defLayerSep
+    , notLayerSep
     ) where
 
 import Data.GraphViz.Attributes.Colors
@@ -165,7 +170,7 @@ import Data.GraphViz.Types.Printing
 import Data.Char(isDigit)
 import Data.Maybe(isJust)
 import Control.Arrow(first)
-import Control.Monad(liftM)
+import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
 
@@ -1372,16 +1377,14 @@ defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
 
 parseLayerName :: Parse String
-parseLayerName = many1 $ satisfy notLayerSep
-
-parseLayerNameQ :: Parse String
-parseLayerNameQ = many1 (stringRep quoteChar "\\\""
-                         `onFail`
-                         satisfy notLayerSep)
+parseLayerName = many1 . satisfy
+                 $ liftM2 (&&) notLayerSep ((/=) quoteChar)
 
 notLayerSep :: Char -> Bool
 notLayerSep = flip notElem defLayerSep
 
+-- | You should not have any quote characters for the 'LRName' option,
+--   as it won't be parseable.
 data LayerID = AllLayers
              | LRInt Int
              | LRName String
@@ -1404,20 +1407,24 @@ instance ParseDot LayerID where
 
     parse = oneOf [ optionalQuoted $ stringRep AllLayers "all"
                   , liftM LRInt parse -- Has optionalQuoted in it
-                  , liftM LRName parseLayerNameQ
+                    -- Might be a non-quoted one...
+                  , optionalQuoted . liftM LRName $ parseLayerName
                   ]
 
--- | The list represent (Separator, Name)
+-- | The list represent (Separator, Name).  You should not have any
+--   quote characters for any of the 'String's, since there are
+--   parsing problems with them.
 data LayerList = LL String [(String, String)]
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerList where
-    unqtDot (LL l1 ols) = unqtDot l1 <> hsep (map subLL ols)
+    unqtDot (LL l1 ols) = unqtDot l1 <> hcat (map subLL ols)
         where
           subLL (s, l) = unqtDot s <> unqtDot l
 
+    toDot (LL l1 []) = toDot l1
     -- Might not need quotes, but probably will.
-    toDot = doubleQuotes . unqtDot
+    toDot ll         = doubleQuotes $ unqtDot ll
 
 instance ParseDot LayerList where
     parseUnqt = do l1 <- parseLayerName
@@ -1427,6 +1434,8 @@ instance ParseDot LayerList where
                    return $ LL l1 ols
 
     parse = quotedParse parseUnqt
+            `onFail`
+            liftM (flip LL []) (optionalQuoted parseLayerName)
 
 -- -----------------------------------------------------------------------------
 
