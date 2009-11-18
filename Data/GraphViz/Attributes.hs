@@ -1999,14 +1999,15 @@ instance PrintDot CompassPoint where
     unqtDot NoCP        = text "_"
 
 instance ParseDot CompassPoint where
-    parseUnqt = oneOf [ stringRep North "n"
-                      , stringRep NorthEast "ne"
-                      , stringRep East "e"
-                      , stringRep SouthEast "se"
-                      , stringRep South "s"
-                      , stringRep SouthWest "sw"
-                      , stringRep West "w"
+    -- Have to take care of longer parsing values first.
+    parseUnqt = oneOf [ stringRep NorthEast "ne"
                       , stringRep NorthWest "nw"
+                      , stringRep North "n"
+                      , stringRep SouthEast "se"
+                      , stringRep SouthWest "sw"
+                      , stringRep South "s"
+                      , stringRep East "e"
+                      , stringRep West "w"
                       , stringRep CenterPoint "c"
                       , stringRep NoCP "_"
                       ]
