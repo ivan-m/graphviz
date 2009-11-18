@@ -1196,13 +1196,13 @@ instance PrintDot DPoint where
     toDot (PVal p) = toDot p
 
 instance ParseDot DPoint where
-    parseUnqt = liftM DVal parseUnqt
+    parseUnqt = liftM PVal parseUnqt
                 `onFail`
-                liftM PVal parseUnqt
+                liftM DVal parseUnqt
 
-    parse = liftM DVal parse
+    parse = liftM PVal parse
             `onFail`
-            liftM PVal parse
+            liftM DVal parse
 
 -- -----------------------------------------------------------------------------
 
@@ -2053,7 +2053,7 @@ instance PrintDot FocusType where
 instance ParseDot FocusType where
     parseUnqt = liftM XY parseUnqt
                 `onFail`
-                liftM NodeFocus stringBlock
+                liftM NodeFocus parseUnqt
 
 -- -----------------------------------------------------------------------------
 
