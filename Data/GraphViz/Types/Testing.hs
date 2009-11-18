@@ -129,8 +129,8 @@ instance Arbitrary Attribute where
                       , liftM OutputOrder arbitrary
                       , liftM Overlap arbitrary
                       , liftM OverlapScaling arbitrary
-                      , liftM Pack arbitrary
                       , liftM PackMode arbitrary
+                      , liftM Pack arbitrary
                       , liftM Pad arbitrary
                       , liftM Page arbitrary
                       , liftM PageDir arbitrary
@@ -276,8 +276,8 @@ instance Arbitrary Attribute where
     shrink (OutputOrder v)        = map OutputOrder        $ shrink v
     shrink (Overlap v)            = map Overlap            $ shrink v
     shrink (OverlapScaling v)     = map OverlapScaling     $ shrink v
-    shrink (Pack v)               = map Pack               $ shrink v
     shrink (PackMode v)           = map PackMode           $ shrink v
+    shrink (Pack v)               = map Pack               $ shrink v
     shrink (Pad v)                = map Pad                $ shrink v
     shrink (Page v)               = map Page               $ shrink v
     shrink (PageDir v)            = map PageDir            $ shrink v

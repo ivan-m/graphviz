@@ -288,8 +288,8 @@ data Attribute
     | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
     | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
     | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
-    | Pack Pack                        -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
     | PackMode PackMode                -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
+    | Pack Pack                        -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
     | Pad DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
     | Page Point                       -- ^ /Valid for/: G
     | PageDir PageDir                  -- ^ /Valid for/: G; /Default/: @'BL'@
@@ -438,8 +438,8 @@ instance PrintDot Attribute where
     unqtDot (OutputOrder v)        = printField "outputorder" v
     unqtDot (Overlap v)            = printField "overlap" v
     unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
-    unqtDot (Pack v)               = printField "pack" v
     unqtDot (PackMode v)           = printField "packmode" v
+    unqtDot (Pack v)               = printField "pack" v
     unqtDot (Pad v)                = printField "pad" v
     unqtDot (Page v)               = printField "page" v
     unqtDot (PageDir v)            = printField "pagedir" v
@@ -587,8 +587,8 @@ instance ParseDot Attribute where
                       , liftM OutputOrder        $ parseField "outputorder"
                       , liftM Overlap            $ parseFieldDef KeepOverlaps "overlap"
                       , liftM OverlapScaling     $ parseField "overlap_scaling"
-                      , liftM Pack               $ parseFieldDef DoPack "pack"
                       , liftM PackMode           $ parseField "packmode"
+                      , liftM Pack               $ parseFieldDef DoPack "pack"
                       , liftM Pad                $ parseField "pad"
                       , liftM Page               $ parseField "page"
                       , liftM PageDir            $ parseField "pagedir"
@@ -702,8 +702,8 @@ usedByGraphs OrientationGraph{}   = True
 usedByGraphs OutputOrder{}        = True
 usedByGraphs Overlap{}            = True
 usedByGraphs OverlapScaling{}     = True
-usedByGraphs Pack{}               = True
 usedByGraphs PackMode{}           = True
+usedByGraphs Pack{}               = True
 usedByGraphs Pad{}                = True
 usedByGraphs Page{}               = True
 usedByGraphs PageDir{}            = True
