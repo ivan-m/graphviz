@@ -122,10 +122,10 @@ instance ParseDot Char where
             `onFail`
             quotedParse parseUnqt
 
-    parseUnqtList = oneOf [ numString
-                          , stringBlock
-                          , quotedString
-                          ]
+    -- Too many problems with using this within other parsers where
+    -- using numString or stringBlock will cause a parse failure.  As
+    -- such, this will successfully parse all un-quoted Strings.
+    parseUnqtList = quotedString
 
     parseList = oneOf [numString, stringBlock]
                 `onFail`
