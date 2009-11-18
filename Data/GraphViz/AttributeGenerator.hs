@@ -216,12 +216,10 @@ arbitraryInstance att = hdr $+$ fns
       ops = flip ($$) rbrack
             . asRows
             . firstOthers lbrack comma
-            . map arbAttr
+            . map (return . arbAttr)
             $ atts att
       aFunc = text "arbitrary"
-      arbAttr a = [ text "liftM" <+> cnst a
-                  , (<+>) dollar . arbitraryFor $ valtype a
-                  ]
+      arbAttr a = text "liftM" <+> cnst a <+> arbitraryFor' a
       sFn = asRows
             . map shrinkAttr
             $ atts att
@@ -235,8 +233,11 @@ arbitraryInstance att = hdr $+$ fns
 arbitraryFor                :: VType -> Doc
 arbitraryFor Strng          = text "arbString"
 arbitraryFor EStrng         = text "arbString"
-arbitraryFor (Cust ('[':_)) = text "listOf1" <+> text "arbitrary"
+arbitraryFor (Cust ('[':_)) = text "arbList"
 arbitraryFor _              = text "arbitrary"
+
+arbitraryFor' :: Attribute -> Doc
+arbitraryFor' = arbitraryFor . valtype
 
 usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code
 usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])

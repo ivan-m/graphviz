@@ -38,151 +38,151 @@ parseIt = runParser parse
 -- Defining Arbitrary instances
 
 instance Arbitrary Attribute where
-    arbitrary = oneof [ liftM Damping            $ arbitrary
-                      , liftM K                  $ arbitrary
-                      , liftM URL                $ arbitrary
-                      , liftM ArrowHead          $ arbitrary
-                      , liftM ArrowSize          $ arbitrary
-                      , liftM ArrowTail          $ arbitrary
-                      , liftM Aspect             $ arbitrary
-                      , liftM Bb                 $ arbitrary
-                      , liftM BgColor            $ arbitrary
-                      , liftM Center             $ arbitrary
-                      , liftM Charset            $ arbString
-                      , liftM ClusterRank        $ arbitrary
-                      , liftM Color              $ listOf1 arbitrary
-                      , liftM ColorScheme        $ arbitrary
-                      , liftM Comment            $ arbString
-                      , liftM Compound           $ arbitrary
-                      , liftM Concentrate        $ arbitrary
-                      , liftM Constraint         $ arbitrary
-                      , liftM Decorate           $ arbitrary
-                      , liftM DefaultDist        $ arbitrary
-                      , liftM Dim                $ arbitrary
-                      , liftM Dimen              $ arbitrary
-                      , liftM Dir                $ arbitrary
-                      , liftM DirEdgeConstraints $ arbitrary
-                      , liftM Distortion         $ arbitrary
-                      , liftM DPI                $ arbitrary
-                      , liftM EdgeURL            $ arbitrary
-                      , liftM EdgeTarget         $ arbString
-                      , liftM EdgeTooltip        $ arbString
-                      , liftM Epsilon            $ arbitrary
-                      , liftM ESep               $ arbitrary
-                      , liftM FillColor          $ arbitrary
-                      , liftM FixedSize          $ arbitrary
-                      , liftM FontColor          $ arbitrary
-                      , liftM FontName           $ arbString
-                      , liftM FontNames          $ arbString
-                      , liftM FontPath           $ arbString
-                      , liftM FontSize           $ arbitrary
-                      , liftM Group              $ arbString
-                      , liftM HeadURL            $ arbitrary
-                      , liftM HeadClip           $ arbitrary
-                      , liftM HeadLabel          $ arbitrary
-                      , liftM HeadPort           $ arbitrary
-                      , liftM HeadTarget         $ arbString
-                      , liftM HeadTooltip        $ arbString
-                      , liftM Height             $ arbitrary
-                      , liftM ID                 $ arbitrary
-                      , liftM Image              $ arbString
-                      , liftM ImageScale         $ arbitrary
-                      , liftM Label              $ arbitrary
-                      , liftM LabelURL           $ arbitrary
-                      , liftM LabelAngle         $ arbitrary
-                      , liftM LabelDistance      $ arbitrary
-                      , liftM LabelFloat         $ arbitrary
-                      , liftM LabelFontColor     $ arbitrary
-                      , liftM LabelFontName      $ arbString
-                      , liftM LabelFontSize      $ arbitrary
-                      , liftM LabelJust          $ arbitrary
-                      , liftM LabelLoc           $ arbitrary
-                      , liftM LabelTarget        $ arbString
-                      , liftM LabelTooltip       $ arbString
-                      , liftM Landscape          $ arbitrary
-                      , liftM Layer              $ arbitrary
-                      , liftM Layers             $ arbitrary
-                      , liftM LayerSep           $ arbString
-                      , liftM Layout             $ arbString
-                      , liftM Len                $ arbitrary
-                      , liftM Levels             $ arbitrary
-                      , liftM LevelsGap          $ arbitrary
-                      , liftM LHead              $ arbString
-                      , liftM LPos               $ arbitrary
-                      , liftM LTail              $ arbString
-                      , liftM Margin             $ arbitrary
-                      , liftM MaxIter            $ arbitrary
-                      , liftM MCLimit            $ arbitrary
-                      , liftM MinDist            $ arbitrary
-                      , liftM MinLen             $ arbitrary
-                      , liftM Mode               $ arbitrary
-                      , liftM Model              $ arbitrary
-                      , liftM Mosek              $ arbitrary
-                      , liftM NodeSep            $ arbitrary
-                      , liftM NoJustify          $ arbitrary
-                      , liftM Normalize          $ arbitrary
-                      , liftM Nslimit            $ arbitrary
-                      , liftM Nslimit1           $ arbitrary
-                      , liftM Ordering           $ arbString
-                      , liftM Orientation        $ arbitrary
-                      , liftM OrientationGraph   $ arbString
-                      , liftM OutputOrder        $ arbitrary
-                      , liftM Overlap            $ arbitrary
-                      , liftM OverlapScaling     $ arbitrary
-                      , liftM Pack               $ arbitrary
-                      , liftM PackMode           $ arbitrary
-                      , liftM Pad                $ arbitrary
-                      , liftM Page               $ arbitrary
-                      , liftM PageDir            $ arbitrary
-                      , liftM PenColor           $ arbitrary
-                      , liftM PenWidth           $ arbitrary
-                      , liftM Peripheries        $ arbitrary
-                      , liftM Pin                $ arbitrary
-                      , liftM Pos                $ arbitrary
-                      , liftM QuadTree           $ arbitrary
-                      , liftM Quantum            $ arbitrary
-                      , liftM Rank               $ arbitrary
-                      , liftM RankDir            $ arbitrary
-                      , liftM Ranksep            $ arbitrary
-                      , liftM Ratio              $ arbitrary
-                      , liftM Rects              $ arbitrary
-                      , liftM Regular            $ arbitrary
-                      , liftM ReMinCross         $ arbitrary
-                      , liftM RepulsiveForce     $ arbitrary
-                      , liftM Root               $ arbitrary
-                      , liftM Rotate             $ arbitrary
-                      , liftM SameHead           $ arbString
-                      , liftM SameTail           $ arbString
-                      , liftM SamplePoints       $ arbitrary
-                      , liftM SearchSize         $ arbitrary
-                      , liftM Sep                $ arbitrary
-                      , liftM Shape              $ arbitrary
-                      , liftM ShapeFile          $ arbString
-                      , liftM ShowBoxes          $ arbitrary
-                      , liftM Sides              $ arbitrary
-                      , liftM Size               $ arbitrary
-                      , liftM Skew               $ arbitrary
-                      , liftM Smoothing          $ arbitrary
-                      , liftM SortV              $ arbitrary
-                      , liftM Splines            $ arbitrary
-                      , liftM Start              $ arbitrary
-                      , liftM Style              $ listOf1 arbitrary
-                      , liftM StyleSheet         $ arbString
-                      , liftM TailURL            $ arbitrary
-                      , liftM TailClip           $ arbitrary
-                      , liftM TailLabel          $ arbitrary
-                      , liftM TailPort           $ arbitrary
-                      , liftM TailTarget         $ arbString
-                      , liftM TailTooltip        $ arbString
-                      , liftM Target             $ arbString
-                      , liftM Tooltip            $ arbString
-                      , liftM TrueColor          $ arbitrary
-                      , liftM Vertices           $ listOf1 arbitrary
-                      , liftM ViewPort           $ arbitrary
-                      , liftM VoroMargin         $ arbitrary
-                      , liftM Weight             $ arbitrary
-                      , liftM Width              $ arbitrary
-                      , liftM Z                  $ arbitrary
+    arbitrary = oneof [ liftM Damping arbitrary
+                      , liftM K arbitrary
+                      , liftM URL arbitrary
+                      , liftM ArrowHead arbitrary
+                      , liftM ArrowSize arbitrary
+                      , liftM ArrowTail arbitrary
+                      , liftM Aspect arbitrary
+                      , liftM Bb arbitrary
+                      , liftM BgColor arbitrary
+                      , liftM Center arbitrary
+                      , liftM Charset arbString
+                      , liftM ClusterRank arbitrary
+                      , liftM Color arbList
+                      , liftM ColorScheme arbitrary
+                      , liftM Comment arbString
+                      , liftM Compound arbitrary
+                      , liftM Concentrate arbitrary
+                      , liftM Constraint arbitrary
+                      , liftM Decorate arbitrary
+                      , liftM DefaultDist arbitrary
+                      , liftM Dim arbitrary
+                      , liftM Dimen arbitrary
+                      , liftM Dir arbitrary
+                      , liftM DirEdgeConstraints arbitrary
+                      , liftM Distortion arbitrary
+                      , liftM DPI arbitrary
+                      , liftM EdgeURL arbitrary
+                      , liftM EdgeTarget arbString
+                      , liftM EdgeTooltip arbString
+                      , liftM Epsilon arbitrary
+                      , liftM ESep arbitrary
+                      , liftM FillColor arbitrary
+                      , liftM FixedSize arbitrary
+                      , liftM FontColor arbitrary
+                      , liftM FontName arbString
+                      , liftM FontNames arbString
+                      , liftM FontPath arbString
+                      , liftM FontSize arbitrary
+                      , liftM Group arbString
+                      , liftM HeadURL arbitrary
+                      , liftM HeadClip arbitrary
+                      , liftM HeadLabel arbitrary
+                      , liftM HeadPort arbitrary
+                      , liftM HeadTarget arbString
+                      , liftM HeadTooltip arbString
+                      , liftM Height arbitrary
+                      , liftM ID arbitrary
+                      , liftM Image arbString
+                      , liftM ImageScale arbitrary
+                      , liftM Label arbitrary
+                      , liftM LabelURL arbitrary
+                      , liftM LabelAngle arbitrary
+                      , liftM LabelDistance arbitrary
+                      , liftM LabelFloat arbitrary
+                      , liftM LabelFontColor arbitrary
+                      , liftM LabelFontName arbString
+                      , liftM LabelFontSize arbitrary
+                      , liftM LabelJust arbitrary
+                      , liftM LabelLoc arbitrary
+                      , liftM LabelTarget arbString
+                      , liftM LabelTooltip arbString
+                      , liftM Landscape arbitrary
+                      , liftM Layer arbitrary
+                      , liftM Layers arbitrary
+                      , liftM LayerSep arbString
+                      , liftM Layout arbString
+                      , liftM Len arbitrary
+                      , liftM Levels arbitrary
+                      , liftM LevelsGap arbitrary
+                      , liftM LHead arbString
+                      , liftM LPos arbitrary
+                      , liftM LTail arbString
+                      , liftM Margin arbitrary
+                      , liftM MaxIter arbitrary
+                      , liftM MCLimit arbitrary
+                      , liftM MinDist arbitrary
+                      , liftM MinLen arbitrary
+                      , liftM Mode arbitrary
+                      , liftM Model arbitrary
+                      , liftM Mosek arbitrary
+                      , liftM NodeSep arbitrary
+                      , liftM NoJustify arbitrary
+                      , liftM Normalize arbitrary
+                      , liftM Nslimit arbitrary
+                      , liftM Nslimit1 arbitrary
+                      , liftM Ordering arbString
+                      , liftM Orientation arbitrary
+                      , liftM OrientationGraph arbString
+                      , liftM OutputOrder arbitrary
+                      , liftM Overlap arbitrary
+                      , liftM OverlapScaling arbitrary
+                      , liftM Pack arbitrary
+                      , liftM PackMode arbitrary
+                      , liftM Pad arbitrary
+                      , liftM Page arbitrary
+                      , liftM PageDir arbitrary
+                      , liftM PenColor arbitrary
+                      , liftM PenWidth arbitrary
+                      , liftM Peripheries arbitrary
+                      , liftM Pin arbitrary
+                      , liftM Pos arbitrary
+                      , liftM QuadTree arbitrary
+                      , liftM Quantum arbitrary
+                      , liftM Rank arbitrary
+                      , liftM RankDir arbitrary
+                      , liftM Ranksep arbitrary
+                      , liftM Ratio arbitrary
+                      , liftM Rects arbitrary
+                      , liftM Regular arbitrary
+                      , liftM ReMinCross arbitrary
+                      , liftM RepulsiveForce arbitrary
+                      , liftM Root arbitrary
+                      , liftM Rotate arbitrary
+                      , liftM SameHead arbString
+                      , liftM SameTail arbString
+                      , liftM SamplePoints arbitrary
+                      , liftM SearchSize arbitrary
+                      , liftM Sep arbitrary
+                      , liftM Shape arbitrary
+                      , liftM ShapeFile arbString
+                      , liftM ShowBoxes arbitrary
+                      , liftM Sides arbitrary
+                      , liftM Size arbitrary
+                      , liftM Skew arbitrary
+                      , liftM Smoothing arbitrary
+                      , liftM SortV arbitrary
+                      , liftM Splines arbitrary
+                      , liftM Start arbitrary
+                      , liftM Style arbList
+                      , liftM StyleSheet arbString
+                      , liftM TailURL arbitrary
+                      , liftM TailClip arbitrary
+                      , liftM TailLabel arbitrary
+                      , liftM TailPort arbitrary
+                      , liftM TailTarget arbString
+                      , liftM TailTooltip arbString
+                      , liftM Target arbString
+                      , liftM Tooltip arbString
+                      , liftM TrueColor arbitrary
+                      , liftM Vertices arbList
+                      , liftM ViewPort arbitrary
+                      , liftM VoroMargin arbitrary
+                      , liftM Weight arbitrary
+                      , liftM Width arbitrary
+                      , liftM Z arbitrary
                       ]
 
     shrink (Damping v)            = map Damping            $ shrink v
@@ -346,7 +346,7 @@ instance Arbitrary URL where
 instance Arbitrary ArrowType where
   arbitrary = liftM AType
               -- Arrow specifications have between 1 and 4 elements.
-              $ resize 4 (listOf1 arbitrary)
+              $ resize 4 arbList
 
 instance Arbitrary ArrowShape where
   arbitrary = arbBounded
@@ -453,7 +453,7 @@ instance Arbitrary Pos where
   arbitrary = oneof [ liftM PointPos arbitrary
                       -- A single spline with only one point overall
                       -- is just a point...
-                    , liftM SplinePos $ suchThat (listOf1 arbitrary) isValid
+                    , liftM SplinePos $ suchThat arbList isValid
                     ]
     where
       isValid [Spline Nothing Nothing [_]] = False
@@ -585,7 +585,7 @@ posArbitrary :: (Arbitrary a, Num a, Ord a) => Gen a
 posArbitrary = liftM fromPositive arbitrary
 
 arbString :: Gen String
-arbString = listOf1 arbitrary
+arbString = arbList
 
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]
@@ -602,3 +602,6 @@ arbStyleName :: Gen String
 arbStyleName = suchThat arbString (all notBrackCom)
   where
     notBrackCom = flip notElem ['(', ')', ',', ' ']
+
+arbList :: (Arbitrary a) => Gen [a]
+arbList = listOf1 arbitrary
