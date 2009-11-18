@@ -227,7 +227,7 @@ arbitraryInstance att = hdr $+$ fns
       var = char 'v'
       shrinkAttr a = [ sFunc <+> parens (cnst a <+> var)
                      , equals <+> text "map" <+> cnst a
-                     , dollar <+> sFunc <+> var
+                     , dollar <+> shrinkFor (valtype a) <+> var
                      ]
 
 arbitraryFor                :: VType -> Doc
@@ -238,6 +238,10 @@ arbitraryFor _              = text "arbitrary"
 
 arbitraryFor' :: Attribute -> Doc
 arbitraryFor' = arbitraryFor . valtype
+
+shrinkFor :: VType -> Doc
+shrinkFor (Cust ('[':_)) = text "nonEmptyShrinks"
+shrinkFor _              = text "shrink" -- OK to have empty Strings though
 
 usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code
 usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])

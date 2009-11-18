@@ -197,7 +197,7 @@ instance Arbitrary Attribute where
     shrink (Center v)             = map Center             $ shrink v
     shrink (Charset v)            = map Charset            $ shrink v
     shrink (ClusterRank v)        = map ClusterRank        $ shrink v
-    shrink (Color v)              = map Color              $ shrink v
+    shrink (Color v)              = map Color              $ nonEmptyShrinks v
     shrink (ColorScheme v)        = map ColorScheme        $ shrink v
     shrink (Comment v)            = map Comment            $ shrink v
     shrink (Compound v)           = map Compound           $ shrink v
@@ -313,7 +313,7 @@ instance Arbitrary Attribute where
     shrink (SortV v)              = map SortV              $ shrink v
     shrink (Splines v)            = map Splines            $ shrink v
     shrink (Start v)              = map Start              $ shrink v
-    shrink (Style v)              = map Style              $ shrink v
+    shrink (Style v)              = map Style              $ nonEmptyShrinks v
     shrink (StyleSheet v)         = map StyleSheet         $ shrink v
     shrink (TailURL v)            = map TailURL            $ shrink v
     shrink (TailClip v)           = map TailClip           $ shrink v
@@ -324,14 +324,13 @@ instance Arbitrary Attribute where
     shrink (Target v)             = map Target             $ shrink v
     shrink (Tooltip v)            = map Tooltip            $ shrink v
     shrink (TrueColor v)          = map TrueColor          $ shrink v
-    shrink (Vertices v)           = map Vertices           $ shrink v
+    shrink (Vertices v)           = map Vertices           $ nonEmptyShrinks v
     shrink (ViewPort v)           = map ViewPort           $ shrink v
     shrink (VoroMargin v)         = map VoroMargin         $ shrink v
     shrink (Weight v)             = map Weight             $ shrink v
     shrink (Width v)              = map Width              $ shrink v
     shrink (Z v)                  = map Z                  $ shrink v
 {- delete to here -}
-
 
 instance Arbitrary Word8 where
   arbitrary = arbitraryBoundedIntegral
@@ -605,3 +604,6 @@ arbStyleName = suchThat arbString (all notBrackCom)
 
 arbList :: (Arbitrary a) => Gen [a]
 arbList = listOf1 arbitrary
+
+nonEmptyShrinks :: (Arbitrary a) => [a] -> [[a]]
+nonEmptyShrinks = filter (not . null) . shrink
