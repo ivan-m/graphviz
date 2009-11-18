@@ -25,6 +25,10 @@ import Data.Word(Word8)
 printParse   :: (ParseDot a, PrintDot a, Eq a) => a -> Bool
 printParse a = fst (runParser parse . renderDot $ toDot a) == a
 
+printParseList    :: (ParseDot a, PrintDot a, Eq a) => [a] -> Property
+printParseList as =  not (null as)
+                     ==> fst (runParser parse . renderDot $ toDot as) == as
+
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances
 
