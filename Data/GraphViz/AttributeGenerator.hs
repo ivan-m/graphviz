@@ -14,11 +14,18 @@ import Text.PrettyPrint
 import Data.List(transpose)
 import Data.Maybe(catMaybes, isJust, fromJust)
 import Control.Monad(liftM)
+import System.Environment(getArgs)
 
 type Code = Doc
 
+-- If any args are passed in, then generate the Arbitrary instance
+-- instead of the definition.
 main :: IO ()
-main = print $ genCode att
+main = do args <- getArgs
+          let f = if null args
+                  then genCode
+                  else genArbitrary
+          print $ f att
     where
       att = AS { tpNm = text "Attribute"
                , atts = attributes
@@ -37,6 +44,9 @@ genCode att = vsep $ map ($att) cds
             , usedByFunc "Nodes" forNodes
             , usedByFunc "Edges" forEdges
             ]
+
+genArbitrary :: Atts -> Doc
+genArbitrary = arbitraryInstance
 
 -- -----------------------------------------------------------------------------
 
@@ -184,7 +194,7 @@ parseInstance att = hdr $+$ nest tab fns
             $ atts att
       pFunc = text "parseUnqt"
       parseAttr a = [ text "liftM" <+> cnst a
-                    , char '$' <+> pfFunc a
+                    , dollar <+> pfFunc a
                     ]
       pType b a
           | valtype a == Bl     = pFld <> text "Bool"
@@ -196,6 +206,37 @@ parseInstance att = hdr $+$ nest tab fns
       pfFunc a = case map doubleQuotes $ parseNames a of
                    [n] -> pType False a <+> n
                    ns  -> pType True  a <+> docList ns
+
+arbitraryInstance     :: Atts -> Code
+arbitraryInstance att = hdr $+$ fns
+    where
+      hdr = text "instance" <+> text "Arbitrary" <+> tpNm att <+> text "where"
+      fns = nest tab $ vsep [aFn, sFn]
+      aFn = aFunc <+> equals <+> text "oneof" <+> ops
+      ops = flip ($$) rbrack
+            . asRows
+            . firstOthers lbrack comma
+            . map arbAttr
+            $ atts att
+      aFunc = text "arbitrary"
+      arbAttr a = [ text "liftM" <+> cnst a
+                  , (<+>) dollar . arbitraryFor $ valtype a
+                  ]
+      sFn = asRows
+            . map shrinkAttr
+            $ atts att
+      sFunc = text "shrink"
+      var = char 'v'
+      shrinkAttr a = [ sFunc <+> parens (cnst a <+> var)
+                     , equals <+> text "map" <+> cnst a
+                     , dollar <+> sFunc <+> var
+                     ]
+
+arbitraryFor                :: VType -> Doc
+arbitraryFor Strng          = text "arbString"
+arbitraryFor EStrng         = text "arbString"
+arbitraryFor (Cust ('[':_)) = text "listOf1" <+> text "arbitrary"
+arbitraryFor _              = text "arbitrary"
 
 usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code
 usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])
@@ -419,3 +460,9 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
 attrs = take 10 $ drop 5 attributes
 
 attrs' = AS (text "Attribute") attrs
+
+bool       :: a -> a -> Bool -> a
+bool f t b = if b then t else f
+
+dollar :: Doc
+dollar = char '$'
