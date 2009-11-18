@@ -277,12 +277,12 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "ArrowTail" ["arrowtail"] "E" (Cust "ArrowType") Nothing (Just "@'normal'@") Nothing Nothing
              , makeAttr "Aspect" ["aspect"] "G" (Cust "AspectType") Nothing Nothing Nothing (Just "dot only")
              , makeAttr "Bb" ["bb"] "G" (Cust "Rect") Nothing Nothing Nothing (Just "write only")
-             , makeAttr "BgColor" ["bgcolor"] "GC" (Cust "Color") Nothing (Just "none") Nothing Nothing
+             , makeAttr "BgColor" ["bgcolor"] "GC" (Cust "Color") Nothing (Just "X11Color 'Transparent'") Nothing Nothing
              , makeAttr "Center" ["center"] "G" Bl (Just "True") (Just "@'False'@") Nothing Nothing
              , makeAttr "Charset" ["charset"] "G" Strng Nothing (Just "@\\\"UTF-8\\\"@") Nothing Nothing
              , makeAttr "ClusterRank" ["clusterrank"] "G" (Cust "ClusterMode") Nothing (Just "@'Local'@") Nothing (Just "dot only")
-             , makeAttr "Color" ["color"] "ENC" (Cust "[Color]") Nothing (Just "@black@") Nothing Nothing
-             , makeAttr "ColorScheme" ["colorscheme"] "ENCG" Strng Nothing (Just "@\\\"\\\"@") Nothing Nothing
+             , makeAttr "Color" ["color"] "ENC" (Cust "[Color]") Nothing (Just "@X11Color 'Black'@") Nothing Nothing
+             , makeAttr "ColorScheme" ["colorscheme"] "ENCG" (Cust "ColorScheme") Nothing (Just "@'X11'@") Nothing Nothing
              , makeAttr "Comment" ["comment"] "ENG" Strng Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "Compound" ["compound"] "G" Bl (Just "True") (Just "@'False'@") Nothing (Just "dot only")
              , makeAttr "Concentrate" ["concentrate"] "G" Bl (Just "True") (Just "@'False'@") Nothing Nothing
@@ -300,9 +300,9 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "EdgeTooltip" ["edgetooltip"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
              , makeAttr "Epsilon" ["epsilon"] "G" Dbl Nothing (Just "@.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@)") Nothing (Just "neato only")
              , makeAttr "ESep" ["esep"] "G" (Cust "DPoint") Nothing (Just "@+3@") Nothing (Just "not dot")
-             , makeAttr "FillColor" ["fillcolor"] "NC" (Cust "Color") Nothing (Just "@lightgrey@ (nodes), @black@ (clusters)") Nothing Nothing
+             , makeAttr "FillColor" ["fillcolor"] "NC" (Cust "Color") Nothing (Just "@X11Color 'LightGray'@ (nodes), @X11Color 'Black'@ (clusters)") Nothing Nothing
              , makeAttr "FixedSize" ["fixedsize"] "N" Bl (Just "True") (Just "@'False'@") Nothing Nothing
-             , makeAttr "FontColor" ["fontcolor"] "ENGC" (Cust "Color") Nothing (Just "@black@") Nothing Nothing
+             , makeAttr "FontColor" ["fontcolor"] "ENGC" (Cust "Color") Nothing (Just "@X11Color 'Black'@") Nothing Nothing
              , makeAttr "FontName" ["fontname"] "ENGC" Strng Nothing (Just "@\\\"Times-Roman\\\"@") Nothing Nothing
              , makeAttr "FontNames" ["fontnames"] "G" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg only")
              , makeAttr "FontPath" ["fontpath"] "G" Strng Nothing (Just "system-dependent") Nothing Nothing
@@ -323,7 +323,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "LabelAngle" ["labelangle"] "E" Dbl Nothing (Just "@-25.0@") (Just "@-180.0@") Nothing
              , makeAttr "LabelDistance" ["labeldistance"] "E" Dbl Nothing (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "LabelFloat" ["labelfloat"] "E" Bl (Just "True") (Just "@'False'@") Nothing Nothing
-             , makeAttr "LabelFontColor" ["labelfontcolor"] "E" (Cust "Color") Nothing (Just "@black@") Nothing Nothing
+             , makeAttr "LabelFontColor" ["labelfontcolor"] "E" (Cust "Color") Nothing (Just "@X11Color 'Black'@") Nothing Nothing
              , makeAttr "LabelFontName" ["labelfontname"] "E" Strng Nothing (Just "@\\\"Times-Roman\\\"@") Nothing Nothing
              , makeAttr "LabelFontSize" ["labelfontsize"] "E" Dbl Nothing (Just "@14.0@") (Just "@1.0@") Nothing
              , makeAttr "LabelJust" ["labeljust"] "GC" (Cust "Justification") Nothing (Just "@'JCenter'@") Nothing Nothing
@@ -365,7 +365,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "Pad" ["pad"] "G" (Cust "DPoint") Nothing (Just "@'DVal' 0.0555@ (4 points)") Nothing Nothing
              , makeAttr "Page" ["page"] "G" (Cust "Point") Nothing Nothing Nothing Nothing
              , makeAttr "PageDir" ["pagedir"] "G" (Cust "PageDir") Nothing (Just "@'BL'@") Nothing Nothing
-             , makeAttr "PenColor" ["pencolor"] "C" (Cust "Color") Nothing (Just "@black@") Nothing Nothing
+             , makeAttr "PenColor" ["pencolor"] "C" (Cust "Color") Nothing (Just "@X11Color 'Black'@") Nothing Nothing
              , makeAttr "PenWidth" ["penwidth"] "CNE" Dbl Nothing (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "Peripheries" ["peripheries"] "NC" Integ Nothing (Just "shape default (nodes), @1@ (clusters)") (Just "0") Nothing
              , makeAttr "Pin" ["pin"] "N" Bl (Just "True") (Just "@'False'@") Nothing (Just "fdp, neato only")

@@ -56,7 +56,10 @@ import Text.PrettyPrint hiding ( Style(..)
                                , renderStyle
                                , fullRender
                                )
+
 import qualified Text.PrettyPrint as PP
+
+import Data.Word(Word8)
 
 -- -----------------------------------------------------------------------------
 
@@ -98,6 +101,9 @@ class PrintDot a where
 
 instance PrintDot Int where
     unqtDot = int
+
+instance PrintDot Word8 where
+    unqtDot = int . fromIntegral
 
 instance PrintDot Double where
     -- If it's an "integral" double, then print as an integer.

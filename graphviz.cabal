@@ -44,6 +44,7 @@ Library {
                            Data.GraphViz.Types.Printing
                            Data.GraphViz.Commands
                            Data.GraphViz.Attributes
+                           Data.GraphViz.Attributes.Colors
 
         Other-Modules:     Data.GraphViz.Types.Clustering
                            Data.GraphViz.Types.Internal

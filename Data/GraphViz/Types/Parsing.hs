@@ -72,6 +72,7 @@ import Data.Char( digitToInt
 import Data.Function(on)
 import Data.Maybe(isJust, fromMaybe)
 import Data.Ratio((%))
+import Data.Word(Word8)
 import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
@@ -97,6 +98,9 @@ class ParseDot a where
 
 instance ParseDot Int where
     parseUnqt = parseInt'
+
+instance ParseDot Word8 where
+    parseUnqt = parseInt
 
 instance ParseDot Double where
     parseUnqt = parseFloat'

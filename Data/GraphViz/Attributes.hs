@@ -26,10 +26,6 @@
      /A/ to /B/, then /A/ is the tail node and /B/ is the head node
      (since /A/ is at the tail end of the arrow).
 
-   * When parsing named 'Color' values, the entire value entered is
-     kept as-is; this library as yet has no understanding of different
-     color schemes, etc.
-
    * ColorList and PointfList are defined as actual lists (but
      'LayerList' is not).  Note that for the Color 'Attribute' for
      node values, only a single Color is valid; edges are allowed
@@ -88,7 +84,6 @@ module Data.GraphViz.Attributes
     , ArrowType(..)
     , AspectType(..)
     , Rect(..)
-    , Color(..)
     , ClusterMode(..)
     , DirType(..)
     , DEConstraints(..)
@@ -126,6 +121,7 @@ module Data.GraphViz.Attributes
     , ScaleType(..)
     , Justification(..)
     , Ratios(..)
+    , module Data.GraphViz.Attributes.Colors
       -- * Types representing the Dot grammar for @ArrowType@.
     , ArrowShape(..)
     , ArrowModifier(..)
@@ -161,14 +157,13 @@ module Data.GraphViz.Attributes
     , defLayerSep
     ) where
 
+import Data.GraphViz.Attributes.Colors
 import Data.GraphViz.Types.Internal
 import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
 
-import Data.Char(isDigit, isHexDigit)
-import Data.Maybe(isJust, maybe)
-import Data.Word(Word8)
-import Numeric(showHex, readHex)
+import Data.Char(isDigit)
+import Data.Maybe(isJust)
 import Control.Arrow(first)
 import Control.Monad(liftM)
 
@@ -210,12 +205,12 @@ data Attribute
     | ArrowTail ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
     | Aspect AspectType                -- ^ /Valid for/: G; /Notes/: dot only
     | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
-    | BgColor Color                    -- ^ /Valid for/: GC; /Default/: none
+    | BgColor Color                    -- ^ /Valid for/: GC; /Default/: @X11Color 'Transparent'@
     | Center Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
     | Charset String                   -- ^ /Valid for/: G; /Default/: @\"UTF-8\"@
     | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
-    | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @black@
-    | ColorScheme String               -- ^ /Valid for/: ENCG; /Default/: @\"\"@
+    | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @[X11Color 'Black']@
+    | ColorScheme ColorScheme          -- ^ /Valid for/: ENCG; /Default/: @'X11'@
     | Comment String                   -- ^ /Valid for/: ENG; /Default/: @\"\"@
     | Compound Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
     | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -233,9 +228,9 @@ data Attribute
     | EdgeTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Epsilon Double                   -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
     | ESep DPoint                      -- ^ /Valid for/: G; /Default/: @+3@; /Notes/: not dot
-    | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @lightgrey@ (nodes), @black@ (clusters)
+    | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @X11Color 'LightGray'@ (nodes), @X11Color 'Black'@ (clusters)
     | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
-    | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: @black@
+    | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: @X11Color 'Black'@
     | FontName String                  -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
     | FontNames String                 -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
     | FontPath String                  -- ^ /Valid for/: G; /Default/: system-dependent
@@ -256,7 +251,7 @@ data Attribute
     | LabelAngle Double                -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
     | LabelDistance Double             -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
     | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-    | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: @black@
+    | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: @X11Color 'Black'@
     | LabelFontName String             -- ^ /Valid for/: E; /Default/: @\"Times-Roman\"@
     | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: @14.0@; /Minimum/: @1.0@
     | LabelJust Justification          -- ^ /Valid for/: GC; /Default/: @'JCenter'@
@@ -298,7 +293,7 @@ data Attribute
     | Pad DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
     | Page Point                       -- ^ /Valid for/: G
     | PageDir PageDir                  -- ^ /Valid for/: G; /Default/: @'BL'@
-    | PenColor Color                   -- ^ /Valid for/: C; /Default/: @black@
+    | PenColor Color                   -- ^ /Valid for/: C; /Default/: @X11Color 'Black'@
     | PenWidth Double                  -- ^ /Valid for/: CNE; /Default/: @1.0@; /Minimum/: @0.0@
     | Peripheries Int                  -- ^ /Valid for/: NC; /Default/: shape default (nodes), @1@ (clusters); /Minimum/: 0
     | Pin Bool                         -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: fdp, neato only
@@ -1129,93 +1124,6 @@ instance ParseDot Rect where
     parseUnqt = liftM (uncurry Rect) commaSepUnqt
 
     parse = quotedParse parseUnqt
-
--- -----------------------------------------------------------------------------
-
-data Color = RGB { red   :: Word8
-                 , green :: Word8
-                 , blue  :: Word8
-                 }
-           | RGBA { red   :: Word8
-                  , green :: Word8
-                  , blue  :: Word8
-                  , alpha :: Word8
-                  }
-           | HSV { hue        :: Double
-                 , saturation :: Double
-                 , value      :: Double
-                 }
-           | ColorName String
-             deriving (Eq, Ord, Show, Read)
-
-instance PrintDot Color where
-    unqtDot (RGB  r g b)     = hexColor [r,g,b]
-    unqtDot (RGBA r g b a)   = hexColor [r,g,b,a]
-    unqtDot (HSV  h s v)     = hcat . punctuate comma $ map unqtDot [h,s,v]
-    unqtDot (ColorName name) = unqtDot name
-
-    toDot (ColorName name) = toDot name
-    toDot c                = doubleQuotes $ unqtDot c
-
-    unqtListToDot = hcat . punctuate colon . map unqtDot
-
-    listToDot [ColorName nm] = toDot nm
-    listToDot cs             = doubleQuotes $ unqtListToDot cs
-
-hexColor :: [Word8] -> DotCode
-hexColor = (<>) (char '#') . hcat . map word8Doc
-
-word8Doc   :: Word8 -> DotCode
-word8Doc w = text $ padding ++ simple
-    where
-      simple = showHex w ""
-      padding = replicate count '0'
-      count = 2 - findCols 1 w
-      findCols :: Int -> Word8 -> Int
-      findCols c n
-          | n < 16 = c
-          | otherwise = findCols (c+1) (n `div` 16)
-
-instance ParseDot Color where
-    parseUnqt = oneOf [ parseHexBased
-                      , parseHSV
-                      , liftM ColorName parse -- Should we check it
-                                              -- is a colour?
-                      ]
-        where
-          parseHexBased
-              = do character '#'
-                   cs <- many1 parse2Hex
-                   return $ case cs of
-                              [r,g,b] -> RGB r g b
-                              [r,g,b,a] -> RGBA r g b a
-                              _ -> error $ "Not a valid hex Color specification: "
-                                            ++ show cs
-          parseHSV = do h <- parse
-                        parseSep
-                        s <- parse
-                        parseSep
-                        v <- parse
-                        return $ HSV h s v
-          parseSep = oneOf [ string ","
-                           , whitespace
-                           ]
-          parse2Hex = do c1 <- satisfy isHexDigit
-                         c2 <- satisfy isHexDigit
-                         let [(n, [])] = readHex [c1, c2]
-                         return n
-
-
-    parse = liftM ColorName stringBlock -- unquoted Color Name
-            `onFail`
-            quotedParse parseUnqt
-
-    parseUnqtList = sepBy1 parseUnqt (character ':')
-
-    parseList = liftM (return . ColorName) stringBlock -- unquoted single
-                                                       -- ColorName
-                `onFail`
-                quotedParse parseUnqtList
 
 -- -----------------------------------------------------------------------------
 

@@ -69,17 +69,6 @@ instance Arbitrary Point where
                     , liftM2 PointD posArbitrary posArbitrary
                     ]
 
-instance Arbitrary Color where
-  arbitrary = oneof [ liftM3 RGB  arbitrary arbitrary arbitrary
-                    , liftM4 RGBA arbitrary arbitrary arbitrary arbitrary
-                    , liftM3 HSV  zeroOne zeroOne zeroOne
-                      -- Need to replace this when proper coloured
-                      -- names are used
-                    , liftM ColorName arbString
-                    ]
-    where
-      zeroOne = choose (0,1)
-
 instance Arbitrary ClusterMode where
   arbitrary = arbBounded
 
@@ -256,6 +245,30 @@ instance Arbitrary Ratios where
                            , ExpandRatio
                            , AutoRatio
                            ]
+
+instance Arbitrary ColorScheme where
+  arbitrary = oneof [ return X11
+                    , liftM2 BrewerScheme arbitrary arbitrary
+                    ]
+
+instance Arbitrary BrewerName where
+  arbitrary = arbBounded
+
+instance Arbitrary Color where
+  arbitrary = oneof [ liftM3 RGB  arbitrary arbitrary arbitrary
+                    , liftM4 RGBA arbitrary arbitrary arbitrary arbitrary
+                    , liftM3 HSV  zeroOne zeroOne zeroOne
+                    , liftM X11Color arbitrary
+                      -- Not quite right as the values can get too
+                      -- high/low, but should suffice for
+                      -- printing/parsing purposes.
+                    , liftM BrewerColor arbitrary
+                    ]
+    where
+      zeroOne = choose (0,1)
+
+instance Arbitrary X11Color where
+  arbitrary = arbBounded
 
 -- -----------------------------------------------------------------------------
 -- Helper Functions
