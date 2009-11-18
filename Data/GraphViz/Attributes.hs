@@ -1372,7 +1372,15 @@ defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
 
 parseLayerName :: Parse String
-parseLayerName = many1 $ satisfy (flip notElem defLayerSep)
+parseLayerName = many1 $ satisfy notLayerSep
+
+parseLayerNameQ :: Parse String
+parseLayerNameQ = many1 (stringRep quoteChar "\\\""
+                         `onFail`
+                         satisfy notLayerSep)
+
+notLayerSep :: Char -> Bool
+notLayerSep = flip notElem defLayerSep
 
 data LayerID = AllLayers
              | LRInt Int
@@ -1396,7 +1404,7 @@ instance ParseDot LayerID where
 
     parse = oneOf [ optionalQuoted $ stringRep AllLayers "all"
                   , liftM LRInt parse -- Has optionalQuoted in it
-                  , quotedParse $ liftM LRName parseLayerName
+                  , liftM LRName parseLayerNameQ
                   ]
 
 -- | The list represent (Separator, Name)

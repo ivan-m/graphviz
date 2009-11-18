@@ -40,6 +40,7 @@ module Data.GraphViz.Types.Parsing
     , optionalQuotedString
     , optionalQuoted
     , quotedParse
+    , quoteChar
     , newline
     , newline'
     , parseComma
