@@ -174,7 +174,7 @@ parseGraphID = do str <- liftM isJust
                                          `onFail`
                                          stringRep False undirGraph
                                        )
-                  gID <- optional parse
+                  gID <- optional $ parseAndSpace parse
                   return $ DotGraph str dir gID
 
 dirGraph :: String
