@@ -54,10 +54,6 @@
    * The defined 'LayerSep' is not used to parse 'LayerRange' or
      'LayerList'; the default (@[' ', ':', '\t']@) is instead used.
 
-   * Quotes cannot be contained withing layer names (for one of the
-     'LayerID' values in 'LayerRange' or 'LayerList'), since they
-     cannot be properly parsed.
-
    * @SplineType@ has been replaced with @['Spline']@.
 
    * Only polygon-based 'Shape's are available.
@@ -1377,8 +1373,8 @@ defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
 
 parseLayerName :: Parse String
-parseLayerName = many1 . satisfy
-                 $ liftM2 (&&) notLayerSep ((/=) quoteChar)
+parseLayerName = many1 . orQuote
+                 $ satisfy (liftM2 (&&) notLayerSep ((/=) quoteChar))
 
 notLayerSep :: Char -> Bool
 notLayerSep = flip notElem defLayerSep

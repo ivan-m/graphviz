@@ -603,8 +603,7 @@ arbLayerSep :: Gen [Char]
 arbLayerSep = listOf1 (elements defLayerSep)
 
 arbLayerName :: Gen String
-arbLayerName = suchThat arbString
-               $ liftM2 (&&) (all notLayerSep) (all ((/=) quoteChar))
+arbLayerName = suchThat arbString (all notLayerSep)
 
 arbStyleName :: Gen String
 arbStyleName = suchThat arbString (all notBrackCom)
