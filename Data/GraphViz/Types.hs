@@ -230,10 +230,11 @@ instance PrintDot GraphID where
     toDot gID       = unqtDot gID
 
 instance ParseDot GraphID where
-    parseUnqt = oneOf [ liftM Str  parseUnqt
-                      , liftM Int  parseUnqt
+    parseUnqt = oneOf [ liftM Int  parseUnqt
                       , liftM Dbl  parseUnqt
                       , liftM HTML parseUnqt
+                        -- Parse last so that quoted numbers are parsed as numbers.
+                      , liftM Str  parseUnqt
                       ]
 
     parse = oneOf [ liftM Int  parse
