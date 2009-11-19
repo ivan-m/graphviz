@@ -1396,12 +1396,22 @@ instance PrintDot LayerID where
     toDot li          = unqtDot li
 
 instance ParseDot LayerID where
-    parseUnqt = oneOf [ stringRep AllLayers "all"
-                        -- This now includes the number parser as well.
-                      , liftM parseName parseLayerName
-                      ]
+    parseUnqt = stringRep AllLayers "all"
+                `onFail`
+                -- Includes LRInt case
+                liftM checkLayerName parseLayerName
+
+    parse = oneOf [ optionalQuoted (stringRep AllLayers "all")
+                  , liftM checkLayerName parseLayerName'
+                  , liftM LRInt parse -- Mainly for unquoted case.
+                  ]
       where
-        parseName str = maybe (LRName str) LRInt $ isIntString str
+        parseLayerName' = stringBlock
+                          `onFail`
+                          quotedParse parseLayerName
+
+checkLayerName     :: String -> LayerID
+checkLayerName str = maybe (LRName str) LRInt $ isIntString str
 
 -- | The list represent (Separator, Name).  You should not have any
 --   quote characters for any of the 'String's, since there are
