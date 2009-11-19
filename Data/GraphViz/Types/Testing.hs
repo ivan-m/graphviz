@@ -16,6 +16,7 @@ import Data.GraphViz.Attributes
 
 import Test.QuickCheck
 
+import Data.List(nub)
 import Control.Monad(liftM, liftM2, liftM3, liftM4)
 import Data.Word(Word8)
 
@@ -335,6 +336,7 @@ instance Arbitrary Attribute where
 
 instance Arbitrary Word8 where
   arbitrary = arbitraryBoundedIntegral
+  shrink = shrinkIntegral
 
 instance Arbitrary URL where
   arbitrary = liftM UStr
@@ -343,10 +345,14 @@ instance Arbitrary URL where
       -- Ensure it doesn't have any angled brackets
       notAngled = flip notElem ['<', '>']
 
+  shrink (UStr ustr) = map UStr $ nonEmptyShrinks ustr
+
 instance Arbitrary ArrowType where
   arbitrary = liftM AType
               -- Arrow specifications have between 1 and 4 elements.
               $ resize 4 arbList
+
+  shrink (AType as) = map AType $ nonEmptyShrinks as
 
 instance Arbitrary ArrowShape where
   arbitrary = arbBounded
@@ -365,14 +371,30 @@ instance Arbitrary AspectType where
                     , liftM2 RatioPassCount arbitrary posArbitrary
                     ]
 
+  shrink (RatioOnly d) = map RatioOnly $ shrink d
+  shrink (RatioPassCount d i) = do ds <- shrink d
+                                   is <- shrink i
+                                   return $ RatioPassCount ds is
+
 instance Arbitrary Rect where
   arbitrary = liftM2 Rect arbitrary arbitrary
+
+  shrink (Rect p1 p2) = do p1s <- shrink p1
+                           p2s <- shrink p2
+                           return $ Rect p1s p2s
 
 instance Arbitrary Point where
   -- Pretty sure points have to be positive...
   arbitrary = oneof [ liftM2 Point  posArbitrary posArbitrary
                     , liftM2 PointD posArbitrary posArbitrary
                     ]
+
+  shrink (Point  v1 v2) = do v1s <- shrink v1
+                             v2s <- shrink v2
+                             return $ Point v1 v2
+  shrink (PointD v1 v2) = do v1s <- shrink v1
+                             v2s <- shrink v2
+                             return $ PointD v1 v2
 
 instance Arbitrary ClusterMode where
   arbitrary = arbBounded
@@ -388,6 +410,9 @@ instance Arbitrary DPoint where
                     , liftM PVal arbitrary
                     ]
 
+  shrink (DVal d) = map DVal $ shrink d
+  shrink (PVal p) = map PVal $ shrink p
+
 instance Arbitrary ModeType where
   arbitrary = arbBounded
 
@@ -398,6 +423,9 @@ instance Arbitrary Label where
   arbitrary = oneof [ liftM StrLabel arbString
                     , liftM URLLabel arbitrary
                     ]
+
+  shrink (StrLabel str) = map StrLabel $ shrink str
+  shrink (URLLabel url) = map URLLabel $ shrink url
 
 instance Arbitrary Overlap where
   arbitrary = oneof [ simpleOverlap
@@ -415,13 +443,17 @@ instance Arbitrary Overlap where
                                , IpsepOverlap
                                ]
 
-instance Arbitrary LayerList where
-  arbitrary = do fst <- arbLayerName
-                 oths <- listOf $ liftM2 (,) arbLayerSep arbLayerName
-                 return $ LL fst oths
+  shrink (PrismOverlap mi) = map PrismOverlap $ shrink mi
+  shrink _                 = []
 
-  shrink (LL _ [(_,fst')]) = [LL fst' []]
-  shrink (LL fst oths) = map (LL fst) $ shrink oths
+instance Arbitrary LayerList where
+  arbitrary = do fs <- arbLayerName
+                 oths <- listOf $ liftM2 (,) arbLayerSep arbLayerName
+                 return $ LL fs oths
+
+  -- This should be improved to try actually shrinking the seps and names.
+  shrink (LL _ [(_,fs')]) = [LL fs' []]
+  shrink (LL fs oths)     = map (LL fs) $ shrink oths
 
 instance Arbitrary LayerRange where
   arbitrary = oneof [ liftM  LRID arbitrary
@@ -430,7 +462,7 @@ instance Arbitrary LayerRange where
     where
       arbLayerSep = listOf1 (elements defLayerSep)
 
-  shrink LRID{}        = []
+  shrink (LRID nm)     = map LRID $ shrink nm
   shrink (LRS l1 _ l2) = [LRID l1, LRID l2]
 
 instance Arbitrary LayerID where
@@ -442,6 +474,10 @@ instance Arbitrary LayerID where
                                               )
                     ]
 
+  shrink AllLayers   = []
+  shrink (LRInt i)   = map LRInt $ shrink i
+  shrink (LRName nm) = map LRName $ shrink nm
+
 instance Arbitrary OutputMode where
   arbitrary = arbBounded
 
@@ -451,12 +487,18 @@ instance Arbitrary Pack where
                     , liftM PackMargin arbitrary
                     ]
 
+  shrink (PackMargin m) = map PackMargin $ shrink m
+  shrink _              = []
+
 instance Arbitrary PackMode where
   arbitrary = oneof [ return PackNode
                     , return PackClust
                     , return PackGraph
                     , liftM3 PackArray arbitrary arbitrary arbitrary
                     ]
+
+  shrink (PackArray c u mi) = map (PackArray c u) $ shrink mi
+  shrink _                  = []
 
 instance Arbitrary Pos where
   arbitrary = oneof [ liftM PointPos arbitrary
@@ -468,10 +510,28 @@ instance Arbitrary Pos where
       isValid [Spline Nothing Nothing [_]] = False
       isValid _                            = True
 
+  shrink (PointPos p)   = map PointPos $ shrink p
+  shrink (SplinePos ss) = map SplinePos $ nonEmptyShrinks ss
+
 instance Arbitrary Spline where
   arbitrary = liftM3 Spline arbitrary arbitrary
               -- list of points must have length of 1 mod 3
               $ suchThat arbitrary ((==) 1 . flip mod 3 . length)
+
+  shrink (Spline Nothing Nothing [p]) = map (Spline Nothing Nothing . return)
+                                        $ shrink p
+  -- We're not going to be shrinking the points in the list; just
+  -- making sure that its length is === 1 mod 3
+  shrink (Spline ms me ps) = do mss <- shrinkM ms
+                                mes <- shrinkM me
+                                pss <- rem2 ps
+                                return $ Spline mss mes pss
+    where
+
+      rem1 []     = []
+      rem1 (a:as) = as : map (a:) (rem1 as)
+
+      rem2 = nub . concatMap rem1 . rem1
 
 instance Arbitrary EdgeType where
   arbitrary = arbBounded
@@ -487,6 +547,9 @@ instance Arbitrary Root where
                     , return NotCentral
                     , liftM NodeName arbString
                     ]
+
+  shrink (NodeName nm) = map NodeName $ shrink nm
+  shrink _             = []
 
 instance Arbitrary RankType where
   arbitrary = arbBounded
@@ -506,11 +569,17 @@ instance Arbitrary StartType where
                     , liftM2 StartStyleSeed arbitrary arbitrary
                     ]
 
+  shrink StartStyle{} = [] -- No shrinks for STStyle
+  shrink (StartSeed ss) = map StartSeed $ shrink ss
+  shrink (StartStyleSeed st ss) = map (StartStyleSeed st) $ shrink ss
+
 instance Arbitrary STStyle where
   arbitrary = arbBounded
 
 instance Arbitrary StyleItem where
   arbitrary = liftM2 SItem arbitrary (listOf arbStyleName)
+
+  shrink (SItem sn opts) = map (SItem sn) $ shrink opts
 
 instance Arbitrary StyleName where
   arbitrary = oneof [ defaultStyles
@@ -535,10 +604,19 @@ instance Arbitrary CompassPoint where
 instance Arbitrary ViewPort where
   arbitrary = liftM4 VP arbitrary arbitrary arbitrary arbitrary
 
+  shrink (VP w h z f) = do ws <- shrink w
+                           hs <- shrink h
+                           zs <- shrink z
+                           fs <- shrinkM f
+                           return $ VP ws hs zs fs
+
 instance Arbitrary FocusType where
   arbitrary = oneof [ liftM XY arbitrary
                     , liftM NodeFocus arbString
                     ]
+
+  shrink (XY p)          = map XY $ shrink p
+  shrink (NodeFocus str) = map NodeFocus $ nonEmptyShrinks str
 
 instance Arbitrary VerticalPlacement where
   arbitrary = arbBounded
@@ -560,10 +638,16 @@ instance Arbitrary Ratios where
                            , AutoRatio
                            ]
 
+  shrink (AspectRatio r) = map (AspectRatio . fromPositive)
+                           . shrink $ Positive r
+
 instance Arbitrary ColorScheme where
   arbitrary = oneof [ return X11
                     , liftM2 BrewerScheme arbitrary arbitrary
                     ]
+
+  shrink (BrewerScheme nm v) = map (BrewerScheme nm) $ shrink v
+  shrink _                   = []
 
 instance Arbitrary BrewerName where
   arbitrary = arbBounded
@@ -580,6 +664,19 @@ instance Arbitrary Color where
                     ]
     where
       zeroOne = choose (0,1)
+
+  shrink (RGB r g b)     = do rs <- shrink r
+                              gs <- shrink g
+                              bs <- shrink b
+                              return $ RGB rs gs bs
+  shrink (RGBA r g b a)  = RGB r g b
+                           : do rs <- shrink r
+                                gs <- shrink g
+                                bs <- shrink b
+                                as <- shrink a
+                                return $ RGBA rs gs bs as
+  shrink (BrewerColor c) = map BrewerColor $ shrink c
+  shrink _               = [] -- Shrinking 0<=h,s,v<=1 does nothing
 
 instance Arbitrary X11Color where
   arbitrary = arbBounded
@@ -615,3 +712,9 @@ arbList = listOf1 arbitrary
 
 nonEmptyShrinks :: (Arbitrary a) => [a] -> [[a]]
 nonEmptyShrinks = filter (not . null) . shrink
+
+-- When a Maybe value is a sub-component, and we need shrink to return
+-- a value.
+shrinkM         :: (Arbitrary a) => Maybe a -> [Maybe a]
+shrinkM Nothing = [Nothing]
+shrinkM j       = shrink j
