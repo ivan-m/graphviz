@@ -285,7 +285,6 @@ data Attribute
     | Nslimit1 Double                  -- ^ /Valid for/: G; /Notes/: dot only
     | Ordering String                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: dot only
     | Orientation Double               -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
-    | OrientationGraph String          -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: Landscape if \"[lL]*\" and rotate not defined
     | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
     | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
     | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
@@ -435,7 +434,6 @@ instance PrintDot Attribute where
     unqtDot (Nslimit1 v)           = printField "nslimit1" v
     unqtDot (Ordering v)           = printField "ordering" v
     unqtDot (Orientation v)        = printField "orientation" v
-    unqtDot (OrientationGraph v)   = printField "orientation" v
     unqtDot (OutputOrder v)        = printField "outputorder" v
     unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
     unqtDot (Overlap v)            = printField "overlap" v
@@ -584,7 +582,6 @@ instance ParseDot Attribute where
                       , liftM Nslimit1           $ parseField "nslimit1"
                       , liftM Ordering           $ parseField "ordering"
                       , liftM Orientation        $ parseField "orientation"
-                      , liftM OrientationGraph   $ parseField "orientation"
                       , liftM OutputOrder        $ parseField "outputorder"
                       , liftM OverlapScaling     $ parseField "overlap_scaling"
                       , liftM Overlap            $ parseFieldDef KeepOverlaps "overlap"
@@ -699,7 +696,6 @@ usedByGraphs Normalize{}          = True
 usedByGraphs Nslimit{}            = True
 usedByGraphs Nslimit1{}           = True
 usedByGraphs Ordering{}           = True
-usedByGraphs OrientationGraph{}   = True
 usedByGraphs OutputOrder{}        = True
 usedByGraphs OverlapScaling{}     = True
 usedByGraphs Overlap{}            = True

@@ -198,7 +198,6 @@ instance Arbitrary Attribute where
                       , liftM Nslimit1 arbitrary
                       , liftM Ordering arbString
                       , liftM Orientation arbitrary
-                      , liftM OrientationGraph arbString
                       , liftM OutputOrder arbitrary
                       , liftM OverlapScaling arbitrary
                       , liftM Overlap arbitrary
@@ -345,7 +344,6 @@ instance Arbitrary Attribute where
     shrink (Nslimit1 v)           = map Nslimit1           $ shrink v
     shrink (Ordering v)           = map Ordering           $ shrink v
     shrink (Orientation v)        = map Orientation        $ shrink v
-    shrink (OrientationGraph v)   = map OrientationGraph   $ shrink v
     shrink (OutputOrder v)        = map OutputOrder        $ shrink v
     shrink (OverlapScaling v)     = map OverlapScaling     $ shrink v
     shrink (Overlap v)            = map Overlap            $ shrink v
