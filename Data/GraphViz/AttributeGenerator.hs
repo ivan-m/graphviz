@@ -443,8 +443,8 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "SortV" ["sortv"] "GCN" Integ Nothing (Just "@0@") (Just "@0@") Nothing
              , makeAttr "Splines" ["splines"] "G" (Cust "EdgeType") (Just "SplineEdges") Nothing Nothing Nothing
              , makeAttr "Start" ["start"] "G" (Cust "StartType") Nothing (Just "@\\\"\\\"@") Nothing (Just "fdp, neato only")
-             , makeAttr "Style" ["style"] "ENC" (Cust "[StyleItem]") Nothing Nothing Nothing Nothing
              , makeAttr "StyleSheet" ["stylesheet"] "G" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg only")
+             , makeAttr "Style" ["style"] "ENC" (Cust "[StyleItem]") Nothing Nothing Nothing Nothing
              , makeAttr "TailURL" ["tailURL", "tailhref"] "E" URL Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "TailClip" ["tailclip"] "E" Bl (Just "True") (Just "@'True'@") Nothing Nothing
              , makeAttr "TailLabel" ["taillabel"] "E" (Cust "Label") Nothing (Just "@\\\"\\\"@") Nothing Nothing

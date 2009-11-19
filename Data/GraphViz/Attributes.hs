@@ -326,8 +326,8 @@ data Attribute
     | SortV Int                        -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
     | Splines EdgeType                 -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
     | Start StartType                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: fdp, neato only
-    | Style [StyleItem]                -- ^ /Valid for/: ENC
     | StyleSheet String                -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
+    | Style [StyleItem]                -- ^ /Valid for/: ENC
     | TailURL URL                      -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | TailClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
     | TailLabel Label                  -- ^ /Valid for/: E; /Default/: @\"\"@
@@ -476,8 +476,8 @@ instance PrintDot Attribute where
     unqtDot (SortV v)              = printField "sortv" v
     unqtDot (Splines v)            = printField "splines" v
     unqtDot (Start v)              = printField "start" v
-    unqtDot (Style v)              = printField "style" v
     unqtDot (StyleSheet v)         = printField "stylesheet" v
+    unqtDot (Style v)              = printField "style" v
     unqtDot (TailURL v)            = printField "tailURL" v
     unqtDot (TailClip v)           = printField "tailclip" v
     unqtDot (TailLabel v)          = printField "taillabel" v
@@ -625,8 +625,8 @@ instance ParseDot Attribute where
                       , liftM SortV              $ parseField "sortv"
                       , liftM Splines            $ parseFieldDef SplineEdges "splines"
                       , liftM Start              $ parseField "start"
-                      , liftM Style              $ parseField "style"
                       , liftM StyleSheet         $ parseField "stylesheet"
+                      , liftM Style              $ parseField "style"
                       , liftM TailURL            $ parseFields ["tailURL", "tailhref"]
                       , liftM TailClip           $ parseFieldBool "tailclip"
                       , liftM TailLabel          $ parseField "taillabel"

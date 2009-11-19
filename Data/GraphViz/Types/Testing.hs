@@ -239,8 +239,8 @@ instance Arbitrary Attribute where
                       , liftM SortV arbitrary
                       , liftM Splines arbitrary
                       , liftM Start arbitrary
-                      , liftM Style arbList
                       , liftM StyleSheet arbString
+                      , liftM Style arbList
                       , liftM TailURL arbitrary
                       , liftM TailClip arbitrary
                       , liftM TailLabel arbitrary
@@ -386,8 +386,8 @@ instance Arbitrary Attribute where
     shrink (SortV v)              = map SortV              $ shrink v
     shrink (Splines v)            = map Splines            $ shrink v
     shrink (Start v)              = map Start              $ shrink v
-    shrink (Style v)              = map Style              $ nonEmptyShrinks v
     shrink (StyleSheet v)         = map StyleSheet         $ shrink v
+    shrink (Style v)              = map Style              $ nonEmptyShrinks v
     shrink (TailURL v)            = map TailURL            $ shrink v
     shrink (TailClip v)           = map TailClip           $ shrink v
     shrink (TailLabel v)          = map TailLabel          $ shrink v
