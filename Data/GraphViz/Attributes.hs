@@ -1672,9 +1672,13 @@ instance PrintDot Root where
     toDot r            = unqtDot r
 
 instance ParseDot Root where
-    parseUnqt = liftM (bool IsCentral NotCentral) parse
+    parseUnqt = liftM (bool IsCentral NotCentral) onlyBool
                 `onFail`
-                liftM NodeName parse
+                liftM NodeName parseUnqt
+
+    parse = optionalQuoted (liftM (bool IsCentral NotCentral) onlyBool)
+            `onFail`
+            liftM NodeName parse
 
 -- -----------------------------------------------------------------------------
 

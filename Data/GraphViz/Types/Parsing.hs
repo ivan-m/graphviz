@@ -25,6 +25,7 @@ module Data.GraphViz.Types.Parsing
     , Parse
     , ParseDot(..)
       -- * Convenience parsing combinators.
+    , onlyBool
     , stringBlock
     , numString
     , isIntString
@@ -108,13 +109,18 @@ instance ParseDot Double where
     parseUnqt = parseFloat'
 
 instance ParseDot Bool where
-    parseUnqt = oneOf [ stringRep True "true"
-                      , stringRep False "false"
-                      , liftM (zero /=) parseInt'
-                      ]
+    parseUnqt = onlyBool
+                `onFail`
+                liftM (zero /=) parseInt'
         where
           zero :: Int
           zero = 0
+
+-- | Use this when you do not want numbers to be treated as 'Bool' values.
+onlyBool :: Parse Bool
+onlyBool = oneOf [ stringRep True "true"
+                 , stringRep False "false"
+                 ]
 
 instance ParseDot Char where
     -- Can't be a quote character.
