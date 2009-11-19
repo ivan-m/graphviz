@@ -10,6 +10,7 @@ module Data.GraphViz.Types.Testing where
 
 import Data.GraphViz.Types.Printing(PrintDot(..), renderDot)
 import Data.GraphViz.Types.Parsing(ParseDot(..), runParser, quoteChar)
+import Data.GraphViz.Types.Internal(isNumString)
 
 import Data.GraphViz.Attributes
 
@@ -435,7 +436,10 @@ instance Arbitrary LayerRange where
 instance Arbitrary LayerID where
   arbitrary = oneof [ return AllLayers
                     , liftM LRInt arbitrary
-                    , liftM LRName arbLayerName
+                    , liftM LRName $ suchThat arbLayerName
+                                              (liftM2 (&&) (not . isNumString)
+                                                           ((/=) "all")
+                                              )
                     ]
 
 instance Arbitrary OutputMode where

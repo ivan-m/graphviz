@@ -1353,21 +1353,21 @@ instance PrintDot LayerRange where
     toDot lrs        = doubleQuotes $ unqtDot lrs
 
 instance ParseDot LayerRange where
-    parseUnqt = liftM LRID parseUnqt
-                `onFail`
-                do id1 <- parseUnqt
+    parseUnqt = do id1 <- parseUnqt
                    s   <- parseLayerSep
                    id2 <- parseUnqt
                    return $ LRS id1 s id2
+                `onFail`
+                liftM LRID parseUnqt
 
-    parse = liftM LRID parse
-            `onFail`
-            quotedParse ( do id1 <- parseUnqt
+
+    parse = quotedParse ( do id1 <- parseUnqt
                              s   <- parseLayerSep
                              id2 <- parseUnqt
                              return $ LRS id1 s id2
                         )
-
+            `onFail`
+            liftM LRID parse
 
 parseLayerSep :: Parse String
 parseLayerSep = many1 . oneOf
@@ -1401,15 +1401,11 @@ instance PrintDot LayerID where
 
 instance ParseDot LayerID where
     parseUnqt = oneOf [ stringRep AllLayers "all"
-                      , liftM LRInt parseUnqt
-                      , liftM LRName parseLayerName
+                        -- This now includes the number parser as well.
+                      , liftM parseName parseLayerName
                       ]
-
-    parse = oneOf [ optionalQuoted $ stringRep AllLayers "all"
-                  , liftM LRInt parse -- Has optionalQuoted in it
-                    -- Might be a non-quoted one...
-                  , optionalQuoted . liftM LRName $ parseLayerName
-                  ]
+      where
+        parseName str = maybe (LRName str) LRInt $ isIntString str
 
 -- | The list represent (Separator, Name).  You should not have any
 --   quote characters for any of the 'String's, since there are

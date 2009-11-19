@@ -27,6 +27,7 @@ module Data.GraphViz.Types.Parsing
       -- * Convenience parsing combinators.
     , stringBlock
     , numString
+    , isIntString
     , quotedString
     , parseAndSpace
     , string
@@ -157,6 +158,16 @@ stringInterior :: Parse Char
 stringInterior = stringRep quoteChar "\\\""
                  `onFail`
                  satisfy ((/=) quoteChar)
+
+isIntString     :: String -> Maybe Int
+isIntString str = if isNum
+                  then Just (read str)
+                  else Nothing
+  where
+    isNum = case str of
+              ('-':num) -> isNum' num
+              num       -> isNum' num
+    isNum' = all isDigit
 
 parseSigned :: Real a => Parse a -> Parse a
 parseSigned p = (character '-' >> liftM negate p)
