@@ -125,16 +125,16 @@ instance Arbitrary Attribute where
                       , liftM Center arbitrary
                       , liftM Charset arbString
                       , liftM ClusterRank arbitrary
-                      , liftM Color arbList
                       , liftM ColorScheme arbitrary
+                      , liftM Color arbList
                       , liftM Comment arbString
                       , liftM Compound arbitrary
                       , liftM Concentrate arbitrary
                       , liftM Constraint arbitrary
                       , liftM Decorate arbitrary
                       , liftM DefaultDist arbitrary
-                      , liftM Dim arbitrary
                       , liftM Dimen arbitrary
+                      , liftM Dim arbitrary
                       , liftM Dir arbitrary
                       , liftM DirEdgeConstraints arbitrary
                       , liftM Distortion arbitrary
@@ -162,7 +162,6 @@ instance Arbitrary Attribute where
                       , liftM ID arbitrary
                       , liftM Image arbString
                       , liftM ImageScale arbitrary
-                      , liftM Label arbitrary
                       , liftM LabelURL arbitrary
                       , liftM LabelAngle arbitrary
                       , liftM LabelDistance arbitrary
@@ -174,14 +173,15 @@ instance Arbitrary Attribute where
                       , liftM LabelLoc arbitrary
                       , liftM LabelTarget arbString
                       , liftM LabelTooltip arbString
+                      , liftM Label arbitrary
                       , liftM Landscape arbitrary
-                      , liftM Layer arbitrary
-                      , liftM Layers arbitrary
                       , liftM LayerSep arbString
+                      , liftM Layers arbitrary
+                      , liftM Layer arbitrary
                       , liftM Layout arbString
                       , liftM Len arbitrary
-                      , liftM Levels arbitrary
                       , liftM LevelsGap arbitrary
+                      , liftM Levels arbitrary
                       , liftM LHead arbString
                       , liftM LPos arbitrary
                       , liftM LTail arbString
@@ -190,14 +190,14 @@ instance Arbitrary Attribute where
                       , liftM MCLimit arbitrary
                       , liftM MinDist arbitrary
                       , liftM MinLen arbitrary
-                      , liftM Mode arbitrary
                       , liftM Model arbitrary
+                      , liftM Mode arbitrary
                       , liftM Mosek arbitrary
                       , liftM NodeSep arbitrary
                       , liftM NoJustify arbitrary
                       , liftM Normalize arbitrary
-                      , liftM Nslimit arbitrary
                       , liftM Nslimit1 arbitrary
+                      , liftM Nslimit arbitrary
                       , liftM Ordering arbString
                       , liftM Orientation arbitrary
                       , liftM OutputOrder arbitrary
@@ -206,8 +206,8 @@ instance Arbitrary Attribute where
                       , liftM PackMode arbitrary
                       , liftM Pack arbitrary
                       , liftM Pad arbitrary
-                      , liftM Page arbitrary
                       , liftM PageDir arbitrary
+                      , liftM Page arbitrary
                       , liftM PenColor arbitrary
                       , liftM PenWidth arbitrary
                       , liftM Peripheries arbitrary
@@ -215,9 +215,9 @@ instance Arbitrary Attribute where
                       , liftM Pos arbitrary
                       , liftM QuadTree arbitrary
                       , liftM Quantum arbitrary
-                      , liftM Rank arbitrary
                       , liftM RankDir arbitrary
-                      , liftM Ranksep arbitrary
+                      , liftM RankSep arbitrary
+                      , liftM Rank arbitrary
                       , liftM Ratio arbitrary
                       , liftM Rects arbitrary
                       , liftM Regular arbitrary
@@ -230,8 +230,8 @@ instance Arbitrary Attribute where
                       , liftM SamplePoints arbitrary
                       , liftM SearchSize arbitrary
                       , liftM Sep arbitrary
-                      , liftM Shape arbitrary
                       , liftM ShapeFile arbString
+                      , liftM Shape arbitrary
                       , liftM ShowBoxes arbitrary
                       , liftM Sides arbitrary
                       , liftM Size arbitrary
@@ -271,16 +271,16 @@ instance Arbitrary Attribute where
     shrink (Center v)             = map Center             $ shrink v
     shrink (Charset v)            = map Charset            $ shrink v
     shrink (ClusterRank v)        = map ClusterRank        $ shrink v
-    shrink (Color v)              = map Color              $ nonEmptyShrinks v
     shrink (ColorScheme v)        = map ColorScheme        $ shrink v
+    shrink (Color v)              = map Color              $ nonEmptyShrinks v
     shrink (Comment v)            = map Comment            $ shrink v
     shrink (Compound v)           = map Compound           $ shrink v
     shrink (Concentrate v)        = map Concentrate        $ shrink v
     shrink (Constraint v)         = map Constraint         $ shrink v
     shrink (Decorate v)           = map Decorate           $ shrink v
     shrink (DefaultDist v)        = map DefaultDist        $ shrink v
-    shrink (Dim v)                = map Dim                $ shrink v
     shrink (Dimen v)              = map Dimen              $ shrink v
+    shrink (Dim v)                = map Dim                $ shrink v
     shrink (Dir v)                = map Dir                $ shrink v
     shrink (DirEdgeConstraints v) = map DirEdgeConstraints $ shrink v
     shrink (Distortion v)         = map Distortion         $ shrink v
@@ -308,7 +308,6 @@ instance Arbitrary Attribute where
     shrink (ID v)                 = map ID                 $ shrink v
     shrink (Image v)              = map Image              $ shrink v
     shrink (ImageScale v)         = map ImageScale         $ shrink v
-    shrink (Label v)              = map Label              $ shrink v
     shrink (LabelURL v)           = map LabelURL           $ shrink v
     shrink (LabelAngle v)         = map LabelAngle         $ shrink v
     shrink (LabelDistance v)      = map LabelDistance      $ shrink v
@@ -320,14 +319,15 @@ instance Arbitrary Attribute where
     shrink (LabelLoc v)           = map LabelLoc           $ shrink v
     shrink (LabelTarget v)        = map LabelTarget        $ shrink v
     shrink (LabelTooltip v)       = map LabelTooltip       $ shrink v
+    shrink (Label v)              = map Label              $ shrink v
     shrink (Landscape v)          = map Landscape          $ shrink v
-    shrink (Layer v)              = map Layer              $ shrink v
-    shrink (Layers v)             = map Layers             $ shrink v
     shrink (LayerSep v)           = map LayerSep           $ shrink v
+    shrink (Layers v)             = map Layers             $ shrink v
+    shrink (Layer v)              = map Layer              $ shrink v
     shrink (Layout v)             = map Layout             $ shrink v
     shrink (Len v)                = map Len                $ shrink v
-    shrink (Levels v)             = map Levels             $ shrink v
     shrink (LevelsGap v)          = map LevelsGap          $ shrink v
+    shrink (Levels v)             = map Levels             $ shrink v
     shrink (LHead v)              = map LHead              $ shrink v
     shrink (LPos v)               = map LPos               $ shrink v
     shrink (LTail v)              = map LTail              $ shrink v
@@ -336,14 +336,14 @@ instance Arbitrary Attribute where
     shrink (MCLimit v)            = map MCLimit            $ shrink v
     shrink (MinDist v)            = map MinDist            $ shrink v
     shrink (MinLen v)             = map MinLen             $ shrink v
-    shrink (Mode v)               = map Mode               $ shrink v
     shrink (Model v)              = map Model              $ shrink v
+    shrink (Mode v)               = map Mode               $ shrink v
     shrink (Mosek v)              = map Mosek              $ shrink v
     shrink (NodeSep v)            = map NodeSep            $ shrink v
     shrink (NoJustify v)          = map NoJustify          $ shrink v
     shrink (Normalize v)          = map Normalize          $ shrink v
-    shrink (Nslimit v)            = map Nslimit            $ shrink v
     shrink (Nslimit1 v)           = map Nslimit1           $ shrink v
+    shrink (Nslimit v)            = map Nslimit            $ shrink v
     shrink (Ordering v)           = map Ordering           $ shrink v
     shrink (Orientation v)        = map Orientation        $ shrink v
     shrink (OutputOrder v)        = map OutputOrder        $ shrink v
@@ -352,8 +352,8 @@ instance Arbitrary Attribute where
     shrink (PackMode v)           = map PackMode           $ shrink v
     shrink (Pack v)               = map Pack               $ shrink v
     shrink (Pad v)                = map Pad                $ shrink v
-    shrink (Page v)               = map Page               $ shrink v
     shrink (PageDir v)            = map PageDir            $ shrink v
+    shrink (Page v)               = map Page               $ shrink v
     shrink (PenColor v)           = map PenColor           $ shrink v
     shrink (PenWidth v)           = map PenWidth           $ shrink v
     shrink (Peripheries v)        = map Peripheries        $ shrink v
@@ -361,9 +361,9 @@ instance Arbitrary Attribute where
     shrink (Pos v)                = map Pos                $ shrink v
     shrink (QuadTree v)           = map QuadTree           $ shrink v
     shrink (Quantum v)            = map Quantum            $ shrink v
-    shrink (Rank v)               = map Rank               $ shrink v
     shrink (RankDir v)            = map RankDir            $ shrink v
-    shrink (Ranksep v)            = map Ranksep            $ shrink v
+    shrink (RankSep v)            = map RankSep            $ shrink v
+    shrink (Rank v)               = map Rank               $ shrink v
     shrink (Ratio v)              = map Ratio              $ shrink v
     shrink (Rects v)              = map Rects              $ shrink v
     shrink (Regular v)            = map Regular            $ shrink v
@@ -376,8 +376,8 @@ instance Arbitrary Attribute where
     shrink (SamplePoints v)       = map SamplePoints       $ shrink v
     shrink (SearchSize v)         = map SearchSize         $ shrink v
     shrink (Sep v)                = map Sep                $ shrink v
-    shrink (Shape v)              = map Shape              $ shrink v
     shrink (ShapeFile v)          = map ShapeFile          $ shrink v
+    shrink (Shape v)              = map Shape              $ shrink v
     shrink (ShowBoxes v)          = map ShowBoxes          $ shrink v
     shrink (Sides v)              = map Sides              $ shrink v
     shrink (Size v)               = map Size               $ shrink v
