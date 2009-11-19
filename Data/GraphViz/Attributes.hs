@@ -2071,6 +2071,10 @@ instance ParseDot FocusType where
                 `onFail`
                 liftM NodeFocus parseUnqt
 
+    parse = liftM XY parse
+            `onFail`
+            liftM NodeFocus parse
+
 -- -----------------------------------------------------------------------------
 
 data VerticalPlacement = VTop
