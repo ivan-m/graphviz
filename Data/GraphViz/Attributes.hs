@@ -1327,8 +1327,8 @@ instance PrintDot Overlap where
 instance ParseDot Overlap where
     parseUnqt = oneOf [ stringRep KeepOverlaps "true"
                       , stringRep RemoveOverlaps "false"
-                      , stringRep ScaleOverlaps "scale"
                       , stringRep ScaleXYOverlaps "scalexy"
+                      , stringRep ScaleOverlaps "scale"
                       , string "prism" >> liftM PrismOverlap (optional parse)
                       , stringRep CompressOverlap "compress"
                       , stringRep VpscOverlap "vpsc"
