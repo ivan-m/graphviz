@@ -763,7 +763,7 @@ posArbitrary :: (Arbitrary a, Num a, Ord a) => Gen a
 posArbitrary = liftM fromPositive arbitrary
 
 arbString :: Gen String
-arbString = listOf1 $ suchThat arbitrary ((/=) '\\')
+arbString = listOf1 $ suchThat arbitrary (flip notElem ['\\', '\r', '\n'])
 
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]
