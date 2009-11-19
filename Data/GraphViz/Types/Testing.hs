@@ -76,14 +76,14 @@ instance (Arbitrary a) => Arbitrary (DotStatements a) where
                                        return $ DotStmts gas' sgs' ns' es'
 
 instance Arbitrary GlobalAttributes where
-  arbitrary = oneof [ liftM GraphAttrs arbitrary
-                    , liftM NodeAttrs  arbitrary
-                    , liftM EdgeAttrs  arbitrary
+  arbitrary = oneof [ liftM GraphAttrs arbList
+                    , liftM NodeAttrs  arbList
+                    , liftM EdgeAttrs  arbList
                     ]
 
-  shrink (GraphAttrs attrs) = map GraphAttrs $ shrink attrs
-  shrink (NodeAttrs  attrs) = map NodeAttrs  $ shrink attrs
-  shrink (EdgeAttrs  attrs) = map EdgeAttrs  $ shrink attrs
+  shrink (GraphAttrs attrs) = map GraphAttrs $ nonEmptyShrinks attrs
+  shrink (NodeAttrs  attrs) = map NodeAttrs  $ nonEmptyShrinks attrs
+  shrink (EdgeAttrs  attrs) = map EdgeAttrs  $ nonEmptyShrinks attrs
 
 instance (Arbitrary a) => Arbitrary (DotSubGraph a) where
   arbitrary = liftM3 DotSG arbitrary arbitrary arbitrary
