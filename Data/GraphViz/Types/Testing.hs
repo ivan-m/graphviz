@@ -55,7 +55,7 @@ instance (Arbitrary a) => Arbitrary (DotGraph a) where
                                            return $ DotGraph str dir gid' stmts
 
 instance Arbitrary GraphID where
-  arbitrary = oneof [ liftM Str arbitrary
+  arbitrary = oneof [ liftM Str arbString
                     , liftM Int arbitrary
                     , liftM Dbl arbitrary
                     , liftM HTML arbitrary
