@@ -1505,7 +1505,8 @@ instance ParseDot PackMode where
                       ]
         where
           hasCharacter ms c = maybe False (elem c) ms
-          notNum c = not $ c == '-' || isDigit c
+          -- Also checks and removes quote characters
+          notNum c = not $ c == '-' || isDigit c || c == quoteChar
 
 -- -----------------------------------------------------------------------------
 
