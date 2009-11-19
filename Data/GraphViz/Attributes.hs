@@ -1926,9 +1926,9 @@ instance ParseDot StyleItem where
     parseUnqtList = sepBy1 parseUnqt parseComma
 
     -- Might not necessarily need to be quoted if a singleton...
-    parseList = liftM return parse
+    parseList = liftM return parseUnqt
                 `onFail`
-                parseUnqtList
+                quotedParse parseUnqtList
 
 data StyleName = Dashed    -- ^ Nodes and Edges
                | Dotted    -- ^ Nodes and Edges
