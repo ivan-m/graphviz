@@ -55,11 +55,13 @@ instance (Arbitrary a) => Arbitrary (DotGraph a) where
                                            return $ DotGraph str dir gid' stmts
 
 instance Arbitrary GraphID where
-  arbitrary = oneof [ liftM Str arbString
+  arbitrary = oneof [ liftM Str $ suchThat arbString (not . isNumString)
                     , liftM Int arbitrary
-                    , liftM Dbl arbitrary
+                    , liftM Dbl $ suchThat arbitrary notInt
                     , liftM HTML arbitrary
                     ]
+    where
+      notInt d = fromIntegral (round d) /= d
 
   shrink (Str s) = map Str $ shrink s
   shrink (Int i) = map Int $ shrink i
