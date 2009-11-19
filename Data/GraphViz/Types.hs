@@ -100,7 +100,7 @@ import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
 
 import Data.Maybe(isJust)
-import Control.Monad(liftM)
+import Control.Monad(liftM, when)
 
 -- -----------------------------------------------------------------------------
 
@@ -444,20 +444,37 @@ instance (ParseDot a) => ParseDot (DotSubGraph a) where
 
 parseSubGraphID :: Parse (DotStatements a -> DotSubGraph a)
 parseSubGraphID = do string sGraph
-                     whitespace'
-                     (isCl,sID) <- parseSGID
-                     return $ DotSG isCl sID
+                     whitespace
+                     liftM (uncurry DotSG) parseSGID
 
 parseSGID :: Parse (Bool, Maybe GraphID)
-parseSGID = do s <- parse
+parseSGID = do s <- parseAndSpace parse
                return (fst $ runParser pStr s)
             `onFail`
-            liftM (flip (,) Nothing) checkCl
+            liftM (flip (,) Nothing) (parseAndSpace checkCl)
   where
-    checkCl = liftM isJust $ optional (string clust)
-    pStr = do isCl <- checkCl `discard`optional (character '_')
+    checkCl = stringRep True clust
+              `onFail`
+              return False
+    pStr = do isCl <- checkCl
+              when isCl $ optional (character '_') >> return ()
               sID <- parseUnqt
               return (isCl, Just sID)
+
+{- This is a much nicer result, but unfortunately it doesn't work.
+   The problem is that Graphviz decides that a subgraph is a cluster
+   if the ID starts with "cluster" (no quotes); thus, we _have_ to do
+   the double layer of parsing to get it to work :@
+
+            do isCl <- stringRep True clust
+                       `onFail`
+                       return False
+               sID <- optional $ do when isCl
+                                      $ optional (character '_') >> return ()
+                                    parseUnqt
+               when (isCl || isJust sID) $ whitespace >> return ()
+               return (isCl, sID)
+-}
 
 sGraph :: String
 sGraph = "subgraph"
