@@ -586,8 +586,8 @@ instance ParseDot Attribute where
                       , liftM Orientation        $ parseField "orientation"
                       , liftM OrientationGraph   $ parseField "orientation"
                       , liftM OutputOrder        $ parseField "outputorder"
-                      , liftM Overlap            $ parseFieldDef KeepOverlaps "overlap"
                       , liftM OverlapScaling     $ parseField "overlap_scaling"
+                      , liftM Overlap            $ parseFieldDef KeepOverlaps "overlap"
                       , liftM PackMode           $ parseField "packmode"
                       , liftM Pack               $ parseFieldDef DoPack "pack"
                       , liftM Pad                $ parseField "pad"
@@ -701,8 +701,8 @@ usedByGraphs Nslimit1{}           = True
 usedByGraphs Ordering{}           = True
 usedByGraphs OrientationGraph{}   = True
 usedByGraphs OutputOrder{}        = True
-usedByGraphs Overlap{}            = True
 usedByGraphs OverlapScaling{}     = True
+usedByGraphs Overlap{}            = True
 usedByGraphs PackMode{}           = True
 usedByGraphs Pack{}               = True
 usedByGraphs Pad{}                = True
