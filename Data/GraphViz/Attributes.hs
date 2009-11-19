@@ -287,8 +287,8 @@ data Attribute
     | Orientation Double               -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
     | OrientationGraph String          -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: Landscape if \"[lL]*\" and rotate not defined
     | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
-    | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
     | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
+    | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
     | PackMode PackMode                -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
     | Pack Pack                        -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
     | Pad DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
@@ -437,8 +437,8 @@ instance PrintDot Attribute where
     unqtDot (Orientation v)        = printField "orientation" v
     unqtDot (OrientationGraph v)   = printField "orientation" v
     unqtDot (OutputOrder v)        = printField "outputorder" v
-    unqtDot (Overlap v)            = printField "overlap" v
     unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
+    unqtDot (Overlap v)            = printField "overlap" v
     unqtDot (PackMode v)           = printField "packmode" v
     unqtDot (Pack v)               = printField "pack" v
     unqtDot (Pad v)                = printField "pad" v

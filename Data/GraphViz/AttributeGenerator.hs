@@ -404,8 +404,8 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "Orientation" ["orientation"] "N" Dbl Nothing (Just "@0.0@") (Just "@360.0@") Nothing
              , makeAttr "OrientationGraph" ["orientation"] "G" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "Landscape if \\\"[lL]*\\\" and rotate not defined")
              , makeAttr "OutputOrder" ["outputorder"] "G" (Cust "OutputMode") Nothing (Just "@'BreadthFirst'@") Nothing Nothing
-             , makeAttr "Overlap" ["overlap"] "G" (Cust "Overlap") (Just "KeepOverlaps") (Just "@'KeepOverlaps'@") Nothing (Just "not dot")
              , makeAttr "OverlapScaling" ["overlap_scaling"] "G" Dbl Nothing (Just "@-4@") (Just "@-1.0e10@") (Just "prism only")
+             , makeAttr "Overlap" ["overlap"] "G" (Cust "Overlap") (Just "KeepOverlaps") (Just "@'KeepOverlaps'@") Nothing (Just "not dot")
              , makeAttr "PackMode" ["packmode"] "G" (Cust "PackMode") Nothing (Just "@'PackNode'@") Nothing (Just "not dot")
              , makeAttr "Pack" ["pack"] "G" (Cust "Pack") (Just "DoPack") (Just "@'False'@") Nothing (Just "not dot")
              , makeAttr "Pad" ["pad"] "G" (Cust "DPoint") Nothing (Just "@'DVal' 0.0555@ (4 points)") Nothing Nothing
