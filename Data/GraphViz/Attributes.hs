@@ -1793,7 +1793,8 @@ instance PrintDot Shape where
     unqtDot Component     = text "component"
 
 instance ParseDot Shape where
-    parseUnqt = oneOf [ stringReps BoxShape ["box","rect","rectangle"]
+    parseUnqt = oneOf [ stringRep Box3D "box3d" -- Parse this before "box"
+                      , stringReps BoxShape ["box","rectangle","rect"]
                       , stringRep Polygon "polygon"
                       , stringRep Ellipse "ellipse"
                       , stringRep Circle "circle"
@@ -1821,7 +1822,6 @@ instance ParseDot Shape where
                       , stringRep Note "note"
                       , stringRep Tab "tab"
                       , stringRep Folder "folder"
-                      , stringRep Box3D "box3d"
                       , stringRep Component "component"
                       ]
 
