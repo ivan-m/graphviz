@@ -5,6 +5,13 @@
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
+   This defines several properties that should be held within
+   graphviz, as well as 'Arbitrary' instances for the various Graphviz
+   types.  Note that they do not generally generate /sensible/ values
+   for the various types; in particular, there's no guarantee that the
+   'Attributes' chosen for a particular value type are indeed legal
+   for that type.
+
 -}
 module Data.GraphViz.Types.Testing where
 
@@ -13,6 +20,7 @@ import Data.GraphViz.Types.Parsing(ParseDot(..), runParser, quoteChar)
 import Data.GraphViz.Types.Internal(isNumString)
 
 import Data.GraphViz.Attributes
+import Data.GraphViz.Types
 
 import Test.QuickCheck
 
@@ -37,7 +45,70 @@ parseIt :: (ParseDot a) => String -> (a, String)
 parseIt = runParser parse
 
 -- -----------------------------------------------------------------------------
--- Defining Arbitrary instances
+-- Defining Arbitrary instances for the overall types
+
+instance (Arbitrary a) => Arbitrary (DotGraph a) where
+  arbitrary = liftM4 DotGraph arbitrary arbitrary arbitrary arbitrary
+
+  shrink (DotGraph str dir gid stmts) = do gid' <- shrink gid
+                                           stmts' <- shrink stmts
+                                           return $ DotGraph str dir gid' stmts
+
+instance Arbitrary GraphID where
+  arbitrary = oneof [ liftM Str arbitrary
+                    , liftM Int arbitrary
+                    , liftM Dbl arbitrary
+                    , liftM HTML arbitrary
+                    ]
+
+  shrink (Str s) = map Str $ shrink s
+  shrink (Int i) = map Int $ shrink i
+  shrink (Dbl d) = map Dbl $ shrink d
+  shrink (HTML u) = map HTML $ shrink u
+
+instance (Arbitrary a) => Arbitrary (DotStatements a) where
+  arbitrary = liftM4 DotStmts arbitrary arbitrary arbitrary arbitrary
+
+  shrink (DotStmts gas sgs ns es) = do gas' <- shrink gas
+                                       sgs' <- shrink sgs
+                                       ns' <- shrink ns
+                                       es' <- shrink es
+                                       return $ DotStmts gas' sgs' ns' es'
+
+instance Arbitrary GlobalAttributes where
+  arbitrary = oneof [ liftM GraphAttrs arbitrary
+                    , liftM NodeAttrs  arbitrary
+                    , liftM EdgeAttrs  arbitrary
+                    ]
+
+  shrink (GraphAttrs attrs) = map GraphAttrs $ shrink attrs
+  shrink (NodeAttrs  attrs) = map NodeAttrs  $ shrink attrs
+  shrink (EdgeAttrs  attrs) = map EdgeAttrs  $ shrink attrs
+
+instance (Arbitrary a) => Arbitrary (DotSubGraph a) where
+  arbitrary = liftM3 DotSG arbitrary arbitrary arbitrary
+
+  shrink (DotSG isCl mid stmts) = do mid' <- shrink mid
+                                     stmts' <- shrink stmts
+                                     return $ DotSG isCl mid stmts
+
+instance (Arbitrary a) => Arbitrary (DotNode a) where
+  arbitrary = liftM2 DotNode arbitrary arbitrary
+
+  shrink (DotNode n as) = do n' <- shrink n
+                             as' <- shrink as
+                             return $ DotNode n as
+
+instance (Arbitrary a) => Arbitrary (DotEdge a) where
+  arbitrary = liftM4 DotEdge arbitrary arbitrary arbitrary arbitrary
+
+  shrink (DotEdge f t isDir as) = do f' <- shrink f
+                                     t' <- shrink t
+                                     as' <- shrink as
+                                     return $ DotEdge f t isDir as
+
+-- -----------------------------------------------------------------------------
+-- Defining Arbitrary instances for Attributes
 
 instance Arbitrary Attribute where
     arbitrary = oneof [ liftM Damping arbitrary
