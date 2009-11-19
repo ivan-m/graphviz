@@ -711,6 +711,7 @@ instance Arbitrary Ratios where
 
   shrink (AspectRatio r) = map (AspectRatio . fromPositive)
                            . shrink $ Positive r
+  shrink _               = []
 
 instance Arbitrary ColorScheme where
   arbitrary = oneof [ return X11
