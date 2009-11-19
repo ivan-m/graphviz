@@ -17,6 +17,7 @@ import Data.Char( isAsciiUpper
 
 import qualified Data.Set as Set
 import Data.Set(Set)
+import Control.Monad(liftM2)
 
 isIDString        :: String -> Bool
 isIDString []     = True
@@ -28,7 +29,7 @@ frstIDString   :: Char -> Bool
 frstIDString c = any ($c) [ isAsciiUpper
                           , isAsciiLower
                           , (==) '_'
-                          , \ x -> x >= '\200' && x <= '\377'
+                          , liftM2 (&&) (>= '\200') (<= '\377')
                           ]
 
 -- | The rest of a non-quoted 'String' must match this.
