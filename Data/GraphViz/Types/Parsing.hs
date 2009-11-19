@@ -259,9 +259,9 @@ optionalQuotedString :: String -> Parse String
 optionalQuotedString = optionalQuoted . string
 
 optionalQuoted   :: Parse a -> Parse a
-optionalQuoted p = p
+optionalQuoted p = quotedParse p
                    `onFail`
-                   quotedParse p
+                   p
 
 quotedParse :: Parse a -> Parse a
 quotedParse = bracket parseQuote parseQuote
