@@ -1464,7 +1464,7 @@ instance PrintDot Pack where
 instance ParseDot Pack where
     -- What happens if it parses 0?  It's non-negative, but parses as False
     parseUnqt = oneOf [ liftM PackMargin parseUnqt
-                      , liftM (bool DoPack DontPack) parseUnqt
+                      , liftM (bool DoPack DontPack) onlyBool
                       ]
 
 -- -----------------------------------------------------------------------------
