@@ -42,6 +42,7 @@ module Data.GraphViz.Types.Parsing
     , optionalQuotedString
     , optionalQuoted
     , quotedParse
+    , orQuote
     , quoteChar
     , newline
     , newline'
@@ -161,9 +162,7 @@ quotedString :: Parse String
 quotedString = many stringInterior
 
 stringInterior :: Parse Char
-stringInterior = stringRep quoteChar "\\\""
-                 `onFail`
-                 satisfy ((/=) quoteChar)
+stringInterior = orQuote $ satisfy ((/=) quoteChar)
 
 isIntString     :: String -> Maybe Int
 isIntString str = if isNum
@@ -268,6 +267,11 @@ quotedParse = bracket parseQuote parseQuote
 
 parseQuote :: Parse Char
 parseQuote = character quoteChar
+
+orQuote   :: Parse Char -> Parse Char
+orQuote p = stringRep quoteChar "\\\""
+            `onFail`
+            p
 
 quoteChar :: Char
 quoteChar = '"'

@@ -1974,8 +1974,8 @@ instance ParseDot StyleName where
     -- implementation (which is iffy due to the DD case).
 
 parseStyleName :: Parse String
-parseStyleName = do f <- noneOf ['(', ')', ',', ' ']
-                    r <- many (noneOf ['(', ')', ','])
+parseStyleName = do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ']
+                    r <- many (orQuote $ noneOf [quoteChar, '(', ')', ','])
                     return $ f:r
 
 -- -----------------------------------------------------------------------------
