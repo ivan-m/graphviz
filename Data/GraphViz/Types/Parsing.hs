@@ -198,7 +198,7 @@ parseFloat :: (RealFrac a) => Parse a
 parseFloat = do ds   <- many (satisfy isDigit)
                 frac <- do character '.'
                            many (satisfy isDigit)
-                                    `adjustErrBad` (++ "\nexpected digit after .")
+                                    `adjustErr` (++ "\nexpected digit after .")
                        `adjustErr` (++ "expected decimal component")
                 expn  <- parseExp `onFail` return 0
                 ( return . fromRational . (* (10^^(expn - length frac)))
