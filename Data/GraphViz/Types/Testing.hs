@@ -539,15 +539,17 @@ instance Arbitrary LayerRange where
 instance Arbitrary LayerID where
   arbitrary = oneof [ return AllLayers
                     , liftM LRInt arbitrary
-                    , liftM LRName $ suchThat arbLayerName
-                                              (liftM2 (&&) (not . isNumString)
-                                                           ((/=) "all")
-                                              )
+                    , liftM LRName $ suchThat arbLayerName lrnameCheck
                     ]
 
   shrink AllLayers   = []
   shrink (LRInt i)   = map LRInt $ shrink i
-  shrink (LRName nm) = map LRName $ shrink nm
+  shrink (LRName nm) = map LRName
+                       . filter (not . lrnameCheck)
+                       $ nonEmptyShrinks nm
+
+lrnameCheck :: String -> Bool
+lrnameCheck = liftM2 (&&) (not . isNumString) ((/=) "all")
 
 instance Arbitrary OutputMode where
   arbitrary = arbBounded
