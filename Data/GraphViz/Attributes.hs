@@ -1372,6 +1372,11 @@ parseLayerName :: Parse String
 parseLayerName = many1 . orQuote
                  $ satisfy (liftM2 (&&) notLayerSep ((/=) quoteChar))
 
+parseLayerName' :: Parse String
+parseLayerName' = stringBlock
+                  `onFail`
+                  quotedParse parseLayerName
+
 notLayerSep :: Char -> Bool
 notLayerSep = flip notElem defLayerSep
 
@@ -1401,10 +1406,6 @@ instance ParseDot LayerID where
                   , liftM checkLayerName parseLayerName'
                   , liftM LRInt parse -- Mainly for unquoted case.
                   ]
-      where
-        parseLayerName' = stringBlock
-                          `onFail`
-                          quotedParse parseLayerName
 
 checkLayerName     :: String -> LayerID
 checkLayerName str = maybe (LRName str) LRInt $ isIntString str
@@ -1433,7 +1434,7 @@ instance ParseDot LayerList where
 
     parse = quotedParse parseUnqt
             `onFail`
-            liftM (flip LL []) (optionalQuoted parseLayerName)
+            liftM (flip LL []) parseLayerName'
 
 -- -----------------------------------------------------------------------------
 
