@@ -52,7 +52,7 @@ instance (Arbitrary a) => Arbitrary (DotGraph a) where
 
   shrink (DotGraph str dir gid stmts) = do gid' <- shrink gid
                                            stmts' <- shrink stmts
-                                           return $ DotGraph str dir gid' stmts
+                                           return $ DotGraph str dir gid' stmts'
 
 instance Arbitrary GraphID where
   arbitrary = oneof [ liftM Str $ suchThat arbString (not . isNumString)
@@ -90,16 +90,16 @@ instance Arbitrary GlobalAttributes where
 instance (Arbitrary a) => Arbitrary (DotSubGraph a) where
   arbitrary = liftM3 DotSG arbitrary arbitrary arbitrary
 
-  shrink (DotSG isCl mid stmts) = do mid' <- shrink mid
+  shrink (DotSG isCl mid stmts) = do mid' <- shrinkM mid
                                      stmts' <- shrink stmts
-                                     return $ DotSG isCl mid stmts
+                                     return $ DotSG isCl mid' stmts'
 
 instance (Arbitrary a) => Arbitrary (DotNode a) where
   arbitrary = liftM2 DotNode arbitrary arbitrary
 
   shrink (DotNode n as) = do n' <- shrink n
                              as' <- shrink as
-                             return $ DotNode n as
+                             return $ DotNode n' as'
 
 instance (Arbitrary a) => Arbitrary (DotEdge a) where
   arbitrary = liftM4 DotEdge arbitrary arbitrary arbitrary arbitrary
@@ -107,7 +107,7 @@ instance (Arbitrary a) => Arbitrary (DotEdge a) where
   shrink (DotEdge f t isDir as) = do f' <- shrink f
                                      t' <- shrink t
                                      as' <- shrink as
-                                     return $ DotEdge f t isDir as
+                                     return $ DotEdge f' t' isDir as'
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for Attributes
@@ -462,10 +462,10 @@ instance Arbitrary Point where
 
   shrink (Point  v1 v2) = do v1s <- shrink v1
                              v2s <- shrink v2
-                             return $ Point v1 v2
+                             return $ Point v1s v2s
   shrink (PointD v1 v2) = do v1s <- shrink v1
                              v2s <- shrink v2
-                             return $ PointD v1 v2
+                             return $ PointD v1s v2s
 
 instance Arbitrary ClusterMode where
   arbitrary = arbBounded
@@ -677,11 +677,15 @@ instance Arbitrary CompassPoint where
 instance Arbitrary ViewPort where
   arbitrary = liftM4 VP arbitrary arbitrary arbitrary arbitrary
 
-  shrink (VP w h z f) = do ws <- shrink w
-                           hs <- shrink h
-                           zs <- shrink z
-                           fs <- shrinkM f
-                           return $ VP ws hs zs fs
+  shrink (VP w h z f) = case sVPs of
+                          [_] -> []
+                          _   -> sVPs
+    where
+      sVPs = do ws <- shrink w
+                hs <- shrink h
+                zs <- shrink z
+                fs <- shrinkM f
+                return $ VP ws hs zs fs
 
 instance Arbitrary FocusType where
   arbitrary = oneof [ liftM XY arbitrary
