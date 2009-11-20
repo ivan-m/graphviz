@@ -167,12 +167,13 @@ graphToGraph isDir gr gAttributes fmtNode fmtEdge
 dotAttributes :: (Graph gr) => Bool -> gr a b -> DotGraph Node
                  -> IO (gr (AttributeNode a) (AttributeEdge b))
 dotAttributes isDir gr dot
-    = do (Right output) <- graphvizWithHandle command dot DotOutput hToString
+    = do (Right output) <- graphvizWithHandle command
+                                              dot
+                                              DotOutput
+                                              hGetContents'
          return $ rebuildGraphWithAttributes output
     where
       command = if isDir then dirCommand else undirCommand
-      hToString h = do s <- hGetContents h
-                       rnf s `seq` return s
       rebuildGraphWithAttributes dotResult =  mkGraph lnodes ledges
           where
             lnodes = map (\(n, l) -> (n, (nodeMap Map.! n, l)))

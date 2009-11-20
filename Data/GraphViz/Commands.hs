@@ -36,8 +36,9 @@ module Data.GraphViz.Commands
     , runGraphvizCanvas
     , runGraphvizCanvas'
     , graphvizWithHandle
-    )
-    where
+      -- * Helper utilities.
+    , hGetContents'
+    ) where
 
 -- Want to use the extensible-exception version
 import Prelude hiding (catch)
@@ -47,15 +48,15 @@ import Data.GraphViz.Types.Printing
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
 
-import System.IO( Handle, IOMode(WriteMode), hClose, hPutStrLn
-                , hGetContents, openFile, hSetBinaryMode)
+import qualified Data.ByteString as B
+import System.IO( Handle, hClose, hPutStr
+                , hGetContents, hSetBinaryMode)
 import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
-import Data.Array.IO(newArray_, hGetArray, hPutArray)
-import Control.Concurrent(forkIO, newEmptyMVar, putMVar, takeMVar)
-import Control.Exception.Extensible( SomeException(..), finally, catch
-                                   , tryJust, bracket, evaluate, handle)
-import Control.Monad(liftM,unless)
+import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
+import Control.Exception.Extensible( SomeException(..), catch
+                                   , bracket, evaluate, handle)
+import Control.Monad(liftM)
 import System.FilePath(FilePath, (<.>))
 
 -- -----------------------------------------------------------------------------
@@ -275,17 +276,10 @@ runGraphviz gr = runGraphvizCommand (commandFor gr) gr
 runGraphvizCommand :: (PrintDot n) => GraphvizCommand -> DotGraph n
                       -> GraphvizOutput -> FilePath -> IO RunResult
 runGraphvizCommand cmd gr t fp
-    = do pipe <- tryJust (\(SomeException _) -> return ())
-                 $ openFile fp WriteMode
-         case pipe of
-           (Left  _) -> return $ Error $ "Unable to open file " ++ fp
-           (Right f) -> do hSetBinaryMode f $ isBinary t
-                           liftM maybeErr
-                             $ graphvizWithHandle cmd gr t (toFile f)
-    where
-      toFile f h = do squirt h f
-                      hClose h
-                      hClose f
+  = liftM maybeErr
+    $ graphvizWithHandle cmd gr t toFile
+      where
+        toFile h = B.hGetContents h >>= B.writeFile fp
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
 --   the provided 'FilePath' for the output file.
@@ -298,15 +292,22 @@ addExtension cmd t fp = cmd t fp'
 -- | Run the chosen Graphviz command on this graph, but send the
 --   result to the given handle rather than to a file.
 --
+--   Note that the @'Handle' -> 'IO' a@ function /must/ fully consume
+--   the input from the 'Handle'; 'hGetContents'' is an version of
+--   'hGetContents' that will ensure this happens.
+--
 --   If the command was unsuccessful, then @Left error@ is returned.
-graphvizWithHandle :: (PrintDot n)  => GraphvizCommand
-                      -> DotGraph n -> GraphvizOutput
-                      -> (Handle -> IO a) -> IO (Either String a)
+graphvizWithHandle :: (PrintDot n, Show a)
+                      => GraphvizCommand      -- ^ Which command to run
+                      -> DotGraph n           -- ^ The 'DotGraph' to use
+                      -> GraphvizOutput       -- ^ The 'GraphvizOutput' type
+                      -> (Handle -> IO a)     -- ^ Extract the output
+                      -> IO (Either String a) -- ^ The error or the result.
 graphvizWithHandle = graphvizWithHandle'
 
 -- This version is not exported as we don't want to let arbitrary
 -- @Handle -> IO a@ functions to be used for GraphvizCanvas outputs.
-graphvizWithHandle' :: (PrintDot n, GraphvizResult o)
+graphvizWithHandle' :: (PrintDot n, GraphvizResult o, Show a)
                        => GraphvizCommand -> DotGraph n -> o
                        -> (Handle -> IO a) -> IO (Either String a)
 graphvizWithHandle' cmd gr t f
@@ -315,29 +316,25 @@ graphvizWithHandle' cmd gr t f
         (runInteractiveProcess cmd' args Nothing Nothing)
         (\(inh,outh,errh,_) -> hClose inh >> hClose outh >> hClose errh)
         $ \(inp,outp,errp,prc) -> do
+
           -- The input and error are text, not binary
           hSetBinaryMode inp False
-          forkIO $ hPutStrLn inp $ printDotGraph gr
-
-          hSetBinaryMode outp $ isBinary t
           hSetBinaryMode errp False
+          hSetBinaryMode outp $ isBinary t -- Depends on output type
 
-          err <- hGetContents errp
+          -- Make sure we close the input or it will hang!!!!!!!
+          forkIO $ hPutStr inp (printDotGraph gr) >> hClose inp
 
           -- Need to make sure both the output and error handles are
-          -- really fully consumed
-          mvOutput <- newEmptyMVar -- Actually get the value out
-          mvDone   <- newEmptyMVar
-          -- Need to consider what to do if action throws an error,
-          -- e.g. disk full
-          let signalWhenDone action = (action >> return ())
-                                        `finally` putMVar mvDone ()
+          -- really fully consumed.
+          mvOutput <- newEmptyMVar
+          mvErr    <- newEmptyMVar
 
-          _ <- forkIO $ signalWhenDone $ evaluate (length err)
-          _ <- forkIO $ signalWhenDone $ f' mvOutput outp
-          takeMVar mvDone
-          takeMVar mvDone
+          _ <- forkIO $ signalWhenDone hGetContents' errp mvErr
+          _ <- forkIO $ signalWhenDone f' outp mvOutput
 
+          -- When these are both able to be taken, then the forks are finished
+          err <- takeMVar mvErr
           output <- takeMVar mvOutput
 
           exitCode <- waitForProcess prc
@@ -346,21 +343,27 @@ graphvizWithHandle' cmd gr t f
             ExitSuccess -> return output
             _           -> return $ Left $ othErr ++ err
     where
-      notRunnable SomeException{} = return . Left $
-                                    "Unable to call the Graphviz command "
-                                    ++ showCmd cmd ++
-                                    " with the arguments: "
-                                    ++ unwords args
+      notRunnable e@SomeException{} = return . Left $
+                                      "Unable to call the Graphviz command "
+                                      ++ showCmd cmd ++
+                                      " with the arguments: "
+                                      ++ unwords args
+                                      ++ " because of: "
+                                      ++ show e
       cmd' = showCmd cmd
       args = ["-T" ++ outputCall t]
 
       -- Augmenting the f function to let it work within the forkIO:
-      f' mv h = (f h >>= (putMVar mv . Right))
-                `catch`
-                (\SomeException{} -> putMVar mv $ Left fErr)
-      fErr = "Error re-directing the output from " ++ cmd'
+      f' h = liftM Right (f h)
+             `catch`
+             (\e@SomeException{} -> return . Left $ fErr ++ show e)
+      fErr = "Error re-directing the output from " ++ cmd' ++ ": "
 
       othErr = "Error messages from " ++ cmd' ++ ":\n"
+
+-- | Store the result of the 'Handle' consumption into the 'MVar'.
+signalWhenDone        :: (Handle -> IO a) -> Handle -> MVar a -> IO ()
+signalWhenDone f h mv = f h >>= putMVar mv >> return ()
 
 -- | Run the chosen Graphviz command on this graph and render it using
 --   the given canvas type.
@@ -369,8 +372,10 @@ runGraphvizCanvas          :: (PrintDot n) => GraphvizCommand -> DotGraph n
 runGraphvizCanvas cmd gr c = liftM maybeErr
                              $ graphvizWithHandle' cmd gr c nullHandle
     where
-      nullHandle :: Handle -> IO ()
-      nullHandle = const (return ())
+      nullHandle   :: Handle -> IO ()
+      nullHandle h = do r <- hGetContents h
+                        evaluate (length r)
+                        return ()
 
 -- | Run the recommended Graphviz command on this graph and render it
 --   using the given canvas type.
@@ -378,23 +383,13 @@ runGraphvizCanvas'   :: (PrintDot n) => DotGraph n -> GraphvizCanvas
                         -> IO RunResult
 runGraphvizCanvas' d = runGraphvizCanvas (commandFor d) d
 
-{- |
-   This function is based upon code taken from the /mohws/ project,
-   available under a 3-Clause BSD license.  The actual function is
-   taken from: <http://code.haskell.org/mohws/src/Util.hs> It provides
-   an efficient way of transferring data from one 'Handle' to another.
- -}
-squirt :: Handle -> Handle -> IO ()
-squirt rd wr = do
-  arr <- newArray_ (0, bufsize-1)
-  let loop = do
-        r <- hGetArray rd arr bufsize
-        unless (r == 0)
-             $ if r < bufsize
-                then hPutArray wr arr r
-                else hPutArray wr arr bufsize >> loop
-  loop
-    where
-      -- This was originally separate
-      bufsize :: Int
-      bufsize = 4 * 1024
+-- -----------------------------------------------------------------------------
+-- Utility functions
+
+-- | A version of 'hGetContents' that fully evaluates the contents of
+--   the 'Handle' (that is, until EOF is reached).  The 'Handle' is
+--   not closed.
+hGetContents'   :: Handle -> IO String
+hGetContents' h = do r <- hGetContents h
+                     evaluate $ length r
+                     return r
