@@ -241,7 +241,9 @@ arbitraryFor' = arbitraryFor . valtype
 
 shrinkFor :: VType -> Doc
 shrinkFor (Cust ('[':_)) = text "nonEmptyShrinks"
-shrinkFor _              = text "shrink" -- OK to have empty Strings though
+shrinkFor Strng          = text "nonEmptyShrinks"
+shrinkFor EStrng         = text "nonEmptyShrinks"
+shrinkFor _              = text "shrink"
 
 usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code
 usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])
