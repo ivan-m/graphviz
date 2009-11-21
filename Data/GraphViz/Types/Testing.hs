@@ -27,7 +27,7 @@ import Test.QuickCheck
 
 import Data.Maybe(isJust)
 import Data.List(nub)
-import Control.Monad(liftM, liftM2, liftM3, liftM4)
+import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
 import Data.Word(Word8)
 
 -- -----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ parseIt = runParser parse
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the overall types
 
-instance (Arbitrary a) => Arbitrary (DotGraph a) where
+instance (Eq a, Arbitrary a) => Arbitrary (DotGraph a) where
   arbitrary = liftM4 DotGraph arbitrary arbitrary arbitrary arbitrary
 
   shrink (DotGraph str dir gid stmts) = do gid' <- shrink gid
@@ -62,22 +62,29 @@ instance Arbitrary GraphID where
                     , liftM Dbl $ suchThat arbitrary notInt
                     , liftM HTML arbitrary
                     ]
-    where
-      notInt d = fromIntegral (round d) /= d
 
-  shrink (Str s) = map Str $ shrink s
+  shrink (Str s) = map Str $ shrinkString s
   shrink (Int i) = map Int $ shrink i
-  shrink (Dbl d) = map Dbl $ shrink d
+  shrink (Dbl d) = map Dbl $ filter notInt $ shrink d
   shrink (HTML u) = map HTML $ shrink u
 
-instance (Arbitrary a) => Arbitrary (DotStatements a) where
-  arbitrary = liftM4 DotStmts arbitrary arbitrary arbitrary arbitrary
+instance (Eq a, Arbitrary a) => Arbitrary (DotStatements a) where
+  arbitrary = arbDS True
 
-  shrink (DotStmts gas sgs ns es) = do gas' <- shrink gas
-                                       sgs' <- shrink sgs
-                                       ns' <- shrink ns
-                                       es' <- shrink es
-                                       return $ DotStmts gas' sgs' ns' es'
+  shrink ds@(DotStmts gas sgs ns es) = do gas' <- shrinkL gas
+                                          sgs' <- shrinkL sgs
+                                          ns' <- shrinkL ns
+                                          es' <- shrinkL es
+                                          returnCheck ds
+                                            $ DotStmts gas' sgs' ns' es'
+
+-- | If 'True', generate 'DotSubGraph's; otherwise don't.
+arbDS         :: (Arbitrary a, Eq a) => Bool -> Gen (DotStatements a)
+arbDS haveSGs = liftM4 DotStmts arbitrary genSGs arbitrary arbitrary
+  where
+    genSGs = if haveSGs
+             then resize 2 arbitrary
+             else return []
 
 instance Arbitrary GlobalAttributes where
   arbitrary = oneof [ liftM GraphAttrs arbList
@@ -89,8 +96,8 @@ instance Arbitrary GlobalAttributes where
   shrink (NodeAttrs  attrs) = map NodeAttrs  $ nonEmptyShrinks attrs
   shrink (EdgeAttrs  attrs) = map EdgeAttrs  $ nonEmptyShrinks attrs
 
-instance (Arbitrary a) => Arbitrary (DotSubGraph a) where
-  arbitrary = liftM3 DotSG arbitrary arbitrary arbitrary
+instance (Eq a, Arbitrary a) => Arbitrary (DotSubGraph a) where
+  arbitrary = liftM3 DotSG arbitrary arbitrary (arbDS False)
 
   shrink (DotSG isCl mid stmts) = do mid' <- shrinkM mid
                                      stmts' <- shrink stmts
@@ -459,7 +466,9 @@ instance Arbitrary Rect where
 instance Arbitrary Point where
   -- Pretty sure points have to be positive...
   arbitrary = oneof [ liftM2 Point  posArbitrary posArbitrary
-                    , liftM2 PointD posArbitrary posArbitrary
+                    , liftM (uncurry PointD)
+                      $ suchThat (liftM2 (,) posArbitrary posArbitrary)
+                                 notBothInt
                     ]
 
   shrink (Point  v1 v2) = do v1s <- shrink v1
@@ -467,6 +476,7 @@ instance Arbitrary Point where
                              return $ Point v1s v2s
   shrink (PointD v1 v2) = do v1s <- shrink v1
                              v2s <- shrink v2
+                             guard $ notBothInt (v1s,v2s)
                              return $ PointD v1s v2s
 
 instance Arbitrary ClusterMode where
@@ -525,8 +535,8 @@ instance Arbitrary LayerList where
                  return $ LL fs oths
 
   -- This should be improved to try actually shrinking the seps and names.
-  shrink (LL _ [(_,fs')]) = [LL fs' []]
-  shrink (LL fs oths)     = map (LL fs) $ shrink oths
+  -- shrink (LL _ [(_,fs')]) = [LL fs' []]
+  -- shrink (LL fs oths)     = map (LL fs) $ shrink oths
 
 instance Arbitrary LayerRange where
   arbitrary = oneof [ liftM  LRID arbitrary
@@ -623,7 +633,7 @@ instance Arbitrary Root where
                     , liftM NodeName arbString
                     ]
 
-  shrink (NodeName nm) = map NodeName $ shrink nm
+  shrink (NodeName nm) = map NodeName $ shrinkString nm
   shrink _             = []
 
 instance Arbitrary RankType where
@@ -646,7 +656,7 @@ instance Arbitrary StartType where
 
   shrink StartStyle{} = [] -- No shrinks for STStyle
   shrink (StartSeed ss) = map StartSeed $ shrink ss
-  shrink (StartStyleSeed st ss) = map (StartStyleSeed st) $ shrink ss
+  shrink (StartStyleSeed st ss) = map (flip StartStyleSeed ss) $ shrink st
 
 instance Arbitrary STStyle where
   arbitrary = arbBounded
@@ -816,3 +826,19 @@ shrinkString str
 shrinkM         :: (Arbitrary a) => Maybe a -> [Maybe a]
 shrinkM Nothing = [Nothing]
 shrinkM j       = shrink j
+
+shrinkL    :: (Arbitrary a) => [a] -> [[a]]
+shrinkL xs = case shrink xs of
+               []  -> [xs]
+               xs' -> xs'
+
+notInt   :: Double -> Bool
+notInt d = fromIntegral (round d) /= d
+
+notBothInt         :: (Double, Double) -> Bool
+notBothInt (p1,p2) = notInt p1 && notInt p2
+
+returnCheck     :: (Eq a) => a -> a -> [a]
+returnCheck o n = if o == n
+                  then []
+                  else [n]
