@@ -42,7 +42,7 @@ import Data.GraphViz.Types.Printing
 
 import Data.Colour( AlphaColour, opaque, transparent, withOpacity
                   , over, black, alphaChannel, darken)
-import Data.Colour.SRGB(Colour, sRGB, sRGB24, toSRGBBounded)
+import Data.Colour.SRGB(Colour, sRGB, sRGB24, toSRGB24)
 import Data.Colour.RGBSpace(uncurryRGB)
 import Data.Colour.RGBSpace.HSV(hsv)
 
@@ -2520,7 +2520,7 @@ x11Colour YellowGreen          = opaque $ sRGB24 154 205 50
 
 -- | Convert a 'Colour' value to a 'RGB' 'Color'.
 fromColour :: Colour Double -> Color
-fromColour = uncurryRGB RGB . toSRGBBounded
+fromColour = uncurryRGB RGB . toSRGB24
 
 -- | Convert an 'AlphaColour' to a 'RGBA' 'Color'.  The exception to
 --   this is for any 'AlphaColour' which has @alphaChannel ac == 0@;
@@ -2529,10 +2529,11 @@ fromColour = uncurryRGB RGB . toSRGBBounded
 fromAColour :: AlphaColour Double -> Color
 fromAColour ac
   | a == 0    = X11Color Transparent
-  | otherwise = rgb $ round a
+  | otherwise = rgb $ round a'
   where
-    a = alphaChannel ac * maxWord
-    rgb = uncurryRGB RGBA $ toSRGBBounded colour
+    a = alphaChannel ac
+    a' = a * maxWord
+    rgb = uncurryRGB RGBA $ toSRGB24 colour
     colour = darken (recip a) (ac `over` black)
 
 -- | The 'maxBound' of a 'Word8' value.
