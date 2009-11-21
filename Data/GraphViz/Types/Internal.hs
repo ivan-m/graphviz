@@ -40,6 +40,7 @@ restIDString c = frstIDString c || isDigit c
 isNumString     :: String -> Bool
 isNumString ""  = False
 isNumString str = case str of
+                    ['-']      -> False
                     ('-':str') -> go str'
                     _          -> go str
     where

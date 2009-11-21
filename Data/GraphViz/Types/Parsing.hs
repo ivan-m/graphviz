@@ -170,6 +170,7 @@ isIntString str = if isNum
                   else Nothing
   where
     isNum = case str of
+              ['-']     -> False
               ('-':num) -> isNum' num
               num       -> isNum' num
     isNum' = all isDigit
