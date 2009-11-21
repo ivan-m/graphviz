@@ -204,10 +204,9 @@ parseFloat = do ds   <- many (satisfy isDigit)
              `onFail`
              fail "Expected a floating point number"
     where parseExp = do character 'e'
-                        commit $
-                          (character '+' >> parseInt)
-                          `onFail`
-                          parseInt'
+                        ((character '+' >> parseInt)
+                         `onFail`
+                         parseInt')
 
 parseFloat' :: Parse Double
 parseFloat' = parseSigned ( parseFloat
