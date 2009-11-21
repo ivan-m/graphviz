@@ -16,7 +16,8 @@
 module Data.GraphViz.Types.Testing where
 
 import Data.GraphViz.Types.Printing(PrintDot(..), renderDot)
-import Data.GraphViz.Types.Parsing(ParseDot(..), runParser, quoteChar)
+import Data.GraphViz.Types.Parsing( ParseDot(..), runParser
+                                  , quoteChar, isIntString)
 import Data.GraphViz.Types.Internal(isNumString)
 
 import Data.GraphViz.Attributes
@@ -24,6 +25,7 @@ import Data.GraphViz.Types
 
 import Test.QuickCheck
 
+import Data.Maybe(isJust)
 import Data.List(nub)
 import Control.Monad(liftM, liftM2, liftM3, liftM4)
 import Data.Word(Word8)
@@ -769,7 +771,17 @@ posArbitrary :: (Arbitrary a, Num a, Ord a) => Gen a
 posArbitrary = liftM fromPositive arbitrary
 
 arbString :: Gen String
-arbString = listOf1 $ suchThat arbitrary (flip notElem ['\\', '\r', '\n'])
+arbString = do str <- listOf1 $ suchThat arbitrary
+                                         (flip notElem ['\\', '\r', '\n'])
+               return $ formatString str
+  where
+    -- Do this for the cases where we have a String like ".1"; this
+    -- will be parsed as "0.1"
+    formatString str
+      | isJust $ isIntString str = str -- Already OK
+                                   -- The '0' is because read ".1" fails
+      | isNumString str          = show (read $ '0' : str :: Double)
+      | otherwise                = str
 
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]
