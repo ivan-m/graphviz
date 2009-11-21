@@ -702,7 +702,7 @@ instance Arbitrary ViewPort where
 
 instance Arbitrary FocusType where
   arbitrary = oneof [ liftM XY arbitrary
-                    , liftM NodeFocus arbString
+                    , liftM NodeFocus $ suchThat arbString (all ((/=) ','))
                     ]
 
   shrink (XY p)          = map XY $ shrink p
