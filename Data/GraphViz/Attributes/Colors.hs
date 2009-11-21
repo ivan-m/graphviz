@@ -11,7 +11,10 @@
    For named colors, see:
      <http://graphviz.org/doc/info/colors.html>
 
-   Note that the Brewer Colors are covered by the following license:
+   Note that the ColorBrewer Color Schemes (shortened to just
+   \"Brewer\" for the rest of this module) are covered by the
+   following license (also available in the LICENSE file of this
+   library):
      <http://graphviz.org/doc/info/colors.html#brewer_license>
 
    When parsing and printing 'Color' values (more specifically, the
