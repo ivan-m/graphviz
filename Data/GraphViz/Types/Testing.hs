@@ -15,8 +15,8 @@
 -}
 module Data.GraphViz.Types.Testing where
 
-import Data.GraphViz.Types.Printing(PrintDot(..), renderDot)
-import Data.GraphViz.Types.Parsing( ParseDot(..), runParser
+import Data.GraphViz.Types.Printing(PrintDot(..), printIt)
+import Data.GraphViz.Types.Parsing( ParseDot(..), parseIt
                                   , quoteChar, isIntString, isNumString)
 
 import Data.GraphViz.Attributes
@@ -34,16 +34,13 @@ import Data.Word(Word8)
 
 
 printParse   :: (ParseDot a, PrintDot a, Eq a) => a -> Bool
-printParse a = (fst . parseIt . printIt) a == a
+printParse a = fst (tryParse a) == a
 
 printParseList    :: (ParseDot a, PrintDot a, Eq a) => [a] -> Property
 printParseList as =  not (null as) ==> printParse as
 
-printIt :: (PrintDot a) => a -> String
-printIt = renderDot . toDot
-
-parseIt :: (ParseDot a) => String -> (a, String)
-parseIt = runParser parse
+tryParse :: (ParseDot a, PrintDot a) => a -> (a, String)
+tryParse = parseIt . printIt
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the overall types

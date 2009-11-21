@@ -38,8 +38,9 @@
 module Data.GraphViz.Types.Printing
     ( module Text.PrettyPrint
     , DotCode
-    , renderDot
+    , renderDot -- Exported for Data.GraphViz.Types.printSGID
     , PrintDot(..)
+    , printIt
     , wrap
     , commaDel
     , printField
@@ -98,6 +99,11 @@ class PrintDot a where
     --   default implementation has characters that must be quoted).
     listToDot :: [a] -> DotCode
     listToDot = doubleQuotes . unqtListToDot
+
+-- | Convert to DotCode; note that this has no indentation, as we can
+--   only have one of indentation and (possibly) infinite line lengths.
+printIt :: (PrintDot a) => a -> String
+printIt = renderDot . toDot
 
 instance PrintDot Int where
     unqtDot = int

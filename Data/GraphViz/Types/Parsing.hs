@@ -24,6 +24,7 @@ module Data.GraphViz.Types.Parsing
       -- * The ParseDot class.
     , Parse
     , ParseDot(..)
+    , parseIt
       -- * Convenience parsing combinators.
     , onlyBool
     , stringBlock
@@ -100,6 +101,11 @@ class ParseDot a where
 
     parseList :: Parse [a]
     parseList = quotedParse parseUnqtList
+
+-- | Parse the required value, returning also the rest of the input
+--   'String' that hasn't been parsed.
+parseIt :: (ParseDot a) => String -> (a, String)
+parseIt = runParser parse
 
 instance ParseDot Int where
     parseUnqt = parseInt'

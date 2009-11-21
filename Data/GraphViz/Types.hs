@@ -134,7 +134,7 @@ graphEdges = statementEdges . graphStatements
 --   that @'parseDotGraph' . 'printDotGraph' == 'id'@ (this might not
 --   be true the other way around due to un-parseable components).
 printDotGraph :: (PrintDot a) => DotGraph a -> String
-printDotGraph = renderDot . toDot
+printDotGraph = printIt
 
 -- | Parse a limited subset of the Dot language to form a 'DotGraph'
 --   (that is, the caveats listed in "Data.GraphViz.Attributes" aside,
@@ -142,7 +142,7 @@ printDotGraph = renderDot . toDot
 --
 --   Also removes any comments, etc. before parsing.
 parseDotGraph :: (ParseDot a) => String -> DotGraph a
-parseDotGraph = fst . runParser parse . preprocess
+parseDotGraph = fst . parseIt . preprocess
 
 -- | Check if all the 'Attribute's are being used correctly.
 isValidGraph :: DotGraph a -> Bool
@@ -420,6 +420,7 @@ printSGID          :: Bool -> GraphID -> DotCode
 printSGID isCl sID = bool addClust noClust isCl
     where
       noClust = toDot sID
+      -- Have to manually render it as we need the un-quoted form.
       addClust = toDot . (++) clust . (:) '_'
                  . renderDot $ unqtDot sID
 
@@ -445,7 +446,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
                   ]
   where
     -- If it's a String value, check to see if it's actually a
-    -- cluster_Blah value.
+    -- cluster_Blah value; thus need to manually re-parse it.
     getClustFrom (Str str) = fst $ runParser pStr str
     getClustFrom gid       = (False, Just gid)
 
