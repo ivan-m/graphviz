@@ -790,10 +790,17 @@ arbString = do str <- listOf1 $ suchThat arbitrary
 -- will be parsed as "0.1"
 formatString :: String -> String
 formatString str
-  | isJust $ isIntString str = str -- Already OK
-                               -- The '0' is because read ".1" fails
-  | isNumString str          = show (read $ '0' : str :: Double)
+  | isJust $ isIntString str = str'
+  | isNumString str          = show (read $ fixNumString str' :: Double)
   | otherwise                = str
+    where
+      -- The '0' is because read ".1" fails
+      fixNumString ('-':str) = '-' : '0' : str
+      fixNumString str       = '0' : str
+
+      str' = case dropWhile ((==) '0') str of
+               ""  -> "0"
+               num -> num
 
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]
