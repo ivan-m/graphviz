@@ -70,7 +70,7 @@ type DotCode = Doc
 renderDot :: DotCode -> String
 renderDot = PP.renderStyle style'
     where
-      style' = PP.style { PP.mode = PP.ZigZagMode }
+      style' = PP.style { PP.mode = PP.LeftMode }
 
 -- | A class used to correctly print parts of the Graphviz Dot language.
 --   Minimal implementation is 'unqtDot'.
