@@ -74,10 +74,10 @@ import Data.Char( digitToInt
                 , toLower
                 )
 import Data.Function(on)
-import Data.Maybe(isJust, fromMaybe)
+import Data.Maybe(isJust, fromMaybe, isNothing)
 import Data.Ratio((%))
 import Data.Word(Word8)
-import Control.Monad(liftM)
+import Control.Monad(liftM, liftM2, when)
 
 -- -----------------------------------------------------------------------------
 -- Based off code from Text.Parse in the polyparse library
@@ -197,20 +197,25 @@ parseStrictFloat = parseSigned parseFloat
 
 parseFloat :: (RealFrac a) => Parse a
 parseFloat = do ds   <- many (satisfy isDigit)
-                frac <- do character '.'
-                           many (satisfy isDigit)
-                                    `adjustErr` (++ "\nexpected digit after .")
-                       `adjustErr` (++ "expected decimal component")
-                expn  <- parseExp `onFail` return 0
-                ( return . fromRational . (* (10^^(expn - length frac)))
+                frac <- optional
+                        $ do character '.'
+                             many1 (satisfy isDigit)
+                               `adjustErr` (++ "\nexpected digit after .")
+                expn  <- optional parseExp
+                when (isNothing frac && isNothing expn)
+                  (fail "No decimals or exponential in floating point number!")
+                let frac' = fromMaybe "" frac
+                    expn' = fromMaybe 0 expn
+                ( return . fromRational . (* (10^^(expn' - length frac')))
                   . (%1) . fst
-                  . runParser parseInt) (ds++frac)
+                  . runParser parseInt) (ds++frac')
              `onFail`
              fail "Expected a floating point number"
     where parseExp = do character 'e'
-                        commit ((character '+' >> parseInt)
-                                `onFail`
-                                parseSigned parseInt)
+                        commit $
+                          (character '+' >> parseInt)
+                          `onFail`
+                          parseInt'
 
 parseFloat' :: Parse Double
 parseFloat' = parseSigned ( parseFloat

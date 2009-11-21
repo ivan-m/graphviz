@@ -230,29 +230,21 @@ instance PrintDot GraphID where
     toDot gID       = unqtDot gID
 
 instance ParseDot GraphID where
-    parseUnqt = oneOf [ liftM mDbl parseUnqt
+    parseUnqt = oneOf [ liftM Dbl  parseStrictFloat
                       , liftM Int  parseUnqt
                       , liftM HTML parseUnqt
                         -- Parse last so that quoted numbers are parsed as numbers.
                       , liftM Str  parseUnqt
                       ]
 
-    parse = oneOf [ liftM mDbl parse
+    parse = oneOf [ liftM Dbl  $ optionalQuoted parseStrictFloat
                   , liftM Int  parse
                   , liftM HTML parse
                   -- Parse last so that quoted numbers are parsed as numbers.
                   , liftM Str  parse
                   ]
             `adjustErr`
-            (++ "Not a valid GraphID")
-
--- For when an Int gets parsed as a Double
-mDbl   :: Double -> GraphID
-mDbl d = if fromIntegral i == d
-         then Int i
-         else Dbl d
-  where
-    i = round d
+            (++ "\nNot a valid GraphID")
 
 -- -----------------------------------------------------------------------------
 
