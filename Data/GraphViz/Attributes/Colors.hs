@@ -2523,12 +2523,13 @@ fromColour :: Colour Double -> Color
 fromColour = uncurryRGB RGB . toSRGBBounded
 
 -- | Convert an 'AlphaColour' to a 'RGBA' 'Color'.  The exception to
---   this is for 'transparent': it gets converted to
---   @X11Color 'Transparent'@.
+--   this is for any 'AlphaColour' which has @alphaChannel ac == 0@;
+--   these are converted to @X11Color 'Transparent'@ (note that the
+--   'Show' instance for such an 'AlphaColour' is @\"transparent\"@).
 fromAColour :: AlphaColour Double -> Color
 fromAColour ac
-  | ac == transparent = X11Color Transparent
-  | otherwise         = rgb $ round a
+  | a == 0    = X11Color Transparent
+  | otherwise = rgb $ round a
   where
     a = alphaChannel ac * maxWord
     rgb = uncurryRGB RGBA $ toSRGBBounded colour
