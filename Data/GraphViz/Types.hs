@@ -440,18 +440,27 @@ parseSubGraphID = do string sGraph
                      liftM (uncurry DotSG) parseSGID
 
 parseSGID :: Parse (Bool, Maybe GraphID)
-parseSGID = do s <- parseAndSpace parse
-               return (fst $ runParser pStr s)
-            `onFail`
-            liftM (flip (,) Nothing) (parseAndSpace checkCl)
+parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
+                  , return (False, Nothing)
+                  ]
   where
+    -- If it's a String value, check to see if it's actually a
+    -- cluster_Blah value.
+    getClustFrom (Str str) = fst $ runParser pStr str
+    getClustFrom gid       = (False, Just gid)
+
     checkCl = stringRep True clust
-              `onFail`
-              return False
     pStr = do isCl <- checkCl
+                      `onFail`
+                      return False
               when isCl $ optional (character '_') >> return ()
-              sID <- parseUnqt
-              return (isCl, Just sID)
+              sID <- optional parseUnqt
+              let sID' = if sID == emptyID
+                         then Nothing
+                         else sID
+              return (isCl, sID')
+
+    emptyID = Just $ Str ""
 
 {- This is a much nicer result, but unfortunately it doesn't work.
    The problem is that Graphviz decides that a subgraph is a cluster
