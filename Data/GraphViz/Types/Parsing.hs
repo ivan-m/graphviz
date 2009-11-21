@@ -148,9 +148,9 @@ instance (ParseDot a) => ParseDot [a] where
     parse = parseList
 
 numString :: Parse String
-numString = liftM show parseInt'
+numString = liftM show parseStrictFloat
             `onFail`
-            liftM show parseFloat'
+            liftM show parseInt'
 
 stringBlock :: Parse String
 stringBlock = do frst <- satisfy frstIDString
