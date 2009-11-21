@@ -17,8 +17,7 @@ module Data.GraphViz.Types.Testing where
 
 import Data.GraphViz.Types.Printing(PrintDot(..), renderDot)
 import Data.GraphViz.Types.Parsing( ParseDot(..), runParser
-                                  , quoteChar, isIntString)
-import Data.GraphViz.Types.Internal(isNumString)
+                                  , quoteChar, isIntString, isNumString)
 
 import Data.GraphViz.Attributes
 import Data.GraphViz.Types

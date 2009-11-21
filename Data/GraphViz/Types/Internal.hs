@@ -39,8 +39,8 @@ restIDString c = frstIDString c || isDigit c
 -- | Determine if this String represents a number.
 isNumString     :: String -> Bool
 isNumString ""  = False
+isNumString "-" = False
 isNumString str = case str of
-                    ['-']      -> False
                     ('-':str') -> go str'
                     _          -> go str
     where
@@ -49,6 +49,18 @@ isNumString str = case str of
                 []       -> True
                 ('.':ds) -> not (null ds) && all isDigit ds
                 _        -> False
+
+-- | Determine if this String represents an integer.
+isIntString     :: String -> Maybe Int
+isIntString str = if isNum
+                  then Just (read str)
+                  else Nothing
+  where
+    isNum = case str of
+              ['-']     -> False
+              ('-':num) -> isNum' num
+              _         -> isNum' str
+    isNum' = all isDigit
 
 -- | Graphviz requires double quotes to be explicitly escaped.
 escapeQuotes           :: String -> String

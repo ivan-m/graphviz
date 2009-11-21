@@ -28,6 +28,7 @@ module Data.GraphViz.Types.Parsing
     , onlyBool
     , stringBlock
     , numString
+    , isNumString
     , isIntString
     , quotedString
     , parseAndSpace
@@ -163,17 +164,6 @@ quotedString = many stringInterior
 
 stringInterior :: Parse Char
 stringInterior = orQuote $ satisfy ((/=) quoteChar)
-
-isIntString     :: String -> Maybe Int
-isIntString str = if isNum
-                  then Just (read str)
-                  else Nothing
-  where
-    isNum = case str of
-              ['-']     -> False
-              ('-':num) -> isNum' num
-              num       -> isNum' num
-    isNum' = all isDigit
 
 parseSigned :: Real a => Parse a -> Parse a
 parseSigned p = (character '-' >> liftM negate p)
