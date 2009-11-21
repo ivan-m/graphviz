@@ -271,11 +271,11 @@ instance Arbitrary Attribute where
     shrink (Bb v)                 = map Bb                 $ shrink v
     shrink (BgColor v)            = map BgColor            $ shrink v
     shrink (Center v)             = map Center             $ shrink v
-    shrink (Charset v)            = map Charset            $ nonEmptyShrinks v
+    shrink (Charset v)            = map Charset            $ shrinkString v
     shrink (ClusterRank v)        = map ClusterRank        $ shrink v
     shrink (ColorScheme v)        = map ColorScheme        $ shrink v
     shrink (Color v)              = map Color              $ nonEmptyShrinks v
-    shrink (Comment v)            = map Comment            $ nonEmptyShrinks v
+    shrink (Comment v)            = map Comment            $ shrinkString v
     shrink (Compound v)           = map Compound           $ shrink v
     shrink (Concentrate v)        = map Concentrate        $ shrink v
     shrink (Constraint v)         = map Constraint         $ shrink v
@@ -288,51 +288,51 @@ instance Arbitrary Attribute where
     shrink (Distortion v)         = map Distortion         $ shrink v
     shrink (DPI v)                = map DPI                $ shrink v
     shrink (EdgeURL v)            = map EdgeURL            $ shrink v
-    shrink (EdgeTarget v)         = map EdgeTarget         $ nonEmptyShrinks v
-    shrink (EdgeTooltip v)        = map EdgeTooltip        $ nonEmptyShrinks v
+    shrink (EdgeTarget v)         = map EdgeTarget         $ shrinkString v
+    shrink (EdgeTooltip v)        = map EdgeTooltip        $ shrinkString v
     shrink (Epsilon v)            = map Epsilon            $ shrink v
     shrink (ESep v)               = map ESep               $ shrink v
     shrink (FillColor v)          = map FillColor          $ shrink v
     shrink (FixedSize v)          = map FixedSize          $ shrink v
     shrink (FontColor v)          = map FontColor          $ shrink v
-    shrink (FontName v)           = map FontName           $ nonEmptyShrinks v
-    shrink (FontNames v)          = map FontNames          $ nonEmptyShrinks v
-    shrink (FontPath v)           = map FontPath           $ nonEmptyShrinks v
+    shrink (FontName v)           = map FontName           $ shrinkString v
+    shrink (FontNames v)          = map FontNames          $ shrinkString v
+    shrink (FontPath v)           = map FontPath           $ shrinkString v
     shrink (FontSize v)           = map FontSize           $ shrink v
-    shrink (Group v)              = map Group              $ nonEmptyShrinks v
+    shrink (Group v)              = map Group              $ shrinkString v
     shrink (HeadURL v)            = map HeadURL            $ shrink v
     shrink (HeadClip v)           = map HeadClip           $ shrink v
     shrink (HeadLabel v)          = map HeadLabel          $ shrink v
     shrink (HeadPort v)           = map HeadPort           $ shrink v
-    shrink (HeadTarget v)         = map HeadTarget         $ nonEmptyShrinks v
-    shrink (HeadTooltip v)        = map HeadTooltip        $ nonEmptyShrinks v
+    shrink (HeadTarget v)         = map HeadTarget         $ shrinkString v
+    shrink (HeadTooltip v)        = map HeadTooltip        $ shrinkString v
     shrink (Height v)             = map Height             $ shrink v
     shrink (ID v)                 = map ID                 $ shrink v
-    shrink (Image v)              = map Image              $ nonEmptyShrinks v
+    shrink (Image v)              = map Image              $ shrinkString v
     shrink (ImageScale v)         = map ImageScale         $ shrink v
     shrink (LabelURL v)           = map LabelURL           $ shrink v
     shrink (LabelAngle v)         = map LabelAngle         $ shrink v
     shrink (LabelDistance v)      = map LabelDistance      $ shrink v
     shrink (LabelFloat v)         = map LabelFloat         $ shrink v
     shrink (LabelFontColor v)     = map LabelFontColor     $ shrink v
-    shrink (LabelFontName v)      = map LabelFontName      $ nonEmptyShrinks v
+    shrink (LabelFontName v)      = map LabelFontName      $ shrinkString v
     shrink (LabelFontSize v)      = map LabelFontSize      $ shrink v
     shrink (LabelJust v)          = map LabelJust          $ shrink v
     shrink (LabelLoc v)           = map LabelLoc           $ shrink v
-    shrink (LabelTarget v)        = map LabelTarget        $ nonEmptyShrinks v
-    shrink (LabelTooltip v)       = map LabelTooltip       $ nonEmptyShrinks v
+    shrink (LabelTarget v)        = map LabelTarget        $ shrinkString v
+    shrink (LabelTooltip v)       = map LabelTooltip       $ shrinkString v
     shrink (Label v)              = map Label              $ shrink v
     shrink (Landscape v)          = map Landscape          $ shrink v
-    shrink (LayerSep v)           = map LayerSep           $ nonEmptyShrinks v
+    shrink (LayerSep v)           = map LayerSep           $ shrinkString v
     shrink (Layers v)             = map Layers             $ shrink v
     shrink (Layer v)              = map Layer              $ shrink v
-    shrink (Layout v)             = map Layout             $ nonEmptyShrinks v
+    shrink (Layout v)             = map Layout             $ shrinkString v
     shrink (Len v)                = map Len                $ shrink v
     shrink (LevelsGap v)          = map LevelsGap          $ shrink v
     shrink (Levels v)             = map Levels             $ shrink v
-    shrink (LHead v)              = map LHead              $ nonEmptyShrinks v
+    shrink (LHead v)              = map LHead              $ shrinkString v
     shrink (LPos v)               = map LPos               $ shrink v
-    shrink (LTail v)              = map LTail              $ nonEmptyShrinks v
+    shrink (LTail v)              = map LTail              $ shrinkString v
     shrink (Margin v)             = map Margin             $ shrink v
     shrink (MaxIter v)            = map MaxIter            $ shrink v
     shrink (MCLimit v)            = map MCLimit            $ shrink v
@@ -346,7 +346,7 @@ instance Arbitrary Attribute where
     shrink (Normalize v)          = map Normalize          $ shrink v
     shrink (Nslimit1 v)           = map Nslimit1           $ shrink v
     shrink (Nslimit v)            = map Nslimit            $ shrink v
-    shrink (Ordering v)           = map Ordering           $ nonEmptyShrinks v
+    shrink (Ordering v)           = map Ordering           $ shrinkString v
     shrink (Orientation v)        = map Orientation        $ shrink v
     shrink (OutputOrder v)        = map OutputOrder        $ shrink v
     shrink (OverlapScaling v)     = map OverlapScaling     $ shrink v
@@ -373,12 +373,12 @@ instance Arbitrary Attribute where
     shrink (RepulsiveForce v)     = map RepulsiveForce     $ shrink v
     shrink (Root v)               = map Root               $ shrink v
     shrink (Rotate v)             = map Rotate             $ shrink v
-    shrink (SameHead v)           = map SameHead           $ nonEmptyShrinks v
-    shrink (SameTail v)           = map SameTail           $ nonEmptyShrinks v
+    shrink (SameHead v)           = map SameHead           $ shrinkString v
+    shrink (SameTail v)           = map SameTail           $ shrinkString v
     shrink (SamplePoints v)       = map SamplePoints       $ shrink v
     shrink (SearchSize v)         = map SearchSize         $ shrink v
     shrink (Sep v)                = map Sep                $ shrink v
-    shrink (ShapeFile v)          = map ShapeFile          $ nonEmptyShrinks v
+    shrink (ShapeFile v)          = map ShapeFile          $ shrinkString v
     shrink (Shape v)              = map Shape              $ shrink v
     shrink (ShowBoxes v)          = map ShowBoxes          $ shrink v
     shrink (Sides v)              = map Sides              $ shrink v
@@ -388,16 +388,16 @@ instance Arbitrary Attribute where
     shrink (SortV v)              = map SortV              $ shrink v
     shrink (Splines v)            = map Splines            $ shrink v
     shrink (Start v)              = map Start              $ shrink v
-    shrink (StyleSheet v)         = map StyleSheet         $ nonEmptyShrinks v
+    shrink (StyleSheet v)         = map StyleSheet         $ shrinkString v
     shrink (Style v)              = map Style              $ nonEmptyShrinks v
     shrink (TailURL v)            = map TailURL            $ shrink v
     shrink (TailClip v)           = map TailClip           $ shrink v
     shrink (TailLabel v)          = map TailLabel          $ shrink v
     shrink (TailPort v)           = map TailPort           $ shrink v
-    shrink (TailTarget v)         = map TailTarget         $ nonEmptyShrinks v
-    shrink (TailTooltip v)        = map TailTooltip        $ nonEmptyShrinks v
-    shrink (Target v)             = map Target             $ nonEmptyShrinks v
-    shrink (Tooltip v)            = map Tooltip            $ nonEmptyShrinks v
+    shrink (TailTarget v)         = map TailTarget         $ shrinkString v
+    shrink (TailTooltip v)        = map TailTooltip        $ shrinkString v
+    shrink (Target v)             = map Target             $ shrinkString v
+    shrink (Tooltip v)            = map Tooltip            $ shrinkString v
     shrink (TrueColor v)          = map TrueColor          $ shrink v
     shrink (Vertices v)           = map Vertices           $ nonEmptyShrinks v
     shrink (ViewPort v)           = map ViewPort           $ shrink v
@@ -497,7 +497,7 @@ instance Arbitrary Label where
                     , liftM URLLabel arbitrary
                     ]
 
-  shrink (StrLabel str) = map StrLabel $ shrink str
+  shrink (StrLabel str) = map StrLabel $ shrinkString str
   shrink (URLLabel url) = map URLLabel $ shrink url
 
 instance Arbitrary Overlap where
@@ -548,7 +548,7 @@ instance Arbitrary LayerID where
   shrink (LRInt i)   = map LRInt $ shrink i
   shrink (LRName nm) = map LRName
                        . filter (not . lrnameCheck)
-                       $ nonEmptyShrinks nm
+                       $ shrinkString nm
 
 lrnameCheck :: String -> Bool
 lrnameCheck = liftM2 (&&) (not . isNumString) ((/=) "all")
@@ -654,7 +654,9 @@ instance Arbitrary STStyle where
 instance Arbitrary StyleItem where
   arbitrary = liftM2 SItem arbitrary (listOf arbStyleName)
 
-  shrink (SItem sn opts) = map (SItem sn) $ shrink opts
+  -- Can't use this because of what shrink on the individual strings
+  -- might do.
+  -- shrink (SItem sn opts) = map (SItem sn) $ shrink opts
 
 instance Arbitrary StyleName where
   arbitrary = oneof [ defaultStyles
@@ -695,7 +697,7 @@ instance Arbitrary FocusType where
                     ]
 
   shrink (XY p)          = map XY $ shrink p
-  shrink (NodeFocus str) = map NodeFocus $ nonEmptyShrinks str
+  shrink (NodeFocus str) = map NodeFocus $ shrinkString str
 
 instance Arbitrary VerticalPlacement where
   arbitrary = arbBounded
@@ -774,14 +776,15 @@ arbString :: Gen String
 arbString = do str <- listOf1 $ suchThat arbitrary
                                          (flip notElem ['\\', '\r', '\n'])
                return $ formatString str
-  where
-    -- Do this for the cases where we have a String like ".1"; this
-    -- will be parsed as "0.1"
-    formatString str
-      | isJust $ isIntString str = str -- Already OK
-                                   -- The '0' is because read ".1" fails
-      | isNumString str          = show (read $ '0' : str :: Double)
-      | otherwise                = str
+
+-- Do this for the cases where we have a String like ".1"; this
+-- will be parsed as "0.1"
+formatString :: String -> String
+formatString str
+  | isJust $ isIntString str = str -- Already OK
+                               -- The '0' is because read ".1" fails
+  | isNumString str          = show (read $ '0' : str :: Double)
+  | otherwise                = str
 
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]
@@ -802,6 +805,11 @@ arbList = listOf1 arbitrary
 
 nonEmptyShrinks :: (Arbitrary a) => [a] -> [[a]]
 nonEmptyShrinks = filter (not . null) . shrink
+
+shrinkString :: String -> [String]
+shrinkString str
+  | isNumString str = []
+  | otherwise       = map formatString $ nonEmptyShrinks str
 
 -- When a Maybe value is a sub-component, and we need shrink to return
 -- a value.

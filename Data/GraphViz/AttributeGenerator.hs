@@ -241,8 +241,8 @@ arbitraryFor' = arbitraryFor . valtype
 
 shrinkFor :: VType -> Doc
 shrinkFor (Cust ('[':_)) = text "nonEmptyShrinks"
-shrinkFor Strng          = text "nonEmptyShrinks"
-shrinkFor EStrng         = text "nonEmptyShrinks"
+shrinkFor Strng          = text "shrinkString"
+shrinkFor EStrng         = text "shrinkString"
 shrinkFor _              = text "shrink"
 
 usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code
