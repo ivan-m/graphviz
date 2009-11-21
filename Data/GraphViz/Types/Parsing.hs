@@ -182,7 +182,7 @@ parseInt' :: Parse Int
 parseInt' = parseSigned parseInt
 
 -- | Parse a floating point number that actually contains decimals.
-parseStrictFloat :: (RealFrac a) => Parse a
+parseStrictFloat :: Parse Double
 parseStrictFloat = parseSigned parseFloat
 
 parseFloat :: (RealFrac a) => Parse a
