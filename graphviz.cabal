@@ -36,7 +36,8 @@ Library {
                            filepath,
                            parallel >= 1.1 && < 1.2,
                            polyparse >= 1.1,
-                           pretty
+                           pretty,
+                           colour >= 2.3 && < 2.4
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types

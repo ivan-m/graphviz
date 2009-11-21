@@ -21,16 +21,29 @@
    (and will result in a parsing failure).
 -}
 module Data.GraphViz.Attributes.Colors
-       ( ColorScheme(..)
+       ( -- * Color schemes
+         ColorScheme(..)
        , BrewerName(..)
+         -- * Colors
        , Color(..)
        , X11Color(..)
+         -- * Conversion to\/from 'Colour'
+       , toColour
+       , x11Colour
+       , fromColour
+       , fromAColour
        ) where
 
 import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
 
-import Data.Char(isDigit, isHexDigit)
+import Data.Colour( AlphaColour, opaque, transparent, withOpacity
+                  , over, black, alphaChannel, darken)
+import Data.Colour.SRGB(Colour, sRGB, sRGB24, toSRGBBounded)
+import Data.Colour.RGBSpace(uncurryRGB)
+import Data.Colour.RGBSpace.HSV(hsv)
+
+import Data.Char(isHexDigit)
 import Numeric(showHex, readHex)
 import Data.Word(Word8)
 import Control.Monad(liftM, liftM2)
@@ -1935,3 +1948,589 @@ instance ParseDot X11Color where
                         , stringRep  Yellow4 "yellow4"
                         , stringRep  YellowGreen "yellowgreen"
                         ]
+
+-- | Attempt to convert a 'Color' into a 'Colour' value with an alpha
+--   channel.  The use of 'Maybe' is because 'BrewerColor' values
+--   cannot be converted without knowing which actual 'BrewerName' and
+--   level color scheme is being used.
+toColour                :: Color -> Maybe (AlphaColour Double)
+toColour (RGB r g b)    = Just . opaque $ sRGB24 r g b
+toColour (RGBA r g b a) = Just . withOpacity (sRGB24 r g b) $ toOpacity a
+-- Colour expects the hue to be an angle, so multiply by 360
+toColour (HSV h s v)    = Just . opaque . uncurryRGB sRGB $ hsv (h*360) s v
+toColour (X11Color c)   = Just $ x11Colour c
+toColour BrewerColor{}  = Nothing
+
+toOpacity   :: Word8 -> Double
+toOpacity a = fromIntegral a / maxWord
+
+-- | Convert an 'X11Color' to its equivalent 'Colour' value.  Note
+--   that it uses 'AlphaColour' because of 'Transparent'; all other
+--   'X11Color' values are completely opaque.
+x11Colour                      :: X11Color -> AlphaColour Double
+x11Colour AliceBlue            = opaque $ sRGB24 240 248 255
+x11Colour AntiqueWhite         = opaque $ sRGB24 250 235 215
+x11Colour AntiqueWhite1        = opaque $ sRGB24 255 239 219
+x11Colour AntiqueWhite2        = opaque $ sRGB24 238 223 204
+x11Colour AntiqueWhite3        = opaque $ sRGB24 205 192 176
+x11Colour AntiqueWhite4        = opaque $ sRGB24 139 131 120
+x11Colour Aquamarine           = opaque $ sRGB24 127 255 212
+x11Colour Aquamarine1          = opaque $ sRGB24 127 255 212
+x11Colour Aquamarine2          = opaque $ sRGB24 118 238 198
+x11Colour Aquamarine3          = opaque $ sRGB24 102 205 170
+x11Colour Aquamarine4          = opaque $ sRGB24 69  139 116
+x11Colour Azure                = opaque $ sRGB24 240 255 255
+x11Colour Azure1               = opaque $ sRGB24 240 255 255
+x11Colour Azure2               = opaque $ sRGB24 224 238 238
+x11Colour Azure3               = opaque $ sRGB24 193 205 205
+x11Colour Azure4               = opaque $ sRGB24 131 139 139
+x11Colour Beige                = opaque $ sRGB24 245 245 220
+x11Colour Bisque               = opaque $ sRGB24 255 228 196
+x11Colour Bisque1              = opaque $ sRGB24 255 228 196
+x11Colour Bisque2              = opaque $ sRGB24 238 213 183
+x11Colour Bisque3              = opaque $ sRGB24 205 183 158
+x11Colour Bisque4              = opaque $ sRGB24 139 125 107
+x11Colour Black                = opaque $ sRGB24 0   0   0
+x11Colour BlanchedAlmond       = opaque $ sRGB24 255 235 205
+x11Colour Blue                 = opaque $ sRGB24 0   0   255
+x11Colour Blue1                = opaque $ sRGB24 0   0   255
+x11Colour Blue2                = opaque $ sRGB24 0   0   238
+x11Colour Blue3                = opaque $ sRGB24 0   0   205
+x11Colour Blue4                = opaque $ sRGB24 0   0   139
+x11Colour BlueViolet           = opaque $ sRGB24 138 43  226
+x11Colour Brown                = opaque $ sRGB24 165 42  42
+x11Colour Brown1               = opaque $ sRGB24 255 64  64
+x11Colour Brown2               = opaque $ sRGB24 238 59  59
+x11Colour Brown3               = opaque $ sRGB24 205 51  51
+x11Colour Brown4               = opaque $ sRGB24 139 35  35
+x11Colour Burlywood            = opaque $ sRGB24 222 184 135
+x11Colour Burlywood1           = opaque $ sRGB24 255 211 155
+x11Colour Burlywood2           = opaque $ sRGB24 238 197 145
+x11Colour Burlywood3           = opaque $ sRGB24 205 170 125
+x11Colour Burlywood4           = opaque $ sRGB24 139 115 85
+x11Colour CadetBlue            = opaque $ sRGB24 95  158 160
+x11Colour CadetBlue1           = opaque $ sRGB24 152 245 255
+x11Colour CadetBlue2           = opaque $ sRGB24 142 229 238
+x11Colour CadetBlue3           = opaque $ sRGB24 122 197 205
+x11Colour CadetBlue4           = opaque $ sRGB24 83  134 139
+x11Colour Chartreuse           = opaque $ sRGB24 127 255 0
+x11Colour Chartreuse1          = opaque $ sRGB24 127 255 0
+x11Colour Chartreuse2          = opaque $ sRGB24 118 238 0
+x11Colour Chartreuse3          = opaque $ sRGB24 102 205 0
+x11Colour Chartreuse4          = opaque $ sRGB24 69  139 0
+x11Colour Chocolate            = opaque $ sRGB24 210 105 30
+x11Colour Chocolate1           = opaque $ sRGB24 255 127 36
+x11Colour Chocolate2           = opaque $ sRGB24 238 118 33
+x11Colour Chocolate3           = opaque $ sRGB24 205 102 29
+x11Colour Chocolate4           = opaque $ sRGB24 139 69  19
+x11Colour Coral                = opaque $ sRGB24 255 127 80
+x11Colour Coral1               = opaque $ sRGB24 255 114 86
+x11Colour Coral2               = opaque $ sRGB24 238 106 80
+x11Colour Coral3               = opaque $ sRGB24 205 91  69
+x11Colour Coral4               = opaque $ sRGB24 139 62  47
+x11Colour CornFlowerBlue       = opaque $ sRGB24 100 149 237
+x11Colour CornSilk             = opaque $ sRGB24 255 248 220
+x11Colour CornSilk1            = opaque $ sRGB24 255 248 220
+x11Colour CornSilk2            = opaque $ sRGB24 238 232 205
+x11Colour CornSilk3            = opaque $ sRGB24 205 200 177
+x11Colour CornSilk4            = opaque $ sRGB24 139 136 120
+x11Colour Crimson              = opaque $ sRGB24 220 20  60
+x11Colour Cyan                 = opaque $ sRGB24 0   255 255
+x11Colour Cyan1                = opaque $ sRGB24 0   255 255
+x11Colour Cyan2                = opaque $ sRGB24 0   238 238
+x11Colour Cyan3                = opaque $ sRGB24 0   205 205
+x11Colour Cyan4                = opaque $ sRGB24 0   139 139
+x11Colour DarkGoldenrod        = opaque $ sRGB24 184 134 11
+x11Colour DarkGoldenrod1       = opaque $ sRGB24 255 185 15
+x11Colour DarkGoldenrod2       = opaque $ sRGB24 238 173 14
+x11Colour DarkGoldenrod3       = opaque $ sRGB24 205 149 12
+x11Colour DarkGoldenrod4       = opaque $ sRGB24 139 101 8
+x11Colour DarkGreen            = opaque $ sRGB24 0   100 0
+x11Colour Darkkhaki            = opaque $ sRGB24 189 183 107
+x11Colour DarkOliveGreen       = opaque $ sRGB24 85  107 47
+x11Colour DarkOliveGreen1      = opaque $ sRGB24 202 255 112
+x11Colour DarkOliveGreen2      = opaque $ sRGB24 188 238 104
+x11Colour DarkOliveGreen3      = opaque $ sRGB24 162 205 90
+x11Colour DarkOliveGreen4      = opaque $ sRGB24 110 139 61
+x11Colour DarkOrange           = opaque $ sRGB24 255 140 0
+x11Colour DarkOrange1          = opaque $ sRGB24 255 127 0
+x11Colour DarkOrange2          = opaque $ sRGB24 238 118 0
+x11Colour DarkOrange3          = opaque $ sRGB24 205 102 0
+x11Colour DarkOrange4          = opaque $ sRGB24 139 69  0
+x11Colour DarkOrchid           = opaque $ sRGB24 153 50  204
+x11Colour DarkOrchid1          = opaque $ sRGB24 191 62  255
+x11Colour DarkOrchid2          = opaque $ sRGB24 178 58  238
+x11Colour DarkOrchid3          = opaque $ sRGB24 154 50  205
+x11Colour DarkOrchid4          = opaque $ sRGB24 104 34  139
+x11Colour DarkSalmon           = opaque $ sRGB24 233 150 122
+x11Colour DarkSeaGreen         = opaque $ sRGB24 143 188 143
+x11Colour DarkSeaGreen1        = opaque $ sRGB24 193 255 193
+x11Colour DarkSeaGreen2        = opaque $ sRGB24 180 238 180
+x11Colour DarkSeaGreen3        = opaque $ sRGB24 155 205 155
+x11Colour DarkSeaGreen4        = opaque $ sRGB24 105 139 105
+x11Colour DarkSlateBlue        = opaque $ sRGB24 72  61  139
+x11Colour DarkSlateGray        = opaque $ sRGB24 47  79  79
+x11Colour DarkSlateGray1       = opaque $ sRGB24 151 255 255
+x11Colour DarkSlateGray2       = opaque $ sRGB24 141 238 238
+x11Colour DarkSlateGray3       = opaque $ sRGB24 121 205 205
+x11Colour DarkSlateGray4       = opaque $ sRGB24 82  139 139
+x11Colour DarkTurquoise        = opaque $ sRGB24 0   206 209
+x11Colour DarkViolet           = opaque $ sRGB24 148 0   211
+x11Colour DeepPink             = opaque $ sRGB24 255 20  147
+x11Colour DeepPink1            = opaque $ sRGB24 255 20  147
+x11Colour DeepPink2            = opaque $ sRGB24 238 18  137
+x11Colour DeepPink3            = opaque $ sRGB24 205 16  118
+x11Colour DeepPink4            = opaque $ sRGB24 139 10  80
+x11Colour DeepSkyBlue          = opaque $ sRGB24 0   191 255
+x11Colour DeepSkyBlue1         = opaque $ sRGB24 0   191 255
+x11Colour DeepSkyBlue2         = opaque $ sRGB24 0   178 238
+x11Colour DeepSkyBlue3         = opaque $ sRGB24 0   154 205
+x11Colour DeepSkyBlue4         = opaque $ sRGB24 0   104 139
+x11Colour DimGray              = opaque $ sRGB24 105 105 105
+x11Colour DodgerBlue           = opaque $ sRGB24 30  144 255
+x11Colour DodgerBlue1          = opaque $ sRGB24 30  144 255
+x11Colour DodgerBlue2          = opaque $ sRGB24 28  134 238
+x11Colour DodgerBlue3          = opaque $ sRGB24 24  116 205
+x11Colour DodgerBlue4          = opaque $ sRGB24 16  78  139
+x11Colour Firebrick            = opaque $ sRGB24 178 34  34
+x11Colour Firebrick1           = opaque $ sRGB24 255 48  48
+x11Colour Firebrick2           = opaque $ sRGB24 238 44  44
+x11Colour Firebrick3           = opaque $ sRGB24 205 38  38
+x11Colour Firebrick4           = opaque $ sRGB24 139 26  26
+x11Colour FloralWhite          = opaque $ sRGB24 255 250 240
+x11Colour ForestGreen          = opaque $ sRGB24 34  139 34
+x11Colour Gainsboro            = opaque $ sRGB24 220 220 220
+x11Colour GhostWhite           = opaque $ sRGB24 248 248 255
+x11Colour Gold                 = opaque $ sRGB24 255 215 0
+x11Colour Gold1                = opaque $ sRGB24 255 215 0
+x11Colour Gold2                = opaque $ sRGB24 238 201 0
+x11Colour Gold3                = opaque $ sRGB24 205 173 0
+x11Colour Gold4                = opaque $ sRGB24 139 117 0
+x11Colour Goldenrod            = opaque $ sRGB24 218 165 32
+x11Colour Goldenrod1           = opaque $ sRGB24 255 193 37
+x11Colour Goldenrod2           = opaque $ sRGB24 238 180 34
+x11Colour Goldenrod3           = opaque $ sRGB24 205 155 29
+x11Colour Goldenrod4           = opaque $ sRGB24 139 105 20
+x11Colour Gray                 = opaque $ sRGB24 192 192 192
+x11Colour Gray0                = opaque $ sRGB24 0   0   0
+x11Colour Gray1                = opaque $ sRGB24 3   3   3
+x11Colour Gray2                = opaque $ sRGB24 5   5   5
+x11Colour Gray3                = opaque $ sRGB24 8   8   8
+x11Colour Gray4                = opaque $ sRGB24 10  10  10
+x11Colour Gray5                = opaque $ sRGB24 13  13  13
+x11Colour Gray6                = opaque $ sRGB24 15  15  15
+x11Colour Gray7                = opaque $ sRGB24 18  18  18
+x11Colour Gray8                = opaque $ sRGB24 20  20  20
+x11Colour Gray9                = opaque $ sRGB24 23  23  23
+x11Colour Gray10               = opaque $ sRGB24 26  26  26
+x11Colour Gray11               = opaque $ sRGB24 28  28  28
+x11Colour Gray12               = opaque $ sRGB24 31  31  31
+x11Colour Gray13               = opaque $ sRGB24 33  33  33
+x11Colour Gray14               = opaque $ sRGB24 36  36  36
+x11Colour Gray15               = opaque $ sRGB24 38  38  38
+x11Colour Gray16               = opaque $ sRGB24 41  41  41
+x11Colour Gray17               = opaque $ sRGB24 43  43  43
+x11Colour Gray18               = opaque $ sRGB24 46  46  46
+x11Colour Gray19               = opaque $ sRGB24 48  48  48
+x11Colour Gray20               = opaque $ sRGB24 51  51  51
+x11Colour Gray21               = opaque $ sRGB24 54  54  54
+x11Colour Gray22               = opaque $ sRGB24 56  56  56
+x11Colour Gray23               = opaque $ sRGB24 59  59  59
+x11Colour Gray24               = opaque $ sRGB24 61  61  61
+x11Colour Gray25               = opaque $ sRGB24 64  64  64
+x11Colour Gray26               = opaque $ sRGB24 66  66  66
+x11Colour Gray27               = opaque $ sRGB24 69  69  69
+x11Colour Gray28               = opaque $ sRGB24 71  71  71
+x11Colour Gray29               = opaque $ sRGB24 74  74  74
+x11Colour Gray30               = opaque $ sRGB24 77  77  77
+x11Colour Gray31               = opaque $ sRGB24 79  79  79
+x11Colour Gray32               = opaque $ sRGB24 82  82  82
+x11Colour Gray33               = opaque $ sRGB24 84  84  84
+x11Colour Gray34               = opaque $ sRGB24 87  87  87
+x11Colour Gray35               = opaque $ sRGB24 89  89  89
+x11Colour Gray36               = opaque $ sRGB24 92  92  92
+x11Colour Gray37               = opaque $ sRGB24 94  94  94
+x11Colour Gray38               = opaque $ sRGB24 97  97  97
+x11Colour Gray39               = opaque $ sRGB24 99  99  99
+x11Colour Gray40               = opaque $ sRGB24 102 102 102
+x11Colour Gray41               = opaque $ sRGB24 105 105 105
+x11Colour Gray42               = opaque $ sRGB24 107 107 107
+x11Colour Gray43               = opaque $ sRGB24 110 110 110
+x11Colour Gray44               = opaque $ sRGB24 112 112 112
+x11Colour Gray45               = opaque $ sRGB24 115 115 115
+x11Colour Gray46               = opaque $ sRGB24 117 117 117
+x11Colour Gray47               = opaque $ sRGB24 120 120 120
+x11Colour Gray48               = opaque $ sRGB24 122 122 122
+x11Colour Gray49               = opaque $ sRGB24 125 125 125
+x11Colour Gray50               = opaque $ sRGB24 127 127 127
+x11Colour Gray51               = opaque $ sRGB24 130 130 130
+x11Colour Gray52               = opaque $ sRGB24 133 133 133
+x11Colour Gray53               = opaque $ sRGB24 135 135 135
+x11Colour Gray54               = opaque $ sRGB24 138 138 138
+x11Colour Gray55               = opaque $ sRGB24 140 140 140
+x11Colour Gray56               = opaque $ sRGB24 143 143 143
+x11Colour Gray57               = opaque $ sRGB24 145 145 145
+x11Colour Gray58               = opaque $ sRGB24 148 148 148
+x11Colour Gray59               = opaque $ sRGB24 150 150 150
+x11Colour Gray60               = opaque $ sRGB24 153 153 153
+x11Colour Gray61               = opaque $ sRGB24 156 156 156
+x11Colour Gray62               = opaque $ sRGB24 158 158 158
+x11Colour Gray63               = opaque $ sRGB24 161 161 161
+x11Colour Gray64               = opaque $ sRGB24 163 163 163
+x11Colour Gray65               = opaque $ sRGB24 166 166 166
+x11Colour Gray66               = opaque $ sRGB24 168 168 168
+x11Colour Gray67               = opaque $ sRGB24 171 171 171
+x11Colour Gray68               = opaque $ sRGB24 173 173 173
+x11Colour Gray69               = opaque $ sRGB24 176 176 176
+x11Colour Gray70               = opaque $ sRGB24 179 179 179
+x11Colour Gray71               = opaque $ sRGB24 181 181 181
+x11Colour Gray72               = opaque $ sRGB24 184 184 184
+x11Colour Gray73               = opaque $ sRGB24 186 186 186
+x11Colour Gray74               = opaque $ sRGB24 189 189 189
+x11Colour Gray75               = opaque $ sRGB24 191 191 191
+x11Colour Gray76               = opaque $ sRGB24 194 194 194
+x11Colour Gray77               = opaque $ sRGB24 196 196 196
+x11Colour Gray78               = opaque $ sRGB24 199 199 199
+x11Colour Gray79               = opaque $ sRGB24 201 201 201
+x11Colour Gray80               = opaque $ sRGB24 204 204 204
+x11Colour Gray81               = opaque $ sRGB24 207 207 207
+x11Colour Gray82               = opaque $ sRGB24 209 209 209
+x11Colour Gray83               = opaque $ sRGB24 212 212 212
+x11Colour Gray84               = opaque $ sRGB24 214 214 214
+x11Colour Gray85               = opaque $ sRGB24 217 217 217
+x11Colour Gray86               = opaque $ sRGB24 219 219 219
+x11Colour Gray87               = opaque $ sRGB24 222 222 222
+x11Colour Gray88               = opaque $ sRGB24 224 224 224
+x11Colour Gray89               = opaque $ sRGB24 227 227 227
+x11Colour Gray90               = opaque $ sRGB24 229 229 229
+x11Colour Gray91               = opaque $ sRGB24 232 232 232
+x11Colour Gray92               = opaque $ sRGB24 235 235 235
+x11Colour Gray93               = opaque $ sRGB24 237 237 237
+x11Colour Gray94               = opaque $ sRGB24 240 240 240
+x11Colour Gray95               = opaque $ sRGB24 242 242 242
+x11Colour Gray96               = opaque $ sRGB24 245 245 245
+x11Colour Gray97               = opaque $ sRGB24 247 247 247
+x11Colour Gray98               = opaque $ sRGB24 250 250 250
+x11Colour Gray99               = opaque $ sRGB24 252 252 252
+x11Colour Gray100              = opaque $ sRGB24 255 255 255
+x11Colour Green                = opaque $ sRGB24 0   255 0
+x11Colour Green1               = opaque $ sRGB24 0   255 0
+x11Colour Green2               = opaque $ sRGB24 0   238 0
+x11Colour Green3               = opaque $ sRGB24 0   205 0
+x11Colour Green4               = opaque $ sRGB24 0   139 0
+x11Colour GreenYellow          = opaque $ sRGB24 173 255 47
+x11Colour HoneyDew             = opaque $ sRGB24 240 255 240
+x11Colour HoneyDew1            = opaque $ sRGB24 240 255 240
+x11Colour HoneyDew2            = opaque $ sRGB24 224 238 224
+x11Colour HoneyDew3            = opaque $ sRGB24 193 205 193
+x11Colour HoneyDew4            = opaque $ sRGB24 131 139 131
+x11Colour HotPink              = opaque $ sRGB24 255 105 180
+x11Colour HotPink1             = opaque $ sRGB24 255 110 180
+x11Colour HotPink2             = opaque $ sRGB24 238 106 167
+x11Colour HotPink3             = opaque $ sRGB24 205 96  144
+x11Colour HotPink4             = opaque $ sRGB24 139 58  98
+x11Colour IndianRed            = opaque $ sRGB24 205 92  92
+x11Colour IndianRed1           = opaque $ sRGB24 255 106 106
+x11Colour IndianRed2           = opaque $ sRGB24 238 99  99
+x11Colour IndianRed3           = opaque $ sRGB24 205 85  85
+x11Colour IndianRed4           = opaque $ sRGB24 139 58  58
+x11Colour Indigo               = opaque $ sRGB24 75  0   130
+x11Colour Ivory                = opaque $ sRGB24 255 255 240
+x11Colour Ivory1               = opaque $ sRGB24 255 255 240
+x11Colour Ivory2               = opaque $ sRGB24 238 238 224
+x11Colour Ivory3               = opaque $ sRGB24 205 205 193
+x11Colour Ivory4               = opaque $ sRGB24 139 139 131
+x11Colour Khaki                = opaque $ sRGB24 240 230 140
+x11Colour Khaki1               = opaque $ sRGB24 255 246 143
+x11Colour Khaki2               = opaque $ sRGB24 238 230 133
+x11Colour Khaki3               = opaque $ sRGB24 205 198 115
+x11Colour Khaki4               = opaque $ sRGB24 139 134 78
+x11Colour Lavender             = opaque $ sRGB24 230 230 250
+x11Colour LavenderBlush        = opaque $ sRGB24 255 240 245
+x11Colour LavenderBlush1       = opaque $ sRGB24 255 240 245
+x11Colour LavenderBlush2       = opaque $ sRGB24 238 224 229
+x11Colour LavenderBlush3       = opaque $ sRGB24 205 193 197
+x11Colour LavenderBlush4       = opaque $ sRGB24 139 131 134
+x11Colour LawnGreen            = opaque $ sRGB24 124 252 0
+x11Colour LemonChiffon         = opaque $ sRGB24 255 250 205
+x11Colour LemonChiffon1        = opaque $ sRGB24 255 250 205
+x11Colour LemonChiffon2        = opaque $ sRGB24 238 233 191
+x11Colour LemonChiffon3        = opaque $ sRGB24 205 201 165
+x11Colour LemonChiffon4        = opaque $ sRGB24 139 137 112
+x11Colour LightBlue            = opaque $ sRGB24 173 216 230
+x11Colour LightBlue1           = opaque $ sRGB24 191 239 255
+x11Colour LightBlue2           = opaque $ sRGB24 178 223 238
+x11Colour LightBlue3           = opaque $ sRGB24 154 192 205
+x11Colour LightBlue4           = opaque $ sRGB24 104 131 139
+x11Colour LightCoral           = opaque $ sRGB24 240 128 128
+x11Colour LightCyan            = opaque $ sRGB24 224 255 255
+x11Colour LightCyan1           = opaque $ sRGB24 224 255 255
+x11Colour LightCyan2           = opaque $ sRGB24 209 238 238
+x11Colour LightCyan3           = opaque $ sRGB24 180 205 205
+x11Colour LightCyan4           = opaque $ sRGB24 122 139 139
+x11Colour LightGoldenrod       = opaque $ sRGB24 238 221 130
+x11Colour LightGoldenrod1      = opaque $ sRGB24 255 236 139
+x11Colour LightGoldenrod2      = opaque $ sRGB24 238 220 130
+x11Colour LightGoldenrod3      = opaque $ sRGB24 205 190 112
+x11Colour LightGoldenrod4      = opaque $ sRGB24 139 129 76
+x11Colour LightGoldenrodYellow = opaque $ sRGB24 250 250 210
+x11Colour LightGray            = opaque $ sRGB24 211 211 211
+x11Colour LightPink            = opaque $ sRGB24 255 182 193
+x11Colour LightPink1           = opaque $ sRGB24 255 174 185
+x11Colour LightPink2           = opaque $ sRGB24 238 162 173
+x11Colour LightPink3           = opaque $ sRGB24 205 140 149
+x11Colour LightPink4           = opaque $ sRGB24 139 95  101
+x11Colour LightSalmon          = opaque $ sRGB24 255 160 122
+x11Colour LightSalmon1         = opaque $ sRGB24 255 160 122
+x11Colour LightSalmon2         = opaque $ sRGB24 238 149 114
+x11Colour LightSalmon3         = opaque $ sRGB24 205 129 98
+x11Colour LightSalmon4         = opaque $ sRGB24 139 87  66
+x11Colour LightSeaGreen        = opaque $ sRGB24 32  178 170
+x11Colour LightSkyBlue         = opaque $ sRGB24 135 206 250
+x11Colour LightSkyBlue1        = opaque $ sRGB24 176 226 255
+x11Colour LightSkyBlue2        = opaque $ sRGB24 164 211 238
+x11Colour LightSkyBlue3        = opaque $ sRGB24 141 182 205
+x11Colour LightSkyBlue4        = opaque $ sRGB24 96  123 139
+x11Colour LightSlateBlue       = opaque $ sRGB24 132 112 255
+x11Colour LightSlateGray       = opaque $ sRGB24 119 136 153
+x11Colour LightSteelBlue       = opaque $ sRGB24 176 196 222
+x11Colour LightSteelBlue1      = opaque $ sRGB24 202 225 255
+x11Colour LightSteelBlue2      = opaque $ sRGB24 188 210 238
+x11Colour LightSteelBlue3      = opaque $ sRGB24 162 181 205
+x11Colour LightSteelBlue4      = opaque $ sRGB24 110 123 139
+x11Colour LightYellow          = opaque $ sRGB24 255 255 224
+x11Colour LightYellow1         = opaque $ sRGB24 255 255 224
+x11Colour LightYellow2         = opaque $ sRGB24 238 238 209
+x11Colour LightYellow3         = opaque $ sRGB24 205 205 180
+x11Colour LightYellow4         = opaque $ sRGB24 139 139 122
+x11Colour LimeGreen            = opaque $ sRGB24 50  205 50
+x11Colour Linen                = opaque $ sRGB24 250 240 230
+x11Colour Magenta              = opaque $ sRGB24 255 0   255
+x11Colour Magenta1             = opaque $ sRGB24 255 0   255
+x11Colour Magenta2             = opaque $ sRGB24 238 0   238
+x11Colour Magenta3             = opaque $ sRGB24 205 0   205
+x11Colour Magenta4             = opaque $ sRGB24 139 0   139
+x11Colour Maroon               = opaque $ sRGB24 176 48  96
+x11Colour Maroon1              = opaque $ sRGB24 255 52  179
+x11Colour Maroon2              = opaque $ sRGB24 238 48  167
+x11Colour Maroon3              = opaque $ sRGB24 205 41  144
+x11Colour Maroon4              = opaque $ sRGB24 139 28  98
+x11Colour MediumAquamarine     = opaque $ sRGB24 102 205 170
+x11Colour MediumBlue           = opaque $ sRGB24 0   0   205
+x11Colour MediumOrchid         = opaque $ sRGB24 186 85  211
+x11Colour MediumOrchid1        = opaque $ sRGB24 224 102 255
+x11Colour MediumOrchid2        = opaque $ sRGB24 209 95  238
+x11Colour MediumOrchid3        = opaque $ sRGB24 180 82  205
+x11Colour MediumOrchid4        = opaque $ sRGB24 122 55  139
+x11Colour MediumPurple         = opaque $ sRGB24 147 112 219
+x11Colour MediumPurple1        = opaque $ sRGB24 171 130 255
+x11Colour MediumPurple2        = opaque $ sRGB24 159 121 238
+x11Colour MediumPurple3        = opaque $ sRGB24 137 104 205
+x11Colour MediumPurple4        = opaque $ sRGB24 93  71  139
+x11Colour MediumSeaGreen       = opaque $ sRGB24 60  179 113
+x11Colour MediumSlateBlue      = opaque $ sRGB24 123 104 238
+x11Colour MediumSpringGreen    = opaque $ sRGB24 0   250 154
+x11Colour MediumTurquoise      = opaque $ sRGB24 72  209 204
+x11Colour MediumVioletRed      = opaque $ sRGB24 199 21  133
+x11Colour MidnightBlue         = opaque $ sRGB24 25  25  112
+x11Colour MintCream            = opaque $ sRGB24 245 255 250
+x11Colour MistyRose            = opaque $ sRGB24 255 228 225
+x11Colour MistyRose1           = opaque $ sRGB24 255 228 225
+x11Colour MistyRose2           = opaque $ sRGB24 238 213 210
+x11Colour MistyRose3           = opaque $ sRGB24 205 183 181
+x11Colour MistyRose4           = opaque $ sRGB24 139 125 123
+x11Colour Moccasin             = opaque $ sRGB24 255 228 181
+x11Colour NavajoWhite          = opaque $ sRGB24 255 222 173
+x11Colour NavajoWhite1         = opaque $ sRGB24 255 222 173
+x11Colour NavajoWhite2         = opaque $ sRGB24 238 207 161
+x11Colour NavajoWhite3         = opaque $ sRGB24 205 179 139
+x11Colour NavajoWhite4         = opaque $ sRGB24 139 121 94
+x11Colour Navy                 = opaque $ sRGB24 0   0   128
+x11Colour NavyBlue             = opaque $ sRGB24 0   0   128
+x11Colour OldLace              = opaque $ sRGB24 253 245 230
+x11Colour OliveDrab            = opaque $ sRGB24 107 142 35
+x11Colour OliveDrab1           = opaque $ sRGB24 192 255 62
+x11Colour OliveDrab2           = opaque $ sRGB24 179 238 58
+x11Colour OliveDrab3           = opaque $ sRGB24 154 205 50
+x11Colour OliveDrab4           = opaque $ sRGB24 105 139 34
+x11Colour Orange               = opaque $ sRGB24 255 165 0
+x11Colour Orange1              = opaque $ sRGB24 255 165 0
+x11Colour Orange2              = opaque $ sRGB24 238 154 0
+x11Colour Orange3              = opaque $ sRGB24 205 133 0
+x11Colour Orange4              = opaque $ sRGB24 139 90  0
+x11Colour OrangeRed            = opaque $ sRGB24 255 69  0
+x11Colour OrangeRed1           = opaque $ sRGB24 255 69  0
+x11Colour OrangeRed2           = opaque $ sRGB24 238 64  0
+x11Colour OrangeRed3           = opaque $ sRGB24 205 55  0
+x11Colour OrangeRed4           = opaque $ sRGB24 139 37  0
+x11Colour Orchid               = opaque $ sRGB24 218 112 214
+x11Colour Orchid1              = opaque $ sRGB24 255 131 250
+x11Colour Orchid2              = opaque $ sRGB24 238 122 233
+x11Colour Orchid3              = opaque $ sRGB24 205 105 201
+x11Colour Orchid4              = opaque $ sRGB24 139 71  137
+x11Colour PaleGoldenrod        = opaque $ sRGB24 238 232 170
+x11Colour PaleGreen            = opaque $ sRGB24 152 251 152
+x11Colour PaleGreen1           = opaque $ sRGB24 154 255 154
+x11Colour PaleGreen2           = opaque $ sRGB24 144 238 144
+x11Colour PaleGreen3           = opaque $ sRGB24 124 205 124
+x11Colour PaleGreen4           = opaque $ sRGB24 84  139 84
+x11Colour PaleTurquoise        = opaque $ sRGB24 175 238 238
+x11Colour PaleTurquoise1       = opaque $ sRGB24 187 255 255
+x11Colour PaleTurquoise2       = opaque $ sRGB24 174 238 238
+x11Colour PaleTurquoise3       = opaque $ sRGB24 150 205 205
+x11Colour PaleTurquoise4       = opaque $ sRGB24 102 139 139
+x11Colour PaleVioletRed        = opaque $ sRGB24 219 112 147
+x11Colour PaleVioletRed1       = opaque $ sRGB24 255 130 171
+x11Colour PaleVioletRed2       = opaque $ sRGB24 238 121 159
+x11Colour PaleVioletRed3       = opaque $ sRGB24 205 104 137
+x11Colour PaleVioletRed4       = opaque $ sRGB24 139 71  93
+x11Colour PapayaWhip           = opaque $ sRGB24 255 239 213
+x11Colour PeachPuff            = opaque $ sRGB24 255 218 185
+x11Colour PeachPuff1           = opaque $ sRGB24 255 218 185
+x11Colour PeachPuff2           = opaque $ sRGB24 238 203 173
+x11Colour PeachPuff3           = opaque $ sRGB24 205 175 149
+x11Colour PeachPuff4           = opaque $ sRGB24 139 119 101
+x11Colour Peru                 = opaque $ sRGB24 205 133 63
+x11Colour Pink                 = opaque $ sRGB24 255 192 203
+x11Colour Pink1                = opaque $ sRGB24 255 181 197
+x11Colour Pink2                = opaque $ sRGB24 238 169 184
+x11Colour Pink3                = opaque $ sRGB24 205 145 158
+x11Colour Pink4                = opaque $ sRGB24 139 99  108
+x11Colour Plum                 = opaque $ sRGB24 221 160 221
+x11Colour Plum1                = opaque $ sRGB24 255 187 255
+x11Colour Plum2                = opaque $ sRGB24 238 174 238
+x11Colour Plum3                = opaque $ sRGB24 205 150 205
+x11Colour Plum4                = opaque $ sRGB24 139 102 139
+x11Colour PowderBlue           = opaque $ sRGB24 176 224 230
+x11Colour Purple               = opaque $ sRGB24 160 32  240
+x11Colour Purple1              = opaque $ sRGB24 155 48  255
+x11Colour Purple2              = opaque $ sRGB24 145 44  238
+x11Colour Purple3              = opaque $ sRGB24 125 38  205
+x11Colour Purple4              = opaque $ sRGB24 85  26  139
+x11Colour Red                  = opaque $ sRGB24 255 0   0
+x11Colour Red1                 = opaque $ sRGB24 255 0   0
+x11Colour Red2                 = opaque $ sRGB24 238 0   0
+x11Colour Red3                 = opaque $ sRGB24 205 0   0
+x11Colour Red4                 = opaque $ sRGB24 139 0   0
+x11Colour RosyBrown            = opaque $ sRGB24 188 143 143
+x11Colour RosyBrown1           = opaque $ sRGB24 255 193 193
+x11Colour RosyBrown2           = opaque $ sRGB24 238 180 180
+x11Colour RosyBrown3           = opaque $ sRGB24 205 155 155
+x11Colour RosyBrown4           = opaque $ sRGB24 139 105 105
+x11Colour RoyalBlue            = opaque $ sRGB24 65  105 225
+x11Colour RoyalBlue1           = opaque $ sRGB24 72  118 255
+x11Colour RoyalBlue2           = opaque $ sRGB24 67  110 238
+x11Colour RoyalBlue3           = opaque $ sRGB24 58  95  205
+x11Colour RoyalBlue4           = opaque $ sRGB24 39  64  139
+x11Colour SaddleBrown          = opaque $ sRGB24 139 69  19
+x11Colour Salmon               = opaque $ sRGB24 250 128 114
+x11Colour Salmon1              = opaque $ sRGB24 255 140 105
+x11Colour Salmon2              = opaque $ sRGB24 238 130 98
+x11Colour Salmon3              = opaque $ sRGB24 205 112 84
+x11Colour Salmon4              = opaque $ sRGB24 139 76  57
+x11Colour SandyBrown           = opaque $ sRGB24 244 164 96
+x11Colour SeaGreen             = opaque $ sRGB24 46  139 87
+x11Colour SeaGreen1            = opaque $ sRGB24 84  255 159
+x11Colour SeaGreen2            = opaque $ sRGB24 78  238 148
+x11Colour SeaGreen3            = opaque $ sRGB24 67  205 128
+x11Colour SeaGreen4            = opaque $ sRGB24 46  139 87
+x11Colour SeaShell             = opaque $ sRGB24 255 245 238
+x11Colour SeaShell1            = opaque $ sRGB24 255 245 238
+x11Colour SeaShell2            = opaque $ sRGB24 238 229 222
+x11Colour SeaShell3            = opaque $ sRGB24 205 197 191
+x11Colour SeaShell4            = opaque $ sRGB24 139 134 130
+x11Colour Sienna               = opaque $ sRGB24 160 82  45
+x11Colour Sienna1              = opaque $ sRGB24 255 130 71
+x11Colour Sienna2              = opaque $ sRGB24 238 121 66
+x11Colour Sienna3              = opaque $ sRGB24 205 104 57
+x11Colour Sienna4              = opaque $ sRGB24 139 71  38
+x11Colour SkyBlue              = opaque $ sRGB24 135 206 235
+x11Colour SkyBlue1             = opaque $ sRGB24 135 206 255
+x11Colour SkyBlue2             = opaque $ sRGB24 126 192 238
+x11Colour SkyBlue3             = opaque $ sRGB24 108 166 205
+x11Colour SkyBlue4             = opaque $ sRGB24 74  112 139
+x11Colour SlateBlue            = opaque $ sRGB24 106 90  205
+x11Colour SlateBlue1           = opaque $ sRGB24 131 111 255
+x11Colour SlateBlue2           = opaque $ sRGB24 122 103 238
+x11Colour SlateBlue3           = opaque $ sRGB24 105 89  205
+x11Colour SlateBlue4           = opaque $ sRGB24 71  60  139
+x11Colour SlateGray            = opaque $ sRGB24 112 128 144
+x11Colour SlateGray1           = opaque $ sRGB24 198 226 255
+x11Colour SlateGray2           = opaque $ sRGB24 185 211 238
+x11Colour SlateGray3           = opaque $ sRGB24 159 182 205
+x11Colour SlateGray4           = opaque $ sRGB24 108 123 139
+x11Colour Snow                 = opaque $ sRGB24 255 250 250
+x11Colour Snow1                = opaque $ sRGB24 255 250 250
+x11Colour Snow2                = opaque $ sRGB24 238 233 233
+x11Colour Snow3                = opaque $ sRGB24 205 201 201
+x11Colour Snow4                = opaque $ sRGB24 139 137 137
+x11Colour SpringGreen          = opaque $ sRGB24 0   255 127
+x11Colour SpringGreen1         = opaque $ sRGB24 0   255 127
+x11Colour SpringGreen2         = opaque $ sRGB24 0   238 118
+x11Colour SpringGreen3         = opaque $ sRGB24 0   205 102
+x11Colour SpringGreen4         = opaque $ sRGB24 0   139 69
+x11Colour SteelBlue            = opaque $ sRGB24 70  130 180
+x11Colour SteelBlue1           = opaque $ sRGB24 99  184 255
+x11Colour SteelBlue2           = opaque $ sRGB24 92  172 238
+x11Colour SteelBlue3           = opaque $ sRGB24 79  148 205
+x11Colour SteelBlue4           = opaque $ sRGB24 54  100 139
+x11Colour Tan                  = opaque $ sRGB24 210 180 140
+x11Colour Tan1                 = opaque $ sRGB24 255 165 79
+x11Colour Tan2                 = opaque $ sRGB24 238 154 73
+x11Colour Tan3                 = opaque $ sRGB24 205 133 63
+x11Colour Tan4                 = opaque $ sRGB24 139 90  43
+x11Colour Thistle              = opaque $ sRGB24 216 191 216
+x11Colour Thistle1             = opaque $ sRGB24 255 225 255
+x11Colour Thistle2             = opaque $ sRGB24 238 210 238
+x11Colour Thistle3             = opaque $ sRGB24 205 181 205
+x11Colour Thistle4             = opaque $ sRGB24 139 123 139
+x11Colour Tomato               = opaque $ sRGB24 255 99  71
+x11Colour Tomato1              = opaque $ sRGB24 255 99  71
+x11Colour Tomato2              = opaque $ sRGB24 238 92  66
+x11Colour Tomato3              = opaque $ sRGB24 205 79  57
+x11Colour Tomato4              = opaque $ sRGB24 139 54  38
+x11Colour Transparent          = transparent
+x11Colour Turquoise            = opaque $ sRGB24 64  224 208
+x11Colour Turquoise1           = opaque $ sRGB24 0   245 255
+x11Colour Turquoise2           = opaque $ sRGB24 0   229 238
+x11Colour Turquoise3           = opaque $ sRGB24 0   197 205
+x11Colour Turquoise4           = opaque $ sRGB24 0   134 139
+x11Colour Violet               = opaque $ sRGB24 238 130 238
+x11Colour VioletRed            = opaque $ sRGB24 208 32  144
+x11Colour VioletRed1           = opaque $ sRGB24 255 62  150
+x11Colour VioletRed2           = opaque $ sRGB24 238 58  140
+x11Colour VioletRed3           = opaque $ sRGB24 205 50  120
+x11Colour VioletRed4           = opaque $ sRGB24 139 34  82
+x11Colour Wheat                = opaque $ sRGB24 245 222 179
+x11Colour Wheat1               = opaque $ sRGB24 255 231 186
+x11Colour Wheat2               = opaque $ sRGB24 238 216 174
+x11Colour Wheat3               = opaque $ sRGB24 205 186 150
+x11Colour Wheat4               = opaque $ sRGB24 139 126 102
+x11Colour White                = opaque $ sRGB24 255 255 255
+x11Colour WhiteSmoke           = opaque $ sRGB24 245 245 245
+x11Colour Yellow               = opaque $ sRGB24 255 255 0
+x11Colour Yellow1              = opaque $ sRGB24 255 255 0
+x11Colour Yellow2              = opaque $ sRGB24 238 238 0
+x11Colour Yellow3              = opaque $ sRGB24 205 205 0
+x11Colour Yellow4              = opaque $ sRGB24 139 139 0
+x11Colour YellowGreen          = opaque $ sRGB24 154 205 50
+
+-- | Convert a 'Colour' value to a 'RGB' 'Color'.
+fromColour :: Colour Double -> Color
+fromColour = uncurryRGB RGB . toSRGBBounded
+
+-- | Convert an 'AlphaColour' to a 'RGBA' 'Color'.  The exception to
+--   this is for 'transparent': it gets converted to
+--   @X11Color 'Transparent'@.
+fromAColour :: AlphaColour Double -> Color
+fromAColour ac
+  | ac == transparent = X11Color Transparent
+  | otherwise         = rgb $ round a
+  where
+    a = alphaChannel ac * maxWord
+    rgb = uncurryRGB RGBA $ toSRGBBounded colour
+    colour = darken (recip a) (ac `over` black)
+
+-- | The 'maxBound' of a 'Word8' value.
+maxWord :: Double
+maxWord = fromIntegral (maxBound :: Word8)
