@@ -77,7 +77,7 @@ import Data.Function(on)
 import Data.Maybe(isJust, fromMaybe, isNothing)
 import Data.Ratio((%))
 import Data.Word(Word8)
-import Control.Monad(liftM, liftM2, when)
+import Control.Monad(liftM, when)
 
 -- -----------------------------------------------------------------------------
 -- Based off code from Text.Parse in the polyparse library
@@ -201,9 +201,11 @@ parseFloat = do ds   <- many (satisfy isDigit)
                         $ do character '.'
                              many1 (satisfy isDigit)
                                `adjustErr` (++ "\nexpected digit after .")
+                when (isNothing frac && null ds)
+                  (fail "No actual digits in floating point number!")
                 expn  <- optional parseExp
                 when (isNothing frac && isNothing expn)
-                  (fail "No decimals or exponential in floating point number!")
+                  (fail "This is an integer, not a floating point number!")
                 let frac' = fromMaybe "" frac
                     expn' = fromMaybe 0 expn
                 ( return . fromRational . (* (10^^(expn' - length frac')))
