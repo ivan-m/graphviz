@@ -1,23 +1,23 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 {- |
-   Module      : Data.GraphViz.Types.Testing
-   Description : Testing suite for Graphviz.
+   Module      : Data.GraphViz.Testing.Instances
+   Description : 'Arbitrary' instances for graphviz.
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
-   This defines several properties that should be held within
-   graphviz, as well as 'Arbitrary' instances for the various Graphviz
-   types.  Note that they do not generally generate /sensible/ values
-   for the various types; in particular, there's no guarantee that the
+   This module defines the 'Arbitrary' instances for the various types
+   used to represent Graphviz Dot code.
+
+   Note that they do not generally generate /sensible/ values for the
+   various types; in particular, there's no guarantee that the
    'Attributes' chosen for a particular value type are indeed legal
    for that type.
-
 -}
-module Data.GraphViz.Types.Testing where
+module Data.GraphViz.Testing.Instances() where
 
-import Data.GraphViz.Types.Printing(PrintDot(..), printIt)
-import Data.GraphViz.Types.Parsing( ParseDot(..), parseIt
-                                  , quoteChar, isIntString, isNumString)
+import Data.GraphViz.Types.Parsing(isIntString, isNumString)
 
 import Data.GraphViz.Attributes
 import Data.GraphViz.Types
@@ -28,19 +28,6 @@ import Data.Maybe(isJust)
 import Data.List(nub)
 import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
 import Data.Word(Word8)
-
--- -----------------------------------------------------------------------------
-
-
-
-printParse   :: (ParseDot a, PrintDot a, Eq a) => a -> Bool
-printParse a = fst (tryParse a) == a
-
-printParseList    :: (ParseDot a, PrintDot a, Eq a) => [a] -> Property
-printParseList as =  not (null as) ==> printParse as
-
-tryParse :: (ParseDot a, PrintDot a) => a -> (a, String)
-tryParse = parseIt . printIt
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the overall types
@@ -88,9 +75,9 @@ instance Arbitrary GlobalAttributes where
                     , liftM EdgeAttrs  arbList
                     ]
 
-  shrink (GraphAttrs attrs) = map GraphAttrs $ nonEmptyShrinks attrs
-  shrink (NodeAttrs  attrs) = map NodeAttrs  $ nonEmptyShrinks attrs
-  shrink (EdgeAttrs  attrs) = map EdgeAttrs  $ nonEmptyShrinks attrs
+  shrink (GraphAttrs atts) = map GraphAttrs $ nonEmptyShrinks atts
+  shrink (NodeAttrs  atts) = map NodeAttrs  $ nonEmptyShrinks atts
+  shrink (EdgeAttrs  atts) = map EdgeAttrs  $ nonEmptyShrinks atts
 
 instance (Eq a, Arbitrary a) => Arbitrary (DotSubGraph a) where
   arbitrary = liftM3 DotSG arbitrary arbitrary (arbDS False)
@@ -538,8 +525,6 @@ instance Arbitrary LayerRange where
   arbitrary = oneof [ liftM  LRID arbitrary
                     , liftM3 LRS arbitrary arbLayerSep arbitrary
                     ]
-    where
-      arbLayerSep = listOf1 (elements defLayerSep)
 
   shrink (LRID nm)     = map LRID $ shrink nm
   shrink (LRS l1 _ l2) = [LRID l1, LRID l2]
@@ -792,8 +777,8 @@ formatString str
   | otherwise                = str
     where
       -- The '0' is because read ".1" fails
-      fixNumString ('-':str) = '-' : '0' : str
-      fixNumString str       = '0' : str
+      fixNumString ('-':st) = '-' : '0' : st
+      fixNumString st       = '0' : st
 
       str' = case dropWhile ((==) '0') str of
                ""  -> "0"
@@ -836,7 +821,7 @@ shrinkL xs = case shrink xs of
                xs' -> xs'
 
 notInt   :: Double -> Bool
-notInt d = fromIntegral (round d) /= d
+notInt d = fromIntegral (round d :: Int) /= d
 
 notBothInt         :: (Double, Double) -> Bool
 notBothInt (p1,p2) = notInt p1 && notInt p2
