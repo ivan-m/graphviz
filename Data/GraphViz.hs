@@ -63,7 +63,6 @@ import qualified Data.Set as Set
 import Control.Arrow((&&&))
 import Data.Maybe(mapMaybe, fromJust)
 import qualified Data.Map as Map
-import Control.Parallel.Strategies(rnf)
 import Control.Monad(liftM)
 import System.IO(hGetContents)
 import System.IO.Unsafe(unsafePerformIO)

@@ -34,7 +34,6 @@ Library {
                            array,
                            fgl,
                            filepath,
-                           parallel >= 1.1 && < 1.2,
                            polyparse >= 1.1,
                            pretty,
                            colour >= 2.3 && < 2.4
