@@ -63,8 +63,8 @@ module Data.GraphViz.Types.Parsing
     , commaSep'
     , stringRep
     , stringReps
-    -- * Pre-processing
-    , preprocess
+    -- * Pre-processing of Dot code to remove comments, etc.
+    , preProcess
     ) where
 
 import Data.GraphViz.Types.Internal
@@ -347,8 +347,9 @@ tryParseList' = liftM (fromMaybe []) . optional
 
 -- | Remove unparseable features of Dot, such as comments and
 --   multi-line strings (which are converted to single-line strings).
-preprocess :: String -> String
-preprocess = fst . runParser parseOutUnwanted
+preProcess :: String -> String
+preProcess = fst . runParser parseOutUnwanted
+             -- snd should be null
 
 -- | Parse out comments and make quoted strings spread over multiple
 --   lines only over a single line.  Should parse the /entire/ input

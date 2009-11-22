@@ -142,7 +142,7 @@ printDotGraph = printIt
 --
 --   Also removes any comments, etc. before parsing.
 parseDotGraph :: (ParseDot a) => String -> DotGraph a
-parseDotGraph = fst . parseIt . preprocess
+parseDotGraph = fst . parseIt . preProcess
 
 -- | Check if all the 'Attribute's are being used correctly.
 isValidGraph :: DotGraph a -> Bool
