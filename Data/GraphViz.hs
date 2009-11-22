@@ -29,6 +29,9 @@ module Data.GraphViz
     , NodeCluster(..)
     , clusterGraphToDot
     , clusterGraphToDot'
+      -- ** Utility functions
+    , prettyPrint
+    , prettyPrint'
       -- * Passing the graph through Graphviz.
       -- ** Type aliases for @Node@ and @Edge@ labels.
     , AttributeNode
@@ -53,6 +56,7 @@ import Data.GraphViz.Types
 import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
+import Data.GraphViz.Types.Printing(PrintDot)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
@@ -60,6 +64,7 @@ import Control.Arrow((&&&))
 import Data.Maybe(mapMaybe, fromJust)
 import qualified Data.Map as Map
 import Control.Parallel.Strategies(rnf)
+import Control.Monad(liftM)
 import System.IO(hGetContents)
 import System.IO.Unsafe(unsafePerformIO)
 
@@ -291,3 +296,30 @@ dotizeClusterGraph'   :: (Ord b, Ord c, Graph gr) => gr a b
                          -> (LNode a -> NodeCluster c l)
                          -> gr (AttributeNode a) (AttributeEdge b)
 dotizeClusterGraph' g = dotizeClusterGraph (isDirected g) g
+
+-- -----------------------------------------------------------------------------
+-- Utility Functions
+
+-- | Pretty-print the 'DotGraph' by passing it through the 'Canon'
+--   output type (which produces \"canonical\" output).  This is
+--   required because the @printIt@ function in
+--   "Data.GraphViz.Types.Printing" no longer uses indentation to
+--   ensure the Dot code is printed correctly.
+prettyPrint    :: (PrintDot a) => DotGraph a -> IO String
+prettyPrint dg = liftM fromRight
+                 -- Note that the choice of command here should be
+                 -- arbitrary.
+                 $ graphvizWithHandle (commandFor dg)
+                                      dg
+                                      Canon
+                                      hGetContents'
+  where
+    fromRight (Right r) = r
+    fromRight Left{}    = fail "Usage of prettyPrint failed; \
+                                \is the Graphviz suite of tools installed?"
+
+-- | The 'unsafePerformIO'd version of 'prettyPrint'.  Graphviz should
+--   always produce the same pretty-printed output, so this should be
+--   safe.
+prettyPrint' :: (PrintDot a) => DotGraph a -> String
+prettyPrint' = unsafePerformIO . prettyPrint
