@@ -44,8 +44,8 @@ prop_preProcessingID dg = preProcess dotCode == dotCode
     dotCode = printDotGraph dg
 
 -- | This is a version of 'prop_printParseID' that tries to parse the
--- | pretty-printed output of 'prettyPrint'' rather than just 'printIt'.
-prop_parsePrettyID    :: (PrintDot a) => DotGraph a -> Bool
+--   pretty-printed output of 'prettyPrint'' rather than just 'printIt'.
+prop_parsePrettyID    :: (Eq a, ParseDot a, PrintDot a) => DotGraph a -> Bool
 prop_parsePrettyID dg = (fst . parseIt . prettyPrint') dg == dg
 
 -- -----------------------------------------------------------------------------
