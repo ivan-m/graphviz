@@ -570,14 +570,17 @@ instance Arbitrary Pos where
   arbitrary = oneof [ liftM PointPos arbitrary
                       -- A single spline with only one point overall
                       -- is just a point...
-                    , liftM SplinePos $ suchThat arbList isValid
+                    , liftM SplinePos $ suchThat arbList validSplineList
                     ]
     where
-      isValid [Spline Nothing Nothing [_]] = False
-      isValid _                            = True
 
   shrink (PointPos p)   = map PointPos $ shrink p
-  shrink (SplinePos ss) = map SplinePos $ nonEmptyShrinks ss
+  shrink (SplinePos ss) = map SplinePos . filter validSplineList
+                          $ nonEmptyShrinks ss
+
+validSplineList                              :: [Spline] -> Bool
+validSplineList [Spline Nothing Nothing [_]] = False
+validSplineList _                            = True
 
 instance Arbitrary Spline where
   arbitrary = liftM3 Spline arbitrary arbitrary
