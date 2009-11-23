@@ -18,7 +18,7 @@ module Data.GraphViz.Testing.Instances.FGL() where
 
 import Test.QuickCheck
 
-import Data.Graph.Inductive.Graph( Graph, mkGraph, nodes, delNode)
+import Data.Graph.Inductive.Graph(Graph, mkGraph, nodes, delNode)
 import Data.List(nub)
 import Control.Monad(liftM, liftM3)
 
@@ -32,7 +32,6 @@ instance (Graph g, Arbitrary n, Arbitrary e) => Arbitrary (g n e) where
                  les <- listOf $ makeLEdge nGen
                  return $ mkGraph lns les
     where
-      genCon nGen n = ()
       makeLNode n = liftM ((,) n) arbitrary
       makeLEdge nGen = liftM3 (,,) nGen nGen arbitrary
 

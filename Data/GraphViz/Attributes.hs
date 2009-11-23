@@ -163,7 +163,6 @@ import Data.GraphViz.Types.Internal
 import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
 
-import Data.Char(isDigit)
 import Data.Maybe(isJust)
 import Control.Arrow(first)
 import Control.Monad(liftM, liftM2)

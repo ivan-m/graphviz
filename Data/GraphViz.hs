@@ -64,7 +64,6 @@ import Control.Arrow((&&&))
 import Data.Maybe(mapMaybe, fromJust)
 import qualified Data.Map as Map
 import Control.Monad(liftM)
-import System.IO(hGetContents)
 import System.IO.Unsafe(unsafePerformIO)
 
 -- -----------------------------------------------------------------------------

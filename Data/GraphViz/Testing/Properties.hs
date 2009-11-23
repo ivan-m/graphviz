@@ -17,10 +17,6 @@ import Data.GraphViz.Types.Parsing(ParseDot(..), parseIt, preProcess)
 import Test.QuickCheck
 
 import Data.Graph.Inductive(DynGraph, equal, nmap, emap)
-import Data.Maybe(isJust)
-import Data.List(nub)
-import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
-import Data.Word(Word8)
 
 -- -----------------------------------------------------------------------------
 -- The properties to test for
