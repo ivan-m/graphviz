@@ -1,3 +1,9 @@
 Areas to work on:
 
 * Utilise the generic graph class once it is finalised.
+
+* Add generic versions (that is, order isn't important) of
+  Data.GraphViz.Types
+
+* Encoding: Graphviz uses UTF-8 by default, Latin1 when set; should
+  graphviz use utf8-string and disable changing the encoding?
