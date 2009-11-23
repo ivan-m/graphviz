@@ -640,7 +640,7 @@ instance Arbitrary StartType where
 
   shrink StartStyle{} = [] -- No shrinks for STStyle
   shrink (StartSeed ss) = map StartSeed $ shrink ss
-  shrink (StartStyleSeed st ss) = map (flip StartStyleSeed ss) $ shrink st
+  shrink (StartStyleSeed st ss) = map (StartStyleSeed st) $ shrink ss
 
 instance Arbitrary STStyle where
   arbitrary = arbBounded
