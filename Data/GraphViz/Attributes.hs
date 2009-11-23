@@ -1433,7 +1433,7 @@ instance ParseDot LayerList where
 
     parse = quotedParse parseUnqt
             `onFail`
-            liftM (flip LL []) parseLayerName'
+            liftM (flip LL []) (parseLayerName' `onFail` numString)
 
 -- -----------------------------------------------------------------------------
 
