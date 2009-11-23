@@ -538,7 +538,7 @@ instance Arbitrary LayerID where
   shrink AllLayers   = []
   shrink (LRInt i)   = map LRInt $ shrink i
   shrink (LRName nm) = map LRName
-                       . filter (not . lrnameCheck)
+                       . filter lrnameCheck
                        $ shrinkString nm
 
 lrnameCheck :: String -> Bool
