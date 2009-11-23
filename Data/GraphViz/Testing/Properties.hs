@@ -9,13 +9,14 @@
 -}
 module Data.GraphViz.Testing.Properties where
 
-import Data.GraphViz(prettyPrint')
+import Data.GraphViz(dotizeGraph', prettyPrint')
 import Data.GraphViz.Types(DotGraph, printDotGraph)
 import Data.GraphViz.Types.Printing(PrintDot(..), printIt)
 import Data.GraphViz.Types.Parsing(ParseDot(..), parseIt, preProcess)
 
 import Test.QuickCheck
 
+import Data.Graph.Inductive(DynGraph, equal, nmap, emap)
 import Data.Maybe(isJust)
 import Data.List(nub)
 import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
@@ -47,6 +48,18 @@ prop_preProcessingID dg = preProcess dotCode == dotCode
 --   pretty-printed output of 'prettyPrint'' rather than just 'printIt'.
 prop_parsePrettyID    :: (Eq a, ParseDot a, PrintDot a) => DotGraph a -> Bool
 prop_parsePrettyID dg = (fst . parseIt . prettyPrint') dg == dg
+
+-- | This property verifies that 'dotize'', etc. only /augment/ the
+--   original graph; that is, the actual nodes, edges and labels for
+--   each remain unchanged.  Whilst 'dotize'', etc. only require
+--   'Graph' instances, this property requires 'DynGraph' (which is a
+--   sub-class of 'Graph') instances to be able to strip off the
+--   'Attributes' augmentations.
+prop_dotizeAugment   :: (DynGraph g, Eq n, Ord e) => g n e -> Bool
+prop_dotizeAugment g = equal g (unAugment g')
+  where
+    g' = dotizeGraph' g
+    unAugment = nmap snd . emap snd
 
 -- -----------------------------------------------------------------------------
 -- Helper utility functions
