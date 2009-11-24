@@ -93,7 +93,9 @@ defaultTests :: [Test]
 defaultTests = [ test_printParseID_Attributes
                , test_printParseID
                , test_preProcessingID
-               , test_parsePrettyID
+                 -- Can't run this test, since we don't generate valid
+                 -- DotGraphs to pass to Graphviz!
+                 -- , test_parsePrettyID
                , test_dotizeAugment
                ]
 
