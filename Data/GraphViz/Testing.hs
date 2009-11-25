@@ -6,8 +6,59 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This defines a test-suite for the graphviz library.
+
+   Limitations of the test suite are as follows:
+
+   * For the most part, this library lets you use arbitrary numbers
+     for String values.  However, this is not tested due to too many
+     corner cases for special parsers that don't take arbitrary
+     Strings.  As the Dot standard is ambiguous over whether you can
+     or can't use numbers as Strings (more specifically, if they
+     should be quoted or not), this is a user beware situation.
+
+   * Same goes for empty Strings; sometimes they're allowed, sometimes
+     they're not.  Thus, to simplify matters they're not generated.
+
+   * The generated Strings are very simple, only composed of lower
+     case letters, digits and some symbols.  This is because too many
+     tests were "failing" due to some corner case; e.g. lower-case
+     letters only because the parser parses Strings as lowercase, so
+     if a particular String isn't valid (e.g. @\"all\"@ for 'LayerID',
+     then the 'Arbitrary' instance has to ensure that all possible
+     ways of capitalising that String isn't generated as a random
+     'LRName'.
+
+   * The generated 'DotGraph's are not guaranteed to be valid; as
+     such, the 'prop_parsePrettyID' property is not able to be tested
+     as dot, etc. choke on invalid Dot code.
+
+   * To avoid needless endless recursion, 'DotSubGraph's do not have
+     sub-'DotSubGraph's.
+
+   * The 'Graph' values that are generated do not have multiple edges,
+     as the 'prop_dotizeAugment' property uses 'dotize'', which makes
+     no guarantees on what will happen for 'Graph's with multiple
+     edges.
+
+   * This test suite isn't perfect: if you deliberately try to stuff
+     something up, you probably can.
 -}
-module Data.GraphViz.Testing where
+module Data.GraphViz.Testing
+       ( -- * Running the test suite.
+         runDefaultTests
+         -- ** The tests themselves
+       , test_printParseID_Attributes
+       , test_printParseID
+       , test_preProcessingID
+       , test_parsePrettyID
+       , test_dotizeAugment
+        -- * Re-exporting modules for manual testing.
+       , module Data.GraphViz
+       , module Data.GraphViz.Testing.Properties
+       , printIt
+       , parseIt
+       , preProcess
+       ) where
 
 import Test.QuickCheck
 
@@ -17,8 +68,9 @@ import Data.GraphViz.Testing.Instances()
 import Data.GraphViz.Testing.Instances.FGL()
 import Data.GraphViz.Testing.Properties
 
-import Data.GraphViz.Attributes(Attributes)
-import Data.GraphViz.Types(DotGraph)
+import Data.GraphViz hiding (RunResult(..))
+import Data.GraphViz.Types.Parsing(parseIt, preProcess)
+import Data.GraphViz.Types.Printing(printIt)
 -- Can't use PatriciaTree because a Show instance is needed.
 import Data.Graph.Inductive.Tree(Gr)
 
@@ -150,6 +202,7 @@ test_preProcessingID
              \test verifies that this pre-processing doesn't affect actual\n\
              \Dot code by running the pre-processor on generated Dot code."
 
+-- | This test is not valid for use until valid DotGraphs can be generated.
 test_parsePrettyID :: Test
 test_parsePrettyID
   = Test { name = "Parsing pretty-printed code"
