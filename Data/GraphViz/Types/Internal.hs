@@ -57,6 +57,7 @@ isIntString str = if isNum
                   else Nothing
   where
     isNum = case str of
+              ""        -> False
               ['-']     -> False
               ('-':num) -> isNum' num
               _         -> isNum' str
