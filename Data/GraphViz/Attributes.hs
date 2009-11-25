@@ -1921,20 +1921,23 @@ instance ParseDot StyleItem where
                    args <- tryParseList' parseArgs
                    return $ SItem nm args
         where
-          parseArgs = bracketSep (character '(')
-                                 parseComma
-                                 (character ')')
-                                 parseStyleName
 
-    -- Ignore quotations for the DD case atm, since I'm not sure how
-    -- to deal with it.
+    parse = quotedParse (liftM2 SItem parseUnqt parseArgs)
+            `onFail`
+            liftM (flip SItem []) parse
 
     parseUnqtList = sepBy1 parseUnqt parseComma
 
-    -- Might not necessarily need to be quoted if a singleton...
-    parseList = liftM return parseUnqt
+    parseList = quotedParse parseUnqtList
                 `onFail`
-                quotedParse parseUnqtList
+                -- Might not necessarily need to be quoted if a singleton...
+                liftM return parse
+
+parseArgs :: Parse [String]
+parseArgs = bracketSep (character '(')
+                       parseComma
+                       (character ')')
+                       parseStyleName
 
 data StyleName = Dashed    -- ^ Nodes and Edges
                | Dotted    -- ^ Nodes and Edges
@@ -1973,6 +1976,19 @@ instance ParseDot StyleName where
                       , liftM DD parseStyleName
                       ]
 
+    parse = optionalQuoted ( oneOf [ stringRep Filled "filled"
+                                   , stringRep Invisible "invis"
+                                   , stringRep Diagonals "diagonals"
+                                   , stringRep Rounded "rounded"
+                                   , stringRep Dashed "dashed"
+                                   , stringRep Dotted "dotted"
+                                   , stringRep Solid "solid"
+                                   , stringRep Bold "bold"
+                                   ]
+                             )
+            `onFail`
+            parseDDOnly
+
     -- Never used on its own, so not bothering with a separate parse
     -- implementation (which is iffy due to the DD case).
 
@@ -1980,6 +1996,15 @@ parseStyleName :: Parse String
 parseStyleName = do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ']
                     r <- many (orQuote $ noneOf [quoteChar, '(', ')', ','])
                     return $ f:r
+
+parseDDOnly :: Parse StyleName
+parseDDOnly = liftM DD
+              $ quotedParse parseStyleName
+                `onFail`
+                -- In case a singleton DD is at the end of an attribute list.
+                do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ', ']']
+                   r <- many (orQuote $ noneOf [quoteChar, '(', ')', ',', ']'])
+                   return $ f:r
 
 -- -----------------------------------------------------------------------------
 
