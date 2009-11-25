@@ -39,7 +39,7 @@ instance (Eq a, Arbitrary a) => Arbitrary (DotGraph a) where
                                         $ shrink stmts
 
 instance Arbitrary GraphID where
-  arbitrary = oneof [ liftM Str $ suchThat arbString (not . isNumString)
+  arbitrary = oneof [ liftM Str arbString
                     , liftM Int arbitrary
                     , liftM Dbl $ suchThat arbitrary notInt
                     , liftM HTML arbitrary
@@ -531,7 +531,7 @@ instance Arbitrary LayerID where
                        $ shrinkString nm
 
 lrnameCheck :: String -> Bool
-lrnameCheck = liftM2 (&&) (not . isNumString) ((/=) "all")
+lrnameCheck = (/=) "all"
 
 instance Arbitrary OutputMode where
   arbitrary = arbBounded
