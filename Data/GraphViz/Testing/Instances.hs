@@ -17,14 +17,14 @@
 -}
 module Data.GraphViz.Testing.Instances() where
 
-import Data.GraphViz.Types.Parsing(isIntString, isNumString)
+import Data.GraphViz.Types.Parsing(isNumString)
 
 import Data.GraphViz.Attributes
 import Data.GraphViz.Types
 
 import Test.QuickCheck
 
-import Data.Maybe(isJust)
+import Data.Char(toLower)
 import Data.List(nub)
 import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
 import Data.Word(Word8)
@@ -35,9 +35,8 @@ import Data.Word(Word8)
 instance (Eq a, Arbitrary a) => Arbitrary (DotGraph a) where
   arbitrary = liftM4 DotGraph arbitrary arbitrary arbitrary arbitrary
 
-  shrink (DotGraph str dir gid stmts) = do gid' <- shrink gid
-                                           stmts' <- shrink stmts
-                                           return $ DotGraph str dir gid' stmts'
+  shrink (DotGraph str dir gid stmts) = map (DotGraph str dir gid)
+                                        $ shrink stmts
 
 instance Arbitrary GraphID where
   arbitrary = oneof [ liftM Str $ suchThat arbString (not . isNumString)
@@ -82,24 +81,17 @@ instance Arbitrary GlobalAttributes where
 instance (Eq a, Arbitrary a) => Arbitrary (DotSubGraph a) where
   arbitrary = liftM3 DotSG arbitrary arbitrary (arbDS False)
 
-  shrink (DotSG isCl mid stmts) = do mid' <- shrinkM mid
-                                     stmts' <- shrink stmts
-                                     return $ DotSG isCl mid' stmts'
+  shrink (DotSG isCl mid stmts) = map (DotSG isCl mid) $ shrink stmts
 
 instance (Arbitrary a) => Arbitrary (DotNode a) where
   arbitrary = liftM2 DotNode arbitrary arbitrary
 
-  shrink (DotNode n as) = do n' <- shrink n
-                             as' <- shrink as
-                             return $ DotNode n' as'
+  shrink (DotNode n as) = map (DotNode n) $ shrinkList as
 
 instance (Arbitrary a) => Arbitrary (DotEdge a) where
   arbitrary = liftM4 DotEdge arbitrary arbitrary arbitrary arbitrary
 
-  shrink (DotEdge f t isDir as) = do f' <- shrink f
-                                     t' <- shrink t
-                                     as' <- shrink as
-                                     return $ DotEdge f' t' isDir as'
+  shrink (DotEdge f t isDir as) = map (DotEdge f t isDir) $ shrinkList as
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for Attributes
@@ -403,10 +395,7 @@ instance Arbitrary Word8 where
 
 instance Arbitrary URL where
   arbitrary = liftM UStr
-              $ suchThat arbString (all notAngled)
-    where
-      -- Ensure it doesn't have any angled brackets
-      notAngled = flip notElem ['<', '>']
+              $ suchThat arbString (not . null)
 
   shrink (UStr ustr) = map UStr $ nonEmptyShrinks ustr
 
@@ -767,25 +756,17 @@ posArbitrary :: (Arbitrary a, Num a, Ord a) => Gen a
 posArbitrary = liftM fromPositive arbitrary
 
 arbString :: Gen String
-arbString = do str <- listOf1 $ suchThat arbitrary
-                                         (flip notElem ['\\', '\r', '\n'])
-               return $ formatString str
+arbString = liftM (map toLower) $ suchThat genStr notNumStr
+  where
+    genStr = listOf1 $ elements strChr
+    strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '\t', '(', ')'
+                                         , ',', ':', '.']
 
--- Do this for the cases where we have a String like ".1"; this
--- will be parsed as "0.1"
-formatString :: String -> String
-formatString str
-  | isJust $ isIntString str = str'
-  | isNumString str          = show (read $ fixNumString str' :: Double)
-  | otherwise                = str
-    where
-      -- The '0' is because read ".1" fails
-      fixNumString ('-':st) = '-' : '0' : st
-      fixNumString st       = '0' : st
+shrinkString :: String -> [String]
+shrinkString = filter notNumStr . nonEmptyShrinks
 
-      str' = case dropWhile ((==) '0') str of
-               ""  -> "0"
-               num -> num
+notNumStr :: String -> Bool
+notNumStr = not . isNumString
 
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]
@@ -805,12 +786,30 @@ arbList :: (Arbitrary a) => Gen [a]
 arbList = listOf1 arbitrary
 
 nonEmptyShrinks :: (Arbitrary a) => [a] -> [[a]]
-nonEmptyShrinks = filter (not . null) . shrink
+nonEmptyShrinks = filter (not . null) . shrinkList
 
-shrinkString :: String -> [String]
-shrinkString str
-  | isNumString str = []
-  | otherwise       = map formatString $ nonEmptyShrinks str
+-- Shrink lists with more than one value only by removing values, not
+-- by shrinking individual items.
+shrinkList     :: (Arbitrary a) => [a] -> [[a]]
+shrinkList [a] = map return $ shrink a
+shrinkList as  = rm (length as) as
+  where
+    rm 0 _  = []
+    rm 1 _  = [[]]
+    rm n xs = xs1
+            : xs2
+            : ( [ xs1' ++ xs2 | xs1' <- rm n1 xs1, not (null xs1') ]
+                `ilv` [ xs1 ++ xs2' | xs2' <- rm n2 xs2, not (null xs2') ]
+              )
+     where
+      n1  = n `div` 2
+      xs1 = take n1 xs
+      n2  = n - n1
+      xs2 = drop n1 xs
+
+    []     `ilv` ys     = ys
+    xs     `ilv` []     = xs
+    (x:xs) `ilv` (y:ys) = x : y : (xs `ilv` ys)
 
 -- When a Maybe value is a sub-component, and we need shrink to return
 -- a value.
@@ -819,7 +818,7 @@ shrinkM Nothing = [Nothing]
 shrinkM j       = shrink j
 
 shrinkL    :: (Arbitrary a) => [a] -> [[a]]
-shrinkL xs = case shrink xs of
+shrinkL xs = case shrinkList xs of
                []  -> [xs]
                xs' -> xs'
 
