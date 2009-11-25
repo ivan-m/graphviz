@@ -46,15 +46,16 @@ isNumString str = case str of
                     _          -> go str
     where
       go s = case span isDigit (map toLower s) of
-               (ds,[])       -> all isDigit ds
+               (ds@(_:_),[]) -> all isDigit ds
                ([],'.':[])   -> False
                ([],'.':d:ds) -> isDigit d && checkEs' ds
-               (_,'.':ds)    -> checkEs' ds
+               (_,'.':ds)    -> checkEs $ dropWhile isDigit ds
                ([],_)        -> False
                (_,ds)        -> checkEs ds
       checkEs' s = case break ((==) 'e') s of
                      ([], _) -> False
                      (ds,es) -> all isDigit ds && checkEs es
+      checkEs []       = True
       checkEs ('e':ds) = isIntString ds
       checkEs _        = False
 
