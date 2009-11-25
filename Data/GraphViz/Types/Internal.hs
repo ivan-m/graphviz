@@ -46,6 +46,7 @@ isNumString str = case str of
                     _          -> go str
     where
       go s = case span isDigit (map toLower s) of
+               (ds,[])       -> all isDigit ds
                ([],'.':[])   -> False
                ([],'.':d:ds) -> isDigit d && checkEs' ds
                (_,'.':ds)    -> checkEs' ds
