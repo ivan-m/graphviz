@@ -358,9 +358,9 @@ parseOutUnwanted :: Parse String
 parseOutUnwanted = liftM concat (many getNext)
     where
       getNext :: Parse String
-      getNext = (oneOf [ parseLineComment, parseMultiLineComment ] >> return [])
+      getNext = parseSplitStrings
                 `onFail`
-                parseSplitStrings
+                (oneOf [ parseLineComment, parseMultiLineComment ] >> return [])
                 `onFail`
                 liftM return next
 
