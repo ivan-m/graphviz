@@ -241,10 +241,10 @@ instance ParseDot GraphID where
             (++ "\nNot a valid GraphID")
 
 stringNum     :: String -> GraphID
-stringNum str = maybe checkDbl Int $ isIntString str
+stringNum str = maybe checkDbl Int $ stringToInt str
   where
     checkDbl = if isNumString str
-               then Dbl (read str)
+               then Dbl $ toDouble str
                else Str str
 
 -- -----------------------------------------------------------------------------

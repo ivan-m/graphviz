@@ -1407,7 +1407,7 @@ instance ParseDot LayerID where
                   ]
 
 checkLayerName     :: String -> LayerID
-checkLayerName str = maybe (LRName str) LRInt $ isIntString str
+checkLayerName str = maybe (LRName str) LRInt $ stringToInt str
 
 -- | The list represent (Separator, Name).  You should not have any
 --   quote characters for any of the 'String's, since there are

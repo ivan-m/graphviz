@@ -15,6 +15,7 @@ import Data.Char( isAsciiUpper
                 , toLower
                 )
 
+import Data.Maybe(isJust)
 import qualified Data.Set as Set
 import Data.Set(Set)
 import Control.Monad(liftM2)
@@ -44,15 +45,36 @@ isNumString str = case str of
                     ('-':str') -> go str'
                     _          -> go str
     where
-      go [] = False
-      go cs = case dropWhile isDigit cs of
-                []       -> True
-                ('.':ds) -> not (null ds) && all isDigit ds
-                _        -> False
+      go s = case span isDigit (map toLower s) of
+               ([],'.':[])   -> False
+               ([],'.':d:ds) -> isDigit d && checkEs' ds
+               (_,'.':ds)    -> checkEs' ds
+               ([],_)        -> False
+               (_,ds)        -> checkEs ds
+      checkEs' s = case break ((==) 'e') s of
+                     ([], _) -> False
+                     (ds,es) -> all isDigit ds && checkEs es
+      checkEs ('e':ds) = isIntString ds
+      checkEs _        = False
+
+-- | This assumes that 'isNumString' is 'True'.
+toDouble     :: String -> Double
+toDouble str = case str of
+                 ('-':str') -> read $ '-' : adj str'
+                 _          -> read $ adj str
+  where
+    adj s = (:) '0'
+            $ case span ((==) '.') (map toLower s) of
+                (ds@(_:_), '.':[])   -> ds ++ '.' : '0' : []
+                (ds, '.':es@('e':_)) -> ds ++ '.' : '0' : es
+                _                    -> s
+
+isIntString :: String -> Bool
+isIntString = isJust . stringToInt
 
 -- | Determine if this String represents an integer.
-isIntString     :: String -> Maybe Int
-isIntString str = if isNum
+stringToInt     :: String -> Maybe Int
+stringToInt str = if isNum
                   then Just (read str)
                   else Nothing
   where
