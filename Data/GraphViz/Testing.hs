@@ -31,6 +31,7 @@ runDefaultTests :: IO ()
 runDefaultTests = do putStrLn msg
                      blankLn
                      runTests defaultTests
+                     spacerLn
                      putStrLn successMsg
   where
     msg = "This is the test suite for the graphviz library.\n\
@@ -55,8 +56,7 @@ runTests = mapM_ runTest
 
 -- | Run the provided test.
 runTest     :: Test -> IO ()
-runTest tst = do putStrLn header
-                 blankLn
+runTest tst = do spacerLn
                  putStrLn title
                  blankLn
                  putStrLn $ desc tst
@@ -69,14 +69,16 @@ runTest tst = do putStrLn header
                    _         -> die failMsg
                  blankLn
   where
-    header = replicate 20 '='
     nm = '"' : name tst ++ "\""
-    title = "Now testing for: " ++ nm ++ "."
+    title = "Running test: " ++ nm ++ "."
     successMsg = "All tests for " ++ nm ++ " were successful!"
     gaveUpMsg = "Too many sample inputs for " ++ nm ++ " were rejected;\n\
                  \tentatively marking this as successful."
     failMsg = "The tests for " ++ nm ++ " failed!\n\
                \Not attempting any further tests."
+
+spacerLn :: IO ()
+spacerLn = putStrLn (replicate 70 '=') >> blankLn
 
 blankLn :: IO ()
 blankLn = putStrLn ""
@@ -115,8 +117,8 @@ test_printParseID_Attributes
       defGen = maxSuccess stdArgs
 
       dsc = "The most common source of errors in printing and parsing are for\n\
-            \Attributes.  As such, these are stress-tested before we run test\n\
-            \the rest of the tests, generating " ++ show numGen ++ " lists of\n\
+            \Attributes.  As such, these are stress-tested before we run the\n\
+            \rest of the tests, generating " ++ show numGen ++ " lists of\n\
             \Attributes rather than the default " ++ show defGen ++ " tests."
 
 test_printParseID :: Test
@@ -171,7 +173,7 @@ test_dotizeAugment
          , test = quickCheckResult prop
          }
     where
-      prop :: Gr Int Char -> Bool
+      prop :: Gr Char Double -> Bool
       prop = prop_dotizeAugment
 
       dsc = "The various Graph to Graph functions in Data.GraphViz should\n\
