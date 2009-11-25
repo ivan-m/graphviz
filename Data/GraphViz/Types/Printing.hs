@@ -142,6 +142,7 @@ qtChar c
 -- | Escape quotes in Strings that need them.
 unqtString :: String -> DotCode
 unqtString str
+    | null str        = empty
     | isIDString str  = text str
     | isNumString str = text str
     | otherwise       = text $ escapeQuotes str
@@ -149,6 +150,7 @@ unqtString str
 -- | Escape quotes and quote Strings that need them (including keywords).
 qtString :: String -> DotCode
 qtString str
+    | null str        = doubleQuotes empty
     | isKeyword str   = doubleQuotes $ text str
     | isIDString str  = text str
     | isNumString str = text str
