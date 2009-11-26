@@ -442,7 +442,7 @@ parseSubGraphID = do string sGraph
                      liftM (uncurry DotSG) parseSGID
 
 parseSGID :: Parse (Bool, Maybe GraphID)
-parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
+parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace pID
                   , return (False, Nothing)
                   ]
   where
@@ -463,6 +463,18 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
               return (isCl, sID')
 
     emptyID = Just $ Str ""
+
+    -- Have to make sure that escaped quotes aren't un-escaped
+    pID = oneOf [ liftM Dbl parseStrictFloat
+                , liftM Int parseUnqt
+                , liftM HTML parseUnqt
+                , liftM Str stringBlock
+                , liftM Str $ quotedParse unEsc
+                ]
+
+    unEsc = liftM concat . many $ string "\\\""
+                                  `onFail`
+                                  liftM return (satisfy ((/=) quoteChar))
 
 {- This is a much nicer result, but unfortunately it doesn't work.
    The problem is that Graphviz decides that a subgraph is a cluster
