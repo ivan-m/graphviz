@@ -156,8 +156,8 @@ instance (PrintDot a) => PrintDot (DotGraph a) where
     unqtDot = printStmtBased printGraphID graphStatements
 
 printGraphID   :: (PrintDot a) => DotGraph a -> DotCode
-printGraphID g = bool strGraph' empty (strictGraph g)
-                 <+> bool dirGraph' undirGraph' (directedGraph g)
+printGraphID g = bool empty strGraph' (strictGraph g)
+                 <+> bool undirGraph' dirGraph' (directedGraph g)
                  <+> maybe empty toDot (graphID g)
 
 instance (ParseDot a) => ParseDot (DotGraph a) where
@@ -413,12 +413,12 @@ printSubGraphID s = sGraph'
                     <+> maybe cl dtID (subGraphID s)
     where
       isCl = isCluster s
-      cl = bool clust' empty isCl
+      cl = bool empty clust' isCl
       dtID = printSGID isCl
 
 -- | Print the actual ID for a 'DotSubGraph'.
 printSGID          :: Bool -> GraphID -> DotCode
-printSGID isCl sID = bool addClust noClust isCl
+printSGID isCl sID = bool noClust addClust isCl
     where
       noClust = toDot sID
       -- Have to manually render it as we need the un-quoted form.
@@ -509,7 +509,7 @@ instance Functor DotSubGraph where
 invalidSubGraph    :: DotSubGraph a -> [DotError a]
 invalidSubGraph sg = invalidStmts valFunc (subGraphStmts sg)
     where
-      valFunc = bool usedByClusters usedBySubGraphs (isCluster sg)
+      valFunc = bool usedBySubGraphs usedByClusters (isCluster sg)
 
 subGraphNodes :: DotSubGraph a -> [DotNode a]
 subGraphNodes = statementNodes . subGraphStmts
@@ -575,7 +575,7 @@ instance (PrintDot a) => PrintDot (DotEdge a) where
 
 printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
 printEdgeID e = unqtDot (edgeFromNodeID e)
-                <+> bool dirEdge' undirEdge' (directedEdge e)
+                <+> bool undirEdge' dirEdge' (directedEdge e)
                 <+> unqtDot (edgeToNodeID e)
 
 

@@ -112,8 +112,8 @@ keywords = Set.fromList [ "node"
                         , "strict"
                         ]
 
--- | Fold over 'Bool's.
+-- | Fold over 'Bool's; first param is for 'False', second for 'True'.
 bool       :: a -> a -> Bool -> a
-bool t f b = if b
+bool f t b = if b
              then t
              else f

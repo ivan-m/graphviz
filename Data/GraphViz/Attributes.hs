@@ -1055,7 +1055,7 @@ instance PrintDot ArrowFill where
     unqtDot FilledArrow = empty
 
 instance ParseDot ArrowFill where
-    parseUnqt = liftM (bool OpenArrow FilledArrow . isJust)
+    parseUnqt = liftM (bool FilledArrow OpenArrow . isJust)
                 $ optional (character 'o')
 
     -- Not used individually
@@ -1078,7 +1078,7 @@ instance ParseDot ArrowSide where
                 $ optional (oneOf $ map character ['l', 'r'])
         where
           getSideType = maybe BothSides
-                              (bool LeftSide RightSide . (==) 'l')
+                              (bool RightSide LeftSide . (==) 'l')
 
     -- Not used individually
     parse = parseUnqt
@@ -1173,7 +1173,7 @@ instance PrintDot DEConstraints where
     unqtDot HierConstraints = text "hier"
 
 instance ParseDot DEConstraints where
-    parseUnqt = liftM (bool EdgeConstraints NoConstraints) parse
+    parseUnqt = liftM (bool NoConstraints EdgeConstraints) parse
                 `onFail`
                 stringRep HierConstraints "hier"
 
@@ -1466,7 +1466,7 @@ instance PrintDot Pack where
 instance ParseDot Pack where
     -- What happens if it parses 0?  It's non-negative, but parses as False
     parseUnqt = oneOf [ liftM PackMargin parseUnqt
-                      , liftM (bool DoPack DontPack) onlyBool
+                      , liftM (bool DontPack DoPack) onlyBool
                       ]
 
 -- -----------------------------------------------------------------------------
@@ -1561,7 +1561,7 @@ instance PrintDot EdgeType where
 
 instance ParseDot EdgeType where
     -- Can't parse NoEdges without quotes.
-    parseUnqt = oneOf [ liftM (bool SplineEdges LineEdges) parse
+    parseUnqt = oneOf [ liftM (bool LineEdges SplineEdges) parse
                       , stringRep SplineEdges "spline"
                       , stringRep LineEdges "line"
                       , stringRep PolyLine "polyline"
@@ -1655,7 +1655,7 @@ instance ParseDot QuadType where
                       , stringRep FastQT "fast"
                       , stringRep NoQT "none"
                       , character '2'   >> return FastQT -- weird bool
-                      , liftM (bool NormalQT NoQT) parse
+                      , liftM (bool NoQT NormalQT) parse
                       ]
 
 -- -----------------------------------------------------------------------------
@@ -1675,11 +1675,11 @@ instance PrintDot Root where
     toDot r            = unqtDot r
 
 instance ParseDot Root where
-    parseUnqt = liftM (bool IsCentral NotCentral) onlyBool
+    parseUnqt = liftM (bool NotCentral IsCentral) onlyBool
                 `onFail`
                 liftM NodeName parseUnqt
 
-    parse = optionalQuoted (liftM (bool IsCentral NotCentral) onlyBool)
+    parse = optionalQuoted (liftM (bool NotCentral IsCentral) onlyBool)
             `onFail`
             liftM NodeName parse
 
