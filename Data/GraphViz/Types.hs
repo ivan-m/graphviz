@@ -422,9 +422,10 @@ printSGID isCl sID = bool noClust addClust isCl
     where
       noClust = toDot sID
       -- Have to manually render it as we need the un-quoted form.
-      addClust = mkDot . (++) clust . (:) '_'
-                 . renderDot $ unqtDot sID
-      mkDot str = addQuotes str $ text str
+      addClust = toDot . (++) clust . (:) '_'
+                 . renderDot $ mkDot sID
+      mkDot (Str str) = text str -- Quotes will be escaped later
+      mkDot gid       = unqtDot gid
 
 instance (ParseDot a) => ParseDot (DotSubGraph a) where
     parseUnqt = parseStmtBased parseSubGraphID
@@ -443,7 +444,7 @@ parseSubGraphID = do string sGraph
                      liftM (uncurry DotSG) parseSGID
 
 parseSGID :: Parse (Bool, Maybe GraphID)
-parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace pID
+parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
                   , return (False, Nothing)
                   ]
   where
@@ -457,7 +458,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace pID
                       `onFail`
                       return False
               when isCl $ optional (character '_') >> return ()
-              sID <- optional parseUnqt
+              sID <- optional pID
               let sID' = if sID == emptyID
                          then Nothing
                          else sID
@@ -465,17 +466,11 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace pID
 
     emptyID = Just $ Str ""
 
-    -- Have to make sure that escaped quotes aren't un-escaped
-    pID = oneOf [ liftM Dbl parseStrictFloat
-                , liftM Int parseUnqt
-                , liftM HTML parseUnqt
-                , liftM Str stringBlock
-                , liftM Str $ quotedParse unEsc
-                ]
-
-    unEsc = liftM concat . many $ string "\\\""
-                                  `onFail`
-                                  liftM return (satisfy ((/=) quoteChar))
+    -- For Strings, there are no more quotes to unescape, so consume
+    -- what you can.
+    pID = liftM HTML parseUnqt
+                `onFail`
+                liftM stringNum (many next)
 
 {- This is a much nicer result, but unfortunately it doesn't work.
    The problem is that Graphviz decides that a subgraph is a cluster
