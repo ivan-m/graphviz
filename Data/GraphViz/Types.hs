@@ -422,8 +422,9 @@ printSGID isCl sID = bool noClust addClust isCl
     where
       noClust = toDot sID
       -- Have to manually render it as we need the un-quoted form.
-      addClust = toDot . (++) clust . (:) '_'
+      addClust = mkDot . (++) clust . (:) '_'
                  . renderDot $ unqtDot sID
+      mkDot str = addQuotes str $ text str
 
 instance (ParseDot a) => ParseDot (DotSubGraph a) where
     parseUnqt = parseStmtBased parseSubGraphID

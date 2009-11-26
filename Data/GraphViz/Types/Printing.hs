@@ -41,6 +41,7 @@ module Data.GraphViz.Types.Printing
     , renderDot -- Exported for Data.GraphViz.Types.printSGID
     , PrintDot(..)
     , printIt
+    , addQuotes
     , wrap
     , commaDel
     , printField
@@ -139,23 +140,25 @@ qtChar c
     | restIDString c = char c -- Could be a number as well.
     | otherwise      = doubleQuotes $ char c
 
+needsQuotes :: String -> Bool
+needsQuotes str
+  | null str        = True
+  | isKeyword str   = True
+  | isIDString str  = False
+  | isNumString str = False
+  | otherwise       = True
+
+addQuotes :: String -> DotCode -> DotCode
+addQuotes = bool id doubleQuotes . needsQuotes
+
 -- | Escape quotes in Strings that need them.
-unqtString :: String -> DotCode
-unqtString str
-    | null str        = empty
-    | isIDString str  = text str
-    | isNumString str = text str
-    | otherwise       = text $ escapeQuotes str
+unqtString     :: String -> DotCode
+unqtString ""  = empty
+unqtString str = text $ escapeQuotes str -- no quotes? no worries!
 
 -- | Escape quotes and quote Strings that need them (including keywords).
-qtString :: String -> DotCode
-qtString str
-    | null str        = doubleQuotes empty
-    | isKeyword str   = doubleQuotes $ text str
-    | isIDString str  = text str
-    | isNumString str = text str
-                       -- Don't use unqtString as it re-runs isIDString
-    | otherwise       = doubleQuotes . text $ escapeQuotes str
+qtString     :: String -> DotCode
+qtString str = addQuotes str $ unqtString str
 
 instance (PrintDot a) => PrintDot [a] where
     unqtDot = unqtListToDot
