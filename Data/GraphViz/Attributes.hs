@@ -1951,39 +1951,39 @@ data StyleName = Dashed    -- ^ Nodes and Edges
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot StyleName where
-    unqtDot Filled    = text "filled"
-    unqtDot Invisible = text "invis"
-    unqtDot Diagonals = text "diagonals"
-    unqtDot Rounded   = text "rounded"
     unqtDot Dashed    = text "dashed"
     unqtDot Dotted    = text "dotted"
     unqtDot Solid     = text "solid"
     unqtDot Bold      = text "bold"
+    unqtDot Invisible = text "invis"
+    unqtDot Filled    = text "filled"
+    unqtDot Diagonals = text "diagonals"
+    unqtDot Rounded   = text "rounded"
     unqtDot (DD nm)   = unqtDot nm
 
     toDot (DD nm) = toDot nm
     toDot sn      = unqtDot sn
 
 instance ParseDot StyleName where
-    parseUnqt = oneOf [ stringRep Filled "filled"
-                      , stringRep Invisible "invis"
-                      , stringRep Diagonals "diagonals"
-                      , stringRep Rounded "rounded"
-                      , stringRep Dashed "dashed"
+    parseUnqt = oneOf [ stringRep Dashed "dashed"
                       , stringRep Dotted "dotted"
                       , stringRep Solid "solid"
                       , stringRep Bold "bold"
+                      , stringRep Invisible "invis"
+                      , stringRep Filled "filled"
+                      , stringRep Diagonals "diagonals"
+                      , stringRep Rounded "rounded"
                       , liftM DD parseStyleName
                       ]
 
-    parse = optionalQuoted ( oneOf [ stringRep Filled "filled"
-                                   , stringRep Invisible "invis"
-                                   , stringRep Diagonals "diagonals"
-                                   , stringRep Rounded "rounded"
-                                   , stringRep Dashed "dashed"
+    parse = optionalQuoted ( oneOf [ stringRep Dashed "dashed"
                                    , stringRep Dotted "dotted"
                                    , stringRep Solid "solid"
                                    , stringRep Bold "bold"
+                                   , stringRep Invisible "invis"
+                                   , stringRep Filled "filled"
+                                   , stringRep Diagonals "diagonals"
+                                   , stringRep Rounded "rounded"
                                    ]
                              )
             `onFail`
