@@ -756,11 +756,14 @@ posArbitrary :: (Arbitrary a, Num a, Ord a) => Gen a
 posArbitrary = liftM fromPositive arbitrary
 
 arbString :: Gen String
-arbString = liftM (map toLower) $ suchThat genStr notNumStr
+arbString = suchThat (liftM (map toLower) genStr) isValid
   where
     genStr = listOf1 $ elements strChr
     strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '\t', '(', ')'
                                          , ',', ':', '.']
+    isValid "true"  = False
+    isValid "false" = False
+    isValid str     = notNumStr str
 
 shrinkString :: String -> [String]
 shrinkString = filter notNumStr . nonEmptyShrinks
