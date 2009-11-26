@@ -26,7 +26,7 @@ Source-Repository head
     Type:         darcs
     Location:     http://code.haskell.org/graphviz
 
-Flag testing
+Flag test
      Description: Build the test suite, including an executable to run it.
      Default: False
 
@@ -53,7 +53,7 @@ Library {
 
         Other-Modules:     Data.GraphViz.Types.Clustering
                            Data.GraphViz.Types.Internal
-        if flag(testing)
+        if flag(test)
            Build-Depends:       QuickCheck >= 2.1 && < 2.2
 
            Exposed-Modules:     Data.GraphViz.Testing
@@ -68,7 +68,7 @@ Library {
 
 Executable graphviz-testsuite {
 
-        if flag(testing)
+        if flag(test)
            Buildable: True
         else
            Buildable: False
