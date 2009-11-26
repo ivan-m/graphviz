@@ -643,7 +643,7 @@ instance Arbitrary StyleItem where
 
 instance Arbitrary StyleName where
   arbitrary = oneof [ defaultStyles
-                    , liftM DD arbStyleName
+                    , liftM DD $ suchThat arbStyleName notDefault
                     ]
     where
       defaultStyles = elements [ Dashed
@@ -654,6 +654,15 @@ instance Arbitrary StyleName where
                                , Diagonals
                                , Rounded
                                ]
+      notDefault = flip notElem [ "dashed"
+                                , "dotted"
+                                , "solid"
+                                , "bold"
+                                , "invis"
+                                , "filled"
+                                , "diagonals"
+                                , "rounded"
+                                ]
 
 instance Arbitrary PortPos where
   arbitrary = liftM PP arbitrary
