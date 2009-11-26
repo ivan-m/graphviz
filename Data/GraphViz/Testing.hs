@@ -88,7 +88,10 @@ runDefaultTests = do putStrLn msg
   where
     msg = "This is the test suite for the graphviz library.\n\
            \If any of these tests fail, please inform the maintainer,\n\
-           \including full output of this test suite."
+           \including full output of this test suite.\n\
+           \\n\
+           \This test suite takes approximately 90 minutes to run on a\n\
+           \2 GHz Mobile Core 2 Duo (running with a single thread)."
 
     successMsg = "All tests were successful!"
 
@@ -104,12 +107,11 @@ data Test = Test { name :: String
 
 -- | Run all of the provided tests.
 runTests :: [Test] -> IO ()
-runTests = mapM_ runTest
+runTests = mapM_ ((>>) spacerLn . runTest)
 
 -- | Run the provided test.
 runTest     :: Test -> IO ()
-runTest tst = do spacerLn
-                 putStrLn title
+runTest tst = do putStrLn title
                  blankLn
                  putStrLn $ desc tst
                  blankLn
