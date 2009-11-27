@@ -163,6 +163,7 @@ import Data.GraphViz.Types.Internal
 import Data.GraphViz.Types.Parsing
 import Data.GraphViz.Types.Printing
 
+import Data.Char(toLower)
 import Data.Maybe(isJust)
 import Control.Arrow(first)
 import Control.Monad(liftM, liftM2)
@@ -1396,18 +1397,18 @@ instance PrintDot LayerID where
     toDot li          = unqtDot li
 
 instance ParseDot LayerID where
-    parseUnqt = stringRep AllLayers "all"
-                `onFail`
-                -- Includes LRInt case
-                liftM checkLayerName parseLayerName
+    parseUnqt = liftM checkLayerName parseLayerName -- tests for Int and All
 
-    parse = oneOf [ optionalQuoted (stringRep AllLayers "all")
-                  , liftM checkLayerName parseLayerName'
+    parse = oneOf [ liftM checkLayerName parseLayerName'
                   , liftM LRInt parse -- Mainly for unquoted case.
                   ]
 
 checkLayerName     :: String -> LayerID
-checkLayerName str = maybe (LRName str) LRInt $ stringToInt str
+checkLayerName str = maybe checkAll LRInt $ stringToInt str
+  where
+    checkAll = if map toLower str == "all"
+               then AllLayers
+               else LRName str
 
 -- | The list represent (Separator, Name).  You should not have any
 --   quote characters for any of the 'String's, since there are
@@ -1965,46 +1966,32 @@ instance PrintDot StyleName where
     toDot sn      = unqtDot sn
 
 instance ParseDot StyleName where
-    parseUnqt = oneOf [ stringRep Dashed "dashed"
-                      , stringRep Dotted "dotted"
-                      , stringRep Solid "solid"
-                      , stringRep Bold "bold"
-                      , stringRep Invisible "invis"
-                      , stringRep Filled "filled"
-                      , stringRep Diagonals "diagonals"
-                      , stringRep Rounded "rounded"
-                      , liftM DD parseStyleName
-                      ]
+    parseUnqt = liftM checkDD parseStyleName
 
-    parse = optionalQuoted ( oneOf [ stringRep Dashed "dashed"
-                                   , stringRep Dotted "dotted"
-                                   , stringRep Solid "solid"
-                                   , stringRep Bold "bold"
-                                   , stringRep Invisible "invis"
-                                   , stringRep Filled "filled"
-                                   , stringRep Diagonals "diagonals"
-                                   , stringRep Rounded "rounded"
-                                   ]
-                             )
-            `onFail`
-            parseDDOnly
+    parse = liftM checkDD
+            $ quotedParse parseStyleName
+              `onFail`
+              -- In case a singleton DD is at the end of an attribute list.
+              do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ', ']']
+                 r <- many (orQuote $ noneOf [quoteChar, '(', ')', ',', ']'])
+                 return $ f:r
 
-    -- Never used on its own, so not bothering with a separate parse
-    -- implementation (which is iffy due to the DD case).
+checkDD     :: String -> StyleName
+checkDD str = case map toLower str of
+                "dashed"    -> Dashed
+                "dotted"    -> Dotted
+                "solid"     -> Solid
+                "bold"      -> Bold
+                "invis"     -> Invisible
+                "filled"    -> Filled
+                "diagonals" -> Diagonals
+                "rounded"   -> Rounded
+                _           -> DD str
 
 parseStyleName :: Parse String
 parseStyleName = do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ']
                     r <- many (orQuote $ noneOf [quoteChar, '(', ')', ','])
                     return $ f:r
-
-parseDDOnly :: Parse StyleName
-parseDDOnly = liftM DD
-              $ quotedParse parseStyleName
-                `onFail`
-                -- In case a singleton DD is at the end of an attribute list.
-                do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ', ']']
-                   r <- many (orQuote $ noneOf [quoteChar, '(', ')', ',', ']'])
-                   return $ f:r
 
 -- -----------------------------------------------------------------------------
 
