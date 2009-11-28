@@ -59,7 +59,7 @@ Library {
            Exposed-Modules:     Data.GraphViz.Testing
                                 Data.GraphViz.Testing.Properties
 
-           Exposed-Modules:     Data.GraphViz.Testing.Instances
+           Other-Modules:       Data.GraphViz.Testing.Instances
                                 Data.GraphViz.Testing.Instances.FGL
 
         Ghc-Options:       -Wall
