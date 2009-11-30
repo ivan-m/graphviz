@@ -39,7 +39,6 @@ Library {
                            extensible-exceptions,
                            containers,
                            process,
-                           array,
                            fgl,
                            filepath,
                            polyparse >= 1.1,
