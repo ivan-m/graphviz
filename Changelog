@@ -1,3 +1,38 @@
+Changes in 2999.7.0.0
+=====================
+
+* Updated and extended functions to interact with the Graphviz tools.
+  This now includes:
+
+  - a better listing of available output types;
+
+  - distinguishing file outputs from canvas outputs;
+
+  - ability to automatically add the correct file extension to file
+    outputs
+
+  - Return any errors if calling Graphviz failed rather than just
+    printing them to stderr
+
+* Improved Color support:
+
+  - fixed ColorScheme values
+
+  - explicitly named X11 colors
+
+  - conversion to/from values from the colour library
+
+* Removed OrientationGraph; problems with distinguishing it when
+  parsing from node-based Orientation values; its functionality is
+  duplicated by Rotate.
+
+* By default, the generated Dot code is now no longer indented; you
+  can now use the prettyPrint functions in Data.GraphViz to produce
+  readable Dot code.
+
+* Added a testsuite; this is buildable by building with --flags=test.
+  Numerous printing and parsing bugs were picked up with this.
+
 Changes in 2999.6.0.0
 =====================
 
