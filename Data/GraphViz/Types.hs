@@ -20,12 +20,13 @@
    * When creating 'GraphID' values for 'graphID' and 'subGraphID',
      you should ensure that none of them have the same printed value
      as one of the 'nodeID' values to avoid any possible problems.
-     Note that if the 'DotSubGraph' has @'isCluster' = 'True'@ then
-     this isn't a problem.
 
    * If you want any 'GlobalAttributes' in a 'DotSubGraph' and want
      them to only apply to that 'DotSubGraph', then you must ensure it
      does indeed have a valid 'GraphID'.
+
+   * All 'DotSubGraph's with @'isCluster' = 'True'@ /must/ have unique
+     'subGraphID' values.
 
    * If eventually outputting to a format such as SVG, then you should
      make sure that your 'DotGraph' has a 'graphID', as that is used
