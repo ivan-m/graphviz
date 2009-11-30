@@ -25,7 +25,7 @@ module Data.GraphViz.Commands
     , undirCommand
     , commandFor
       -- * The possible outputs that Graphviz supports.
-    , GraphvizResult
+      -- $outputs
     , GraphvizOutput(..)
     , GraphvizCanvas(..)
       -- * Running Graphviz.
@@ -98,21 +98,29 @@ commandFor dg = if directedGraph dg
 
 -- -----------------------------------------------------------------------------
 
+{- $outputs
+
+   The list of output types supported by Graphviz is dependent upon
+   how it is built on your system.  To determine which actual formats
+   are available on your system, run @dot -T?@.  Trying to use an
+   output type that is not supported by your installation of Graphviz
+   will result in an error.
+
+   The outputs defined here in 'GraphvizOutput' and 'GraphvizCanvas'
+   are those from the default list of available outputs.  For more
+   information, see:
+     <http://graphviz.org/doc/info/output.html>
+
+-}
+
 -- | This class is for those data types that are valid options for the
---   Graphviz tools to use with the @-T@ argument.  Note that not all
---   valid output types are necessarily available on your system: to
---   determine which actual formats are supported on your system, run
---   @dot -T?@.  For more information, see:
---     <http://graphviz.org/doc/info/output.html>
+--   Graphviz tools to use with the @-T@ argument.
 class GraphvizResult o where
     outputCall :: o -> String
     isBinary :: o -> Bool
 
--- | The possible Graphviz output formats.  Note that which formats
---   are available on your system depend on how it was built (e.g. if
---   it wasn't built with PNG support, then using 'Png' will probably
---   result in an error.  See the documentation for 'GraphvizResult'
---   for more information.
+-- | The possible Graphviz output formats (that is, those that
+--   actually produce a file).
 data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                     | Canon     -- ^ Pretty-printed Dot output with no
                                 --   layout performed.
@@ -207,9 +215,7 @@ instance GraphvizResult GraphvizOutput where
     isBinary Vrml      = False
     isBinary _         = True
 
--- | A default file extension for each 'GraphvizOutput'.  Note that
---   for cases such as 'Gtk' where there is no actual file produced,
---   the value returned isn't necessarily sensible.
+-- | A default file extension for each 'GraphvizOutput'.
 defaultExtension           :: GraphvizOutput -> String
 defaultExtension Bmp       = "bmp"
 defaultExtension Canon     = "dot"
@@ -242,8 +248,7 @@ defaultExtension WBmp      = "wbmp"
 
 -- | Unlike 'GraphvizOutput', these items do not produce an output
 --   file; instead, they directly draw a canvas (i.e. a window) with
---   the resulting image.  See the documentation for 'GraphvizResult'
---   for more information.
+--   the resulting image.
 data GraphvizCanvas = Gtk | Xlib
                       deriving (Eq, Ord, Read, Show)
 
@@ -343,13 +348,14 @@ graphvizWithHandle' cmd gr t f
             ExitSuccess -> return output
             _           -> return $ Left $ othErr ++ err
     where
-      notRunnable e@SomeException{} = return . Left $
-                                      "Unable to call the Graphviz command "
-                                      ++ showCmd cmd ++
-                                      " with the arguments: "
-                                      ++ unwords args
-                                      ++ " because of: "
-                                      ++ show e
+      notRunnable e@SomeException{} = return . Left $ unwords
+                                      [ "Unable to call the Graphviz command "
+                                      , cmd'
+                                      , " with the arguments: "
+                                      , unwords args
+                                      , " because of: "
+                                      , show e
+                                      ]
       cmd' = showCmd cmd
       args = ["-T" ++ outputCall t]
 
