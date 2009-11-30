@@ -47,6 +47,7 @@ module Data.GraphViz.Testing
        ( -- * Running the test suite.
          runDefaultTests
          -- ** The tests themselves
+       , Test(..)
        , test_printParseID_Attributes
        , test_printParseID
        , test_preProcessingID
