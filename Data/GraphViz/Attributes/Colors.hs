@@ -19,18 +19,18 @@
 
    When parsing and printing 'Color' values (more specifically, the
    Brewer color values), the actual 'ColorScheme' being used isn't
-   taken into account.  Also, the \"\/foo\/bar\" style of overriding
+   taken into account.  Also, the \"@\/foo\/bar@\" style of overriding
    the 'ColorScheme' being used isn't supported for parsing purposes
    (and will result in a parsing failure).
 -}
 module Data.GraphViz.Attributes.Colors
-       ( -- * Color schemes
+       ( -- * Color schemes.
          ColorScheme(..)
        , BrewerName(..)
          -- * Colors
        , Color(..)
        , X11Color(..)
-         -- * Conversion to\/from 'Colour'
+         -- * Conversion to\/from @Colour@.
        , toColour
        , x11Colour
        , fromColour
@@ -74,42 +74,42 @@ instance ParseDot ColorScheme where
 
 -- | All of these have a minimum level value of @3@, with a maximum
 --   of @9@ unless otherwise specified.
-data BrewerName = Accent   -- ^ @8@
+data BrewerName = Accent   -- ^ Maximum of @8@.
                 | Blues
-                | Brbg     -- ^ @11@
+                | Brbg     -- ^ Maximum of @11@.
                 | Bugn
                 | Bupu
-                | Dark2    -- ^ @8@
+                | Dark2    -- ^ Maximum of @8@.
                 | Gnbu
                 | Greens
                 | Greys
                 | Oranges
                 | Orrd
-                | Paired   -- ^ @12@
+                | Paired   -- ^ Maximum of @12@.
                 | Pastel1
-                | Pastel2  -- ^ @8@
-                | Piyg     -- ^ @11@
-                | Prgn     -- ^ @11@
+                | Pastel2  -- ^ Maximum of @8@.
+                | Piyg     -- ^ Maximum of @11@.
+                | Prgn     -- ^ Maximum of @11@.
                 | Pubu
                 | Pubugn
-                | Puor     -- ^ @11@; note that the last two are listed
+                | Puor     -- ^ Maximum of @11@; note that the last two are listed
                            --   after the @'Purd'@ values in the
                            --   documentation.
                 | Purd
                 | Purples
-                | Rdbu     -- ^ @11@; note that the last two are listed
+                | Rdbu     -- ^ Maximum of @11@; note that the last two are listed
                            --   first.
-                | Rdgy     -- ^ @11@; note that the last two are listed
+                | Rdgy     -- ^ Maximum of @11@; note that the last two are listed
                            --   after the @'Rdpu'@ values in the
                            --   documentation.
                 | Rdpu
-                | Rdylbu   -- ^ @11@
-                | Rdylgn   -- ^ @11@
+                | Rdylbu   -- ^ Maximum of @11@.
+                | Rdylgn   -- ^ Maximum of @11@.
                 | Reds
                 | Set1
-                | Set2     -- ^ @8@
-                | Set3     -- ^ @12@
-                | Spectral -- ^ @11@
+                | Set2     -- ^ Maximum of @8@.
+                | Set3     -- ^ Maximum of @12@.
+                | Spectral -- ^ Maximum of @11@.
                 | Ylgn
                 | Ylgnbu
                 | Ylorbr
@@ -301,11 +301,11 @@ instance ParseDot Color where
 -- -----------------------------------------------------------------------------
 
 -- | The X11 colors that Graphviz uses.  Note that these are slightly
---   different from the "normal" X11 colors used (e.g. the inclusion
+--   different from the \"normal\" X11 colors used (e.g. the inclusion
 --   of @Crimson@).  Graphviz's list of colors also duplicated almost
---   all @*Gray*@ colors with @*Grey*@ ones; parsing of an 'X11Color'
+--   all @Gray@ colors with @Grey@ ones; parsing of an 'X11Color'
 --   which is specified using \"grey\" will succeed, even for those
---   that didn't have the duplicate spelling (e.g. @DarkSlateGray1@).
+--   that don't have the duplicate spelling (e.g. @DarkSlateGray1@).
 data X11Color = AliceBlue
               | AntiqueWhite
               | AntiqueWhite1
@@ -2518,11 +2518,11 @@ x11Colour Yellow3              = opaque $ sRGB24 205 205 0
 x11Colour Yellow4              = opaque $ sRGB24 139 139 0
 x11Colour YellowGreen          = opaque $ sRGB24 154 205 50
 
--- | Convert a 'Colour' value to a 'RGB' 'Color'.
+-- | Convert a 'Colour' value to an 'RGB' 'Color'.
 fromColour :: Colour Double -> Color
 fromColour = uncurryRGB RGB . toSRGB24
 
--- | Convert an 'AlphaColour' to a 'RGBA' 'Color'.  The exception to
+-- | Convert an 'AlphaColour' to an 'RGBA' 'Color'.  The exception to
 --   this is for any 'AlphaColour' which has @alphaChannel ac == 0@;
 --   these are converted to @X11Color 'Transparent'@ (note that the
 --   'Show' instance for such an 'AlphaColour' is @\"transparent\"@).
