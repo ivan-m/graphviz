@@ -24,7 +24,7 @@
 
        * a number [-]?(.[0-9]+ | [0-9]+(.[0-9]*)? );
 
-       * any double-quoted string (\"...\") possibly containing escaped quotes (\");
+       * any double-quoted string (\"...\") possibly containing escaped quotes (\\\");
 
        * an HTML string (<...>).
 
