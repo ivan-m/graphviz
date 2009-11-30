@@ -23,6 +23,8 @@ Build-Type:         Simple
 Cabal-Version:      >= 1.6
 Extra-Source-Files: TODO
                     Changelog
+                    README
+                    Data/GraphViz/AttributeGenerator.hs
 
 Source-Repository head
     Type:         darcs
