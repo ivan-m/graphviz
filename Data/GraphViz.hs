@@ -25,6 +25,8 @@ module Data.GraphViz
     ( -- * Conversion from graphs to /Dot/ format.
       graphToDot
     , graphToDot'
+      -- ** A pseudo-inverse back to a graph.
+    , dotToGraph
       -- ** Conversion with support for clusters.
     , NodeCluster(..)
     , clusterGraphToDot
@@ -102,6 +104,17 @@ graphToDot'       :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
                      -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                      -> DotGraph Node
 graphToDot' graph = graphToDot (isDirected graph) graph
+
+-- | A pseudo-inverse to 'graphToDot' and 'graphToDot''; \"pseudo\" in
+--   the sense that the original graph and node labels aren't able to
+--   be reconstructed.
+dotToGraph    :: (Graph gr) => DotGraph Node -> gr Attributes Attributes
+dotToGraph dg = mkGraph ns es
+  where
+    ns = map toLN $ graphNodes dg
+    es = concatMap toLE $ graphEdges dg
+    toLN (DotNode n as) = (n,as)
+    toLE (DotEdge f t d as) = (if d then id else (:) (t,f,as)) [(f,t,as)]
 
 -- | Convert a graph to /Dot/ format, using the specified clustering function
 --   to group nodes into clusters.
