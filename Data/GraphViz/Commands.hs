@@ -30,6 +30,7 @@ module Data.GraphViz.Commands
     , GraphvizCanvas(..)
       -- * Running Graphviz.
     , RunResult(..)
+    , maybeErr
     , runGraphviz
     , runGraphvizCommand
     , addExtension
@@ -273,15 +274,16 @@ maybeErr = either Error (const Success)
 -- | Run the recommended Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
 runGraphviz    :: (PrintDot n) => DotGraph n -> GraphvizOutput -> FilePath
-                  -> IO RunResult
+                  -> IO (Either String FilePath)
 runGraphviz gr = runGraphvizCommand (commandFor gr) gr
 
 -- | Run the chosen Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
 runGraphvizCommand :: (PrintDot n) => GraphvizCommand -> DotGraph n
-                      -> GraphvizOutput -> FilePath -> IO RunResult
+                      -> GraphvizOutput -> FilePath
+                      -> IO (Either String FilePath)
 runGraphvizCommand cmd gr t fp
-  = liftM maybeErr
+  = liftM (either Left (const $ Right fp))
     $ graphvizWithHandle cmd gr t toFile
       where
         toFile h = B.hGetContents h >>= B.writeFile fp
