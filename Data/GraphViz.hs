@@ -25,8 +25,9 @@ module Data.GraphViz
     ( -- * Conversion from graphs to /Dot/ format.
       graphToDot
     , graphToDot'
-      -- ** A pseudo-inverse back to a graph.
+      -- ** Conversions to and augmenting graphs.
     , dotToGraph
+    , augmentGraph
       -- ** Conversion with support for clusters.
     , NodeCluster(..)
     , clusterGraphToDot
@@ -199,25 +200,41 @@ dotAttributes isDir gr dot
                                               dot
                                               DotOutput
                                               hGetContents'
-         return $ rebuildGraphWithAttributes output
+         return $ (augmentGraph gr . parseDotGraph) output
     where
       command = if isDir then dirCommand else undirCommand
-      rebuildGraphWithAttributes dotResult =  mkGraph lnodes ledges
-          where
-            lnodes = map (\(n, l) -> (n, (nodeMap Map.! n, l)))
-                     $ labNodes gr
-            ledges = map createEdges $ labEdges gr
-            createEdges (f, t, l) = if isDir || f <= t
-                                    then (f, t, getLabel (f,t))
-                                    else (f, t, getLabel (t,f))
-                where
-                  getLabel c = (fromJust $ Map.lookup c edgeMap, l)
-            g' = parseDotGraph dotResult
-            ns = graphNodes g'
-            es = graphEdges g'
-            nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
-            edgeMap = Map.fromList $ map ( (edgeFromNodeID &&& edgeToNodeID)
-                                           &&& edgeAttributes) es
+
+-- | Use the 'Attributes' in the provided 'DotGraph' to augment the
+--   node and edge labels in the provided 'Graph' with the following
+--   two conditions:
+--
+--   * The 'DotGraph' came from the original 'Graph'; this function
+--     will undoubtedly throw an exception if the nodes and edges
+--     don't match up.
+--
+--   * This function will only work properly if there exists at most
+--     one edge (in each direction) between two nodes; this may be
+--     resolvable if constraints are placed on the types of labels
+--     allowed.  If there are multiple edges, then the behaviour of
+--     this function may do strange things.
+augmentGraph      :: (Graph gr) => gr a b -> DotGraph Node
+                     -> gr (AttributeNode a) (AttributeEdge b)
+augmentGraph g dg = mkGraph lns les
+  where
+    isDir = directedGraph dg
+    lns = map (\(n, l) -> (n, (nodeMap Map.! n, l)))
+          $ labNodes g
+    les = map createEdges $ labEdges g
+    createEdges (f, t, l) = if isDir || f <= t
+                            then (f, t, getLabel (f,t))
+                            else (f, t, getLabel (t,f))
+       where
+         getLabel c = (fromJust $ Map.lookup c edgeMap, l)
+    ns = graphNodes dg
+    es = graphEdges dg
+    nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
+    edgeMap = Map.fromList $ map ( (edgeFromNodeID &&& edgeToNodeID)
+                                   &&& edgeAttributes) es
 
 -- | Run the appropriate Graphviz command on the graph to get
 --   positional information and then combine that information back
