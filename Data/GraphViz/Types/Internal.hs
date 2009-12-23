@@ -15,10 +15,14 @@ import Data.Char( isAsciiUpper
                 , toLower
                 )
 
+import Data.List(groupBy, sortBy)
 import Data.Maybe(isJust)
+import Data.Function(on)
 import qualified Data.Set as Set
 import Data.Set(Set)
 import Control.Monad(liftM2)
+
+-- -----------------------------------------------------------------------------
 
 isIDString        :: String -> Bool
 isIDString []     = True
@@ -111,6 +115,14 @@ keywords = Set.fromList [ "node"
                         , "subgraph"
                         , "strict"
                         ]
+
+-- -----------------------------------------------------------------------------
+
+uniq :: (Ord a) => [a] -> [a]
+uniq = uniqBy id
+
+uniqBy   :: (Ord b) => (a -> b) -> [a] -> [a]
+uniqBy f = map head . groupBy ((==) `on` f) . sortBy (compare `on` f)
 
 -- | Fold over 'Bool's; first param is for 'False', second for 'True'.
 bool       :: a -> a -> Bool -> a
