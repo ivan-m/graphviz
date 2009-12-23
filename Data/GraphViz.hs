@@ -56,6 +56,7 @@ module Data.GraphViz
 
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Clustering
+import Data.GraphViz.Types.Internal(uniq, uniqBy)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
 import Data.GraphViz.Types.Printing(PrintDot)
@@ -109,12 +110,23 @@ graphToDot' graph = graphToDot (isDirected graph) graph
 --   the sense that the original graph and node labels aren't able to
 --   be reconstructed.
 dotToGraph    :: (Graph gr) => DotGraph Node -> gr Attributes Attributes
-dotToGraph dg = mkGraph ns es
+dotToGraph dg = mkGraph ns' es
   where
-    ns = map toLN $ graphNodes dg
+    -- Applying uniqBy just in case...
+    ns = uniqBy fst . map toLN $ graphNodes dg
     es = concatMap toLE $ graphEdges dg
+    -- Need to ensure that for some reason there are node IDs in an
+    -- edge but not on their own.
+    nSet = Set.fromList $ map fst ns
+    nEs = map (flip (,) [])
+          . uniq
+          . filter (flip Set.notMember nSet)
+          $ concatMap (\(n1,n2,_) -> [n1,n2]) es
+    ns' = ns ++ nEs
+    -- Conversion functions
     toLN (DotNode n as) = (n,as)
     toLE (DotEdge f t d as) = (if d then id else (:) (t,f,as)) [(f,t,as)]
+
 
 -- | Convert a graph to /Dot/ format, using the specified clustering function
 --   to group nodes into clusters.
