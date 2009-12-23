@@ -107,7 +107,7 @@ graphToDot'       :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
 graphToDot' graph = graphToDot (isDirected graph) graph
 
 -- | A pseudo-inverse to 'graphToDot' and 'graphToDot''; \"pseudo\" in
---   the sense that the original graph and node labels aren't able to
+--   the sense that the original node and edge labels aren't able to
 --   be reconstructed.
 dotToGraph    :: (Graph gr) => DotGraph Node -> gr Attributes Attributes
 dotToGraph dg = mkGraph ns' es
