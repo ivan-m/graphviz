@@ -19,27 +19,35 @@ module Data.GraphViz
       -- $conversion
       graphToDot
     , graphToDot'
-      -- ** Conversions to and augmenting graphs.
-    , dotToGraph
-    , augmentGraph
       -- ** Conversion with support for clusters.
     , NodeCluster(..)
     , clusterGraphToDot
     , clusterGraphToDot'
-      -- * Passing the graph through Graphviz.
+      -- ** Pseudo-inverse conversion.
+    , dotToGraph
+      -- * Graph augmentation.
+      -- $augment
       -- ** Type aliases for @Node@ and @Edge@ labels.
     , AttributeNode
     , AttributeEdge
-      -- ** For normal graphs.
+      -- ** Customisable augmentation.
     , graphToGraph
     , graphToGraph'
-    , dotizeGraph
-    , dotizeGraph'
-      -- ** For clustered graphs.
     , clusterGraphToGraph
     , clusterGraphToGraph'
+      -- ** Quick augmentation.
+      -- $quickAugment
+    , dotizeGraph
+    , dotizeGraph'
     , dotizeClusterGraph
     , dotizeClusterGraph'
+      -- ** Manual augmentation.
+      -- $manualAugment
+    , EdgeID
+    , addEdgeIDs
+    , setEdgeComment
+    , dotAttributes
+    , augmentGraph
       -- * Utility functions
     , prettyPrint
     , prettyPrint'
@@ -60,7 +68,7 @@ import Data.GraphViz.Types.Printing(PrintDot)
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
 import Control.Arrow((&&&))
-import Data.Maybe(mapMaybe, fromJust)
+import Data.Maybe(mapMaybe, isNothing)
 import qualified Data.Map as Map
 import Control.Monad(liftM)
 import System.IO.Unsafe(unsafePerformIO)
@@ -84,7 +92,6 @@ isDirected = not . isUndirected
 -- -----------------------------------------------------------------------------
 
 {- $conversion
-
    There are various functions available for converting 'Graph's to
    Graphviz's /Dot/ format (represented using the 'DotGraph' type).
    There are two main types: converting plain graphs and converting
@@ -98,7 +105,6 @@ isDirected = not . isUndirected
    Note that these conversion functions assume that undirected graphs
    have every edge being duplicated (or at least that if there exists an
    edge from /n1/ to /n2/, then /n1 <= n2/).
-
 -}
 
 -- | Convert a graph to Graphviz's /Dot/ format.
@@ -185,73 +191,41 @@ clusterGraphToDot' gr = clusterGraphToDot (isDirected gr) gr
 
 -- -----------------------------------------------------------------------------
 
+{- $augment
+   The following functions provide support for passing a 'Graph'
+   through the appropriate 'GraphvizCommand' to augment the 'Graph' by
+   adding positional information, etc.
+
+   Please note that there are some restrictions on this: to enable
+   support for multiple edges between two nodes, the 'Comment'
+   'Attribute' is used to provide a unique identifier for each edge.  As
+   such, you should /not/ set this 'Attribute' for any 'LEdge'.
+
+   For unprimed functions, the 'Bool' argument is 'True' for directed
+   graphs, 'False' otherwise; for the primed versions of functions the
+   directionality of the graph is automatically inferred.  Directed
+   graphs are passed through 'Dot', and undirected graphs through
+   'Neato'.
+-}
+
 type AttributeNode a = (Attributes, a)
 type AttributeEdge b = (Attributes, b)
 
 -- | Run the appropriate Graphviz command on the graph to get
 --   positional information and then combine that information back
---   into the original graph.  Note that for the edge information to
---   be parsed properly when using multiple edges, each edge between
---   two nodes needs to have a unique label.
---
---   The 'Bool' argument is 'True' for directed graphs, 'False'
---   otherwise.  Directed graphs are passed through /dot/, and
---   undirected graphs through /neato/.
+--   into the original graph.
 graphToGraph :: (Graph gr) => Bool -> gr a b -> [GlobalAttributes]
                 -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
                 -> IO (gr (AttributeNode a) (AttributeEdge b))
 graphToGraph isDir gr gAttributes fmtNode fmtEdge
-    = dotAttributes isDir gr dot
+    = dotAttributes isDir gr' dot
     where
-      dot = graphToDot isDir gr gAttributes fmtNode fmtEdge
-
-dotAttributes :: (Graph gr) => Bool -> gr a b -> DotGraph Node
-                 -> IO (gr (AttributeNode a) (AttributeEdge b))
-dotAttributes isDir gr dot
-    = do (Right output) <- graphvizWithHandle command
-                                              dot
-                                              DotOutput
-                                              hGetContents'
-         return $ (augmentGraph gr . parseDotGraph) output
-    where
-      command = if isDir then dirCommand else undirCommand
-
--- | Use the 'Attributes' in the provided 'DotGraph' to augment the
---   node and edge labels in the provided 'Graph' with the following
---   two conditions:
---
---   * The 'DotGraph' came from the original 'Graph'; this function
---     will undoubtedly throw an exception if the nodes and edges
---     don't match up.
---
---   * This function will only work properly if there exists at most
---     one edge (in each direction) between two nodes; this may be
---     resolvable if constraints are placed on the types of labels
---     allowed.  If there are multiple edges, then the behaviour of
---     this function may do strange things.
-augmentGraph      :: (Graph gr) => gr a b -> DotGraph Node
-                     -> gr (AttributeNode a) (AttributeEdge b)
-augmentGraph g dg = mkGraph lns les
-  where
-    isDir = directedGraph dg
-    lns = map (\(n, l) -> (n, (nodeMap Map.! n, l)))
-          $ labNodes g
-    les = map createEdges $ labEdges g
-    createEdges (f, t, l) = if isDir || f <= t
-                            then (f, t, getLabel (f,t))
-                            else (f, t, getLabel (t,f))
-       where
-         getLabel c = (fromJust $ Map.lookup c edgeMap, l)
-    ns = graphNodes dg
-    es = graphEdges dg
-    nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
-    edgeMap = Map.fromList $ map ( (edgeFromNodeID &&& edgeToNodeID)
-                                   &&& edgeAttributes) es
+      dot = graphToDot isDir gr' gAttributes fmtNode (setEdgeComment fmtEdge)
+      gr' = addEdgeIDs gr
 
 -- | Run the appropriate Graphviz command on the graph to get
 --   positional information and then combine that information back
 --   into the original graph.
---
 --   Graph direction is automatically inferred.
 graphToGraph'    :: (Ord b, Graph gr) => gr a b -> [GlobalAttributes]
                     -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
@@ -260,27 +234,22 @@ graphToGraph' gr = graphToGraph (isDirected gr) gr
 
 -- | Run the appropriate Graphviz command on the clustered graph to
 --   get positional information and then combine that information back
---   into the original graph.  Note that for the edge information to
---   be parsed properly when using multiple edges, each edge between
---   two nodes needs to have a unique label.
---
---   The 'Bool' argument is 'True' for directed graphs, 'False'
---   otherwise.  Directed graphs are passed through /dot/, and
---   undirected graphs through /neato/.
+--   into the original graph.
 clusterGraphToGraph :: (Ord c, Graph gr) => Bool -> gr a b
                        -> [GlobalAttributes] -> (LNode a -> NodeCluster c l)
                        -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
                        -> (LNode l -> Attributes) -> (LEdge b -> Attributes)
                        -> IO (gr (AttributeNode a) (AttributeEdge b))
 clusterGraphToGraph isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
-    = dotAttributes isDir gr dot
+    = dotAttributes isDir gr' dot
     where
-      dot = clusterGraphToDot isDir gr gAtts clBy cID fmtClust fmtNode fmtEdge
+      dot = clusterGraphToDot isDir gr' gAtts clBy cID fmtClust fmtNode fmtEdge'
+      gr' = addEdgeIDs gr
+      fmtEdge' = setEdgeComment fmtEdge
 
 -- | Run the appropriate Graphviz command on the clustered graph to
 --   get positional information and then combine that information back
 --   into the original graph.
---
 --   Graph direction is automatically inferred.
 clusterGraphToGraph'    :: (Ord b, Ord c, Graph gr) => gr a b
                            -> [GlobalAttributes] -> (LNode a -> NodeCluster c l)
@@ -289,15 +258,17 @@ clusterGraphToGraph'    :: (Ord b, Ord c, Graph gr) => gr a b
                            -> IO (gr (AttributeNode a) (AttributeEdge b))
 clusterGraphToGraph' gr = clusterGraphToGraph (isDirected gr) gr
 
+-- -----------------------------------------------------------------------------
 
--- | Pass the graph through 'graphToGraph' with no 'Attribute's.  This
---   is an @'IO'@ action, however since the state doesn't change it's
---   safe to use 'unsafePerformIO' to convert this to a normal
---   function.
---
---   The 'Bool' argument is 'True' for directed graphs, 'False'
---   otherwise.  Directed graphs are passed through /dot/, and
---   undirected graphs through /neato/.
+{- $quickAugment
+   This section contains convenience functions for quick-and-dirty
+   augmentation of graphs.  No 'Attribute's are applied, and
+   'unsafePerformIO' is used to make these normal functions.  Note that
+   this should be safe since these should be referentially transparent
+   (as should all augmentation functions).
+-}
+
+-- | Pass the graph through 'graphToGraph' with no 'Attribute's.
 dotizeGraph         :: (Graph gr) => Bool -> gr a b
                        -> gr (AttributeNode a) (AttributeEdge b)
 dotizeGraph isDir g = unsafePerformIO
@@ -306,24 +277,14 @@ dotizeGraph isDir g = unsafePerformIO
       gAttrs = []
       noAttrs = const []
 
--- | Pass the graph through 'graphToGraph' with no 'Attribute's.  This
---   is an @'IO'@ action, however since the state doesn't change it's
---   safe to use 'unsafePerformIO' to convert this to a normal
---   function.
---
+-- | Pass the graph through 'graphToGraph' with no 'Attribute's.
 --   The graph direction is automatically inferred.
 dotizeGraph'   :: (Graph gr, Ord b) => gr a b
                   -> gr (AttributeNode a) (AttributeEdge b)
 dotizeGraph' g = dotizeGraph (isDirected g) g
 
 -- | Pass the clustered graph through 'clusterGraphToGraph' with no
---   'Attribute's.  This is an @'IO'@ action, however since the state
---   doesn't change it's safe to use 'unsafePerformIO' to convert this
---   to a normal function.
---
---   The 'Bool' argument is 'True' for directed graphs, 'False'
---   otherwise.  Directed graphs are passed through /dot/, and
---   undirected graphs through /neato/.
+--   'Attribute's.
 dotizeClusterGraph                 :: (Ord c, Graph gr) => Bool -> gr a b
                                       -> (LNode a -> NodeCluster c l)
                                       -> gr (AttributeNode a) (AttributeEdge b)
@@ -338,16 +299,98 @@ dotizeClusterGraph isDir g clustBy = unsafePerformIO
       cAttrs = const gAttrs
       noAttrs = const []
 
--- | Pass the clustered graph through 'graphToGraph' with no
---   'Attribute's.  This is an @'IO'@ action, however since the state
---   doesn't change it's safe to use 'unsafePerformIO' to convert this
---   to a normal function.
---
+-- | Pass the clustered graph through 'clusterGraphToGraph' with no
+--   'Attribute's.
 --   The graph direction is automatically inferred.
 dotizeClusterGraph'   :: (Ord b, Ord c, Graph gr) => gr a b
                          -> (LNode a -> NodeCluster c l)
                          -> gr (AttributeNode a) (AttributeEdge b)
 dotizeClusterGraph' g = dotizeClusterGraph (isDirected g) g
+
+-- -----------------------------------------------------------------------------
+
+{- $manualAugment
+   This section allows you to manually augment graphs by providing
+   fine-grained control over the augmentation process (the standard
+   augmentation functions compose these together).  For example, you may
+   want to be able to access the intermediary 'DotGraph' used to augment
+   a 'Graph'.
+
+   Note that whilst these functions provide you with more control, you
+   must be careful how you use them: if you use the wrong 'DotGraph' for
+   a 'Graph', then the behaviour of 'augmentGraph' (and all functions
+   that use them) is undefined.
+-}
+
+-- | Used to augment an edge label with a unique identifier.
+data EdgeID b = EID { eID  :: String
+                    , eLbl :: b
+                    }
+              deriving (Eq, Ord, Show)
+-- Show is only provided for printing/debugging purposes when using a
+-- normal Tree-based graph.  Since it doesn't support Read, neither
+-- does EdgeID.
+
+-- | Add unique edge identifiers to each label.  This is useful for
+--   when multiple edges between two nodes need to be distinguished.
+addEdgeIDs   :: (Graph gr) => gr a b -> gr a (EdgeID b)
+addEdgeIDs g = mkGraph ns es'
+  where
+    ns = labNodes g
+    es = labEdges g
+    es' = zipWith addID es ([1..] :: [Int])
+    addID (f,t,l) i = (f,t,EID (show i) l)
+
+-- | Add the 'Comment' to the list of attributes containing the value
+--   of the unique edge identifier.
+setEdgeComment     :: (LEdge b -> Attributes)
+                      -> (LEdge (EdgeID b) -> Attributes)
+setEdgeComment f = \ e@(_,_,eid) -> Comment (eID eid) : (f . stripID) e
+
+-- | Remove the unique identifier from the 'LEdge'.
+stripID           :: LEdge (EdgeID b) -> LEdge b
+stripID (f,t,eid) = (f,t, eLbl eid)
+
+-- | Pass the 'DotGraph' through the relevant command and then augment
+--   the 'Graph' that it came from.
+dotAttributes :: (Graph gr) => Bool -> gr a (EdgeID b) -> DotGraph Node
+                 -> IO (gr (AttributeNode a) (AttributeEdge b))
+dotAttributes isDir gr dot
+    = do (Right output) <- graphvizWithHandle command
+                                              dot
+                                              DotOutput
+                                              hGetContents'
+         return $ (augmentGraph gr . parseDotGraph) output
+    where
+      command = if isDir then dirCommand else undirCommand
+
+-- | Use the 'Attributes' in the provided 'DotGraph' to augment the
+--   node and edge labels in the provided 'Graph'.  The unique
+--   identifiers on the edges are also stripped off.
+--
+--   Please note that the behaviour for this function is undefined if
+--   the 'DotGraph' does not come from the original 'Graph' (either
+--   by using a conversion function or by passing the result of a
+--   conversion function through a 'GraphvizCommand' via the
+--   'DotOutput' or similar).
+augmentGraph      :: (Graph gr) => gr a (EdgeID b) -> DotGraph Node
+                     -> gr (AttributeNode a) (AttributeEdge b)
+augmentGraph g dg = mkGraph lns les
+  where
+    lns = map (\(n, l) -> (n, (nodeMap Map.! n, l)))
+          $ labNodes g
+    les = map augmentEdge $ labEdges g
+    augmentEdge (f,t,(EID eid l)) = (f,t, (edgeMap Map.! eid, l))
+    ns = graphNodes dg
+    es = graphEdges dg
+    nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
+    edgeMap = Map.fromList $ map (findID &&& edgeAttributes') es
+    findID = head . mapMaybe commentID . edgeAttributes
+    commentID (Comment s) = Just s
+    commentID _           = Nothing
+    -- Strip out the comment
+    edgeAttributes' = filter (isNothing . commentID) . edgeAttributes
+
 
 -- -----------------------------------------------------------------------------
 -- Utility Functions
