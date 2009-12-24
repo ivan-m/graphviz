@@ -35,6 +35,7 @@ module Data.GraphViz
       -- ** Utility functions
     , prettyPrint
     , prettyPrint'
+    , preview
       -- * Passing the graph through Graphviz.
       -- ** Type aliases for @Node@ and @Edge@ labels.
     , AttributeNode
@@ -69,6 +70,7 @@ import Data.Maybe(mapMaybe, fromJust)
 import qualified Data.Map as Map
 import Control.Monad(liftM)
 import System.IO.Unsafe(unsafePerformIO)
+import Control.Concurrent(forkIO)
 
 -- -----------------------------------------------------------------------------
 
@@ -363,3 +365,10 @@ prettyPrint dg = liftM fromRight
 --   safe.
 prettyPrint' :: (PrintDot a) => DotGraph a -> String
 prettyPrint' = unsafePerformIO . prettyPrint
+
+-- | Quickly visualise a graph using the 'Xlib' 'GraphvizCanvas'.
+preview   :: (Ord b, Graph gr) => gr a b -> IO ()
+preview g = ign $ forkIO (ign $ runGraphvizCanvas' dg Xlib)
+  where
+    dg = graphToDot' g [] (const []) (const [])
+    ign = (>> return ())
