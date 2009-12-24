@@ -32,10 +32,6 @@ module Data.GraphViz
     , NodeCluster(..)
     , clusterGraphToDot
     , clusterGraphToDot'
-      -- ** Utility functions
-    , prettyPrint
-    , prettyPrint'
-    , preview
       -- * Passing the graph through Graphviz.
       -- ** Type aliases for @Node@ and @Edge@ labels.
     , AttributeNode
@@ -50,6 +46,10 @@ module Data.GraphViz
     , clusterGraphToGraph'
     , dotizeClusterGraph
     , dotizeClusterGraph'
+      -- * Utility functions
+    , prettyPrint
+    , prettyPrint'
+    , preview
       -- * Re-exporting other modules.
     , module Data.GraphViz.Types
     , module Data.GraphViz.Attributes
