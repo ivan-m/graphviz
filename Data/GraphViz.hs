@@ -356,11 +356,8 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 dotAttributes :: (Graph gr) => Bool -> gr a (EdgeID b) -> DotGraph Node
                  -> IO (gr (AttributeNode a) (AttributeEdge b))
 dotAttributes isDir gr dot
-    = do (Right output) <- graphvizWithHandle command
-                                              dot
-                                              DotOutput
-                                              hGetContents'
-         return $ (augmentGraph gr . parseDotGraph) output
+  = liftM (augmentGraph gr . parseDotGraph . fromDotResult)
+    $ graphvizWithHandle command dot DotOutput hGetContents'
     where
       command = if isDir then dirCommand else undirCommand
 
@@ -401,17 +398,13 @@ augmentGraph g dg = mkGraph lns les
 --   "Data.GraphViz.Types.Printing" no longer uses indentation to
 --   ensure the Dot code is printed correctly.
 prettyPrint    :: (PrintDot a) => DotGraph a -> IO String
-prettyPrint dg = liftM fromRight
+prettyPrint dg = liftM fromDotResult
                  -- Note that the choice of command here should be
                  -- arbitrary.
                  $ graphvizWithHandle (commandFor dg)
                                       dg
                                       Canon
                                       hGetContents'
-  where
-    fromRight (Right r) = r
-    fromRight Left{}    = fail "Usage of prettyPrint failed; \
-                                \is the Graphviz suite of tools installed?"
 
 -- | The 'unsafePerformIO'd version of 'prettyPrint'.  Graphviz should
 --   always produce the same pretty-printed output, so this should be
@@ -425,3 +418,11 @@ preview g = ign $ forkIO (ign $ runGraphvizCanvas' dg Xlib)
   where
     dg = graphToDot' g [] (const []) (const [])
     ign = (>> return ())
+
+-- | Used for obtaining results from 'graphvizWithHandle', etc. when
+--   errors should only occur when Graphviz isn't installed.  If the
+--   value is @'Left' _@, then 'error' is used.
+fromDotResult           :: Either l r -> r
+fromDotResult (Right r) = r
+fromDotResult Left{}    = error "Could not run the relevant Graphviz command; \
+                                 \is the Graphviz suite of tools installed?"
