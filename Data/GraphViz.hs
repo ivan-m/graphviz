@@ -107,7 +107,7 @@ isDirected = not . isUndirected
    edge from /n1/ to /n2/, then /n1 <= n2/).
 
    Note that the reason these functions do not have 'unsafePerformIO'
-   applied to them is because if you set an attribute of:
+   applied to them is because if you set a global 'Attribute' of:
    @
     'Start' ('StartStyle' 'RandomStyle')
    @
