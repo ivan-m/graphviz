@@ -13,16 +13,10 @@
    Information about Graphviz and the Dot language can be found at:
    <http://graphviz.org/>
 
-   Commands for converting graphs to Dot format have two options: one
-   in which the user specifies whether the graph is directed or
-   undirected, and a primed version which attempts to automatically
-   infer if the graph is directed or not.  Note that these conversion
-   functions assume that undirected graphs have every edge being
-   duplicated (or at least that if there exists an edge from /n1/ to
-   /n2/, then /n1 <= n2/).
  -}
 module Data.GraphViz
     ( -- * Conversion from graphs to /Dot/ format.
+      -- $conversion
       graphToDot
     , graphToDot'
       -- ** Conversions to and augmenting graphs.
@@ -89,8 +83,25 @@ isDirected = not . isUndirected
 
 -- -----------------------------------------------------------------------------
 
--- | Convert a graph to Graphviz's /Dot/ format.  The 'Bool' value is
---   'True' for directed graphs, 'False' otherwise.
+{- $conversion
+
+   There are various functions available for converting 'Graph's to
+   Graphviz's /Dot/ format (represented using the 'DotGraph' type).
+   There are two main types: converting plain graphs and converting
+   /clustered/ graphs (where the graph cluster that a particular 'Node'
+   belongs to is determined by its label).
+
+   These functions have two versions: one in which the user specifies
+   whether the graph is directed or undirected (with a 'Bool' value of
+   'True' indicating that the graph is directed), and a primed version
+   which attempts to automatically infer if the graph is directed or not.
+   Note that these conversion functions assume that undirected graphs
+   have every edge being duplicated (or at least that if there exists an
+   edge from /n1/ to /n2/, then /n1 <= n2/).
+
+-}
+
+-- | Convert a graph to Graphviz's /Dot/ format.
 graphToDot :: (Graph gr) => Bool -> gr a b -> [GlobalAttributes]
               -> (LNode a -> Attributes) -> (LEdge b -> Attributes)
               -> DotGraph Node
@@ -134,7 +145,6 @@ dotToGraph dg = mkGraph ns' es
 -- | Convert a graph to /Dot/ format, using the specified clustering function
 --   to group nodes into clusters.
 --   Clusters can be nested to arbitrary depth.
---   The 'Bool' argument is 'True' for directed graphs, 'False' otherwise.
 clusterGraphToDot :: (Ord c, Graph gr) => Bool -> gr a b
                      -> [GlobalAttributes] -> (LNode a -> NodeCluster c l)
                      -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
