@@ -516,9 +516,7 @@ subGraphEdges = statementEdges . subGraphStmts
 
 -- -----------------------------------------------------------------------------
 
--- | A node in 'DotGraph' is either a singular node, or a cluster
---   containing nodes (or more clusters) within it.
---   At the moment, clusters are not parsed.
+-- | A node in 'DotGraph'.
 data DotNode a = DotNode { nodeID :: a
                          , nodeAttributes :: Attributes
                          }
