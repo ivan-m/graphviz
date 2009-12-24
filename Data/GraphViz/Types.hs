@@ -258,10 +258,10 @@ data DotStatements a = DotStmts { attrStmts :: [GlobalAttributes]
                      deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotStatements a) where
-    unqtDot stmts = vcat [ toDot $ attrStmts stmts
-                         , toDot $ subGraphs stmts
-                         , toDot $ nodeStmts stmts
-                         , toDot $ edgeStmts stmts
+    unqtDot stmts = vcat [ unqtDot $ attrStmts stmts
+                         , unqtDot $ subGraphs stmts
+                         , unqtDot $ nodeStmts stmts
+                         , unqtDot $ edgeStmts stmts
                          ]
 
 instance (ParseDot a) => ParseDot (DotStatements a) where
