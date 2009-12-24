@@ -48,14 +48,14 @@ Library {
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types
-                           Data.GraphViz.Types.Parsing
-                           Data.GraphViz.Types.Printing
+                           Data.GraphViz.Parsing
+                           Data.GraphViz.Printing
                            Data.GraphViz.Commands
                            Data.GraphViz.Attributes
                            Data.GraphViz.Attributes.Colors
 
         Other-Modules:     Data.GraphViz.Types.Clustering
-                           Data.GraphViz.Types.Internal
+                           Data.GraphViz.Util
         if flag(test)
            Build-Depends:       QuickCheck >= 2.1 && < 2.2
 

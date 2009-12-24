@@ -96,9 +96,9 @@ module Data.GraphViz.Types
     ) where
 
 import Data.GraphViz.Attributes
-import Data.GraphViz.Types.Internal
-import Data.GraphViz.Types.Parsing
-import Data.GraphViz.Types.Printing
+import Data.GraphViz.Util
+import Data.GraphViz.Parsing
+import Data.GraphViz.Printing
 
 import Data.Maybe(isJust)
 import Control.Monad(liftM, when)

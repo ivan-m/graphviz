@@ -70,8 +70,8 @@ import Data.GraphViz.Testing.Instances.FGL()
 import Data.GraphViz.Testing.Properties
 
 import Data.GraphViz hiding (RunResult(..))
-import Data.GraphViz.Types.Parsing(parseIt, preProcess)
-import Data.GraphViz.Types.Printing(printIt)
+import Data.GraphViz.Parsing(parseIt, preProcess)
+import Data.GraphViz.Printing(printIt)
 -- Can't use PatriciaTree because a Show instance is needed.
 import Data.Graph.Inductive.Tree(Gr)
 

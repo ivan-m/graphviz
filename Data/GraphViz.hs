@@ -60,10 +60,10 @@ module Data.GraphViz
 
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Clustering
-import Data.GraphViz.Types.Internal(uniq, uniqBy)
+import Data.GraphViz.Util(uniq, uniqBy)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
-import Data.GraphViz.Types.Printing(PrintDot)
+import Data.GraphViz.Printing(PrintDot)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set

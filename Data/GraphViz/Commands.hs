@@ -45,7 +45,7 @@ module Data.GraphViz.Commands
 import Prelude hiding (catch)
 
 import Data.GraphViz.Types
-import Data.GraphViz.Types.Printing
+import Data.GraphViz.Printing
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
 

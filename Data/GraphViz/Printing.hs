@@ -1,5 +1,5 @@
 {- |
-   Module      : Data.GraphViz.Types.Printing
+   Module      : Data.GraphViz.Printing
    Description : Helper functions for converting to Dot format.
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
@@ -35,7 +35,7 @@
    specification page:
       <http://graphviz.org/doc/info/lang.html>
 -}
-module Data.GraphViz.Types.Printing
+module Data.GraphViz.Printing
     ( module Text.PrettyPrint
     , DotCode
     , renderDot -- Exported for Data.GraphViz.Types.printSGID
@@ -47,7 +47,7 @@ module Data.GraphViz.Types.Printing
     , printField
     ) where
 
-import Data.GraphViz.Types.Internal
+import Data.GraphViz.Util
 
 -- Only implicitly import and re-export combinators.
 import Text.PrettyPrint hiding ( Style(..)

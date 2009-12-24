@@ -37,8 +37,8 @@ module Data.GraphViz.Attributes.Colors
        , fromAColour
        ) where
 
-import Data.GraphViz.Types.Parsing
-import Data.GraphViz.Types.Printing
+import Data.GraphViz.Parsing
+import Data.GraphViz.Printing
 
 import Data.Colour( AlphaColour, opaque, transparent, withOpacity
                   , over, black, alphaChannel, darken)

@@ -159,9 +159,9 @@ module Data.GraphViz.Attributes
     ) where
 
 import Data.GraphViz.Attributes.Colors
-import Data.GraphViz.Types.Internal
-import Data.GraphViz.Types.Parsing
-import Data.GraphViz.Types.Printing
+import Data.GraphViz.Util
+import Data.GraphViz.Parsing
+import Data.GraphViz.Printing
 
 import Data.Char(toLower)
 import Data.Maybe(isJust)

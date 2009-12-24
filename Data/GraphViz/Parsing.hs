@@ -1,5 +1,5 @@
 {- |
-   Module      : Data.GraphViz.Types.Parsing
+   Module      : Data.GraphViz.Parsing
    Description : Helper functions for Parsing.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
@@ -18,7 +18,7 @@
    @'Data.GraphViz.Types.parseDotGraph'@ rather than its 'ParseDot'
    instance.
 -}
-module Data.GraphViz.Types.Parsing
+module Data.GraphViz.Parsing
     ( -- * Re-exporting pertinent parts of Polyparse.
       module Text.ParserCombinators.Poly.Lazy
       -- * The ParseDot class.
@@ -67,7 +67,7 @@ module Data.GraphViz.Types.Parsing
     , preProcess
     ) where
 
-import Data.GraphViz.Types.Internal
+import Data.GraphViz.Util
 
 import Text.ParserCombinators.Poly.Lazy
 import Data.Char( digitToInt

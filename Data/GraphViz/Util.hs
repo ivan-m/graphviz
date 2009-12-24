@@ -1,13 +1,13 @@
 {- |
-   Module      : Data.GraphViz.Types.Internal
-   Description : Internal functions
+   Module      : Data.GraphViz.Util
+   Description : Internal utility functions
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
-   This module defines internal functions.
+   This module defines internal utility functions.
 -}
-module Data.GraphViz.Types.Internal where
+module Data.GraphViz.Util where
 
 import Data.Char( isAsciiUpper
                 , isAsciiLower
