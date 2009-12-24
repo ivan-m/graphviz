@@ -105,6 +105,17 @@ isDirected = not . isUndirected
    Note that these conversion functions assume that undirected graphs
    have every edge being duplicated (or at least that if there exists an
    edge from /n1/ to /n2/, then /n1 <= n2/).
+
+   Note that the reason these functions do not have 'unsafePerformIO'
+   applied to them is because if you set an attribute of:
+   @
+    'Start' ('StartStyle' 'RandomStyle')
+   @
+   Then it will not necessarily be referentially transparent (ideally,
+   no matter what the seed is, it will still eventually be drawn to the
+   same optimum, but this can't be guaranteed).  As such, if you are sure
+   that you're not using such an 'Attribute', then you should be able to
+   use 'unsafePerformIO' directly in your own code.
 -}
 
 -- | Convert a graph to Graphviz's /Dot/ format.
