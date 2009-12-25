@@ -45,7 +45,7 @@ prop_preProcessingID dg = preProcess dotCode == dotCode
 prop_parsePrettyID    :: (Eq a, ParseDot a, PrintDot a) => DotGraph a -> Bool
 prop_parsePrettyID dg = (fst . parseIt . prettyPrint') dg == dg
 
--- | This property verifies that 'dotize'', etc. only /augment/ the
+-- | This property verifies that 'dotizeGraph'', etc. only /augment/ the
 --   original graph; that is, the actual nodes, edges and labels for
 --   each remain unchanged.  Whilst 'dotize'', etc. only require
 --   'Graph' instances, this property requires 'DynGraph' (which is a
