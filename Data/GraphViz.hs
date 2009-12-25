@@ -104,7 +104,8 @@ isDirected = not . isUndirected
    which attempts to automatically infer if the graph is directed or not.
    Note that these conversion functions assume that undirected graphs
    have every edge being duplicated (or at least that if there exists an
-   edge from /n1/ to /n2/, then /n1 <= n2/).
+   edge from /n1/ to /n2/, then /n1 <= n2/; if /n1 > n2/ then it is
+   removed for an undirected graph).
 
    Note that the reason these functions do not have 'unsafePerformIO'
    applied to them is because if you set a global 'Attribute' of:
