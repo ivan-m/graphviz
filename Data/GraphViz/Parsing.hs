@@ -14,7 +14,7 @@
 
    You should not be using this module; rather, it is here for
    informative/documentative reasons.  If you want to parse a
-   @'Data.GraphViz.Types.DotGraph'@, you should use
+   @'Data.GraphViz.Types.DotRepr'@, you should use
    @'Data.GraphViz.Types.parseDotGraph'@ rather than its 'ParseDot'
    instance.
 -}

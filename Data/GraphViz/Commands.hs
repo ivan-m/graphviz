@@ -300,10 +300,10 @@ addExtension cmd t fp = cmd t fp'
 --   result to the given handle rather than to a file.
 --
 --   Note that the @'Handle' -> 'IO' a@ function /must/ fully consume
---   the input from the 'Handle'; 'hGetContents'' is an version of
+--   the input from the 'Handle'; 'hGetContents'' is a version of
 --   'hGetContents' that will ensure this happens.
 --
---   If the command was unsuccessful, then @Left error@ is returned.
+--   If the command was unsuccessful, then @'Left' error@ is returned.
 graphvizWithHandle :: (PrintDot n, Show a)
                       => GraphvizCommand      -- ^ Which command to run
                       -> DotGraph n           -- ^ The 'DotGraph' to use

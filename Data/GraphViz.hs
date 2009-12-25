@@ -332,7 +332,7 @@ dotizeClusterGraph' g = dotizeClusterGraph (isDirected g) g
    Note that whilst these functions provide you with more control, you
    must be careful how you use them: if you use the wrong 'DotGraph' for
    a 'Graph', then the behaviour of 'augmentGraph' (and all functions
-   that use them) is undefined.
+   that use it) is undefined.
 -}
 
 -- | Used to augment an edge label with a unique identifier.
@@ -407,9 +407,10 @@ augmentGraph g dg = mkGraph lns les
 
 -- | Pretty-print the 'DotGraph' by passing it through the 'Canon'
 --   output type (which produces \"canonical\" output).  This is
---   required because the @printIt@ function in
---   "Data.GraphViz.Types.Printing" no longer uses indentation to
---   ensure the Dot code is printed correctly.
+--   required because the 'printDotGraph' function (and all printing
+--   functions in "Data.GraphViz.Types.Printing") no longer uses
+--   indentation (this is to ensure the Dot code is printed correctly
+--   due to the limitations of the Pretty Printer used).
 prettyPrint    :: (PrintDot a) => DotGraph a -> IO String
 prettyPrint dg = liftM fromDotResult
                  -- Note that the choice of command here should be

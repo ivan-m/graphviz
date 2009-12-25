@@ -2,17 +2,39 @@ Name:               graphviz
 Version:            2999.7.0.0
 Stability:          Beta
 Synopsis:           Graphviz bindings for Haskell.
-Description:        This library provides bindings for the Dot language
-                      used by the Graphviz (<http://graphviz.org/>)
-                      suite of programs.  Also provided are
-                      convenience functions to convert FGL graphs into
-                      Dot code with a large degree of customisation
-                      for layout, etc.
+Description: {
+This library provides bindings for the Dot language used by the
+Graphviz (<http://graphviz.org/>) suite of programs, as well as
+functions to call the Grapvhiz programs.
+.
+Features of this library are:
+.
+* Almost complete coverage of all Graphviz attributes, etc. for
+  graphs, sub-graphs, clusters, nodes and edges:
+  <http://graphviz.org/doc/info/attrs.html>
+.
+* Thorough documentation on known problems with the library and how it
+  differs from the actual Dot specification.
+.
+* Support for specifying clusters.
+.
+* The ability to use a custom node type.
+.
+* Functions for running a Graphviz layout tool with all specified
+  output types.
+.
+* The ability to not only generate but also parse Dot code (note that
+  currently this is limited to a rather strict ordering of
+  statements).
+.
+* Functions to convert FGL graphs to Dot code - including support to
+  group them into clusters - with a high degree of customisation by
+  specifying which attributes to use.
+.
+* Round-trip support for passing an FGL graph through Graphviz to
+  augment node and edge labels with positional information, etc.
+}
 
-                    Also allows a limited amount of parsing of Dot,
-                      and round-trip usage of Graphviz to attach
-                      positional data to each node and edge in the
-                      graph.
 Category:           Graphs, Graphics
 License:            BSD3
 License-File:       LICENSE

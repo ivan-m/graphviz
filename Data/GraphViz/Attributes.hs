@@ -67,6 +67,10 @@
 
    * Deprecated 'Overlap' algorithms are not defined.
 
+   * The global @Orientation@ attribute is not defined, as it is
+     difficult to distinguish from the node-based 'Orientation'
+     'Attribute'; also, its behaviour is duplicated by 'Rotate'.
+
  -}
 module Data.GraphViz.Attributes
     ( -- * The actual /Dot/ attributes.
