@@ -290,8 +290,8 @@ runGraphvizCommand cmd gr t fp
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
 --   the provided 'FilePath' for the output file.
-addExtension          :: (GraphvizOutput -> FilePath -> IO a)
-                         -> GraphvizOutput -> FilePath -> IO a
+addExtension          :: (GraphvizOutput -> FilePath -> a)
+                         -> GraphvizOutput -> FilePath -> a
 addExtension cmd t fp = cmd t fp'
     where
       fp' = fp <.> defaultExtension t
