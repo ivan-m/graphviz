@@ -70,6 +70,7 @@ Library {
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types
+                           Data.GraphViz.Types.Generalised
                            Data.GraphViz.Parsing
                            Data.GraphViz.Printing
                            Data.GraphViz.Commands
@@ -77,6 +78,7 @@ Library {
                            Data.GraphViz.Attributes.Colors
 
         Other-Modules:     Data.GraphViz.Types.Clustering
+                           Data.GraphViz.Types.Common
                            Data.GraphViz.Util
         if flag(test)
            Build-Depends:       QuickCheck >= 2.1 && < 2.2

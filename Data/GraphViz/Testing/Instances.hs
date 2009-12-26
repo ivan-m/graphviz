@@ -21,11 +21,13 @@ import Data.GraphViz.Parsing(isNumString)
 
 import Data.GraphViz.Attributes
 import Data.GraphViz.Types
+import Data.GraphViz.Types.Generalised
 
 import Test.QuickCheck
 
 import Data.Char(toLower)
 import Data.List(nub)
+import qualified Data.Sequence as Seq
 import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
 import Data.Word(Word8)
 
@@ -51,7 +53,7 @@ instance Arbitrary GraphID where
   shrink (HTML u) = map HTML $ shrink u
 
 instance (Eq a, Arbitrary a) => Arbitrary (DotStatements a) where
-  arbitrary = arbDS True
+  arbitrary = sized (arbDS True)
 
   shrink ds@(DotStmts gas sgs ns es) = do gas' <- shrinkL gas
                                           sgs' <- shrinkL sgs
@@ -61,11 +63,12 @@ instance (Eq a, Arbitrary a) => Arbitrary (DotStatements a) where
                                             $ DotStmts gas' sgs' ns' es'
 
 -- | If 'True', generate 'DotSubGraph's; otherwise don't.
-arbDS         :: (Arbitrary a, Eq a) => Bool -> Gen (DotStatements a)
-arbDS haveSGs = liftM4 DotStmts arbitrary genSGs arbitrary arbitrary
+arbDS           :: (Arbitrary a, Eq a) => Bool -> Int -> Gen (DotStatements a)
+arbDS haveSGs s = liftM4 DotStmts arbitrary genSGs arbitrary arbitrary
   where
+    s' = min s 2
     genSGs = if haveSGs
-             then resize 2 arbitrary
+             then resize s' arbitrary
              else return []
 
 instance Arbitrary GlobalAttributes where
@@ -79,7 +82,7 @@ instance Arbitrary GlobalAttributes where
   shrink (EdgeAttrs  atts) = map EdgeAttrs  $ nonEmptyShrinks atts
 
 instance (Eq a, Arbitrary a) => Arbitrary (DotSubGraph a) where
-  arbitrary = liftM3 DotSG arbitrary arbitrary (arbDS False)
+  arbitrary = liftM3 DotSG arbitrary arbitrary (sized $ arbDS False)
 
   shrink (DotSG isCl mid stmts) = map (DotSG isCl mid) $ shrink stmts
 
@@ -92,6 +95,58 @@ instance (Arbitrary a) => Arbitrary (DotEdge a) where
   arbitrary = liftM4 DotEdge arbitrary arbitrary arbitrary arbitrary
 
   shrink (DotEdge f t isDir as) = map (DotEdge f t isDir) $ shrinkList as
+
+-- -----------------------------------------------------------------------------
+-- Defining Arbitrary instances for the generalised types
+
+instance (Eq a, Arbitrary a) => Arbitrary (GDotGraph a) where
+  arbitrary = liftM4 GDotGraph arbitrary arbitrary arbitrary genGDStmts
+
+  shrink (GDotGraph str dir gid stmts) = map (GDotGraph str dir gid)
+                                         $ shrinkGDStmts stmts
+
+genGDStmts :: (Eq a, Arbitrary a) => Gen (GDotStatements a)
+genGDStmts = sized (arbGDS True)
+
+shrinkGDStmts :: (Eq a, Arbitrary a) => GDotStatements a -> [GDotStatements a]
+shrinkGDStmts gds
+  | len == 1  = map Seq.singleton . shrink $ Seq.index gds 0
+  | otherwise = [gds1, gds2]
+    where
+      len = Seq.length gds
+      -- Halve the sequence
+      (gds1, gds2) = (len `div` 2) `Seq.splitAt` gds
+
+instance (Eq a, Arbitrary a) => Arbitrary (GDotStatement a) where
+  -- Don't want as many sub-graphs as nodes, etc.
+  arbitrary = frequency [ (3, liftM GA arbitrary)
+                        , (1, liftM SG arbitrary)
+                        , (5, liftM DN arbitrary)
+                        , (7, liftM DE arbitrary)
+                        ]
+
+  shrink (GA ga) = map GA $ shrink ga
+  shrink (SG sg) = map SG $ shrink sg
+  shrink (DN dn) = map DN $ shrink dn
+  shrink (DE de) = map DE $ shrink de
+
+-- | If 'True', generate 'GDotSubGraph's; otherwise don't.
+arbGDS           :: (Arbitrary a, Eq a) => Bool -> Int -> Gen (GDotStatements a)
+arbGDS haveSGs s = liftM (Seq.fromList . checkSGs) (resize s' arbList)
+  where
+    checkSGs = if haveSGs
+               then id
+               else filter notSG
+    notSG SG{} = False
+    notSG _    = True
+
+    s' = min s 10
+
+
+instance (Eq a, Arbitrary a) => Arbitrary (GDotSubGraph a) where
+  arbitrary = liftM3 GDotSG arbitrary arbitrary (sized $ arbGDS False)
+
+  shrink (GDotSG isCl mid stmts) = map (GDotSG isCl mid) $ shrinkGDStmts stmts
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for Attributes

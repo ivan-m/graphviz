@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 {- |
    Module      : Data.GraphViz
    Description : Graphviz bindings for Haskell.
@@ -63,7 +65,6 @@ import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Util(uniq, uniqBy)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
-import Data.GraphViz.Printing(PrintDot)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
@@ -130,7 +131,8 @@ graphToDot' graph = graphToDot (isDirected graph) graph
 -- | A pseudo-inverse to 'graphToDot' and 'graphToDot''; \"pseudo\" in
 --   the sense that the original node and edge labels aren't able to
 --   be reconstructed.
-dotToGraph    :: (Graph gr) => DotGraph Node -> gr Attributes Attributes
+dotToGraph    :: (DotRepr dg Node, Graph gr) => dg Node
+                 -> gr Attributes Attributes
 dotToGraph dg = mkGraph ns' es
   where
     -- Applying uniqBy just in case...
@@ -411,7 +413,7 @@ augmentGraph g dg = mkGraph lns les
 --   functions in "Data.GraphViz.Types.Printing") no longer uses
 --   indentation (this is to ensure the Dot code is printed correctly
 --   due to the limitations of the Pretty Printer used).
-prettyPrint    :: (PrintDot a) => DotGraph a -> IO String
+prettyPrint    :: (DotRepr dg n) => dg n -> IO String
 prettyPrint dg = liftM fromDotResult
                  -- Note that the choice of command here should be
                  -- arbitrary.
@@ -423,7 +425,7 @@ prettyPrint dg = liftM fromDotResult
 -- | The 'unsafePerformIO'd version of 'prettyPrint'.  Graphviz should
 --   always produce the same pretty-printed output, so this should be
 --   safe.
-prettyPrint' :: (PrintDot a) => DotGraph a -> String
+prettyPrint' :: (DotRepr dg n) => dg n -> String
 prettyPrint' = unsafePerformIO . prettyPrint
 
 -- | Quickly visualise a graph using the 'Xlib' 'GraphvizCanvas'.

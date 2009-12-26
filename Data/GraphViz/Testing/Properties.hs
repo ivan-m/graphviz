@@ -10,7 +10,8 @@
 module Data.GraphViz.Testing.Properties where
 
 import Data.GraphViz(dotizeGraph', prettyPrint')
-import Data.GraphViz.Types(DotGraph, printDotGraph)
+import Data.GraphViz.Types(DotRepr, DotGraph, printDotGraph)
+import Data.GraphViz.Types.Generalised(generaliseDotGraph)
 import Data.GraphViz.Printing(PrintDot(..), printIt)
 import Data.GraphViz.Parsing(ParseDot(..), parseIt, preProcess)
 
@@ -32,17 +33,25 @@ prop_printParseID a = fst (tryParse a) == a
 prop_printParseListID    :: (ParseDot a, PrintDot a, Eq a) => [a] -> Property
 prop_printParseListID as =  not (null as) ==> prop_printParseID as
 
+-- | When converting a 'DotGraph' value to a 'GDotGraph' one, they
+--   should generate the same Dot code.
+prop_generalisedSameDot    :: (ParseDot n, PrintDot n) => DotGraph n -> Bool
+prop_generalisedSameDot dg = printDotGraph dg == printDotGraph gdg
+  where
+    gdg = generaliseDotGraph dg
+
 -- | Pre-processing shouldn't change the output of printed Dot code.
 --   This should work for all 'PrintDot' instances, but is more
 --   specific to 'DotGraph' values.
-prop_preProcessingID    :: (PrintDot a) => DotGraph a -> Bool
+prop_preProcessingID    :: (DotRepr dg n) => dg n -> Bool
 prop_preProcessingID dg = preProcess dotCode == dotCode
   where
     dotCode = printDotGraph dg
 
 -- | This is a version of 'prop_printParseID' that tries to parse the
 --   pretty-printed output of 'prettyPrint'' rather than just 'printIt'.
-prop_parsePrettyID    :: (Eq a, ParseDot a, PrintDot a) => DotGraph a -> Bool
+prop_parsePrettyID    :: (DotRepr dg n, Eq (dg n), ParseDot (dg n))
+                         => dg n -> Bool
 prop_parsePrettyID dg = (fst . parseIt . prettyPrint') dg == dg
 
 -- | This property verifies that 'dotizeGraph'', etc. only /augment/ the

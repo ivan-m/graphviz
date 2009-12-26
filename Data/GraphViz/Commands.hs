@@ -45,7 +45,6 @@ module Data.GraphViz.Commands
 import Prelude hiding (catch)
 
 import Data.GraphViz.Types
-import Data.GraphViz.Printing
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
 
@@ -92,8 +91,8 @@ undirCommand :: GraphvizCommand
 undirCommand = Neato
 
 -- | The appropriate (default) Graphviz command for the given graph.
-commandFor    :: DotGraph a -> GraphvizCommand
-commandFor dg = if directedGraph dg
+commandFor    :: (DotRepr dg n) => dg n -> GraphvizCommand
+commandFor dg = if graphIsDirected dg
                 then dirCommand
                 else undirCommand
 
@@ -273,13 +272,13 @@ maybeErr = either Error (const Success)
 
 -- | Run the recommended Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
-runGraphviz    :: (PrintDot n) => DotGraph n -> GraphvizOutput -> FilePath
+runGraphviz    :: (DotRepr dg n) => dg n -> GraphvizOutput -> FilePath
                   -> IO (Either String FilePath)
 runGraphviz gr = runGraphvizCommand (commandFor gr) gr
 
 -- | Run the chosen Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
-runGraphvizCommand :: (PrintDot n) => GraphvizCommand -> DotGraph n
+runGraphvizCommand :: (DotRepr dg n) => GraphvizCommand -> dg n
                       -> GraphvizOutput -> FilePath
                       -> IO (Either String FilePath)
 runGraphvizCommand cmd gr t fp
@@ -304,9 +303,9 @@ addExtension cmd t fp = cmd t fp'
 --   'hGetContents' that will ensure this happens.
 --
 --   If the command was unsuccessful, then @'Left' error@ is returned.
-graphvizWithHandle :: (PrintDot n, Show a)
+graphvizWithHandle :: (DotRepr dg n, Show a)
                       => GraphvizCommand      -- ^ Which command to run
-                      -> DotGraph n           -- ^ The 'DotGraph' to use
+                      -> dg n                 -- ^ The 'DotRepr' to use
                       -> GraphvizOutput       -- ^ The 'GraphvizOutput' type
                       -> (Handle -> IO a)     -- ^ Extract the output
                       -> IO (Either String a) -- ^ The error or the result.
@@ -314,8 +313,8 @@ graphvizWithHandle = graphvizWithHandle'
 
 -- This version is not exported as we don't want to let arbitrary
 -- @Handle -> IO a@ functions to be used for GraphvizCanvas outputs.
-graphvizWithHandle' :: (PrintDot n, GraphvizResult o, Show a)
-                       => GraphvizCommand -> DotGraph n -> o
+graphvizWithHandle' :: (DotRepr dg n, GraphvizResult o, Show a)
+                       => GraphvizCommand -> dg n -> o
                        -> (Handle -> IO a) -> IO (Either String a)
 graphvizWithHandle' cmd gr t f
   = handle notRunnable
@@ -375,7 +374,7 @@ signalWhenDone f h mv = f h >>= putMVar mv >> return ()
 
 -- | Run the chosen Graphviz command on this graph and render it using
 --   the given canvas type.
-runGraphvizCanvas          :: (PrintDot n) => GraphvizCommand -> DotGraph n
+runGraphvizCanvas          :: (DotRepr dg n) => GraphvizCommand -> dg n
                               -> GraphvizCanvas -> IO RunResult
 runGraphvizCanvas cmd gr c = liftM maybeErr
                              $ graphvizWithHandle' cmd gr c nullHandle
@@ -387,7 +386,7 @@ runGraphvizCanvas cmd gr c = liftM maybeErr
 
 -- | Run the recommended Graphviz command on this graph and render it
 --   using the given canvas type.
-runGraphvizCanvas'   :: (PrintDot n) => DotGraph n -> GraphvizCanvas
+runGraphvizCanvas'   :: (DotRepr dg n) => dg n -> GraphvizCanvas
                         -> IO RunResult
 runGraphvizCanvas' d = runGraphvizCanvas (commandFor d) d
 

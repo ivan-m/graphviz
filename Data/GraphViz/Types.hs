@@ -1,3 +1,7 @@
+{-# LANGUAGE   MultiParamTypeClasses
+             , FlexibleInstances
+  #-}
+
 {- |
    Module      : Data.GraphViz.Types
    Description : Definition of the Graphviz types.
@@ -61,8 +65,10 @@
 
    * Cannot place items in an arbitrary order: in particular, this
      means that it is not possible to use the normal Graphviz hack of
-     having graph attributes that do not apply to subgraphs\/clusters
-     by listing them /after/ the subgraphs\/clusters.
+     having graph attributes that do not apply to subgraphs\/clusters by
+     listing them /after/ the subgraphs\/clusters.  If you wish to be able
+     to use an arbitrary ordering, you may wish to use
+     "Data.GraphViz.Types.Generalised".
 
    * The parser will strip out comments and convert multiline strings
      into a single line string.  Pre-processor lines (i.e. those
@@ -72,16 +78,13 @@
 
 -}
 module Data.GraphViz.Types
-    ( -- * The overall representation of a graph in /Dot/ format.
-      DotGraph(..)
-      -- ** Printing and parsing a @DotGraph@.
+    ( -- * Abstraction from the representation type
+      DotRepr(..)
+      -- ** Printing and parsing a @DotRepr@.
     , printDotGraph
     , parseDotGraph
-      -- ** Functions acting on a @DotGraph@.
-    , setID
-    , makeStrict
-    , graphNodes
-    , graphEdges
+      -- * The overall representation of a graph in /Dot/ format.
+    , DotGraph(..)
       -- ** Reporting of errors in a @DotGraph@.
     , DotError(..)
     , isValidGraph
@@ -95,13 +98,50 @@ module Data.GraphViz.Types
     , DotEdge(..)
     ) where
 
+import Data.GraphViz.Types.Common
 import Data.GraphViz.Attributes
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
-import Data.Maybe(isJust)
-import Control.Monad(liftM, when)
+import Control.Monad(liftM)
+
+-- -----------------------------------------------------------------------------
+
+-- | This class is used to provide a common interface to different
+--   ways of representing a graph in /Dot/ form.
+class (PrintDot (dg n), ParseDot (dg n)) => DotRepr dg n where
+  -- | Is this graph directed?
+  graphIsDirected :: dg n -> Bool
+
+  -- | A strict graph disallows multiple edges.
+  makeStrict :: dg n -> dg n
+
+  -- | Set the ID of the graph.
+  setID :: GraphID -> dg n -> dg n
+
+  -- | Return all the 'DotNode's contained within this 'DotRepr'.
+  --   There is no requirement for it to return implicitly defined
+  --   nodes found only within a 'DotEdge'.
+  graphNodes :: dg n -> [DotNode n]
+
+  -- | Return all the 'DotEdge's contained within this 'DotRepr'.
+  graphEdges :: dg n -> [DotEdge n]
+
+-- | The actual /Dot/ code for an instance of 'DotRepr'.  Note that it
+--   is expected that @'parseDotGraph' . 'printDotGraph' == 'id'@
+--   (this might not be true the other way around due to un-parseable
+--   components).
+printDotGraph :: (DotRepr dg n) => dg n -> String
+printDotGraph = printIt
+
+-- | Parse a limited subset of the Dot language to form an instance of
+--   'DotRepr'.  Each instance may have its own limitations on what
+--   may or may not be parseable Dot code.
+--
+--   Also removes any comments, etc. before parsing.
+parseDotGraph :: (DotRepr dg n) => String -> dg n
+parseDotGraph = fst . parseIt . preProcess
 
 -- -----------------------------------------------------------------------------
 
@@ -113,37 +153,16 @@ data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multipl
                            }
                   deriving (Eq, Ord, Show, Read)
 
--- | A strict graph disallows multiple edges.
-makeStrict   :: DotGraph a -> DotGraph a
-makeStrict g = g { strictGraph = True }
+instance (PrintDot n, ParseDot n) => DotRepr DotGraph n where
+  graphIsDirected = directedGraph
 
--- | Set the ID of the graph.
-setID     :: GraphID -> DotGraph a -> DotGraph a
-setID i g = g { graphID = Just i }
+  makeStrict g = g { strictGraph = True }
 
--- | Return all the 'DotNode's contained within this 'DotGraph'.  Note
---   that it does not yet return all implicitly defined nodes
---   contained only within 'DotEdge's.
-graphNodes :: DotGraph a -> [DotNode a]
-graphNodes = statementNodes . graphStatements
+  setID i g = g { graphID = Just i }
 
--- | Return all the 'DotEdge's contained within this 'DotGraph'.
-graphEdges :: DotGraph a -> [DotEdge a]
-graphEdges = statementEdges . graphStatements
+  graphNodes = statementNodes . graphStatements
 
--- | The actual /Dot/ code for a 'DotGraph'.  Note that it is expected
---   that @'parseDotGraph' . 'printDotGraph' == 'id'@ (this might not
---   be true the other way around due to un-parseable components).
-printDotGraph :: (PrintDot a) => DotGraph a -> String
-printDotGraph = printIt
-
--- | Parse a limited subset of the Dot language to form a 'DotGraph'
---   (that is, the caveats listed in "Data.GraphViz.Attributes" aside,
---   Dot graphs are parsed if they match the layout of 'DotGraph').
---
---   Also removes any comments, etc. before parsing.
-parseDotGraph :: (ParseDot a) => String -> DotGraph a
-parseDotGraph = fst . parseIt . preProcess
+  graphEdges = statementEdges . graphStatements
 
 -- | Check if all the 'Attribute's are being used correctly.
 isValidGraph :: DotGraph a -> Bool
@@ -154,47 +173,16 @@ graphErrors :: DotGraph a -> [DotError a]
 graphErrors = invalidStmts usedByGraphs . graphStatements
 
 instance (PrintDot a) => PrintDot (DotGraph a) where
-    unqtDot = printStmtBased printGraphID graphStatements
-
-printGraphID   :: (PrintDot a) => DotGraph a -> DotCode
-printGraphID g = bool empty strGraph' (strictGraph g)
-                 <+> bool undirGraph' dirGraph' (directedGraph g)
-                 <+> maybe empty toDot (graphID g)
+  unqtDot = printStmtBased printGraphID' graphStatements toDot
+    where
+      printGraphID' = printGraphID strictGraph directedGraph graphID
 
 instance (ParseDot a) => ParseDot (DotGraph a) where
-    parseUnqt = parseStmtBased parseGraphID
+    parseUnqt = parseStmtBased parse (parseGraphID DotGraph)
 
     parse = parseUnqt -- Don't want the option of quoting
             `adjustErr`
             (++ "\n\nNot a valid DotGraph")
-
-parseGraphID :: (ParseDot a) => Parse (DotStatements a -> DotGraph a)
-parseGraphID = do str <- liftM isJust
-                         $ optional (parseAndSpace $ string strGraph)
-                  dir <- parseAndSpace ( stringRep True dirGraph
-                                         `onFail`
-                                         stringRep False undirGraph
-                                       )
-                  gID <- optional $ parseAndSpace parse
-                  return $ DotGraph str dir gID
-
-dirGraph :: String
-dirGraph = "digraph"
-
-dirGraph' :: DotCode
-dirGraph' = text dirGraph
-
-undirGraph :: String
-undirGraph = "graph"
-
-undirGraph' :: DotCode
-undirGraph' = text undirGraph
-
-strGraph :: String
-strGraph = "strict"
-
-strGraph' :: DotCode
-strGraph' = text strGraph
 
 instance Functor DotGraph where
     fmap f g = g { graphStatements = fmap f $ graphStatements g }
@@ -208,45 +196,6 @@ data DotError a = GraphError Attribute
                 | NodeError (Maybe a) Attribute
                 | EdgeError (Maybe (a,a)) Attribute
                 deriving (Eq, Ord, Show, Read)
-
--- -----------------------------------------------------------------------------
-
--- | A polymorphic type that covers all possible ID values allowed by
---   Dot syntax.  Note that whilst the 'ParseDot' and 'PrintDot'
---   instances for 'String' will properly take care of the special
---   cases for numbers, they are treated differently here.
-data GraphID = Str String
-             | Int Int
-             | Dbl Double
-             | HTML URL
-               deriving (Eq, Ord, Show, Read)
-
-instance PrintDot GraphID where
-    unqtDot (Str str) = unqtDot str
-    unqtDot (Int i)   = unqtDot i
-    unqtDot (Dbl d)   = unqtDot d
-    unqtDot (HTML u)  = unqtDot u
-
-    toDot (Str str) = toDot str
-    toDot gID       = unqtDot gID
-
-instance ParseDot GraphID where
-    parseUnqt = liftM HTML parseUnqt
-                `onFail`
-                liftM stringNum parseUnqt
-
-    parse = liftM HTML parse
-            `onFail`
-            liftM stringNum parse
-            `adjustErr`
-            (++ "\nNot a valid GraphID")
-
-stringNum     :: String -> GraphID
-stringNum str = maybe checkDbl Int $ stringToInt str
-  where
-    checkDbl = if isNumString str
-               then Dbl $ toDouble str
-               else Str str
 
 -- -----------------------------------------------------------------------------
 
@@ -283,37 +232,6 @@ instance Functor DotStatements where
                          , nodeStmts = map (fmap f) $ nodeStmts stmts
                          , edgeStmts = map (fmap f) $ edgeStmts stmts
                          }
-
-printStmtBased          :: (PrintDot n) => (a -> DotCode)
-                           -> (a -> DotStatements n) -> a -> DotCode
-printStmtBased ff fss a = vcat [ ff a <+> lbrace
-                               , ind stmts
-                               , rbrace
-                               ]
-    where
-      ind = nest 4
-      stmts = toDot $ fss a
-
-printStmtBasedList        :: (PrintDot n) => (a -> DotCode)
-                             -> (a -> DotStatements n) -> [a] -> DotCode
-printStmtBasedList ff fss = vcat . map (printStmtBased ff fss)
-
-parseStmtBased   :: (ParseDot n) => Parse (DotStatements n -> a) -> Parse a
-parseStmtBased p = do f <- p
-                      whitespace'
-                      character '{'
-                      newline'
-                      stmts <- parse
-                      newline'
-                      whitespace'
-                      character '}'
-                      return $ f stmts
-                   `adjustErr`
-                   (++ "\n\nNot a valid statement-based structure")
-
-parseStmtBasedList   :: (ParseDot n) => Parse (DotStatements n -> a)
-                        -> Parse [a]
-parseStmtBasedList p = sepBy (whitespace' >> parseStmtBased p) newline'
 
 -- | The function represents which function to use to check the
 --   'GraphAttrs' values.
@@ -403,102 +321,25 @@ data DotSubGraph a = DotSG { isCluster     :: Bool
                    deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotSubGraph a) where
-    unqtDot = printStmtBased printSubGraphID subGraphStmts
+    unqtDot = printStmtBased printSubGraphID' subGraphStmts toDot
 
-    unqtListToDot = printStmtBasedList printSubGraphID subGraphStmts
+    unqtListToDot = printStmtBasedList printSubGraphID' subGraphStmts toDot
 
     listToDot = unqtListToDot
 
-printSubGraphID   :: DotSubGraph a -> DotCode
-printSubGraphID s = sGraph'
-                    <+> maybe cl dtID (subGraphID s)
-    where
-      isCl = isCluster s
-      cl = bool empty clust' isCl
-      dtID = printSGID isCl
-
--- | Print the actual ID for a 'DotSubGraph'.
-printSGID          :: Bool -> GraphID -> DotCode
-printSGID isCl sID = bool noClust addClust isCl
-    where
-      noClust = toDot sID
-      -- Have to manually render it as we need the un-quoted form.
-      addClust = toDot . (++) clust . (:) '_'
-                 . renderDot $ mkDot sID
-      mkDot (Str str) = text str -- Quotes will be escaped later
-      mkDot gid       = unqtDot gid
+printSubGraphID' :: DotSubGraph a -> DotCode
+printSubGraphID' = printSubGraphID (\sg -> (isCluster sg, subGraphID sg))
 
 instance (ParseDot a) => ParseDot (DotSubGraph a) where
-    parseUnqt = parseStmtBased parseSubGraphID
+    parseUnqt = parseStmtBased parseUnqt (parseSubGraphID DotSG)
 
     parse = parseUnqt -- Don't want the option of quoting
             `adjustErr`
             (++ "\n\nNot a valid Sub Graph")
 
-    parseUnqtList = parseStmtBasedList parseSubGraphID
+    parseUnqtList = parseStmtBasedList parseUnqt (parseSubGraphID DotSG)
 
     parseList = parseUnqtList
-
-parseSubGraphID :: Parse (DotStatements a -> DotSubGraph a)
-parseSubGraphID = do string sGraph
-                     whitespace
-                     liftM (uncurry DotSG) parseSGID
-
-parseSGID :: Parse (Bool, Maybe GraphID)
-parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
-                  , return (False, Nothing)
-                  ]
-  where
-    -- If it's a String value, check to see if it's actually a
-    -- cluster_Blah value; thus need to manually re-parse it.
-    getClustFrom (Str str) = fst $ runParser pStr str
-    getClustFrom gid       = (False, Just gid)
-
-    checkCl = stringRep True clust
-    pStr = do isCl <- checkCl
-                      `onFail`
-                      return False
-              when isCl $ optional (character '_') >> return ()
-              sID <- optional pID
-              let sID' = if sID == emptyID
-                         then Nothing
-                         else sID
-              return (isCl, sID')
-
-    emptyID = Just $ Str ""
-
-    -- For Strings, there are no more quotes to unescape, so consume
-    -- what you can.
-    pID = liftM HTML parseUnqt
-                `onFail`
-                liftM stringNum (many next)
-
-{- This is a much nicer result, but unfortunately it doesn't work.
-   The problem is that Graphviz decides that a subgraph is a cluster
-   if the ID starts with "cluster" (no quotes); thus, we _have_ to do
-   the double layer of parsing to get it to work :@
-
-            do isCl <- stringRep True clust
-                       `onFail`
-                       return False
-               sID <- optional $ do when isCl
-                                      $ optional (character '_') >> return ()
-                                    parseUnqt
-               when (isCl || isJust sID) $ whitespace >> return ()
-               return (isCl, sID)
--}
-
-sGraph :: String
-sGraph = "subgraph"
-
-sGraph' :: DotCode
-sGraph' = text sGraph
-
-clust :: String
-clust = "cluster"
-
-clust' :: DotCode
-clust' = text clust
 
 instance Functor DotSubGraph where
     fmap f sg = sg { subGraphStmts = fmap f $ subGraphStmts sg }

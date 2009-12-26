@@ -49,15 +49,23 @@ module Data.GraphViz.Testing
          -- ** The tests themselves
        , Test(..)
        , test_printParseID_Attributes
+       , test_generalisedSameDot
        , test_printParseID
        , test_preProcessingID
        , test_parsePrettyID
        , test_dotizeAugment
         -- * Re-exporting modules for manual testing.
        , module Data.GraphViz
+       , module Data.GraphViz.Types.Generalised
        , module Data.GraphViz.Testing.Properties
+         -- * Debugging printing
+       , PrintDot(..)
        , printIt
+       , renderDot
+         -- * Debugging parsing
+       , ParseDot(..)
        , parseIt
+       , runParser
        , preProcess
        ) where
 
@@ -70,8 +78,12 @@ import Data.GraphViz.Testing.Instances.FGL()
 import Data.GraphViz.Testing.Properties
 
 import Data.GraphViz hiding (RunResult(..))
-import Data.GraphViz.Parsing(parseIt, preProcess)
-import Data.GraphViz.Printing(printIt)
+import Data.GraphViz.Parsing(ParseDot(..), parseIt, runParser, preProcess)
+import Data.GraphViz.Printing(PrintDot(..), printIt, renderDot)
+import Data.GraphViz.Types.Generalised hiding ( GraphID(..)
+                                              , GlobalAttributes(..)
+                                              , DotNode(..)
+                                              , DotEdge(..))
 -- Can't use PatriciaTree because a Show instance is needed.
 import Data.Graph.Inductive.Tree(Gr)
 
@@ -91,7 +103,7 @@ runDefaultTests = do putStrLn msg
            \If any of these tests fail, please inform the maintainer,\n\
            \including full output of this test suite.\n\
            \\n\
-           \This test suite takes approximately 90 minutes to run on a\n\
+           \This test suite takes approximately 110 minutes to run on a\n\
            \2 GHz Mobile Core 2 Duo (running with a single thread)."
 
     successMsg = "All tests were successful!"
@@ -148,7 +160,9 @@ die msg = do hPutStrLn stderr msg
 -- | The tests to run by default.
 defaultTests :: [Test]
 defaultTests = [ test_printParseID_Attributes
+               , test_generalisedSameDot
                , test_printParseID
+               , test_printParseGID
                , test_preProcessingID
                  -- Can't run this test, since we don't generate valid
                  -- DotGraphs to pass to Graphviz!
@@ -176,6 +190,19 @@ test_printParseID_Attributes
             \rest of the tests, generating " ++ show numGen ++ " lists of\n\
             \Attributes rather than the default " ++ show defGen ++ " tests."
 
+test_generalisedSameDot :: Test
+test_generalisedSameDot
+  = Test { name = "Printing generalised Dot code"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: DotGraph Int -> Bool
+      prop = prop_generalisedSameDot
+
+      dsc = "When generalising \"DotGraph\" values to \"GDotGraph\" values,\n\
+             \the generated Dot code should be identical."
+
 test_printParseID :: Test
 test_printParseID
   = Test { name = "Printing and Parsing DotGraphs"
@@ -190,6 +217,20 @@ test_printParseID
              \generated Dot code.  This test aims to determine the validity\n\
              \of this for the overall \"DotGraph Int\" values."
 
+test_printParseGID :: Test
+test_printParseGID
+  = Test { name = "Printing and Parsing Generalised DotGraphs"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: GDotGraph Int -> Bool
+      prop = prop_printParseID
+
+      dsc = "The graphviz library should be able to parse back in its own\n\
+             \generated Dot code.  This test aims to determine the validity\n\
+             \of this for the overall \"GDotGraph Int\" values."
+
 test_preProcessingID :: Test
 test_preProcessingID
   = Test { name = "Pre-processing Dot code"
@@ -203,7 +244,9 @@ test_preProcessingID
       dsc = "When parsing Dot code, some pre-processing is done to remove items\n\
              \such as comments and to join together multi-line strings.  This\n\
              \test verifies that this pre-processing doesn't affect actual\n\
-             \Dot code by running the pre-processor on generated Dot code."
+             \Dot code by running the pre-processor on generated Dot code.\n\n\
+             \This test is not run on generalised Dot graphs as if it works for\n\
+             \normal dot graphs then it should also work for generalised ones."
 
 -- | This test is not valid for use until valid DotGraphs can be generated.
 test_parsePrettyID :: Test
