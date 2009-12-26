@@ -21,16 +21,15 @@ Features of the graphviz library include:
 * Functions for running a Graphviz layout tool with all specified
   output types.
 
-* The ability to not only generate but also parse Dot code (note that
-  currently this is limited to a rather strict ordering of
-  statements).
+* The ability to not only generate but also parse Dot code with two
+  options: strict and liberal (in terms of ordering of statements).
 
 * Functions to convert FGL graphs to Dot code - including support to
   group them into clusters - with a high degree of customisation by
   specifying which attributes to use.
 
 * Round-trip support for passing an FGL graph through Graphviz to
-  augment node and edge labels with positional information.
+  augment node and edge labels with positional information, etc.
 
 Please note that currently the convenience functions are only
 available for FGL [3] graphs; this will be extended in future once a

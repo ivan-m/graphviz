@@ -23,9 +23,8 @@ Features of this library are:
 * Functions for running a Graphviz layout tool with all specified
   output types.
 .
-* The ability to not only generate but also parse Dot code (note that
-  currently this is limited to a rather strict ordering of
-  statements).
+* The ability to not only generate but also parse Dot code with two
+  options: strict and liberal (in terms of ordering of statements).
 .
 * Functions to convert FGL graphs to Dot code - including support to
   group them into clusters - with a high degree of customisation by
