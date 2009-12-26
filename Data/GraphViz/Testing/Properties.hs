@@ -11,8 +11,8 @@ module Data.GraphViz.Testing.Properties where
 
 import Data.GraphViz(dotizeGraph', prettyPrint')
 import Data.GraphViz.Types(DotGraph, printDotGraph)
-import Data.GraphViz.Types.Printing(PrintDot(..), printIt)
-import Data.GraphViz.Types.Parsing(ParseDot(..), parseIt, preProcess)
+import Data.GraphViz.Printing(PrintDot(..), printIt)
+import Data.GraphViz.Parsing(ParseDot(..), parseIt, preProcess)
 
 import Test.QuickCheck
 

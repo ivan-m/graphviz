@@ -17,7 +17,7 @@
 -}
 module Data.GraphViz.Testing.Instances() where
 
-import Data.GraphViz.Types.Parsing(isNumString)
+import Data.GraphViz.Parsing(isNumString)
 
 import Data.GraphViz.Attributes
 import Data.GraphViz.Types

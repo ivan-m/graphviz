@@ -18,7 +18,7 @@ module Data.GraphViz.Testing.Instances.FGL() where
 
 import Test.QuickCheck
 
-import Data.GraphViz.Types.Internal(uniq, uniqBy)
+import Data.GraphViz.Util(uniq, uniqBy)
 
 import Data.Graph.Inductive.Graph(Graph, mkGraph, nodes, delNode)
 import Data.Function(on)
