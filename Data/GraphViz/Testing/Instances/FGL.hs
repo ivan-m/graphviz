@@ -21,7 +21,6 @@ import Test.QuickCheck
 import Data.GraphViz.Util(uniq, uniqBy)
 
 import Data.Graph.Inductive.Graph(Graph, mkGraph, nodes, delNode)
-import Data.Function(on)
 import Control.Monad(liftM, liftM3)
 
 -- -----------------------------------------------------------------------------
