@@ -282,9 +282,10 @@ runGraphvizCommand :: (DotRepr dg n) => GraphvizCommand -> dg n
                       -> GraphvizOutput -> FilePath
                       -> IO (Either String FilePath)
 runGraphvizCommand cmd gr t fp
-  = liftM (either Left (const $ Right fp))
+  = liftM (either (Left . addFl) (const $ Right fp))
     $ graphvizWithHandle cmd gr t toFile
       where
+        addFl = (++) ("Unable to create " ++ fp ++ "\n")
         toFile h = B.hGetContents h >>= B.writeFile fp
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
