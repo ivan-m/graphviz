@@ -1,3 +1,33 @@
+Changes in 2999.8.0.0
+=====================
+
+* Added support for generalised DotGraphs; this optional
+  representation removes the restriction of ordering of Dot
+  statements.  This allows for greater flexibility of how to specify
+  Dot code.  As an offshoot from this, most relevant functions now
+  utilise a new DotRepr class that work with both DotGraphs and the
+  new GDotGraphs; this shouldn't affect any code already in use.
+
+* With the prompting of Noam Lewis, the augmentation functions have
+  been revamped in two ways:
+
+  - Now contains support for multiple edges.
+
+  - The ability to perform "manual" augmentation if greater control is
+    desired.
+
+* Add a preview function to quickly render and visualise an FGL graph
+  using the Xlib canvas.
+
+* Added a pseudo-inverse of the FGL -> Dot functions (a graph is
+  created, but the original node and edge labels are unrecoverable).
+
+* The Printing and Parsing modules have been moved (from
+  Data.GraphViz.Types to Data.GraphViz).
+
+* Reworked file-generating commands such that they return the filename
+  of the created file if successful.
+
 Changes in 2999.7.0.0
 =====================
 
