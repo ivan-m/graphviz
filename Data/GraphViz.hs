@@ -368,12 +368,13 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 
 -- | Pass the 'DotGraph' through the relevant command and then augment
 --   the 'Graph' that it came from.
-dotAttributes :: (Graph gr) => Bool -> gr a (EdgeID b) -> DotGraph Node
-                 -> IO (gr (AttributeNode a) (AttributeEdge b))
+dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr a (EdgeID b)
+                 -> dg Node -> IO (gr (AttributeNode a) (AttributeEdge b))
 dotAttributes isDir gr dot
-  = liftM (augmentGraph gr . parseDotGraph . fromDotResult)
+  = liftM (augmentGraph gr . parseDG . fromDotResult)
     $ graphvizWithHandle command dot DotOutput hGetContents'
     where
+      parseDG = asTypeOf dot . parseDotGraph
       command = if isDir then dirCommand else undirCommand
 
 -- | Use the 'Attributes' in the provided 'DotGraph' to augment the
@@ -385,8 +386,8 @@ dotAttributes isDir gr dot
 --   by using a conversion function or by passing the result of a
 --   conversion function through a 'GraphvizCommand' via the
 --   'DotOutput' or similar).
-augmentGraph      :: (Graph gr) => gr a (EdgeID b) -> DotGraph Node
-                     -> gr (AttributeNode a) (AttributeEdge b)
+augmentGraph      :: (Graph gr, DotRepr dg Node) => gr a (EdgeID b)
+                     -> dg Node -> gr (AttributeNode a) (AttributeEdge b)
 augmentGraph g dg = mkGraph lns les
   where
     lns = map (\(n, l) -> (n, (nodeMap Map.! n, l)))
