@@ -1,3 +1,5 @@
+{-# OPTIONS_HADDOCK hide #-}
+
 {- |
    Module      : Data.GraphViz.Util
    Description : Internal utility functions

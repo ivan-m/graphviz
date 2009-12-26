@@ -1,3 +1,5 @@
+{-# OPTIONS_HADDOCK hide #-}
+
 {- |
    Module      : Data.GraphViz.Types.Common
    Description : Common internal functions for dealing with overall types.

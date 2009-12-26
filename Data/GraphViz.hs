@@ -216,7 +216,7 @@ clusterGraphToDot' gr = clusterGraphToDot (isDirected gr) gr
     'Start' ('StartStyle' 'RandomStyle')
    @
 
-   Then it will not necessarily be referentially transparent (ideally,
+   then it will not necessarily be referentially transparent (ideally,
    no matter what the seed is, it will still eventually be drawn to the
    same optimum, but this can't be guaranteed).  As such, if you are sure
    that you're not using such an 'Attribute', then you should be able to
@@ -279,8 +279,7 @@ clusterGraphToGraph' gr = clusterGraphToGraph (isDirected gr) gr
    This section contains convenience functions for quick-and-dirty
    augmentation of graphs.  No 'Attribute's are applied, and
    'unsafePerformIO' is used to make these normal functions.  Note that
-   this should be safe since these should be referentially transparent
-   (as should all augmentation functions).
+   this should be safe since these should be referentially transparent.
 -}
 
 -- | Pass the graph through 'graphToGraph' with no 'Attribute's.
@@ -325,14 +324,22 @@ dotizeClusterGraph' g = dotizeClusterGraph (isDirected g) g
 -- -----------------------------------------------------------------------------
 
 {- $manualAugment
+
    This section allows you to manually augment graphs by providing
    fine-grained control over the augmentation process (the standard
-   augmentation functions compose these together).  For example, you may
-   want to be able to access the intermediary 'DotGraph' used to augment
-   a 'Graph'.
+   augmentation functions compose these together).  Possible reasons for
+   manual augmentation are:
+
+   * Gain access to the intermediary 'DotRepr' used.
+
+   * Convert the default 'DotGraph' to a @GDotGraph@ (found in
+     "Data.GraphViz.Types.Generalised") so as to have greater control over
+     the generated Dot code.
+
+   * Use a specific 'GraphvizCommand' rather than the default.
 
    Note that whilst these functions provide you with more control, you
-   must be careful how you use them: if you use the wrong 'DotGraph' for
+   must be careful how you use them: if you use the wrong 'DotRepr' for
    a 'Graph', then the behaviour of 'augmentGraph' (and all functions
    that use it) is undefined.  The main point is to make sure that the
    defined 'DotNode' and 'DotEdge' values aren't removed (or their ID

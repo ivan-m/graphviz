@@ -21,7 +21,7 @@
 
    * The generated Strings are very simple, only composed of lower
      case letters, digits and some symbols.  This is because too many
-     tests were "failing" due to some corner case; e.g. lower-case
+     tests were \"failing\" due to some corner case; e.g. lower-case
      letters only because the parser parses Strings as lowercase, so
      if a particular String isn't valid (e.g. @\"all\"@ for 'LayerID',
      then the 'Arbitrary' instance has to ensure that all possible
@@ -33,12 +33,10 @@
      as dot, etc. choke on invalid Dot code.
 
    * To avoid needless endless recursion, 'DotSubGraph's do not have
-     sub-'DotSubGraph's.
+     sub-'DotSubGraph's (same with 'GDotSubGraph's).
 
-   * The 'Graph' values that are generated do not have multiple edges,
-     as the 'prop_dotizeAugment' property uses 'dotize'', which makes
-     no guarantees on what will happen for 'Graph's with multiple
-     edges.
+   * The 'Graph' values that are generated do not have multiple edges
+     for simplicity purposes.
 
    * This test suite isn't perfect: if you deliberately try to stuff
      something up, you probably can.

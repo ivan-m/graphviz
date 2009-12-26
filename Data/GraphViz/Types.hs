@@ -30,7 +30,8 @@
      does indeed have a valid 'GraphID'.
 
    * All 'DotSubGraph's with @'isCluster' = 'True'@ /must/ have unique
-     'subGraphID' values.
+     'subGraphID' values (well, only if you want them to be generated
+     sensibly).
 
    * If eventually outputting to a format such as SVG, then you should
      make sure that your 'DotGraph' has a 'graphID', as that is used

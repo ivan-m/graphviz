@@ -17,6 +17,11 @@
    not easy (there is no listing of available renderers or formatters
    on the Graphviz website), and for the most part the default ones do
    the job well.
+
+   Please note that for 'GraphvizOutput' and 'GraphvizCanvas', you
+   will see that they are instances of a @GraphvizResult@ class; this is
+   an internal class that should not be visible outside this module, but
+   Haddock is being too helpful for its own good.
 -}
 module Data.GraphViz.Commands
     ( -- * The different Graphviz tools available.
