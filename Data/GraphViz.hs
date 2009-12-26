@@ -334,7 +334,12 @@ dotizeClusterGraph' g = dotizeClusterGraph (isDirected g) g
    Note that whilst these functions provide you with more control, you
    must be careful how you use them: if you use the wrong 'DotGraph' for
    a 'Graph', then the behaviour of 'augmentGraph' (and all functions
-   that use it) is undefined.
+   that use it) is undefined.  The main point is to make sure that the
+   defined 'DotNode' and 'DotEdge' values aren't removed (or their ID
+   values - or the 'Comment' 'Attribute' for the 'DotEdge's - altered) to
+   ensure that it is possible to match up the nodes and edges in the
+   'Graph' with those in the 'DotRepr'.
+
 -}
 
 -- | Used to augment an edge label with a unique identifier.
