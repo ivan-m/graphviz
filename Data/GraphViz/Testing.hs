@@ -51,6 +51,7 @@ module Data.GraphViz.Testing
        , test_preProcessingID
        , test_parsePrettyID
        , test_dotizeAugment
+       , test_dotizeAugmentUniq
         -- * Re-exporting modules for manual testing.
        , module Data.GraphViz
        , module Data.GraphViz.Types.Generalised
@@ -165,6 +166,7 @@ defaultTests = [ test_printParseID_Attributes
                  -- DotGraphs to pass to Graphviz!
                  -- , test_parsePrettyID
                , test_dotizeAugment
+               , test_dotizeAugmentUniq
                ]
 
 -- | Test that 'Attributes' can be printed and then parsed back.
@@ -276,3 +278,19 @@ test_dotizeAugment
              \only _augment_ the graph labels and not change the graphs\n\
              \themselves.  This test compares the original graphs to these\n\
              \augmented graphs and verifies that they are the same."
+
+test_dotizeAugmentUniq :: Test
+test_dotizeAugmentUniq
+  = Test { name = "Unique edges in augmented FGL Graphs"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr Char Double -> Bool
+      prop = prop_dotizeAugmentUniq
+
+      dsc = "When augmenting a graph with multiple edges, as long as no\n\
+             \Attributes are provided that override the default settings,\n\
+             \then each edge between two nodes should have a unique position\n\
+             \Attribute, etc."
+

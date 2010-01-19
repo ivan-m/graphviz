@@ -58,7 +58,7 @@ isNumString str = case str of
                (_,'.':ds)    -> checkEs $ dropWhile isDigit ds
                ([],_)        -> False
                (_,ds)        -> checkEs ds
-      checkEs' s = case break ((==) 'e') s of
+      checkEs' s = case break ('e' ==) s of
                      ([], _) -> False
                      (ds,es) -> all isDigit ds && checkEs es
       checkEs []       = True
@@ -72,7 +72,7 @@ toDouble str = case str of
                  _          -> read $ adj str
   where
     adj s = (:) '0'
-            $ case span ((==) '.') (map toLower s) of
+            $ case span ('.' ==) (map toLower s) of
                 (ds@(_:_), '.':[])   -> ds ++ '.' : '0' : []
                 (ds, '.':es@('e':_)) -> ds ++ '.' : '0' : es
                 _                    -> s
@@ -124,10 +124,17 @@ uniq :: (Ord a) => [a] -> [a]
 uniq = uniqBy id
 
 uniqBy   :: (Ord b) => (a -> b) -> [a] -> [a]
-uniqBy f = map head . groupBy ((==) `on` f) . sortBy (compare `on` f)
+uniqBy f = map head . groupSortBy f
+
+groupSortBy   :: (Ord b) => (a -> b) -> [a] -> [[a]]
+groupSortBy f = groupBy ((==) `on` f) . sortBy (compare `on` f)
 
 -- | Fold over 'Bool's; first param is for 'False', second for 'True'.
 bool       :: a -> a -> Bool -> a
 bool f t b = if b
              then t
              else f
+
+isSingle     :: [a] -> Bool
+isSingle [_] = True
+isSingle _   = False
