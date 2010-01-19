@@ -41,6 +41,7 @@ module Data.GraphViz.Commands
     , addExtension
     , runGraphvizCanvas
     , runGraphvizCanvas'
+    , runGraphvizAugment
     , graphvizWithHandle
       -- * Helper utilities.
     , hGetContents'
@@ -309,20 +310,28 @@ addExtension cmd t fp = cmd t fp'
 --   'hGetContents' that will ensure this happens.
 --
 --   If the command was unsuccessful, then @'Left' error@ is returned.
-graphvizWithHandle :: (DotRepr dg n)
-                      => GraphvizCommand      -- ^ Which command to run
-                      -> dg n                 -- ^ The 'DotRepr' to use
-                      -> GraphvizOutput       -- ^ The 'GraphvizOutput' type
-                      -> (Handle -> IO a)     -- ^ Extract the output
-                      -> IO (Either String a) -- ^ The error or the result.
-graphvizWithHandle = graphvizWithHandle'
+graphvizWithHandle     :: (DotRepr dg n)
+                          => GraphvizCommand      -- ^ Which command to run
+                          -> dg n                 -- ^ The 'DotRepr' to use
+                          -> GraphvizOutput       -- ^ The 'GraphvizOutput' type
+                          -> (Handle -> IO a)     -- ^ Extract the output
+                          -> IO (Either String a) -- ^ The error or the result.
+graphvizWithHandle cmd = graphvizWithHandle' cmd . return
+
+-- | Augment multiple 'DotRepr' values by passing through the same
+--   command with the 'DotOutput' output and then parsing the results.
+--   This may be faster than manually augmenting each 'DotRepr' value.
+runGraphvizAugment         :: (DotRepr dg n) => GraphvizCommand -> [dg n]
+                              -> IO (Either String [dg n])
+runGraphvizAugment cmd dgs = liftM (fmap parseDotGraphs)
+                             $ graphvizWithHandle' cmd dgs DotOutput hGetContents'
 
 -- This version is not exported as we don't want to let arbitrary
 -- @Handle -> IO a@ functions to be used for GraphvizCanvas outputs.
 graphvizWithHandle' :: (DotRepr dg n, GraphvizResult o)
-                       => GraphvizCommand -> dg n -> o
+                       => GraphvizCommand -> [dg n] -> o
                        -> (Handle -> IO a) -> IO (Either String a)
-graphvizWithHandle' cmd gr t f
+graphvizWithHandle' cmd grs t f
   = handle notRunnable
     $ bracket
         (runInteractiveProcess cmd' args Nothing Nothing)
@@ -335,7 +344,7 @@ graphvizWithHandle' cmd gr t f
           hSetBinaryMode outp $ isBinary t -- Depends on output type
 
           -- Make sure we close the input or it will hang!!!!!!!
-          forkIO $ hPutStr inp (printDotGraph gr) >> hClose inp
+          forkIO $ hPutStr inp (printDotGraphs grs) >> hClose inp
 
           -- Need to make sure both the output and error handles are
           -- really fully consumed.
@@ -383,7 +392,7 @@ signalWhenDone f h mv = f h >>= putMVar mv >> return ()
 runGraphvizCanvas          :: (DotRepr dg n) => GraphvizCommand -> dg n
                               -> GraphvizCanvas -> IO RunResult
 runGraphvizCanvas cmd gr c = liftM maybeErr
-                             $ graphvizWithHandle' cmd gr c nullHandle
+                             $ graphvizWithHandle' cmd [gr] c nullHandle
     where
       nullHandle   :: Handle -> IO ()
       nullHandle h = do r <- hGetContents h
