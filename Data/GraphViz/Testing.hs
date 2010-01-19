@@ -271,7 +271,7 @@ test_dotizeAugment
          , test = quickCheckResult prop
          }
     where
-      prop :: Gr Char Double -> Bool
+      prop :: Gr Char Double -> Property
       prop = prop_dotizeAugment
 
       dsc = "The various Graph to Graph functions in Data.GraphViz should\n\
@@ -286,7 +286,7 @@ test_dotizeAugmentUniq
          , test = quickCheckResult prop
          }
     where
-      prop :: Gr Char Double -> Bool
+      prop :: Gr Char Double -> Property
       prop = prop_dotizeAugmentUniq
 
       dsc = "When augmenting a graph with multiple edges, as long as no\n\
