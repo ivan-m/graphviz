@@ -309,7 +309,7 @@ addExtension cmd t fp = cmd t fp'
 --   'hGetContents' that will ensure this happens.
 --
 --   If the command was unsuccessful, then @'Left' error@ is returned.
-graphvizWithHandle :: (DotRepr dg n, Show a)
+graphvizWithHandle :: (DotRepr dg n)
                       => GraphvizCommand      -- ^ Which command to run
                       -> dg n                 -- ^ The 'DotRepr' to use
                       -> GraphvizOutput       -- ^ The 'GraphvizOutput' type
@@ -319,7 +319,7 @@ graphvizWithHandle = graphvizWithHandle'
 
 -- This version is not exported as we don't want to let arbitrary
 -- @Handle -> IO a@ functions to be used for GraphvizCanvas outputs.
-graphvizWithHandle' :: (DotRepr dg n, GraphvizResult o, Show a)
+graphvizWithHandle' :: (DotRepr dg n, GraphvizResult o)
                        => GraphvizCommand -> dg n -> o
                        -> (Handle -> IO a) -> IO (Either String a)
 graphvizWithHandle' cmd gr t f
