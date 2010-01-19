@@ -41,4 +41,7 @@ instance (Graph g, Arbitrary n, Arbitrary e) => Arbitrary (g n e) where
       makeLNode n = liftM ((,) n) arbitrary
       makeLEdge nGen = liftM3 (,,) nGen nGen arbitrary
 
-  shrink gr = map (flip delNode gr) (nodes gr)
+  shrink gr = case nodes gr of
+                   -- Need to have at least 2 nodes before we delete one!
+                   ns@(_:_:_) -> map (flip delNode gr) ns
+                   _          -> []
