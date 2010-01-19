@@ -380,7 +380,7 @@ setEdgeComment f = \ e@(_,_,eid) -> Comment (eID eid) : (f . stripID) e
 stripID           :: LEdge (EdgeID b) -> LEdge b
 stripID (f,t,eid) = (f,t, eLbl eid)
 
--- | Pass the 'DotGraph' through the relevant command and then augment
+-- | Pass the 'DotRepr' through the relevant command and then augment
 --   the 'Graph' that it came from.
 dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr a (EdgeID b)
                  -> dg Node -> IO (gr (AttributeNode a) (AttributeEdge b))
