@@ -1925,7 +1925,6 @@ instance ParseDot StyleItem where
     parseUnqt = do nm <- parseUnqt
                    args <- tryParseList' parseArgs
                    return $ SItem nm args
-        where
 
     parse = quotedParse (liftM2 SItem parseUnqt parseArgs)
             `onFail`

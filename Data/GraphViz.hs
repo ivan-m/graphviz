@@ -1,4 +1,6 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE   MultiParamTypeClasses
+             , FlexibleContexts
+  #-}
 
 {- |
    Module      : Data.GraphViz
