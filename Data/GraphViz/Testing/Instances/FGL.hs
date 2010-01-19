@@ -18,9 +18,11 @@ module Data.GraphViz.Testing.Instances.FGL() where
 
 import Test.QuickCheck
 
-import Data.GraphViz.Util(uniq, uniqBy)
+import Data.GraphViz.Util(uniq)
 
 import Data.Graph.Inductive.Graph(Graph, mkGraph, nodes, delNode)
+import Data.List(sortBy)
+import Data.Function(on)
 import Control.Monad(liftM, liftM3)
 
 -- -----------------------------------------------------------------------------
@@ -30,7 +32,8 @@ instance (Graph g, Arbitrary n, Arbitrary e) => Arbitrary (g n e) where
   arbitrary = do ns <- suchThat genNs (not . null)
                  let nGen = elements ns
                  lns <- mapM makeLNode ns
-                 les <- liftM (uniqBy toE) . listOf $ makeLEdge nGen
+                 les <- liftM (sortBy (compare `on` toE)) . listOf
+                        $ makeLEdge nGen
                  return $ mkGraph lns les
     where
       genNs = liftM uniq arbitrary

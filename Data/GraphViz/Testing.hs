@@ -35,9 +35,6 @@
    * To avoid needless endless recursion, 'DotSubGraph's do not have
      sub-'DotSubGraph's (same with 'GDotSubGraph's).
 
-   * The 'Graph' values that are generated do not have multiple edges
-     for simplicity purposes.
-
    * This test suite isn't perfect: if you deliberately try to stuff
      something up, you probably can.
 -}
