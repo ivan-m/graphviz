@@ -178,7 +178,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
   where
     -- If it's a String value, check to see if it's actually a
     -- cluster_Blah value; thus need to manually re-parse it.
-    getClustFrom (Str str) = fst $ runParser pStr str
+    getClustFrom (Str str) = runParser' pStr str
     getClustFrom gid       = (False, Just gid)
 
     checkCl = stringRep True clust

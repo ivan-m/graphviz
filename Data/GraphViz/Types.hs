@@ -154,9 +154,9 @@ parseDotGraph = head . parseDotGraphs
 -- | As with 'parseDotGraph' but parses a list of 'DotRepr' values
 --   (note: it assumes that there is at least one value to parse!).
 parseDotGraphs :: (DotRepr dg n) => String -> [dg n]
-parseDotGraphs = fst . runParser prs . preProcess
+parseDotGraphs = runParser' prs . preProcess
   where
-    prs = sepBy1 (whitespace' >> parse) newline'
+    prs = sepBy1 parse (newline' >> whitespace')
 
 -- -----------------------------------------------------------------------------
 

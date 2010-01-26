@@ -13,7 +13,7 @@ import Data.GraphViz(dotizeGraph', prettyPrint')
 import Data.GraphViz.Types(DotRepr, DotGraph, printDotGraph)
 import Data.GraphViz.Types.Generalised(generaliseDotGraph)
 import Data.GraphViz.Printing(PrintDot(..), printIt)
-import Data.GraphViz.Parsing(ParseDot(..), parseIt, preProcess)
+import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt', preProcess)
 import Data.GraphViz.Util(groupSortBy, isSingle)
 
 import Test.QuickCheck
@@ -27,7 +27,7 @@ import Data.List(nub)
 -- | Checking that @parse . print == id@; that is, graphviz can parse
 --   its own output.
 prop_printParseID   :: (ParseDot a, PrintDot a, Eq a) => a -> Bool
-prop_printParseID a = fst (tryParse a) == a
+prop_printParseID a = tryParse' a == a
 
 -- | A version of 'prop_printParse' specifically for lists; it ensures
 --   that the list is not empty (as most list-based parsers fail on
@@ -54,7 +54,7 @@ prop_preProcessingID dg = preProcess dotCode == dotCode
 --   pretty-printed output of 'prettyPrint'' rather than just 'printIt'.
 prop_parsePrettyID    :: (DotRepr dg n, Eq (dg n), ParseDot (dg n))
                          => dg n -> Bool
-prop_parsePrettyID dg = (fst . parseIt . prettyPrint') dg == dg
+prop_parsePrettyID dg = (parseIt' . prettyPrint') dg == dg
 
 -- | This property verifies that 'dotizeGraph'', etc. only /augment/ the
 --   original graph; that is, the actual nodes, edges and labels for
@@ -90,3 +90,8 @@ prop_dotizeAugmentUniq g = not (isEmpty g) ==> all uniqLs lss
 --   enter and explicit type signature.
 tryParse :: (ParseDot a, PrintDot a) => a -> (a, String)
 tryParse = parseIt . printIt
+
+-- | Equivalent to 'tryParse' except that it is assumed that the
+--   entire 'String' *is* fully consumed.
+tryParse' :: (ParseDot a, PrintDot a) => a -> a
+tryParse' = parseIt' . printIt

@@ -25,6 +25,8 @@ module Data.GraphViz.Parsing
     , Parse
     , ParseDot(..)
     , parseIt
+    , parseIt'
+    , runParser'
       -- * Convenience parsing combinators.
     , onlyBool
     , stringBlock
@@ -86,6 +88,14 @@ import Control.Monad(liftM, when)
 -- | A @ReadS@-like type alias.
 type Parse a = Parser Char a
 
+-- | A variant of 'runParser' where it is assumed that the provided
+--   parsing function consumes all of the 'String' input (with the
+--   exception of whitespace at the end).
+runParser'   :: Parse a -> String -> a
+runParser' p = fst . runParser p'
+  where
+    p' = p `discard` (newline' >> whitespace >> eof)
+
 class ParseDot a where
     parseUnqt :: Parse a
 
@@ -102,9 +112,14 @@ class ParseDot a where
     parseList = quotedParse parseUnqtList
 
 -- | Parse the required value, returning also the rest of the input
---   'String' that hasn't been parsed.
+--   'String' that hasn't been parsed (for debugging purposes).
 parseIt :: (ParseDot a) => String -> (a, String)
 parseIt = runParser parse
+
+-- | Parse the required value with the assumption that it will parse
+--   all of the input 'String'.
+parseIt' :: (ParseDot a) => String -> a
+parseIt' = runParser' parse
 
 instance ParseDot Int where
     parseUnqt = parseInt'
@@ -204,8 +219,7 @@ parseFloat = do ds   <- many (satisfy isDigit)
                 let frac' = fromMaybe "" frac
                     expn' = fromMaybe 0 expn
                 ( return . fromRational . (* (10^^(expn' - length frac')))
-                  . (%1) . fst
-                  . runParser parseInt) (ds++frac')
+                  . (%1) . runParser' parseInt) (ds++frac')
              `onFail`
              fail "Expected a floating point number"
     where parseExp = do character 'e'
@@ -349,7 +363,7 @@ tryParseList' = liftM (fromMaybe []) . optional
 -- | Remove unparseable features of Dot, such as comments and
 --   multi-line strings (which are converted to single-line strings).
 preProcess :: String -> String
-preProcess = fst . runParser parseOutUnwanted
+preProcess = runParser' parseOutUnwanted
              -- snd should be null
 
 -- | Parse out comments and make quoted strings spread over multiple
