@@ -75,7 +75,6 @@ import Data.Char( digitToInt
                 , isSpace
                 , toLower
                 )
-import Data.Function(on)
 import Data.Maybe(isJust, fromMaybe, isNothing)
 import Data.Ratio((%))
 import Data.Word(Word8)
@@ -244,9 +243,11 @@ hasString :: String -> Parse Bool
 hasString = liftM isJust . optional . string
 
 character   :: Char -> Parse Char
-character c = satisfy (((==) `on` toLower) c)
+character c = satisfy parseC
               `adjustErr`
               (++ "\nnot the expected char: " ++ [c])
+  where
+    parseC c' = c' == c || toLower c == c'
 
 noneOf :: (Eq a) => [a] -> Parser a a
 noneOf t = satisfy (\x -> all (/= x) t)
