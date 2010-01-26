@@ -18,7 +18,7 @@ import Data.GraphViz.Util(groupSortBy, isSingle)
 
 import Test.QuickCheck
 
-import Data.Graph.Inductive(DynGraph, equal, nmap, emap, labEdges, isEmpty)
+import Data.Graph.Inductive(DynGraph, equal, nmap, emap, labEdges)
 import Data.List(nub)
 
 -- -----------------------------------------------------------------------------
@@ -62,8 +62,8 @@ prop_parsePrettyID dg = (parseIt' . prettyPrint') dg == dg
 --   'Graph' instances, this property requires 'DynGraph' (which is a
 --   sub-class of 'Graph') instances to be able to strip off the
 --   'Attributes' augmentations.
-prop_dotizeAugment   :: (DynGraph g, Eq n, Ord e) => g n e -> Property
-prop_dotizeAugment g = not (isEmpty g) ==> equal g (unAugment g')
+prop_dotizeAugment   :: (DynGraph g, Eq n, Ord e) => g n e -> Bool
+prop_dotizeAugment g = equal g (unAugment g')
   where
     g' = dotizeGraph' g
     unAugment = nmap snd . emap snd
@@ -72,8 +72,8 @@ prop_dotizeAugment g = not (isEmpty g) ==> equal g (unAugment g')
 --   should have unique 'Attributes' (namely the positions).  Note
 --   that this may not hold true with custom supplied 'Attributes'
 --   (i.e. not using one of the @dotize@ functions).
-prop_dotizeAugmentUniq   :: (DynGraph g, Eq n, Ord e) => g n e -> Property
-prop_dotizeAugmentUniq g = not (isEmpty g) ==> all uniqLs lss
+prop_dotizeAugmentUniq   :: (DynGraph g, Eq n, Ord e) => g n e -> Bool
+prop_dotizeAugmentUniq g = all uniqLs lss
   where
     g' = dotizeGraph' g
     les = map (\(f,t,l) -> ((f,t),l)) $ labEdges g'
