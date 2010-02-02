@@ -394,10 +394,8 @@ runGraphvizCanvas          :: (DotRepr dg n) => GraphvizCommand -> dg n
 runGraphvizCanvas cmd gr c = liftM maybeErr
                              $ graphvizWithHandle' cmd [gr] c nullHandle
     where
-      nullHandle   :: Handle -> IO ()
-      nullHandle h = do r <- hGetContents h
-                        evaluate (length r)
-                        return ()
+      nullHandle :: Handle -> IO ()
+      nullHandle = liftM (const ()) . hGetContents'
 
 -- | Run the recommended Graphviz command on this graph and render it
 --   using the given canvas type.
