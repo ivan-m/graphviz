@@ -42,6 +42,8 @@ module Data.GraphViz.Printing
     , PrintDot(..)
     , printIt
     , addQuotes
+    , unqtEscaped
+    , printEscaped
     , wrap
     , commaDel
     , printField
@@ -61,6 +63,7 @@ import Text.PrettyPrint hiding ( Style(..)
 
 import qualified Text.PrettyPrint as PP
 
+import qualified Data.Set as Set
 import Data.Word(Word8)
 
 -- -----------------------------------------------------------------------------
@@ -154,11 +157,11 @@ addQuotes = bool id doubleQuotes . needsQuotes
 -- | Escape quotes in Strings that need them.
 unqtString     :: String -> DotCode
 unqtString ""  = empty
-unqtString str = text $ escapeQuotes str -- no quotes? no worries!
+unqtString str = unqtEscaped [] str -- no quotes? no worries!
 
 -- | Escape quotes and quote Strings that need them (including keywords).
-qtString     :: String -> DotCode
-qtString str = addQuotes str $ unqtString str
+qtString :: String -> DotCode
+qtString = printEscaped []
 
 instance (PrintDot a) => PrintDot [a] where
     unqtDot = unqtListToDot
@@ -173,3 +176,23 @@ commaDel a b = unqtDot a <> comma <> unqtDot b
 
 printField     :: (PrintDot a) => String -> a -> DotCode
 printField f v = text f <> equals <> toDot v
+
+-- | Escape the specified chars as well as @"@.
+unqtEscaped    :: [Char] -> String -> DotCode
+unqtEscaped cs = text . addEscapes cs
+
+-- | Escape the specified chars as well as @"@ and then wrap the
+--   result in quotes.
+printEscaped        :: [Char] -> String -> DotCode
+printEscaped cs str = addQuotes str' $ text str'
+  where
+    str' = addEscapes cs str
+
+addEscapes   :: [Char] -> String ->  String
+addEscapes cs = foldr escape ""
+  where
+    cs' = Set.fromList $ quote : cs
+    slash = '\\'
+    quote = '"'
+    escape c str | c `Set.member` cs' = slash : c : str
+                 | otherwise          = c : str

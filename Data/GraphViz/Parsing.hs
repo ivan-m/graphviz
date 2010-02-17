@@ -34,6 +34,7 @@ module Data.GraphViz.Parsing
     , isNumString
     , isIntString
     , quotedString
+    , parseEscaped
     , parseAndSpace
     , string
     , strings
@@ -79,6 +80,7 @@ import Data.Char( digitToInt
                 )
 import Data.Maybe(isJust, fromMaybe, isNothing)
 import Data.Ratio((%))
+import qualified Data.Set as Set
 import Data.Word(Word8)
 import Control.Monad(liftM, when)
 
@@ -180,10 +182,7 @@ stringBlock = do frst <- satisfy frstIDString
 
 -- | Used when quotes are explicitly required;
 quotedString :: Parse String
-quotedString = many stringInterior
-
-stringInterior :: Parse Char
-stringInterior = orQuote $ satisfy ((/=) quoteChar)
+quotedString = parseEscaped []
 
 parseSigned :: Real a => Parse a -> Parse a
 parseSigned p = (character '-' >> liftM negate p)
@@ -293,6 +292,18 @@ orQuote p = stringRep quoteChar "\\\""
 
 quoteChar :: Char
 quoteChar = '"'
+
+-- | Parse a 'String' where the provided 'Char's (as well as @"@) are
+--   escaped.  Note: does not parse surrounding quotes.
+parseEscaped    :: [Char] -> Parse String
+parseEscaped cs = many $ qPrs `onFail` oth
+  where
+    cs' = quoteChar : cs
+    csSet = Set.fromList cs'
+    slash = '\\'
+    escCs = map (\c -> '\\' : c : []) cs'
+    qPrs = character slash >> oneOf (map character cs')
+    oth = satisfy (`Set.notMember` csSet)
 
 newline :: Parse String
 newline = oneOf $ map string ["\r\n", "\n", "\r"]
