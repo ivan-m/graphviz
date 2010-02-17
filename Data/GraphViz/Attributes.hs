@@ -2044,8 +2044,9 @@ instance ParseDot CompassPoint where
                       , stringRep East "e"
                       , stringRep West "w"
                       , stringRep CenterPoint "c"
-                      , stringRep NoCP "_"
                       ]
+                `onFail`
+                return NoCP
 
 -- -----------------------------------------------------------------------------
 
