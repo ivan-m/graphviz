@@ -294,7 +294,8 @@ quoteChar :: Char
 quoteChar = '"'
 
 -- | Parse a 'String' where the provided 'Char's (as well as @"@) are
---   escaped.  Note: does not parse surrounding quotes.
+--   escaped.  Note: does not parse surrounding quotes, and assumes
+--   that @\\@ is not an escaped character.
 parseEscaped    :: [Char] -> Parse String
 parseEscaped cs = many $ qPrs `onFail` oth
   where
@@ -302,7 +303,10 @@ parseEscaped cs = many $ qPrs `onFail` oth
     csSet = Set.fromList cs'
     slash = '\\'
     escCs = map (\c -> '\\' : c : []) cs'
-    qPrs = character slash >> oneOf (map character cs')
+    -- Have to allow standard slashes
+    qPrs = do character slash
+              mE <- optional $ oneOf (map character cs')
+              return $ fromMaybe slash mE
     oth = satisfy (`Set.notMember` csSet)
 
 newline :: Parse String
