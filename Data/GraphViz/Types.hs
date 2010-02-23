@@ -72,8 +72,7 @@
      "Data.GraphViz.Types.Generalised".
 
    * The parser will strip out comments and convert multiline strings
-     into a single line string.  Pre-processor lines (i.e. those
-     started by @#@) and string concatenation are not yet supported.
+     into a single line string.  String concatenation is not yet supported.
 
    See "Data.GraphViz.Attributes" for more limitations.
 

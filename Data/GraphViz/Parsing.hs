@@ -378,8 +378,15 @@ tryParseList' = liftM (fromMaybe []) . optional
 -- | Remove unparseable features of Dot, such as comments and
 --   multi-line strings (which are converted to single-line strings).
 preProcess :: String -> String
-preProcess = runParser' parseOutUnwanted
+preProcess = runParser' parseOutUnwanted . stripPreProcessor
              -- snd should be null
+
+-- | Remove pre-processor lines (that is, those that start with a @#@).
+stripPreProcessor :: String -> String
+stripPreProcessor = unlines . filter (not . isPreProcessLine) . lines
+  where
+    isPreProcessLine ('#':_) = True
+    isPreProcessLine _       = False
 
 -- | Parse out comments and make quoted strings spread over multiple
 --   lines only over a single line.  Should parse the /entire/ input
