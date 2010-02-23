@@ -396,7 +396,7 @@ parseOutUnwanted = liftM concat (many getNext)
 
 -- | Parse @//@-style comments.
 parseLineComment :: Parse String
-parseLineComment = string "//" >> newline
+parseLineComment = string "//" >> skipToNewline
 
 -- | Parse @/* ... */@-style comments.
 parseMultiLineComment :: Parse String
@@ -422,4 +422,3 @@ parseSplitStrings = do oq <- parseQuote
                    (character '\\' >> newline >> return [])
                    `onFail`
                    liftM return (satisfy ((/=) quoteChar))
-
