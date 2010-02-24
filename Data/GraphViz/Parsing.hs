@@ -399,9 +399,11 @@ parseOutUnwanted :: Parse String
 parseOutUnwanted = liftM concat (many getNext)
     where
       getNext :: Parse String
-      getNext = parseSplitStrings
+      getNext = parseSplitLine
                 `onFail`
-                (oneOf [ parseLineComment, parseMultiLineComment ] >> return [])
+                parseConcatStrings
+                `onFail`
+                (oneOf [parseLineComment, parseMultiLineComment] >> return [])
                 `onFail`
                 liftM return next
 
@@ -421,15 +423,20 @@ parseMultiLineComment = bracket start end (liftM concat $ many inner)
                  n <- satisfy ((/=) '/')
                  liftM ((:) ast . (:) n) inner
 
--- | Parse out @\<newline>@ from a quoted string.
-parseSplitStrings :: Parse String
-parseSplitStrings = do oq <- parseQuote
-                       inner <- liftM concat $ many parseInner
-                       cq <- parseQuote
-                       return $ oq : inner ++ [cq]
-    where
-      parseInner = string "\\\""
-                   `onFail`
-                   (character '\\' >> newline >> return [])
-                   `onFail`
-                   liftM return (satisfy ((/=) quoteChar))
+parseConcatStrings :: Parse String
+parseConcatStrings = liftM (wrapQuotes . concat)
+                     $ sepBy1 parseString parseConcat
+  where
+    parseString = quotedParse (liftM concat $ many parseInner)
+    parseInner = string "\\\""
+                 `onFail`
+                 parseSplitLine -- in case there's a split mid-quote
+                 `onFail`
+                 liftM return (satisfy ((/=) quoteChar))
+    parseConcat = allWhitespace >> character '+' >> allWhitespace
+    wrapQuotes str = quoteChar : str ++ [quoteChar]
+
+
+-- | Lines can be split with a @\\@ at the end of the line.
+parseSplitLine :: Parse String
+parseSplitLine = character '\\' >> newline >> return ""

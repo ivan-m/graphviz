@@ -71,8 +71,8 @@
      to use an arbitrary ordering, you may wish to use
      "Data.GraphViz.Types.Generalised".
 
-   * The parser will strip out comments and convert multiline strings
-     into a single line string.  String concatenation is not yet supported.
+   * The parser will strip out comments and pre-processor lines, join
+     together multiline statements and concatenate split strings together.
 
    See "Data.GraphViz.Attributes" for more limitations.
 
