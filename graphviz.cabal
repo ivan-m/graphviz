@@ -62,7 +62,7 @@ Library {
                            process,
                            fgl,
                            filepath,
-                           polyparse >= 1.1,
+                           polyparse >= 1.4,
                            pretty,
                            bytestring < 0.10,
                            colour >= 2.3 && < 2.4
