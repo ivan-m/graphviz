@@ -188,6 +188,10 @@ printEscaped cs str = addQuotes str' $ text str'
   where
     str' = addEscapes cs str
 
+-- | Ensure the provided characters are all escaped.  Note that we
+--   cannot convert to 'DotCode' immediately because 'printEscaped'
+--   needs to pass the result from this to 'addQuotes' to determine if
+--   it needs to be quoted or not.
 addEscapes   :: [Char] -> String ->  String
 addEscapes cs = foldr escape ""
   where
