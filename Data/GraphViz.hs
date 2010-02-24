@@ -51,7 +51,6 @@ module Data.GraphViz
     , addEdgeIDs
     , setEdgeComment
     , dotAttributes
-    , dotAttributes'
     , augmentGraph
       -- * Utility functions
     , prettyPrint
@@ -385,19 +384,12 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 --   the 'Graph' that it came from.
 dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr a (EdgeID b)
                  -> dg Node -> IO (gr (AttributeNode a) (AttributeEdge b))
-dotAttributes isDir gr dot = liftM head $ dotAttributes' isDir [(gr,dot)]
-
--- | As with 'dotAttributes', but supports a list of 'Graph's and
---   'DotRepr's rather than a single one of each..
-dotAttributes' :: (Graph gr, DotRepr dg Node) => Bool
-                   -> [(gr a (EdgeID b), dg Node)]
-                   -> IO [gr (AttributeNode a) (AttributeEdge b)]
-dotAttributes' isDir gds
-  = liftM (zipWith augmentGraph grs . fromDotResult)
-    $ runGraphvizAugment command dots
+dotAttributes isDir gr dot
+  = liftM (augmentGraph gr . parseDG . fromDotResult)
+    $ graphvizWithHandle command dot DotOutput hGetContents'
     where
+      parseDG = asTypeOf dot . parseDotGraph
       command = if isDir then dirCommand else undirCommand
-      (grs,dots) = unzip gds
 
 -- | Use the 'Attributes' in the provided 'DotGraph' to augment the
 --   node and edge labels in the provided 'Graph'.  The unique

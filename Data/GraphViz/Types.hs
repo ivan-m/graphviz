@@ -82,9 +82,7 @@ module Data.GraphViz.Types
       DotRepr(..)
       -- ** Printing and parsing a @DotRepr@.
     , printDotGraph
-    , printDotGraphs
     , parseDotGraph
-    , parseDotGraphs
       -- * The overall representation of a graph in /Dot/ format.
     , DotGraph(..)
       -- ** Reporting of errors in a @DotGraph@.
@@ -135,12 +133,7 @@ class (PrintDot (dg n), ParseDot (dg n)) => DotRepr dg n where
 --   (this might not be true the other way around due to un-parseable
 --   components).
 printDotGraph :: (DotRepr dg n) => dg n -> String
-printDotGraph = printDotGraphs . return
-
--- | As with 'printDotGraph', but renders a list of 'DotRepr' values
---   (separated by newlines).
-printDotGraphs :: (DotRepr dg n) => [dg n] -> String
-printDotGraphs = renderDot . sep . map toDot
+printDotGraph = printIt
 
 -- | Parse a limited subset of the Dot language to form an instance of
 --   'DotRepr'.  Each instance may have its own limitations on what
@@ -148,14 +141,7 @@ printDotGraphs = renderDot . sep . map toDot
 --
 --   Also removes any comments, etc. before parsing.
 parseDotGraph :: (DotRepr dg n) => String -> dg n
-parseDotGraph = head . parseDotGraphs
-
--- | As with 'parseDotGraph' but parses a list of 'DotRepr' values
---   (note: it assumes that there is at least one value to parse!).
-parseDotGraphs :: (DotRepr dg n) => String -> [dg n]
-parseDotGraphs = runParser' prs . preProcess
-  where
-    prs = sepBy1 parse (newline' >> whitespace')
+parseDotGraph = fst . parseIt . preProcess
 
 -- -----------------------------------------------------------------------------
 
