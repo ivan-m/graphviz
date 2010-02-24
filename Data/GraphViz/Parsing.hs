@@ -44,6 +44,7 @@ module Data.GraphViz.Parsing
     , noneOf
     , whitespace
     , whitespace'
+    , allWhitespace
     , optionalQuotedString
     , optionalQuoted
     , quotedParse
@@ -96,7 +97,7 @@ type Parse a = Parser Char a
 runParser'   :: Parse a -> String -> a
 runParser' p = fst . runParser p'
   where
-    p' = p `discard` (newline' >> whitespace >> eof)
+    p' = p `discard` (allWhitespace >> eof)
 
 class ParseDot a where
     parseUnqt :: Parse a
@@ -270,6 +271,9 @@ whitespace = many1 (satisfy isSpace)
 
 whitespace' :: Parse String
 whitespace' = many (satisfy isSpace)
+
+allWhitespace :: Parse ()
+allWhitespace = newline' `discard` whitespace'
 
 optionalQuotedString :: String -> Parse String
 optionalQuotedString = optionalQuoted . string
