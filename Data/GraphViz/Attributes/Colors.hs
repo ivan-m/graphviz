@@ -1,6 +1,6 @@
 {- |
    Module      : Data.GraphViz.Attributes.Colors
-   Description : Helper functions for converting to Dot format.
+   Description : Specification of Color-related types and functions.
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
