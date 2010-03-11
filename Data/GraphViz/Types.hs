@@ -278,14 +278,14 @@ printGlobAttrType EdgeAttrs{}  = text "edge"
 instance ParseDot GlobalAttributes where
     parseUnqt = parseAttrBased parseGlobAttrType
                 `onFail`
-                liftM determineType parse `discard` optional lineEnd
+                liftM determineType parse
 
     parse = parseUnqt -- Don't want the option of quoting
             `adjustErr`
             (++ "\n\nNot a valid listing of global attributes")
 
     -- Have to do this manually because of the special case
-    parseUnqtList = sepBy (whitespace' >> parse) newline'
+    parseUnqtList = sepBy (whitespace' >> parse) statementEnd
 
     parseList = parseUnqtList
 
@@ -383,7 +383,12 @@ instance (ParseDot a) => ParseDot (DotNode a) where
     parseList = parseUnqtList
 
 parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
-parseNodeID = liftM DotNode parse
+parseNodeID = liftM DotNode parseAndCheck
+  where
+    parseAndCheck = do a <- parse
+                       me <- optional $ whitespace >> parseEdgeType
+                       maybe (return a) (const notANode) me
+    notANode = fail "This appears to be an edge, not a node"
 
 instance Functor DotNode where
     fmap f n = n { nodeID = f $ nodeID n }
@@ -440,9 +445,7 @@ parseEdgeType = stringRep True dirEdge
                 stringRep False undirEdge
 
 parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
-parseEdgeLine = liftM return parse
-                `onFail`
-                do n1 <- parse
+parseEdgeLine = do n1 <- parse
                    ens <- many1 $ do whitespace'
                                      eType <- parseEdgeType
                                      whitespace'
@@ -498,13 +501,18 @@ parseAttrBased   :: Parse (Attributes -> a) -> Parse a
 parseAttrBased p = do f <- p
                       whitespace'
                       atts <- tryParseList
-                      lineEnd
                       return $ f atts
                    `adjustErr`
                    (++ "\n\nNot a valid attribute-based structure")
 
 parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
-parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) newline'
+parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) statementEnd
 
-lineEnd :: Parse ()
-lineEnd = whitespace' >> character ';' >> return ()
+statementEnd :: Parse ()
+statementEnd = do whitespace'
+                  parseSplit
+                  newline'
+  where
+    parseSplit = oneOf [ liftM return $ character ';'
+                       , newline
+                       ]
