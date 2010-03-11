@@ -510,9 +510,10 @@ parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) statementEnd
 
 statementEnd :: Parse ()
 statementEnd = do whitespace'
-                  parseSplit
+                  optional parseSplit
                   newline'
   where
     parseSplit = oneOf [ liftM return $ character ';'
                        , newline
+                       , whitespace
                        ]
