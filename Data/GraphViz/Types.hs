@@ -286,6 +286,8 @@ instance ParseDot GlobalAttributes where
 
     -- Have to do this manually because of the special case
     parseUnqtList = sepBy (whitespace' >> parse) statementEnd
+                    `discard`
+                    optional statementEnd
 
     parseList = parseUnqtList
 
@@ -428,6 +430,8 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
     -- Have to take into account edges of the type "n1 -> n2 -> n3", etc.
     parseUnqtList = liftM concat
                     $ sepBy (whitespace' >> parseEdgeLine) statementEnd
+                      `discard`
+                      optional statementEnd
 
     parseList = parseUnqtList
 
@@ -507,3 +511,5 @@ parseAttrBased p = do f <- p
 
 parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
 parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) statementEnd
+                       `discard`
+                       optional statementEnd

@@ -102,6 +102,8 @@ printGStmts = vcat . map toDot . F.toList
 parseGStmts :: (ParseDot a) => Parse (GDotStatements a)
 parseGStmts = liftM (Seq.fromList . concat)
               $ sepBy (whitespace' >> p) statementEnd
+                `discard`
+                optional statementEnd
   where
     -- Have to do something special here because of "a -> b -> c"
     -- syntax for edges.
