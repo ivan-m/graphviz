@@ -507,13 +507,3 @@ parseAttrBased p = do f <- p
 
 parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
 parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) statementEnd
-
-statementEnd :: Parse ()
-statementEnd = do whitespace'
-                  optional parseSplit
-                  newline'
-  where
-    parseSplit = oneOf [ liftM return $ character ';'
-                       , newline
-                       , whitespace
-                       ]

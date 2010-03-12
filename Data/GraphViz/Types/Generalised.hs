@@ -44,7 +44,7 @@ import Data.GraphViz.Printing
 import qualified Data.Sequence as Seq
 import Data.Sequence(Seq, (><))
 import qualified Data.Foldable as F
-import Control.Monad(liftM)
+import Control.Monad(liftM, when)
 
 -- -----------------------------------------------------------------------------
 
@@ -100,9 +100,18 @@ printGStmts :: (PrintDot a) => GDotStatements a -> DotCode
 printGStmts = vcat . map toDot . F.toList
 
 parseGStmts :: (ParseDot a) => Parse (GDotStatements a)
-parseGStmts = liftM Seq.fromList $ many p
+parseGStmts = liftM (Seq.fromList . concat)
+              $ sepBy (whitespace' >> p) statementEnd
   where
-    p = whitespace' >> parse `discard` newline'
+    -- Have to do something special here because of "a -> b -> c"
+    -- syntax for edges.
+    p = oneOf [ liftM (return . GA) parse
+              , liftM (return . SG) parse
+              , liftM (return . DN) parse
+              , liftM (map DE) $ do es <- parse
+                                    when (null es) $ fail "Empty list of edges!"
+                                    return es
+              ]
 
 statementNodes :: GDotStatements a -> [DotNode a]
 statementNodes = concatMap stmtNodes . F.toList

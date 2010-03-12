@@ -214,3 +214,14 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
                when (isCl || isJust sID) $ whitespace >> return ()
                return (isCl, sID)
 -}
+
+-- | Parse the separator (and any other whitespace present) between statements.
+statementEnd :: Parse ()
+statementEnd = do whitespace'
+                  optional parseSplit
+                  newline'
+  where
+    parseSplit = oneOf [ liftM return $ character ';'
+                       , newline
+                       , whitespace
+                       ]
