@@ -427,7 +427,7 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
 
     -- Have to take into account edges of the type "n1 -> n2 -> n3", etc.
     parseUnqtList = liftM concat
-                    $ sepBy (whitespace' >> parseEdgeLine) newline'
+                    $ sepBy (whitespace' >> parseEdgeLine) statementEnd
 
     parseList = parseUnqtList
 
