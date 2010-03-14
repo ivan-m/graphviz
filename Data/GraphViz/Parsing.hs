@@ -44,6 +44,7 @@ module Data.GraphViz.Parsing
     , noneOf
     , whitespace
     , whitespace'
+    , allWhitespace
     , allWhitespace'
     , optionalQuotedString
     , optionalQuoted
