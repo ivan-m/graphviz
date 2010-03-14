@@ -451,7 +451,8 @@ parseConcatStrings = liftM (wrapQuotes . concat)
                  parseSplitLine -- in case there's a split mid-quote
                  `onFail`
                  liftM return (satisfy ((/=) quoteChar))
-    parseConcat = allWhitespace' >> character '+' >> allWhitespace'
+    parseConcat = parseSep >> character '+' >> parseSep
+    parseSep = many $ allWhitespace `onFail` parseUnwanted
     wrapQuotes str = quoteChar : str ++ [quoteChar]
 
 
