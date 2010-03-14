@@ -44,7 +44,7 @@ module Data.GraphViz.Parsing
     , noneOf
     , whitespace
     , whitespace'
-    , allWhitespace
+    , allWhitespace'
     , optionalQuotedString
     , optionalQuoted
     , quotedParse
@@ -97,7 +97,7 @@ type Parse a = Parser Char a
 runParser'   :: Parse a -> String -> a
 runParser' p = fst . runParser p'
   where
-    p' = p `discard` (allWhitespace >> eof)
+    p' = p `discard` (allWhitespace' >> eof)
 
 class ParseDot a where
     parseUnqt :: Parse a
@@ -273,7 +273,10 @@ whitespace' :: Parse String
 whitespace' = many (satisfy isSpace)
 
 allWhitespace :: Parse ()
-allWhitespace = newline' `discard` whitespace'
+allWhitespace = (whitespace `onFail` newline) >> allWhitespace'
+
+allWhitespace' :: Parse ()
+allWhitespace' = newline' `discard` whitespace'
 
 optionalQuotedString :: String -> Parse String
 optionalQuotedString = optionalQuoted . string
@@ -442,7 +445,7 @@ parseConcatStrings = liftM (wrapQuotes . concat)
                  parseSplitLine -- in case there's a split mid-quote
                  `onFail`
                  liftM return (satisfy ((/=) quoteChar))
-    parseConcat = allWhitespace >> character '+' >> allWhitespace
+    parseConcat = allWhitespace' >> character '+' >> allWhitespace'
     wrapQuotes str = quoteChar : str ++ [quoteChar]
 
 
