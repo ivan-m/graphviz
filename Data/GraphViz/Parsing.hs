@@ -55,7 +55,7 @@ module Data.GraphViz.Parsing
     , parseComma
     , tryParseList
     , tryParseList'
-    , skipToNewline
+    , consumeLine
     , parseField
     , parseFields
     , parseFieldBool
@@ -323,9 +323,9 @@ newline' :: Parse ()
 newline' = many (whitespace' >> newline) >> return ()
 
 -- | Parses and returns all characters up till the end of the line,
---   then skips to the beginning of the next line.
-skipToNewline :: Parse String
-skipToNewline = many (noneOf ['\n','\r']) `discard` newline
+--   but does not touch the newline characters.
+consumeLine :: Parse String
+consumeLine = many (noneOf ['\n','\r'])
 
 parseField     :: (ParseDot a) => String -> Parse a
 parseField fld = do string fld
@@ -403,15 +403,22 @@ parseOutUnwanted = liftM concat (many getNext)
                 `onFail`
                 liftM return next
 
--- | Remove pre-processor lines (that is, those that start with a @#@).
+-- | Remove pre-processor lines (that is, those that start with a
+--   @#@).  Will consume the newline from the beginning of the
+--   previous line, but will leave the one from the pre-processor line
+--   there (so in the end it just removes the line).
 parsePreProcessor :: Parse String
 parsePreProcessor = do newline
                        character '#'
-                       skipToNewline
+                       consumeLine
 
 -- | Parse @//@-style comments.
 parseLineComment :: Parse String
-parseLineComment = string "//" >> skipToNewline
+parseLineComment = string "//"
+                   -- Note: do /not/ consume the newlines, as they're
+                   -- needed in case the next line is a pre-processor
+                   -- line.
+                   >> consumeLine
 
 -- | Parse @/* ... */@-style comments.
 parseMultiLineComment :: Parse String
