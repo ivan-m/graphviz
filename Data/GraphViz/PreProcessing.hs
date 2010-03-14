@@ -40,21 +40,19 @@ preProcess = runParser' parseOutUnwanted
 parseOutUnwanted :: Parse String
 parseOutUnwanted = liftM concat (many getNext)
     where
-      getNext :: Parse String
-      getNext = parseSplitLine
-                `onFail`
-                parseConcatStrings
+      getNext = parseConcatStrings
                 `onFail`
                 (parseUnwanted >> return [])
                 `onFail`
                 liftM return next
 
 -- | Parses an unwanted part of the Dot code (comments and
---   pre-processor lines).
+--   pre-processor lines; also un-splits lines).
 parseUnwanted :: Parse ()
 parseUnwanted = oneOf [ parseLineComment
                       , parseMultiLineComment
                       , parsePreProcessor
+                      , parseSplitLine
                       ]
                 >> return ()
 
