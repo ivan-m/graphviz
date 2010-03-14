@@ -399,12 +399,18 @@ parseOutUnwanted = liftM concat (many getNext)
                 `onFail`
                 parseConcatStrings
                 `onFail`
-                (oneOf [ parseLineComment
-                       , parseMultiLineComment
-                       , parsePreProcessor]
-                 >> return [])
+                (parseUnwanted >> return [])
                 `onFail`
                 liftM return next
+
+-- | Parses an unwanted part of the Dot code (comments and
+--   pre-processor lines).
+parseUnwanted :: Parse ()
+parseUnwanted = oneOf [ parseLineComment
+                      , parseMultiLineComment
+                      , parsePreProcessor
+                      ]
+                >> return ()
 
 -- | Remove pre-processor lines (that is, those that start with a
 --   @#@).  Will consume the newline from the beginning of the
