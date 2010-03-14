@@ -79,6 +79,7 @@ Library {
         Other-Modules:     Data.GraphViz.Types.Clustering
                            Data.GraphViz.Types.Common
                            Data.GraphViz.Util
+                           Data.GraphViz.PreProcessing
         if flag(test)
            Build-Depends:       QuickCheck >= 2.1 && < 2.2
 

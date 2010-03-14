@@ -102,6 +102,7 @@ import Data.GraphViz.Types.Common
 import Data.GraphViz.Attributes
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
+import Data.GraphViz.PreProcessing
 import Data.GraphViz.Printing
 
 import Control.Monad(liftM)
