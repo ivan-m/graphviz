@@ -95,7 +95,7 @@ module Data.GraphViz.Types
     , GlobalAttributes(..)
     , DotSubGraph(..)
     , DotNode(..)
-    , DotEdge(..)
+    , DotEdge(..) -- Re-exported from Data.GraphViz.Types.Common
     ) where
 
 import Data.GraphViz.Types.Common
@@ -404,83 +404,8 @@ invalidNode n = map (NodeError (Just $ nodeID n))
 
 -- -----------------------------------------------------------------------------
 
--- | An edge in 'DotGraph'.
-data DotEdge a = DotEdge { edgeFromNodeID :: a
-                         , edgeToNodeID   :: a
-                         , directedEdge   :: Bool
-                         , edgeAttributes :: Attributes
-                         }
-             deriving (Eq, Ord, Show, Read)
-
-instance (PrintDot a) => PrintDot (DotEdge a) where
-    unqtDot = printAttrBased printEdgeID edgeAttributes
-
-    unqtListToDot = printAttrBasedList printEdgeID edgeAttributes
-
-    listToDot = unqtListToDot
-
-printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
-printEdgeID e = unqtDot (edgeFromNodeID e)
-                <+> bool undirEdge' dirEdge' (directedEdge e)
-                <+> unqtDot (edgeToNodeID e)
-
-
-instance (ParseDot a) => ParseDot (DotEdge a) where
-    parseUnqt = parseAttrBased parseEdgeID
-
-    parse = parseUnqt -- Don't want the option of quoting
-
-    -- Have to take into account edges of the type "n1 -> n2 -> n3", etc.
-    parseUnqtList = liftM concat
-                    $ sepBy (whitespace' >> parseEdgeLine) statementEnd
-                      `discard`
-                      optional statementEnd
-
-    parseList = parseUnqtList
-
-parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
-parseEdgeID = do eHead <- parse
-                 whitespace'
-                 eType <- parseEdgeType
-                 whitespace'
-                 eTail <- parse
-                 return $ DotEdge eHead eTail eType
-
-parseEdgeType :: Parse Bool
-parseEdgeType = stringRep True dirEdge
-                `onFail`
-                stringRep False undirEdge
-
-parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
-parseEdgeLine = do n1 <- parse
-                   ens <- many1 $ do whitespace'
-                                     eType <- parseEdgeType
-                                     whitespace'
-                                     n <- parse
-                                     return (eType, n)
-                   let ens' = (True, n1) : ens
-                       efs = zipWith mkEdg ens' (tail ens')
-                       ef = return $ \ as -> map ($as) efs
-                   parseAttrBased ef
-    where
-      mkEdg (_, hn) (et, tn) = DotEdge hn tn et
-
-instance Functor DotEdge where
-    fmap f e = e { edgeFromNodeID = f $ edgeFromNodeID e
-                 , edgeToNodeID   = f $ edgeToNodeID e
-                 }
-
-dirEdge :: String
-dirEdge = "->"
-
-dirEdge' :: DotCode
-dirEdge' = text dirEdge
-
-undirEdge :: String
-undirEdge = "--"
-
-undirEdge' :: DotCode
-undirEdge' = text undirEdge
+-- Defined here rather than in Common with the rest of the Edge stuff
+-- because all the DotError stuff is here.
 
 invalidEdge   :: DotEdge a -> [DotError a]
 invalidEdge e = map (EdgeError eID)

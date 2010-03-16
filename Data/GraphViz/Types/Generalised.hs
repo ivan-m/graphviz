@@ -36,7 +36,7 @@ module Data.GraphViz.Types.Generalised
        , generaliseDotGraph
        ) where
 
-import Data.GraphViz.Types hiding (GraphID(..))
+import Data.GraphViz.Types hiding (GraphID(..), DotEdge(..))
 import Data.GraphViz.Types.Common
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
@@ -107,13 +107,9 @@ parseGStmts = liftM (Seq.fromList . concat)
   where
     -- Have to do something special here because of "a -> b -> c"
     -- syntax for edges.
-    p = oneOf [ liftM (return . GA) parse
-              , liftM (return . SG) parse
-              , liftM (return . DN) parse
-              , liftM (map DE) $ do es <- parse
-                                    when (null es) $ fail "Empty list of edges!"
-                                    return es
-              ]
+    p = liftM (map DE) parseEdgeLine
+        `onFail`
+        liftM return parse
 
 statementNodes :: GDotStatements a -> [DotNode a]
 statementNodes = concatMap stmtNodes . F.toList
