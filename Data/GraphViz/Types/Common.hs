@@ -15,7 +15,7 @@ module Data.GraphViz.Types.Common where
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 import Data.GraphViz.Util
-import Data.GraphViz.Attributes(URL)
+import Data.GraphViz.Attributes(Attributes, Attribute, URL)
 
 import Data.Maybe(isJust)
 import Control.Monad(liftM, when)
@@ -214,6 +214,31 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
                when (isCl || isJust sID) $ whitespace >> return ()
                return (isCl, sID)
 -}
+
+printAttrBased          :: (a -> DotCode) -> (a -> Attributes) -> a -> DotCode
+printAttrBased ff fas a = dc <> semi
+    where
+      f = ff a
+      dc = case fas a of
+             [] -> f
+             as -> f <+> toDot as
+
+printAttrBasedList        :: (a -> DotCode) -> (a -> Attributes)
+                             -> [a] -> DotCode
+printAttrBasedList ff fas = vcat . map (printAttrBased ff fas)
+
+parseAttrBased   :: Parse (Attributes -> a) -> Parse a
+parseAttrBased p = do f <- p
+                      whitespace'
+                      atts <- tryParseList
+                      return $ f atts
+                   `adjustErr`
+                   (++ "\n\nNot a valid attribute-based structure")
+
+parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
+parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) statementEnd
+                       `discard`
+                       optional statementEnd
 
 -- | Parse the separator (and any other whitespace present) between statements.
 statementEnd :: Parse ()

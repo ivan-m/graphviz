@@ -90,7 +90,7 @@ module Data.GraphViz.Types
     , isValidGraph
     , graphErrors
       -- * Sub-components of a @DotGraph@.
-    , GraphID(..)
+    , GraphID(..) -- Re-exported from Data.GraphViz.Types.Common
     , DotStatements(..)
     , GlobalAttributes(..)
     , DotSubGraph(..)
@@ -99,7 +99,9 @@ module Data.GraphViz.Types
     ) where
 
 import Data.GraphViz.Types.Common
-import Data.GraphViz.Attributes
+import Data.GraphViz.Attributes( Attributes, Attribute
+                               , usedByGraphs, usedByClusters, usedBySubGraphs
+                               , usedByNodes, usedByEdges)
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.PreProcessing
@@ -485,32 +487,3 @@ invalidEdge e = map (EdgeError eID)
                 $ filter (not . usedByEdges) (edgeAttributes e)
     where
       eID = Just (edgeFromNodeID e, edgeToNodeID e)
-
--- -----------------------------------------------------------------------------
-
--- Printing and parsing helpers.
-
-printAttrBased          :: (a -> DotCode) -> (a -> Attributes) -> a -> DotCode
-printAttrBased ff fas a = dc <> semi
-    where
-      f = ff a
-      dc = case fas a of
-             [] -> f
-             as -> f <+> toDot as
-
-printAttrBasedList        :: (a -> DotCode) -> (a -> Attributes)
-                             -> [a] -> DotCode
-printAttrBasedList ff fas = vcat . map (printAttrBased ff fas)
-
-parseAttrBased   :: Parse (Attributes -> a) -> Parse a
-parseAttrBased p = do f <- p
-                      whitespace'
-                      atts <- tryParseList
-                      return $ f atts
-                   `adjustErr`
-                   (++ "\n\nNot a valid attribute-based structure")
-
-parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
-parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) statementEnd
-                       `discard`
-                       optional statementEnd
