@@ -208,9 +208,6 @@ printStmtBasedList f r dr = vcat . map (printStmtBased f r dr)
 parseStmtBased :: Parse stmt -> Parse (stmt -> a) -> Parse a
 parseStmtBased = flip apply . parseBracesBased
 
-parseStmtBasedList       :: Parse stmt -> Parse (stmt -> a) -> Parse [a]
-parseStmtBasedList ps pr = sepBy (whitespace' >> parseStmtBased ps pr) newline'
-
 printBracesBased     :: DotCode -> DotCode -> DotCode
 printBracesBased h i = vcat [ h <+> lbrace
                             , ind i

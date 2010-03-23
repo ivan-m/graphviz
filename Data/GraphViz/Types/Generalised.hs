@@ -184,15 +184,21 @@ printSubGraphID' :: GDotSubGraph a -> DotCode
 printSubGraphID' = printSubGraphID (\sg -> (gIsCluster sg, gSubGraphID sg))
 
 instance (ParseDot a) => ParseDot (GDotSubGraph a) where
-  parseUnqt = parseStmtBased parseGStmts (parseSubGraphID GDotSG)
+  parseUnqt = parseStmtBased parseGStmts parseGDotSubGraphHdr
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
           (++ "\n\nNot a valid Sub Graph")
 
-  parseUnqtList = parseStmtBasedList parseGStmts (parseSubGraphID GDotSG)
+  parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
 
   parseList = parseUnqtList
+
+-- | Have to take into account \"anonymous\" sub-graphs.
+parseGDotSubGraphHdr :: Parse (GDotStatements a -> GDotSubGraph a)
+parseGDotSubGraphHdr = parseSubGraphID GDotSG
+                       `onFail`
+                       return (GDotSG False Nothing)
 
 instance Functor GDotSubGraph where
     fmap f sg = sg { gSubGraphStmts = (fmap . fmap) f $ gSubGraphStmts sg }
