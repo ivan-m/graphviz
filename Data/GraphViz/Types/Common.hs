@@ -15,7 +15,7 @@ module Data.GraphViz.Types.Common where
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 import Data.GraphViz.Util
-import Data.GraphViz.Attributes(Attributes, Attribute, URL)
+import Data.GraphViz.Attributes(Attributes, Attribute)
 
 import Data.Maybe(isJust)
 import Control.Monad(liftM, when)
@@ -30,26 +30,20 @@ import Control.Monad(liftM, when)
 data GraphID = Str String
              | Int Int
              | Dbl Double
-             | HTML URL
                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GraphID where
     unqtDot (Str str) = unqtDot str
     unqtDot (Int i)   = unqtDot i
     unqtDot (Dbl d)   = unqtDot d
-    unqtDot (HTML u)  = unqtDot u
 
     toDot (Str str) = toDot str
     toDot gID       = unqtDot gID
 
 instance ParseDot GraphID where
-    parseUnqt = liftM HTML parseUnqt
-                `onFail`
-                liftM stringNum parseUnqt
+    parseUnqt = liftM stringNum parseUnqt
 
-    parse = liftM HTML parse
-            `onFail`
-            liftM stringNum parse
+    parse = liftM stringNum parse
             `adjustErr`
             (++ "\nNot a valid GraphID")
 
@@ -278,9 +272,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
 
     -- For Strings, there are no more quotes to unescape, so consume
     -- what you can.
-    pID = liftM HTML parseUnqt
-                `onFail`
-                liftM stringNum (many next)
+    pID = liftM stringNum (many next)
 
 {- This is a much nicer definition, but unfortunately it doesn't work.
    The problem is that Graphviz decides that a subgraph is a cluster

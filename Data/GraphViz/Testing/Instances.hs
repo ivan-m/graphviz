@@ -44,13 +44,11 @@ instance Arbitrary GraphID where
   arbitrary = oneof [ liftM Str arbString
                     , liftM Int arbitrary
                     , liftM Dbl $ suchThat arbitrary notInt
-                    , liftM HTML arbitrary
                     ]
 
   shrink (Str s) = map Str $ shrinkString s
   shrink (Int i) = map Int $ shrink i
   shrink (Dbl d) = map Dbl $ filter notInt $ shrink d
-  shrink (HTML u) = map HTML $ shrink u
 
 instance (Eq a, Arbitrary a) => Arbitrary (DotStatements a) where
   arbitrary = sized (arbDS True)
