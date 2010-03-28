@@ -13,7 +13,8 @@ import Data.GraphViz(dotizeGraph', prettyPrint')
 import Data.GraphViz.Types(DotRepr, DotGraph, printDotGraph)
 import Data.GraphViz.Types.Generalised(generaliseDotGraph)
 import Data.GraphViz.Printing(PrintDot(..), printIt)
-import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt', preProcess)
+import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt')
+import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Util(groupSortBy, isSingle)
 
 import Test.QuickCheck
