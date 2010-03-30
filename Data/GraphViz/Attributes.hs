@@ -84,7 +84,6 @@ module Data.GraphViz.Attributes
     , usedByEdges
       -- * Value types for @Attribute@s.
     , EscString
-    , URL(..)
     , ArrowType(..)
     , AspectType(..)
     , Rect(..)
@@ -126,6 +125,7 @@ module Data.GraphViz.Attributes
     , Justification(..)
     , Ratios(..)
     , module Data.GraphViz.Attributes.Colors
+    , module Data.GraphViz.Attributes.HTML
       -- * Types representing the Dot grammar for @ArrowType@.
     , ArrowShape(..)
     , ArrowModifier(..)
@@ -163,6 +163,7 @@ module Data.GraphViz.Attributes
     ) where
 
 import Data.GraphViz.Attributes.Colors
+import Data.GraphViz.Attributes.HTML
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
@@ -866,8 +867,8 @@ usedByEdges Target{}         = True
 usedByEdges Tooltip{}        = True
 usedByEdges Weight{}         = True
 usedByEdges _                = False
-
 {- Delete to here -}
+
 -- -----------------------------------------------------------------------------
 
 {- |
@@ -904,33 +905,6 @@ usedByEdges _                = False
 
  -}
 type EscString = String
-
--- -----------------------------------------------------------------------------
-
--- | No checks are placed on the content of a 'URL' value; however,
---   you should ensure that it does not contain any \'@>@\' or \'@<@\'
---   characters; Graphviz might care about escaping other characters
---   properly, but for the purposes of this library the presence of
---   these characters will make it harder to parse URLs.
-newtype URL = UStr { urlString :: EscString }
-    deriving (Eq, Ord, Show, Read)
-
-instance PrintDot URL where
-    unqtDot = wrap (char '<') (char '>')
-              -- Explicitly use text here... no quotes!
-              . text . urlString
-
-instance ParseDot URL where
-    parseUnqt = liftM UStr
-                $ bracket (character open)
-                          (character close)
-                          (many1 $ satisfy ((/=) close))
-        where
-          open = '<'
-          close = '>'
-
-    -- No quotes
-    parse = parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -1247,24 +1221,29 @@ instance ParseDot Model where
 -- -----------------------------------------------------------------------------
 
 data Label = StrLabel EscString
-           | URLLabel URL
+           | HtmlLabel HtmlLabel -- ^ If 'PlainText' is used, the
+                                 --   'HtmlLabel' value is the entire
+                                 --   \"shape\"; if anything else
+                                 --   except 'PointShape' is used then
+                                 --   the 'HtmlLabel' is embedded
+                                 --   within the shape.
              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Label where
-    unqtDot (StrLabel s) = unqtDot s
-    unqtDot (URLLabel u) = unqtDot u
+    unqtDot (StrLabel s)     = unqtDot s
+    unqtDot (HtmlLabel h)    = angled $ unqtDot h
 
-    toDot (StrLabel s) = toDot s
-    toDot (URLLabel u) = toDot u
+    toDot (StrLabel s)     = toDot s
+    toDot h@HtmlLabel{}    = unqtDot h
 
 instance ParseDot Label where
-    parseUnqt = liftM StrLabel parseUnqt
-                `onFail`
-                liftM URLLabel parseUnqt
+    parseUnqt = oneOf [ liftM StrLabel parseUnqt
+                      , liftM HtmlLabel $ parseAngled parseUnqt
+                      ]
 
-    parse = liftM StrLabel parse
-            `onFail`
-            liftM URLLabel parse
+    parse = oneOf [ liftM StrLabel parse
+                  , liftM HtmlLabel $ parseAngled parse
+                  ]
 
 -- -----------------------------------------------------------------------------
 

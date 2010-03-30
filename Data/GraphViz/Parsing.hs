@@ -69,6 +69,7 @@ module Data.GraphViz.Parsing
     , commaSep'
     , stringRep
     , stringReps
+    , parseAngled
     , parseBraced
     ) where
 
@@ -83,7 +84,7 @@ import Data.Char( digitToInt
 import Data.Maybe(isJust, fromMaybe, isNothing)
 import Data.Ratio((%))
 import qualified Data.Set as Set
-import Data.Word(Word8)
+import Data.Word(Word8, Word16)
 import Control.Monad(liftM, when)
 
 -- -----------------------------------------------------------------------------
@@ -129,6 +130,9 @@ instance ParseDot Int where
     parseUnqt = parseInt'
 
 instance ParseDot Word8 where
+    parseUnqt = parseInt
+
+instance ParseDot Word16 where
     parseUnqt = parseInt
 
 instance ParseDot Double where
@@ -382,6 +386,9 @@ tryParseList = tryParseList' parse
 
 tryParseList' :: Parse [a] -> Parse [a]
 tryParseList' = liftM (fromMaybe []) . optional
+
+parseAngled :: Parse a -> Parse a
+parseAngled = bracket (character '<') (character '>')
 
 parseBraced :: Parse a -> Parse a
 parseBraced = bracket (character '{') (character '}')

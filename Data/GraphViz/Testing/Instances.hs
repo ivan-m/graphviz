@@ -26,10 +26,10 @@ import Data.GraphViz.Types.Generalised
 import Test.QuickCheck
 
 import Data.Char(toLower)
-import Data.List(nub)
+import Data.List(nub, delete, groupBy)
 import qualified Data.Sequence as Seq
 import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
-import Data.Word(Word8)
+import Data.Word(Word8, Word16)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the overall types
@@ -446,11 +446,9 @@ instance Arbitrary Word8 where
   arbitrary = arbitraryBoundedIntegral
   shrink = shrinkIntegral
 
-instance Arbitrary URL where
-  arbitrary = liftM UStr
-              $ suchThat arbString (not . null)
-
-  shrink (UStr ustr) = map UStr $ nonEmptyShrinks ustr
+instance Arbitrary Word16 where
+  arbitrary = arbitraryBoundedIntegral
+  shrink = shrinkIntegral
 
 instance Arbitrary ArrowType where
   arbitrary = liftM AType
@@ -529,11 +527,11 @@ instance Arbitrary Model where
 
 instance Arbitrary Label where
   arbitrary = oneof [ liftM StrLabel arbString
-                    , liftM URLLabel arbitrary
+                    , liftM HtmlLabel arbitrary
                     ]
 
-  shrink (StrLabel str) = map StrLabel $ shrinkString str
-  shrink (URLLabel url) = map URLLabel $ shrink url
+  shrink (StrLabel str)   = map StrLabel $ shrinkString str
+  shrink (HtmlLabel html) = map HtmlLabel $ shrink html
 
 instance Arbitrary Overlap where
   arbitrary = oneof [ simpleOverlap
@@ -808,6 +806,156 @@ instance Arbitrary Color where
 instance Arbitrary X11Color where
   arbitrary = arbBounded
 
+instance Arbitrary HtmlLabel where
+  arbitrary = sized $ arbHtml True
+
+  shrink ht@(HtmlText txts) = delete ht . map HtmlText $ shrinkL txts
+  shrink (HtmlTable tbl)    = map HtmlTable $ shrink tbl
+
+-- Note: for the most part, HtmlLabel values are very repetitive (and
+-- furthermore, they end up chewing a large amount of memory).  As
+-- such, use resize to limit how large the actual HtmlLabel values
+-- become.
+arbHtml         :: Bool -> Int -> Gen HtmlLabel
+arbHtml table s = resize' $ frequency options
+  where
+    s' = min 2 s
+    resize' = if not table
+              then resize s'
+              else id
+    allowTable = if table
+                 then (:) (1, arbTbl)
+                 else id
+    arbTbl = liftM HtmlTable arbitrary
+    options = allowTable [ (20, liftM HtmlText . sized $ arbHtmlTexts table) ]
+
+arbHtmlTexts       :: Bool -> Int -> Gen HtmlText
+arbHtmlTexts fnt s = liftM simplifyHtmlText
+                     . resize s'
+                     . listOf1
+                     . sized
+                     $ arbHtmlText fnt
+  where
+    s' = min s 10
+
+-- When parsing, all textual characters are parsed together; thus,
+-- make sure we generate them like that.
+simplifyHtmlText :: HtmlText -> HtmlText
+simplifyHtmlText = map head . groupBy sameType
+  where
+    sameType HtmlStr{}     HtmlStr{}     = True
+    sameType HtmlNewline{} HtmlNewline{} = True
+    sameType HtmlFont{}    HtmlFont{}    = True
+    sameType _             _             = False
+
+instance Arbitrary HtmlTextItem where
+  arbitrary = sized $ arbHtmlText True
+
+  shrink (HtmlStr str) = map HtmlStr $ shrinkString str
+  shrink (HtmlNewline as) = map HtmlNewline $ shrink as
+  shrink hf@(HtmlFont as txt) = do as' <- shrink as
+                                   txt' <- shrinkL txt
+                                   returnCheck hf $ HtmlFont as' txt'
+
+arbHtmlText        :: Bool -> Int -> Gen HtmlTextItem
+arbHtmlText font s = frequency options
+  where
+    allowFonts = if font
+                 then (:) (1, arbFont)
+                 else id
+    s' = min 2 s
+    arbFont = liftM2 HtmlFont arbitrary . resize s' . sized $ arbHtmlTexts False
+    options = allowFonts [ (10, liftM HtmlStr arbString)
+                         , (10, liftM HtmlNewline arbitrary)
+                         ]
+
+instance Arbitrary HtmlTable where
+  arbitrary = liftM3 HTable arbitrary arbitrary (sized arbRows)
+    where
+      arbRows s = resize (min s 10) arbList
+
+  shrink ht@(HTable fas as rs) = map (HTable fas as) $ shrinkL rs
+
+instance Arbitrary HtmlRow where
+  arbitrary = liftM HtmlRow arbList
+
+  shrink hr@(HtmlRow cs) = delete hr . map HtmlRow $ shrinkL cs
+
+instance Arbitrary HtmlCell where
+  arbitrary = oneof [ liftM2 HtmlLabelCell arbitrary . sized $ arbHtml False
+                    , liftM2 HtmlImgCell arbitrary arbitrary
+                    ]
+
+  shrink lc@(HtmlLabelCell as h) = do as' <- shrink as
+                                      h' <- shrink h
+                                      returnCheck lc $ HtmlLabelCell as' h'
+  shrink (HtmlImgCell as ic) = map (HtmlImgCell as) $ shrink ic
+
+instance Arbitrary HtmlImg where
+  arbitrary = liftM HtmlImg arbitrary
+
+instance Arbitrary HtmlAttribute where
+  arbitrary = oneof [ liftM HtmlAlign arbitrary
+                    , liftM HtmlBAlign arbitrary
+                    , liftM HtmlBGColor arbitrary
+                    , liftM HtmlBorder arbitrary
+                    , liftM HtmlCellBorder arbitrary
+                    , liftM HtmlCellPadding arbitrary
+                    , liftM HtmlCellSpace arbitrary
+                    , liftM HtmlColor arbitrary
+                    , liftM HtmlColSpan arbitrary
+                    , liftM HtmlFace arbString
+                    , liftM HtmlFixedSize arbitrary
+                    , liftM HtmlHeight arbitrary
+                    , liftM HtmlHRef arbString
+                    , liftM HtmlPointSize arbitrary
+                    , liftM HtmlPort arbitrary
+                    , liftM HtmlRowSpan arbitrary
+                    , liftM HtmlScale arbitrary
+                    , liftM HtmlSrc arbString
+                    , liftM HtmlTarget arbString
+                    , liftM HtmlTitle arbString
+                    , liftM HtmlVAlign arbitrary
+                    , liftM HtmlWidth arbitrary
+                    ]
+
+  shrink (HtmlAlign v)       = map HtmlAlign       $ shrink v
+  shrink (HtmlBAlign v)      = map HtmlBAlign      $ shrink v
+  shrink (HtmlBGColor v)     = map HtmlBGColor     $ shrink v
+  shrink (HtmlBorder v)      = map HtmlBorder      $ shrink v
+  shrink (HtmlCellBorder v)  = map HtmlCellBorder  $ shrink v
+  shrink (HtmlCellPadding v) = map HtmlCellPadding $ shrink v
+  shrink (HtmlCellSpace v)   = map HtmlCellSpace   $ shrink v
+  shrink (HtmlColor v)       = map HtmlColor       $ shrink v
+  shrink (HtmlColSpan v)     = map HtmlColSpan     $ shrink v
+  shrink (HtmlFace v)        = map HtmlFace        $ shrink v
+  shrink (HtmlFixedSize v)   = map HtmlFixedSize   $ shrink v
+  shrink (HtmlHeight v)      = map HtmlHeight      $ shrink v
+  shrink (HtmlHRef v)        = map HtmlHRef        $ shrink v
+  shrink (HtmlPointSize v)   = map HtmlPointSize   $ shrink v
+  shrink (HtmlPort v)        = map HtmlPort        $ shrink v
+  shrink (HtmlRowSpan v)     = map HtmlRowSpan     $ shrink v
+  shrink (HtmlScale v)       = map HtmlScale       $ shrink v
+  shrink (HtmlSrc v)         = map HtmlSrc         $ shrink v
+  shrink (HtmlTarget v)      = map HtmlTarget      $ shrink v
+  shrink (HtmlTitle v)       = map HtmlTitle       $ shrink v
+  shrink (HtmlVAlign v)      = map HtmlVAlign      $ shrink v
+  shrink (HtmlWidth v)       = map HtmlWidth       $ shrink v
+
+instance Arbitrary HtmlScale where
+  arbitrary = arbBounded
+
+instance Arbitrary HtmlAlign where
+  arbitrary = arbBounded
+
+instance Arbitrary HtmlVAlign where
+  arbitrary = arbBounded
+
+instance Arbitrary PortName where
+  arbitrary = liftM PN arbString
+
+  shrink = map PN . shrinkString . portName
+
 -- -----------------------------------------------------------------------------
 -- Helper Functions
 
@@ -823,6 +971,7 @@ arbString = suchThat (liftM (map toLower) genStr) validString
     genStr = listOf1 $ elements strChr
     strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '\t', '(', ')'
                                          , ',', ':', '.']
+
 validString         :: String -> Bool
 validString "true"  = False
 validString "false" = False

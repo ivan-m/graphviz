@@ -75,6 +75,7 @@ Library {
                            Data.GraphViz.Commands
                            Data.GraphViz.Attributes
                            Data.GraphViz.Attributes.Colors
+                           Data.GraphViz.Attributes.HTML
 
         Other-Modules:     Data.GraphViz.Types.Clustering
                            Data.GraphViz.Types.Common

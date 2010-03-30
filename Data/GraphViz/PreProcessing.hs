@@ -42,6 +42,8 @@ parseOutUnwanted = liftM concat (many getNext)
     where
       getNext = parseConcatStrings
                 `onFail`
+                parseHTML
+                `onFail`
                 (parseUnwanted >> return [])
                 `onFail`
                 liftM return next
@@ -103,3 +105,14 @@ parseConcatStrings = liftM (wrapQuotes . concat)
 -- | Lines can be split with a @\\@ at the end of the line.
 parseSplitLine :: Parse String
 parseSplitLine = character '\\' >> newline >> return ""
+
+parseHTML :: Parse String
+parseHTML = liftM (addQuotes . concat)
+            . parseAngled $ many inner
+  where
+    inner = parseHTML
+            `onFail`
+            many1 (satisfy (\c -> c /= open && c /= close))
+    addQuotes str = open : str ++ [close]
+    open = '<'
+    close = '>'

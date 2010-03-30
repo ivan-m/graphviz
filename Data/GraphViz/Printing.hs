@@ -47,6 +47,10 @@ module Data.GraphViz.Printing
     , wrap
     , commaDel
     , printField
+    , angled
+    , rang
+    , lang
+    , fslash
     ) where
 
 import Data.GraphViz.Util
@@ -64,7 +68,7 @@ import Text.PrettyPrint hiding ( Style(..)
 import qualified Text.PrettyPrint as PP
 
 import qualified Data.Set as Set
-import Data.Word(Word8)
+import Data.Word(Word8, Word16)
 
 -- -----------------------------------------------------------------------------
 
@@ -113,6 +117,9 @@ instance PrintDot Int where
     unqtDot = int
 
 instance PrintDot Word8 where
+    unqtDot = int . fromIntegral
+
+instance PrintDot Word16 where
     unqtDot = int . fromIntegral
 
 instance PrintDot Double where
@@ -200,3 +207,15 @@ addEscapes cs = foldr escape ""
     quote = '"'
     escape c str | c `Set.member` cs' = slash : c : str
                  | otherwise          = c : str
+
+angled :: DotCode -> DotCode
+angled = wrap lang rang
+
+lang :: DotCode
+lang = char '<'
+
+rang :: DotCode
+rang = char '>'
+
+fslash :: DotCode
+fslash = char '/'

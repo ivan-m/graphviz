@@ -73,6 +73,8 @@
 
    * The parser will strip out comments and pre-processor lines, join
      together multiline statements and concatenate split strings together.
+     However, pre-processing within HTML-like labels is currently not
+     supported.
 
    See "Data.GraphViz.Attributes" for more limitations.
 
