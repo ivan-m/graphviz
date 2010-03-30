@@ -308,7 +308,6 @@ parseEscaped cs = many $ qPrs `onFail` oth
     cs' = quoteChar : cs
     csSet = Set.fromList cs'
     slash = '\\'
-    escCs = map (\c -> '\\' : c : []) cs'
     -- Have to allow standard slashes
     qPrs = do character slash
               mE <- optional $ oneOf (map character cs')
