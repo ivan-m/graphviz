@@ -453,7 +453,7 @@ instance Arbitrary Word16 where
 instance Arbitrary ArrowType where
   arbitrary = liftM AType
               -- Arrow specifications have between 1 and 4 elements.
-              $ resize 4 arbList
+              $ sized (\ s -> resize (min s 4) arbList)
 
   shrink (AType as) = map AType $ nonEmptyShrinks as
 
