@@ -202,6 +202,9 @@ printStmtBasedList f r dr = vcat . map (printStmtBased f r dr)
 parseStmtBased :: Parse stmt -> Parse (stmt -> a) -> Parse a
 parseStmtBased = flip apply . parseBracesBased
 
+-- Can't use the 'braces' combinator here because we want the closing
+-- brace lined up with the h value, which due to indentation might not
+-- be the case with braces.
 printBracesBased     :: DotCode -> DotCode -> DotCode
 printBracesBased h i = vcat [ h <+> lbrace
                             , ind i
@@ -211,14 +214,7 @@ printBracesBased h i = vcat [ h <+> lbrace
     ind = nest 4
 
 parseBracesBased   :: Parse a -> Parse a
-parseBracesBased p = do whitespace'
-                        character '{'
-                        newline'
-                        a <- p
-                        newline'
-                        whitespace'
-                        character '}'
-                        return a
+parseBracesBased p = whitespace' >> parseBraced (wrapWhitespace p)
                      `adjustErr`
                      (++ "\nNot a valid value wrapped in braces.")
 

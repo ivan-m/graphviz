@@ -46,6 +46,7 @@ module Data.GraphViz.Parsing
     , whitespace'
     , allWhitespace
     , allWhitespace'
+    , wrapWhitespace
     , optionalQuotedString
     , optionalQuoted
     , quotedParse
@@ -68,6 +69,7 @@ module Data.GraphViz.Parsing
     , commaSep'
     , stringRep
     , stringReps
+    , parseBraced
     ) where
 
 import Data.GraphViz.Util
@@ -277,6 +279,10 @@ allWhitespace = (whitespace `onFail` newline) >> allWhitespace'
 allWhitespace' :: Parse ()
 allWhitespace' = newline' `discard` whitespace'
 
+-- | Parse and discard optional whitespace.
+wrapWhitespace :: Parse a -> Parse a
+wrapWhitespace = bracket allWhitespace' allWhitespace'
+
 optionalQuotedString :: String -> Parse String
 optionalQuotedString = optionalQuoted . string
 
@@ -376,3 +382,6 @@ tryParseList = tryParseList' parse
 
 tryParseList' :: Parse [a] -> Parse [a]
 tryParseList' = liftM (fromMaybe []) . optional
+
+parseBraced :: Parse a -> Parse a
+parseBraced = bracket (character '{') (character '}')
