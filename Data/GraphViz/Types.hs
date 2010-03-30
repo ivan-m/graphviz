@@ -336,7 +336,10 @@ printSubGraphID' :: DotSubGraph a -> DotCode
 printSubGraphID' = printSubGraphID (\sg -> (isCluster sg, subGraphID sg))
 
 instance (ParseDot a) => ParseDot (DotSubGraph a) where
-    parseUnqt = parseStmtBased parseUnqt parseDotSubGraphHdr
+    parseUnqt = parseStmtBased parseUnqt (parseSubGraphID DotSG)
+                `onFail`
+                -- Take "anonymous" DotSubGraphs into account.
+                liftM (DotSG False Nothing) (parseBracesBased parseUnqt)
 
     parse = parseUnqt -- Don't want the option of quoting
             `adjustErr`
@@ -345,12 +348,6 @@ instance (ParseDot a) => ParseDot (DotSubGraph a) where
     parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
 
     parseList = parseUnqtList
-
--- | Have to take into account \"anonymous\" sub-graphs.
-parseDotSubGraphHdr :: Parse (DotStatements a -> DotSubGraph a)
-parseDotSubGraphHdr = parseSubGraphID DotSG
-                      `onFail`
-                      return (DotSG False Nothing)
 
 instance Functor DotSubGraph where
     fmap f sg = sg { subGraphStmts = fmap f $ subGraphStmts sg }
