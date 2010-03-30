@@ -103,4 +103,5 @@ Executable graphviz-testsuite {
         Main-Is:           RunTests.hs
 
         GHC-Options: -O2
+        GHC-Prof-Options: -auto-all -caf-all
 }
