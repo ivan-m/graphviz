@@ -204,7 +204,7 @@ import Control.Monad(liftM, liftM2)
 data Attribute
     = Damping Double                   -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
     | K Double                         -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
-    | URL URL                          -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
+    | URL EscString                    -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
     | ArrowHead ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
     | ArrowSize Double                 -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
     | ArrowTail ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
@@ -228,7 +228,7 @@ data Attribute
     | DirEdgeConstraints DEConstraints -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
     | Distortion Double                -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
     | DPI Double                       -- ^ /Valid for/: G; /Default/: @96.0@, @0.0@; /Notes/: svg, bitmap output only; \"resolution\" is a synonym
-    | EdgeURL URL                      -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+    | EdgeURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | EdgeTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
     | EdgeTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Epsilon Double                   -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
@@ -241,7 +241,7 @@ data Attribute
     | FontPath String                  -- ^ /Valid for/: G; /Default/: system-dependent
     | FontSize Double                  -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
     | Group String                     -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
-    | HeadURL URL                      -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+    | HeadURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
     | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: @\"\"@
     | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: @'PP' 'CenterPoint'@
@@ -251,7 +251,7 @@ data Attribute
     | ID Label                         -- ^ /Valid for/: GNE; /Default/: @\"\"@; /Notes/: svg, postscript, map only
     | Image String                     -- ^ /Valid for/: N; /Default/: @\"\"@
     | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
-    | LabelURL URL                     -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+    | LabelURL EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | LabelAngle Double                -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
     | LabelDistance Double             -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
     | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -331,7 +331,7 @@ data Attribute
     | Start StartType                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: fdp, neato only
     | StyleSheet String                -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
     | Style [StyleItem]                -- ^ /Valid for/: ENC
-    | TailURL URL                      -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+    | TailURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | TailClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
     | TailLabel Label                  -- ^ /Valid for/: E; /Default/: @\"\"@
     | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: center

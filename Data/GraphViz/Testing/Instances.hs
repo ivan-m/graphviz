@@ -152,7 +152,7 @@ instance (Eq a, Arbitrary a) => Arbitrary (GDotSubGraph a) where
 instance Arbitrary Attribute where
     arbitrary = oneof [ liftM Damping arbitrary
                       , liftM K arbitrary
-                      , liftM URL arbitrary
+                      , liftM URL arbString
                       , liftM ArrowHead arbitrary
                       , liftM ArrowSize arbitrary
                       , liftM ArrowTail arbitrary
@@ -176,7 +176,7 @@ instance Arbitrary Attribute where
                       , liftM DirEdgeConstraints arbitrary
                       , liftM Distortion arbitrary
                       , liftM DPI arbitrary
-                      , liftM EdgeURL arbitrary
+                      , liftM EdgeURL arbString
                       , liftM EdgeTarget arbString
                       , liftM EdgeTooltip arbString
                       , liftM Epsilon arbitrary
@@ -189,7 +189,7 @@ instance Arbitrary Attribute where
                       , liftM FontPath arbString
                       , liftM FontSize arbitrary
                       , liftM Group arbString
-                      , liftM HeadURL arbitrary
+                      , liftM HeadURL arbString
                       , liftM HeadClip arbitrary
                       , liftM HeadLabel arbitrary
                       , liftM HeadPort arbitrary
@@ -199,7 +199,7 @@ instance Arbitrary Attribute where
                       , liftM ID arbitrary
                       , liftM Image arbString
                       , liftM ImageScale arbitrary
-                      , liftM LabelURL arbitrary
+                      , liftM LabelURL arbString
                       , liftM LabelAngle arbitrary
                       , liftM LabelDistance arbitrary
                       , liftM LabelFloat arbitrary
@@ -279,7 +279,7 @@ instance Arbitrary Attribute where
                       , liftM Start arbitrary
                       , liftM StyleSheet arbString
                       , liftM Style arbList
-                      , liftM TailURL arbitrary
+                      , liftM TailURL arbString
                       , liftM TailClip arbitrary
                       , liftM TailLabel arbitrary
                       , liftM TailPort arbitrary
@@ -298,7 +298,7 @@ instance Arbitrary Attribute where
 
     shrink (Damping v)            = map Damping            $ shrink v
     shrink (K v)                  = map K                  $ shrink v
-    shrink (URL v)                = map URL                $ shrink v
+    shrink (URL v)                = map URL                $ shrinkString v
     shrink (ArrowHead v)          = map ArrowHead          $ shrink v
     shrink (ArrowSize v)          = map ArrowSize          $ shrink v
     shrink (ArrowTail v)          = map ArrowTail          $ shrink v
@@ -322,7 +322,7 @@ instance Arbitrary Attribute where
     shrink (DirEdgeConstraints v) = map DirEdgeConstraints $ shrink v
     shrink (Distortion v)         = map Distortion         $ shrink v
     shrink (DPI v)                = map DPI                $ shrink v
-    shrink (EdgeURL v)            = map EdgeURL            $ shrink v
+    shrink (EdgeURL v)            = map EdgeURL            $ shrinkString v
     shrink (EdgeTarget v)         = map EdgeTarget         $ shrinkString v
     shrink (EdgeTooltip v)        = map EdgeTooltip        $ shrinkString v
     shrink (Epsilon v)            = map Epsilon            $ shrink v
@@ -335,7 +335,7 @@ instance Arbitrary Attribute where
     shrink (FontPath v)           = map FontPath           $ shrinkString v
     shrink (FontSize v)           = map FontSize           $ shrink v
     shrink (Group v)              = map Group              $ shrinkString v
-    shrink (HeadURL v)            = map HeadURL            $ shrink v
+    shrink (HeadURL v)            = map HeadURL            $ shrinkString v
     shrink (HeadClip v)           = map HeadClip           $ shrink v
     shrink (HeadLabel v)          = map HeadLabel          $ shrink v
     shrink (HeadPort v)           = map HeadPort           $ shrink v
@@ -345,7 +345,7 @@ instance Arbitrary Attribute where
     shrink (ID v)                 = map ID                 $ shrink v
     shrink (Image v)              = map Image              $ shrinkString v
     shrink (ImageScale v)         = map ImageScale         $ shrink v
-    shrink (LabelURL v)           = map LabelURL           $ shrink v
+    shrink (LabelURL v)           = map LabelURL           $ shrinkString v
     shrink (LabelAngle v)         = map LabelAngle         $ shrink v
     shrink (LabelDistance v)      = map LabelDistance      $ shrink v
     shrink (LabelFloat v)         = map LabelFloat         $ shrink v
@@ -425,7 +425,7 @@ instance Arbitrary Attribute where
     shrink (Start v)              = map Start              $ shrink v
     shrink (StyleSheet v)         = map StyleSheet         $ shrinkString v
     shrink (Style v)              = map Style              $ nonEmptyShrinks v
-    shrink (TailURL v)            = map TailURL            $ shrink v
+    shrink (TailURL v)            = map TailURL            $ shrinkString v
     shrink (TailClip v)           = map TailClip           $ shrink v
     shrink (TailLabel v)          = map TailLabel          $ shrink v
     shrink (TailPort v)           = map TailPort           $ shrink v

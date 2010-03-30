@@ -114,7 +114,6 @@ data VType = Dbl
            | Integ
            | Strng
            | EStrng
-           | URL
            | Bl
            | Cust String
              deriving (Eq, Ord, Show, Read)
@@ -124,7 +123,6 @@ vtype Dbl       = text "Double"
 vtype Integ     = text "Int"
 vtype Strng     = text "String"
 vtype EStrng    = text "EscString"
-vtype URL       = text "URL"
 vtype Bl        = text "Bool"
 vtype (Cust t)  = text t
 
@@ -319,7 +317,7 @@ dot = char '.'
 attributes :: [Attribute]
 attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (Just "@0.0@") (Just "neato only")
              , makeAttr "K" ["K"] "GC" Dbl Nothing (Just "@0.3@") (Just "@0@") (Just "sfdp, fdp only")
-             , makeAttr "URL" ["URL", "href"] "ENGC" URL Nothing (Just "none") Nothing (Just "svg, postscript, map only")
+             , makeAttr "URL" ["URL", "href"] "ENGC" EStrng Nothing (Just "none") Nothing (Just "svg, postscript, map only")
              , makeAttr "ArrowHead" ["arrowhead"] "E" (Cust "ArrowType") Nothing (Just "@'normal'@") Nothing Nothing
              , makeAttr "ArrowSize" ["arrowsize"] "E" Dbl Nothing (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "ArrowTail" ["arrowtail"] "E" (Cust "ArrowType") Nothing (Just "@'normal'@") Nothing Nothing
@@ -343,7 +341,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "DirEdgeConstraints" ["diredgeconstraints"] "G" (Cust "DEConstraints") (Just "EdgeConstraints") (Just "@'NoConstraints'@") Nothing (Just "neato only")
              , makeAttr "Distortion" ["distortion"] "N" Dbl Nothing (Just "@0.0@") (Just "@-100.0@") Nothing
              , makeAttr "DPI" ["dpi", "resolution"] "G" Dbl Nothing (Just "@96.0@, @0.0@") Nothing (Just "svg, bitmap output only; \\\"resolution\\\" is a synonym")
-             , makeAttr "EdgeURL" ["edgeURL", "edgehref"] "E" URL Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
+             , makeAttr "EdgeURL" ["edgeURL", "edgehref"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "EdgeTarget" ["edgetarget"] "E" EStrng Nothing (Just "none") Nothing (Just "svg, map only")
              , makeAttr "EdgeTooltip" ["edgetooltip"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
              , makeAttr "Epsilon" ["epsilon"] "G" Dbl Nothing (Just "@.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@)") Nothing (Just "neato only")
@@ -356,7 +354,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "FontPath" ["fontpath"] "G" Strng Nothing (Just "system-dependent") Nothing Nothing
              , makeAttr "FontSize" ["fontsize"] "ENGC" Dbl Nothing (Just "@14.0@") (Just "@1.0@") Nothing
              , makeAttr "Group" ["group"] "N" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "dot only")
-             , makeAttr "HeadURL" ["headURL", "headhref"] "E" URL Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
+             , makeAttr "HeadURL" ["headURL", "headhref"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "HeadClip" ["headclip"] "E" Bl (Just "True") (Just "@'True'@") Nothing Nothing
              , makeAttr "HeadLabel" ["headlabel"] "E" (Cust "Label") Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "HeadPort" ["headport"] "E" (Cust "PortPos") Nothing (Just "@'PP' 'CenterPoint'@") Nothing Nothing
@@ -366,7 +364,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "ID" ["id"] "GNE" (Cust "Label") Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, postscript, map only")
              , makeAttr "Image" ["image"] "N" Strng Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "ImageScale" ["imagescale"] "N" (Cust "ScaleType") (Just "UniformScale") (Just "@'NoScale'@") Nothing Nothing
-             , makeAttr "LabelURL" ["labelURL", "labelhref"] "E" URL Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
+             , makeAttr "LabelURL" ["labelURL", "labelhref"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "LabelAngle" ["labelangle"] "E" Dbl Nothing (Just "@-25.0@") (Just "@-180.0@") Nothing
              , makeAttr "LabelDistance" ["labeldistance"] "E" Dbl Nothing (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "LabelFloat" ["labelfloat"] "E" Bl (Just "True") (Just "@'False'@") Nothing Nothing
@@ -446,7 +444,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "Start" ["start"] "G" (Cust "StartType") Nothing (Just "@\\\"\\\"@") Nothing (Just "fdp, neato only")
              , makeAttr "StyleSheet" ["stylesheet"] "G" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg only")
              , makeAttr "Style" ["style"] "ENC" (Cust "[StyleItem]") Nothing Nothing Nothing Nothing
-             , makeAttr "TailURL" ["tailURL", "tailhref"] "E" URL Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
+             , makeAttr "TailURL" ["tailURL", "tailhref"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "TailClip" ["tailclip"] "E" Bl (Just "True") (Just "@'True'@") Nothing Nothing
              , makeAttr "TailLabel" ["taillabel"] "E" (Cust "Label") Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "TailPort" ["tailport"] "E" (Cust "PortPos") Nothing (Just "center") Nothing Nothing
