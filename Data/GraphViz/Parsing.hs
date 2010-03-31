@@ -188,7 +188,7 @@ stringBlock = do frst <- satisfy frstIDString
 
 -- | Used when quotes are explicitly required;
 quotedString :: Parse String
-quotedString = parseEscaped []
+quotedString = parseEscaped True []
 
 parseSigned :: Real a => Parse a -> Parse a
 parseSigned p = (character '-' >> liftM negate p)
@@ -311,10 +311,12 @@ quoteChar = '"'
 
 -- | Parse a 'String' where the provided 'Char's (as well as @"@) are
 --   escaped.  Note: does not parse surrounding quotes, and assumes
---   that @\\@ is not an escaped character.
-parseEscaped    :: [Char] -> Parse String
-parseEscaped cs = many $ qPrs `onFail` oth
+--   that @\\@ is not an escaped character.  The 'Bool' value
+--   indicates whether empty 'String's are allowed or not.
+parseEscaped         :: Bool -> [Char] -> Parse String
+parseEscaped empt cs = lots $ qPrs `onFail` oth
   where
+    lots = if empt then many else many1
     cs' = quoteChar : cs
     csSet = Set.fromList cs'
     slash = '\\'
