@@ -30,6 +30,7 @@ module Data.GraphViz.Parsing
       -- * Convenience parsing combinators.
     , bracket
     , onlyBool
+    , quotelessString
     , stringBlock
     , numString
     , isNumString
@@ -168,7 +169,7 @@ instance ParseDot Char where
     -- such, this will successfully parse all un-quoted Strings.
     parseUnqtList = quotedString
 
-    parseList = oneOf [numString, stringBlock]
+    parseList = quotelessString
                 `onFail`
                 -- This will also take care of quoted versions of
                 -- above.
@@ -178,6 +179,10 @@ instance (ParseDot a) => ParseDot [a] where
     parseUnqt = parseUnqtList
 
     parse = parseList
+
+-- | Parse a 'String' that doesn't need to be quoted.
+quotelessString :: Parse String
+quotelessString = numString `onFail` stringBlock
 
 numString :: Parse String
 numString = liftM show parseStrictFloat
