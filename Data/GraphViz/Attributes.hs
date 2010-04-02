@@ -1830,6 +1830,8 @@ data Shape
     | Folder
     | Box3D
     | Component
+    | Record -- ^ Must specify the record shape with a 'Label'.
+    | MRecord -- ^ Must specify the record shape with a 'Label'.
       deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot Shape where
@@ -1863,6 +1865,8 @@ instance PrintDot Shape where
     unqtDot Folder        = text "folder"
     unqtDot Box3D         = text "box3d"
     unqtDot Component     = text "component"
+    unqtDot Record        = text "record"
+    unqtDot MRecord       = text "Mrecord"
 
 instance ParseDot Shape where
     parseUnqt = oneOf [ stringRep Box3D "box3d" -- Parse this before "box"
@@ -1895,6 +1899,8 @@ instance ParseDot Shape where
                       , stringRep Tab "tab"
                       , stringRep Folder "folder"
                       , stringRep Component "component"
+                      , stringRep Record "record"
+                      , stringRep MRecord "Mrecord"
                       ]
 
 -- -----------------------------------------------------------------------------
