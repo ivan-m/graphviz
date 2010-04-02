@@ -969,7 +969,7 @@ arbString :: Gen String
 arbString = suchThat (liftM (map toLower) genStr) validString
   where
     genStr = listOf1 $ elements strChr
-    strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '\t', '(', ')'
+    strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '(', ')'
                                          , ',', ':', '.']
 
 validString         :: String -> Bool
