@@ -254,7 +254,7 @@ instance Arbitrary Attribute where
                       , liftM QuadTree arbitrary
                       , liftM Quantum arbitrary
                       , liftM RankDir arbitrary
-                      , liftM RankSep arbitrary
+                      , liftM RankSep arbList
                       , liftM Rank arbitrary
                       , liftM Ratio arbitrary
                       , liftM Rects arbitrary
@@ -400,7 +400,7 @@ instance Arbitrary Attribute where
     shrink (QuadTree v)           = map QuadTree           $ shrink v
     shrink (Quantum v)            = map Quantum            $ shrink v
     shrink (RankDir v)            = map RankDir            $ shrink v
-    shrink (RankSep v)            = map RankSep            $ shrink v
+    shrink (RankSep v)            = map RankSep            $ nonEmptyShrinks v
     shrink (Rank v)               = map Rank               $ shrink v
     shrink (Ratio v)              = map Ratio              $ shrink v
     shrink (Rects v)              = map Rects              $ shrink v

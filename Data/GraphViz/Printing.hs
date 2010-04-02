@@ -131,6 +131,8 @@ instance PrintDot Double where
         where
           di = round d
 
+    unqtListToDot = hcat . punctuate colon . map unqtDot
+
 instance PrintDot Bool where
     unqtDot True  = text "true"
     unqtDot False = text "false"

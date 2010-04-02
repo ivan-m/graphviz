@@ -139,6 +139,8 @@ instance ParseDot Word16 where
 instance ParseDot Double where
     parseUnqt = parseFloat'
 
+    parseUnqtList = sepBy1 parseUnqt (character ':')
+
 instance ParseDot Bool where
     parseUnqt = onlyBool
                 `onFail`

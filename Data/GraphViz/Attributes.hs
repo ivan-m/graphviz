@@ -26,12 +26,12 @@
      /A/ to /B/, then /A/ is the tail node and /B/ is the head node
      (since /A/ is at the tail end of the arrow).
 
-   * ColorList and PointfList are defined as actual lists (but
-     'LayerList' is not).  Note that for the Color 'Attribute' for
-     node values, only a single Color is valid; edges are allowed
-     multiple colors with one spline/arrow per color in the list (but
-     you must have at least one 'Color' in the list).  This might be
-     changed in future.
+   * @ColorList@, @DoubleList@ and @PointfList@ are defined as actual
+     lists (but 'LayerList' is not).  All of these are assumed to be
+     non-empty lists.  Note that for the @Color@ 'Attribute' for node
+     values, only a single Color is valid; edges are allowed multiple
+     colors with one spline/arrow per color in the list (but you must have
+     at least one 'Color' in the list).  This might be changed in future.
 
    * Style is implemented as a list of 'StyleItem' values; note that
      empty lists are not allowed.
@@ -309,7 +309,7 @@ data Attribute
     | QuadTree QuadType                -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
     | Quantum Double                   -- ^ /Valid for/: G; /Default/: @0.0@; /Minimum/: @0.0@
     | RankDir RankDir                  -- ^ /Valid for/: G; /Default/: @'TB'@; /Notes/: dot only
-    | RankSep Double                   -- ^ /Valid for/: G; /Default/: @0.5@ (dot), @1.0@ (twopi); /Minimum/: 0.02; /Notes/: twopi, dot only
+    | RankSep [Double]                 -- ^ /Valid for/: G; /Default/: @0.5@ (dot), @1.0@ (twopi); /Minimum/: 0.02; /Notes/: twopi, dot only
     | Rank RankType                    -- ^ /Valid for/: S; /Notes/: dot only
     | Ratio Ratios                     -- ^ /Valid for/: G
     | Rects Rect                       -- ^ /Valid for/: N; /Notes/: write only

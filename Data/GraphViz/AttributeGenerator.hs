@@ -418,7 +418,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "QuadTree" ["quadtree"] "G" (Cust "QuadType") (Just "NormalQT") (Just "@'NormalQT'@") Nothing (Just "sfdp only")
              , makeAttr "Quantum" ["quantum"] "G" Dbl Nothing (Just "@0.0@") (Just "@0.0@") Nothing
              , makeAttr "RankDir" ["rankdir"] "G" (Cust "RankDir") Nothing (Just "@'TB'@") Nothing (Just "dot only")
-             , makeAttr "RankSep" ["ranksep"] "G" Dbl Nothing (Just "@0.5@ (dot), @1.0@ (twopi)") (Just "0.02") (Just "twopi, dot only")
+             , makeAttr "RankSep" ["ranksep"] "G" (Cust "[Double]") Nothing (Just "@0.5@ (dot), @1.0@ (twopi)") (Just "0.02") (Just "twopi, dot only")
              , makeAttr "Rank" ["rank"] "S" (Cust "RankType") Nothing Nothing Nothing (Just "dot only")
              , makeAttr "Ratio" ["ratio"] "G" (Cust "Ratios") Nothing Nothing Nothing Nothing
              , makeAttr "Rects" ["rects"] "N" (Cust "Rect") Nothing Nothing Nothing (Just "write only")
