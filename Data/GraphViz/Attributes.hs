@@ -126,6 +126,9 @@ module Data.GraphViz.Attributes
     , Ratios(..)
     , module Data.GraphViz.Attributes.Colors
     , module Data.GraphViz.Attributes.HTML
+      -- * Types representing the Dot grammar for records.
+    , RecordFields
+    , RecordField(..)
       -- * Types representing the Dot grammar for @ArrowType@.
     , ArrowShape(..)
     , ArrowModifier(..)
@@ -1227,23 +1230,105 @@ data Label = StrLabel EscString
                                  --   except 'PointShape' is used then
                                  --   the 'HtmlLabel' is embedded
                                  --   within the shape.
+           | RecordLabel RecordFields -- ^ For nodes only; requires
+                                      --   either 'Record' or
+                                      --   'MRecord' as the shape.
              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Label where
     unqtDot (StrLabel s)     = unqtDot s
     unqtDot (HtmlLabel h)    = angled $ unqtDot h
+    unqtDot (RecordLabel fs) = unqtDot fs
 
     toDot (StrLabel s)     = toDot s
     toDot h@HtmlLabel{}    = unqtDot h
+    toDot (RecordLabel fs) = toDot fs
 
 instance ParseDot Label where
-    parseUnqt = oneOf [ liftM StrLabel parseUnqt
-                      , liftM HtmlLabel $ parseAngled parseUnqt
+    -- Don't have to worry about being able to tell the difference
+    -- between an HtmlLabel and a RecordLabel starting with a PortPos,
+    -- since the latter will be in quotes and the former won't.
+
+    parseUnqt = oneOf [ liftM HtmlLabel $ parseAngled parseUnqt
+                      , liftM RecordLabel parseUnqt
+                      , liftM StrLabel parseUnqt
                       ]
 
-    parse = oneOf [ liftM StrLabel parse
-                  , liftM HtmlLabel $ parseAngled parse
+    parse = oneOf [ liftM HtmlLabel $ parseAngled parse
+                  , liftM RecordLabel parse
+                  , liftM StrLabel parse
                   ]
+
+-- -----------------------------------------------------------------------------
+
+-- | A RecordFields value should never be empty.
+type RecordFields = [RecordField]
+
+-- | Specifies the sub-values of a record-based label.  By default,
+--   the cells are laid out horizontally; use 'FlipFields' to change
+--   the orientation of the fields (can be applied recursively).  To
+--   change the default orientation, use 'RankDir'.
+data RecordField = LabelledTarget PortName EscString
+                 | PortName PortName -- ^ Will result in no label for
+                                     --   that cell.
+                 | FieldLabel EscString
+                 | FlipFields RecordFields
+                   deriving (Eq, Ord, Show, Read)
+
+instance PrintDot RecordField where
+  -- Have to use 'printPortName' to add the @\'<\'@ and @\'>\'@.
+  unqtDot (LabelledTarget t s) = printPortName t <+> unqtRecordString s
+  unqtDot (PortName t)         = printPortName t
+  unqtDot (FieldLabel s)       = unqtRecordString s
+  unqtDot (FlipFields rs)      = braces $ unqtDot rs
+
+  toDot (FieldLabel s) = printEscaped recordEscChars s
+  toDot rf             = doubleQuotes $ unqtDot rf
+
+  unqtListToDot [f] = unqtDot f
+  unqtListToDot fs  = hsep . punctuate (char '|') $ map unqtDot fs
+
+  listToDot [f] = toDot f
+  listToDot fs  = doubleQuotes $ unqtListToDot fs
+
+instance ParseDot RecordField where
+  parseUnqt = do t <- liftM PN $ parseAngled parseRecord
+                 ml <- optional (whitespace >> parseRecord)
+                 return $ maybe (PortName t)
+                                (LabelledTarget t)
+                                ml
+              `onFail`
+              liftM FieldLabel parseRecord
+              `onFail`
+              liftM FlipFields (parseBraced parseUnqt)
+
+  parse = quotedParse parseUnqt
+
+  parseUnqtList = wrapWhitespace $ sepBy1 parseUnqt (wrapWhitespace $ character '|')
+
+  -- Note: a singleton unquoted 'FieldLabel' is /not/ valid, as it
+  -- will cause parsing problems for other 'Label' types.
+  parseList = do rfs <- quotedParse $ parseUnqtList
+                 if validRFs rfs
+                   then return rfs
+                   else fail "This is a StrLabel, not a RecordLabel"
+    where
+      validRFs [FieldLabel str] = any (`elem` recordEscChars) str
+      validRFs _                = True
+
+-- | Print a 'PortName' value as expected within a Record data
+--   structure.
+printPortName :: PortName -> DotCode
+printPortName = angled . unqtRecordString . portName
+
+parseRecord :: Parse String
+parseRecord = parseEscaped False recordEscChars
+
+unqtRecordString :: String -> DotCode
+unqtRecordString = unqtEscaped recordEscChars
+
+recordEscChars :: [Char]
+recordEscChars = ['{', '}', '|', ' ', '<', '>']
 
 -- -----------------------------------------------------------------------------
 
@@ -1979,6 +2064,8 @@ parseStyleName = do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ']
 
 newtype PortPos = PP CompassPoint
     deriving (Eq, Ord, Show, Read)
+
+-- currently have PortName, except it should be URL based...
 
 instance PrintDot PortPos where
     unqtDot (PP cp) = unqtDot cp

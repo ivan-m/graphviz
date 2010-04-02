@@ -22,6 +22,7 @@ import Data.GraphViz.Parsing(isNumString)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Generalised
+import Data.GraphViz.Util(bool)
 
 import Test.QuickCheck
 
@@ -528,10 +529,37 @@ instance Arbitrary Model where
 instance Arbitrary Label where
   arbitrary = oneof [ liftM StrLabel arbString
                     , liftM HtmlLabel arbitrary
+                    , liftM RecordLabel $ suchThat arbList notStr
                     ]
 
   shrink (StrLabel str)   = map StrLabel $ shrinkString str
   shrink (HtmlLabel html) = map HtmlLabel $ shrink html
+  shrink (RecordLabel fs) = map RecordLabel . filter notStr $ shrinkList fs
+
+notStr                :: RecordFields -> Bool
+notStr [FieldLabel{}] = False -- Just in case
+notStr _              = True
+
+arbField     :: Bool -> Int -> Gen RecordField
+arbField b s = resize s'
+               . oneof
+               . bool id ((:) genFlipped) b
+               $ [ liftM2 LabelledTarget arbitrary arbString
+                 , liftM PortName arbitrary
+                 , liftM FieldLabel arbString
+                 ]
+  where
+    genFlipped = liftM FlipFields
+                 $ listOf1 (sized $ arbField False)
+    s' = min 3 s
+
+instance Arbitrary RecordField where
+  arbitrary = sized (arbField True)
+
+  shrink (LabelledTarget f l) = [PortName f, FieldLabel l]
+  shrink (PortName f)         = map PortName $ shrink f
+  shrink (FieldLabel l)       = map FieldLabel $ shrinkString l
+  shrink (FlipFields fs)      = map FlipFields $ shrinkList fs
 
 instance Arbitrary Overlap where
   arbitrary = oneof [ simpleOverlap
