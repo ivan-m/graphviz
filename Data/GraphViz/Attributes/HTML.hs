@@ -454,7 +454,9 @@ instance ParseDot HtmlScale where
 -- Should this really be exported from here?  Or in another common module?
 
 -- | Specifies a name for ports (used also in record-based and
---   HTML-like labels).
+--   HTML-like labels).  Note that it is not valid for a 'PortName'
+--   value to contain a colon (@:@) character; it is assumed that it
+--   doesn't.
 newtype PortName = PN { portName :: String }
                  deriving (Eq, Ord, Show, Read)
 
@@ -463,11 +465,13 @@ instance PrintDot PortName where
 
   toDot = toDot . portName
 
--- TODO: deal with colons
 instance ParseDot PortName where
-  parseUnqt = liftM PN parseUnqt
+  parseUnqt = liftM PN . many1
+              . orQuote $ satisfy (`notElem` ['"', ':'])
 
-  parse = liftM PN parse
+  parse= quotedParse parseUnqt
+         `onFail`
+         liftM PN quotelessString
 
 -- -----------------------------------------------------------------------------
 
