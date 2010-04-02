@@ -28,6 +28,7 @@ module Data.GraphViz.Parsing
     , parseIt'
     , runParser'
       -- * Convenience parsing combinators.
+    , bracket
     , onlyBool
     , stringBlock
     , numString
@@ -75,7 +76,7 @@ module Data.GraphViz.Parsing
 
 import Data.GraphViz.Util
 
-import Text.ParserCombinators.Poly.Lazy
+import Text.ParserCombinators.Poly.Lazy hiding (bracket)
 import Data.Char( digitToInt
                 , isDigit
                 , isSpace
@@ -242,6 +243,17 @@ parseFloat' = parseSigned ( parseFloat
       fI = fromIntegral
 
 -- -----------------------------------------------------------------------------
+
+-- | Parse a bracketed item, discarding the brackets.
+--
+--   The definition of @bracket@ defined in Polyparse uses
+--   'adjustErrBad' and thus doesn't allow backtracking and trying the
+--   next possible parser.  This is a version of @bracket@ that does.
+bracket               :: PolyParse p => p bra -> p ket -> p a -> p a
+bracket open close pa = do open
+                           a <- pa
+                           close
+                           return a
 
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` whitespace'
