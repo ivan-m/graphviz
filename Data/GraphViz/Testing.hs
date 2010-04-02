@@ -102,7 +102,7 @@ runDefaultTests = do putStrLn msg
            \If any of these tests fail, please inform the maintainer,\n\
            \including full output of this test suite.\n\
            \\n\
-           \This test suite takes approximately 110 minutes to run on a\n\
+           \This test suite takes approximately 55 minutes to run on a\n\
            \2 GHz Mobile Core 2 Duo (running with a single thread)."
 
     successMsg = "All tests were successful!"
