@@ -250,10 +250,7 @@ parseFloat' = parseSigned ( parseFloat
 --   'adjustErrBad' and thus doesn't allow backtracking and trying the
 --   next possible parser.  This is a version of @bracket@ that does.
 bracket               :: PolyParse p => p bra -> p ket -> p a -> p a
-bracket open close pa = do open
-                           a <- pa
-                           close
-                           return a
+bracket open close pa = open >> pa `discard` close
 
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` whitespace'
