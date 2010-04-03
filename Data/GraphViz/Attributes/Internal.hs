@@ -14,10 +14,18 @@
 
 module Data.GraphViz.Attributes.Internal
        ( PortName(..)
+       , PortPos(..)
+       , CompassPoint(..)
+       , compassLookup
        ) where
 
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
+
+import Data.Maybe(isNothing)
+import qualified Data.Map as Map
+import Data.Map(Map)
+import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
 
@@ -46,6 +54,91 @@ instance ParseDot PortName where
 
   parse= quotedParse parseUnqt
          `onFail`
-         liftM PN quotelessString
+         unqtPortName
+
+unqtPortName :: Parse PortName
+unqtPortName = liftM PN quotelessString
+
+-- -----------------------------------------------------------------------------
+
+data PortPos = LabelledPort PortName (Maybe CompassPoint)
+             | CompassPoint CompassPoint
+    deriving (Eq, Ord, Show, Read)
+
+instance PrintDot PortPos where
+    unqtDot (LabelledPort n mc) = unqtDot n
+                                  <> maybe empty (colon <>) (fmap unqtDot mc)
+    unqtDot (CompassPoint cp)   = unqtDot cp
+
+    toDot (LabelledPort n Nothing) = toDot n
+    toDot lp@LabelledPort{}        = doubleQuotes $ unqtDot lp
+    toDot cp                       = unqtDot cp
+
+instance ParseDot PortPos where
+    parseUnqt = do n <- parseUnqt
+                   mc <- optional $ character ':' >> parseUnqt
+                   return $ if isNothing mc
+                            then checkPortName n
+                            else LabelledPort n mc
+
+    parse = quotedParse parseUnqt
+            `onFail`
+            liftM checkPortName unqtPortName
+
+checkPortName    :: PortName -> PortPos
+checkPortName pn = maybe (LabelledPort pn Nothing) CompassPoint
+                   . flip Map.lookup compassLookup
+                   $ portName pn
+
+data CompassPoint = North
+                  | NorthEast
+                  | East
+                  | SouthEast
+                  | South
+                  | SouthWest
+                  | West
+                  | NorthWest
+                  | CenterPoint
+                  | NoCP
+                    deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot CompassPoint where
+    unqtDot NorthEast   = text "ne"
+    unqtDot NorthWest   = text "nw"
+    unqtDot North       = text "n"
+    unqtDot East        = text "e"
+    unqtDot SouthEast   = text "se"
+    unqtDot SouthWest   = text "sw"
+    unqtDot South       = text "s"
+    unqtDot West        = text "w"
+    unqtDot CenterPoint = text "c"
+    unqtDot NoCP        = text "_"
+
+instance ParseDot CompassPoint where
+    -- Have to take care of longer parsing values first.
+    parseUnqt = oneOf [ stringRep NorthEast "ne"
+                      , stringRep NorthWest "nw"
+                      , stringRep North "n"
+                      , stringRep SouthEast "se"
+                      , stringRep SouthWest "sw"
+                      , stringRep South "s"
+                      , stringRep East "e"
+                      , stringRep West "w"
+                      , stringRep CenterPoint "c"
+                      , stringRep NoCP "_"
+                      ]
+
+compassLookup :: Map String CompassPoint
+compassLookup = Map.fromList [ ("ne", NorthEast)
+                             , ("nw", NorthWest)
+                             , ("n", North)
+                             , ("e", East)
+                             , ("se", SouthEast)
+                             , ("sw", SouthWest)
+                             , ("s", South)
+                             , ("w", West)
+                             , ("c", CenterPoint)
+                             , ("_", NoCP)
+                             ]
 
 -- -----------------------------------------------------------------------------

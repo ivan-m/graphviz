@@ -58,10 +58,6 @@
 
    * Only polygon-based 'Shape's are available.
 
-   * 'PortPos' only has the 'CompassPoint' option, not
-     @PortName[:CompassPoint]@ (since record shapes aren't allowed,
-     and parsing HTML-like labels could be problematic).
-
    * Not every 'Attribute' is fully documented/described.  However,
      all those which have specific allowed values should be covered.
 
@@ -116,8 +112,6 @@ module Data.GraphViz.Attributes
     , STStyle(..)
     , StyleItem(..)
     , StyleName(..)
-    , PortPos(..)
-    , CompassPoint(..)
     , ViewPort(..)
     , FocusType(..)
     , VerticalPlacement(..)
@@ -126,6 +120,8 @@ module Data.GraphViz.Attributes
     , Ratios(..)
       -- Re-exported from Data.GraphViz.Attributes.Internal
     , PortName(..)
+    , PortPos(..)
+    , CompassPoint(..)
       -- Re-exporting modules
     , module Data.GraphViz.Attributes.Colors
     , module Data.GraphViz.Attributes.HTML
@@ -2069,59 +2065,6 @@ parseStyleName :: Parse String
 parseStyleName = do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ']
                     r <- many (orQuote $ noneOf [quoteChar, '(', ')', ','])
                     return $ f:r
-
--- -----------------------------------------------------------------------------
-
-newtype PortPos = PP CompassPoint
-    deriving (Eq, Ord, Show, Read)
-
--- currently have PortName, except it should be URL based...
-
-instance PrintDot PortPos where
-    unqtDot (PP cp) = unqtDot cp
-
-    toDot (PP cp) = toDot cp
-
-instance ParseDot PortPos where
-    parseUnqt = liftM PP parseUnqt
-
-data CompassPoint = North
-                  | NorthEast
-                  | East
-                  | SouthEast
-                  | South
-                  | SouthWest
-                  | West
-                  | NorthWest
-                  | CenterPoint
-                  | NoCP
-                    deriving (Eq, Ord, Bounded, Enum, Show, Read)
-
-instance PrintDot CompassPoint where
-    unqtDot NorthEast   = text "ne"
-    unqtDot NorthWest   = text "nw"
-    unqtDot North       = text "n"
-    unqtDot East        = text "e"
-    unqtDot SouthEast   = text "se"
-    unqtDot SouthWest   = text "sw"
-    unqtDot South       = text "s"
-    unqtDot West        = text "w"
-    unqtDot CenterPoint = text "c"
-    unqtDot NoCP        = text "_"
-
-instance ParseDot CompassPoint where
-    -- Have to take care of longer parsing values first.
-    parseUnqt = oneOf [ stringRep NorthEast "ne"
-                      , stringRep NorthWest "nw"
-                      , stringRep North "n"
-                      , stringRep SouthEast "se"
-                      , stringRep SouthWest "sw"
-                      , stringRep South "s"
-                      , stringRep East "e"
-                      , stringRep West "w"
-                      , stringRep CenterPoint "c"
-                      , stringRep NoCP "_"
-                      ]
 
 -- -----------------------------------------------------------------------------
 

@@ -20,6 +20,7 @@ module Data.GraphViz.Testing.Instances() where
 import Data.GraphViz.Parsing(isNumString)
 
 import Data.GraphViz.Attributes
+import Data.GraphViz.Attributes.Internal(compassLookup)
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Util(bool)
@@ -29,6 +30,7 @@ import Test.QuickCheck
 import Data.Char(toLower)
 import Data.List(nub, delete, groupBy)
 import qualified Data.Sequence as Seq
+import qualified Data.Map as Map
 import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
 import Data.Word(Word8, Word16)
 
@@ -744,7 +746,12 @@ instance Arbitrary StyleName where
                                 ]
 
 instance Arbitrary PortPos where
-  arbitrary = liftM PP arbitrary
+  arbitrary = oneof [ liftM2 LabelledPort arbitrary arbitrary
+                    , liftM CompassPoint arbitrary
+                    ]
+
+  shrink (LabelledPort pn mc) = map (flip LabelledPort mc) $ shrink pn
+  shrink _                    = []
 
 instance Arbitrary CompassPoint where
   arbitrary = arbBounded
@@ -980,10 +987,13 @@ instance Arbitrary HtmlVAlign where
   arbitrary = arbBounded
 
 instance Arbitrary PortName where
-  arbitrary = liftM PN . flip suchThat (not . null)
+  arbitrary = liftM PN . flip suchThat (liftM2 (&&) (not . null) notCP)
               $ liftM (filter (/= ':')) arbString
 
-  shrink = map PN . shrinkString . portName
+  shrink = map PN . filter notCP . shrinkString . portName
+
+notCP :: String -> Bool
+notCP = flip Map.notMember compassLookup
 
 -- -----------------------------------------------------------------------------
 -- Helper Functions
