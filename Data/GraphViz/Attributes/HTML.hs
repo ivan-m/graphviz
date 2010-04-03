@@ -61,12 +61,12 @@ module Data.GraphViz.Attributes.HTML
        , HtmlAlign(..)
        , HtmlVAlign(..)
        , HtmlScale(..)
-       , PortName(..) -- Should this really be exported here?
        ) where
 
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 import Data.GraphViz.Attributes.Colors
+import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Util(bool)
 
 import Numeric(readHex)
@@ -443,35 +443,6 @@ instance ParseDot HtmlScale where
                     ]
 
   parse = parseUnqt
-
--- -----------------------------------------------------------------------------
-
--- Note that printing and parsing of PortName values is specific to
--- where it's being used: record- and HTML-like labels print/parse
--- them differently from when they're on they're part of PortPos; the
--- default printing and parsing is done for the latter.
-
--- Should this really be exported from here?  Or in another common module?
-
--- | Specifies a name for ports (used also in record-based and
---   HTML-like labels).  Note that it is not valid for a 'PortName'
---   value to contain a colon (@:@) character; it is assumed that it
---   doesn't.
-newtype PortName = PN { portName :: String }
-                 deriving (Eq, Ord, Show, Read)
-
-instance PrintDot PortName where
-  unqtDot = unqtDot . portName
-
-  toDot = toDot . portName
-
-instance ParseDot PortName where
-  parseUnqt = liftM PN . many1
-              . orQuote $ satisfy (`notElem` ['"', ':'])
-
-  parse= quotedParse parseUnqt
-         `onFail`
-         liftM PN quotelessString
 
 -- -----------------------------------------------------------------------------
 

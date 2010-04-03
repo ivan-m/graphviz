@@ -124,6 +124,9 @@ module Data.GraphViz.Attributes
     , ScaleType(..)
     , Justification(..)
     , Ratios(..)
+      -- Re-exported from Data.GraphViz.Attributes.Internal
+    , PortName(..)
+      -- Re-exporting modules
     , module Data.GraphViz.Attributes.Colors
     , module Data.GraphViz.Attributes.HTML
       -- * Types representing the Dot grammar for records.
@@ -167,6 +170,7 @@ module Data.GraphViz.Attributes
 
 import Data.GraphViz.Attributes.Colors
 import Data.GraphViz.Attributes.HTML
+import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing

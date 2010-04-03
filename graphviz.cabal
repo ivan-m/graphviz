@@ -77,7 +77,8 @@ Library {
                            Data.GraphViz.Attributes.Colors
                            Data.GraphViz.Attributes.HTML
 
-        Other-Modules:     Data.GraphViz.Types.Clustering
+        Other-Modules:     Data.GraphViz.Attributes.Internal
+                           Data.GraphViz.Types.Clustering
                            Data.GraphViz.Types.Common
                            Data.GraphViz.Util
                            Data.GraphViz.PreProcessing
