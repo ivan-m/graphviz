@@ -980,7 +980,8 @@ instance Arbitrary HtmlVAlign where
   arbitrary = arbBounded
 
 instance Arbitrary PortName where
-  arbitrary = liftM PN arbString
+  arbitrary = liftM PN . flip suchThat (not . null)
+              $ liftM (filter (/= ':')) arbString
 
   shrink = map PN . shrinkString . portName
 
