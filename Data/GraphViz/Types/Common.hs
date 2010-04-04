@@ -15,10 +15,11 @@ module Data.GraphViz.Types.Common where
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 import Data.GraphViz.Util
-import Data.GraphViz.Attributes(Attributes, Attribute)
+import Data.GraphViz.Attributes(Attributes, Attribute(HeadPort, TailPort))
+import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
 
 import Data.Maybe(isJust)
-import Control.Monad(liftM, when)
+import Control.Monad(liftM, liftM2, when)
 
 -- -----------------------------------------------------------------------------
 -- This is re-exported by Data.GraphViz.Types
@@ -96,12 +97,26 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
     parseList = parseUnqtList
 
 parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
-parseEdgeID = do eFrom <- parse
+parseEdgeID = do eFrom <- parseEdgeNode
                  whitespace'
                  eType <- parseEdgeType
                  whitespace'
-                 eTo <- parse
-                 return $ DotEdge eFrom eTo eType
+                 eTo <- parseEdgeNode
+                 return $ mkEdge eFrom eType eTo
+
+mkEdge :: (a, Maybe PortPos) -> Bool -> (a, Maybe PortPos)
+          -> Attributes -> DotEdge a
+mkEdge (eFrom, mFP) eDir (eTo, mTP) = DotEdge eFrom eTo eDir
+                                      . addPortPos TailPort mFP
+                                      . addPortPos HeadPort mTP
+
+parseEdgeNode :: (ParseDot a) => Parse (a, Maybe PortPos)
+parseEdgeNode = liftM2 (,) parse
+                           (optional $ character ':' >> parseEdgeBasedPP)
+
+addPortPos   :: (PortPos -> Attribute) -> Maybe PortPos
+                -> Attributes -> Attributes
+addPortPos c = maybe id ((:) . c)
 
 parseEdgeType :: Parse Bool
 parseEdgeType = stringRep True dirEdge
@@ -109,18 +124,18 @@ parseEdgeType = stringRep True dirEdge
                 stringRep False undirEdge
 
 parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
-parseEdgeLine = do n1 <- parse
+parseEdgeLine = do n1 <- parseEdgeNode
                    ens <- many1 $ do whitespace'
                                      eType <- parseEdgeType
                                      whitespace'
-                                     n <- parse
+                                     n <- parseEdgeNode
                                      return (eType, n)
                    let ens' = (True, n1) : ens
                        efs = zipWith mkEdg ens' (tail ens')
                        ef = return $ \ as -> map ($as) efs
                    parseAttrBased ef
     where
-      mkEdg (_, hn) (et, tn) = DotEdge hn tn et
+      mkEdg (_, hn) (et, tn) = mkEdge hn et tn
 
 instance Functor DotEdge where
     fmap f e = e { edgeFromNodeID = f $ edgeFromNodeID e

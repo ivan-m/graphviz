@@ -17,6 +17,7 @@ module Data.GraphViz.Attributes.Internal
        , PortPos(..)
        , CompassPoint(..)
        , compassLookup
+       , parseEdgeBasedPP
        ) where
 
 import Data.GraphViz.Parsing
@@ -25,7 +26,7 @@ import Data.GraphViz.Printing
 import Data.Maybe(isNothing)
 import qualified Data.Map as Map
 import Data.Map(Map)
-import Control.Monad(liftM)
+import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
 
@@ -89,6 +90,13 @@ checkPortName    :: PortName -> PortPos
 checkPortName pn = maybe (LabelledPort pn Nothing) CompassPoint
                    . flip Map.lookup compassLookup
                    $ portName pn
+
+-- | When attached to a node in a DotEdge definition, the 'PortName'
+--   and the 'CompassPoint' can be in separate quotes.
+parseEdgeBasedPP :: Parse PortPos
+parseEdgeBasedPP = liftM2 LabelledPort parse (liftM Just $ character ':' >> parse)
+                   `onFail`
+                   parse
 
 data CompassPoint = North
                   | NorthEast
