@@ -96,12 +96,12 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
     parseList = parseUnqtList
 
 parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
-parseEdgeID = do eHead <- parse
+parseEdgeID = do eFrom <- parse
                  whitespace'
-                 eType <- parseEdgeType
+                 eType <- parse
                  whitespace'
-                 eTail <- parse
-                 return $ DotEdge eHead eTail eType
+                 eTo <- parse
+                 return $ DotEdge eFrom eTo eType
 
 parseEdgeType :: Parse Bool
 parseEdgeType = stringRep True dirEdge
