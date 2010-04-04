@@ -98,7 +98,7 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
 parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
 parseEdgeID = do eFrom <- parse
                  whitespace'
-                 eType <- parse
+                 eType <- parseEdgeType
                  whitespace'
                  eTo <- parse
                  return $ DotEdge eFrom eTo eType
