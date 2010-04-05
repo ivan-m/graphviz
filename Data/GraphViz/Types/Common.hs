@@ -327,11 +327,11 @@ parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) statementEnd
 
 -- | Parse the separator (and any other whitespace present) between statements.
 statementEnd :: Parse ()
-statementEnd = do whitespace'
-                  optional parseSplit
-                  newline'
+statementEnd = parseSplit >> newline'
   where
-    parseSplit = oneOf [ liftM return $ character ';'
-                       , newline
-                       , whitespace
-                       ]
+    parseSplit = (whitespace' >> oneOf [ liftM return $ character ';'
+                                       , newline
+                                       ]
+                 )
+                 `onFail`
+                 whitespace
