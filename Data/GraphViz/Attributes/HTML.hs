@@ -266,7 +266,7 @@ data HtmlAttribute = HtmlAlign HtmlAlign   -- ^ Valid for:  'HtmlTable', 'HtmlCe
                    | HtmlBorder Word8      -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @1@; @0@ represents no border.
                    | HtmlCellBorder Word8  -- ^ Valid for: 'HtmlTable'.  Default is @1@; @0@ represents no border.
                    | HtmlCellPadding Word8 -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @2@.
-                   | HtmlCellSpace Word8   -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @2@; maximum is @127@.
+                   | HtmlCellSpacing Word8 -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @2@; maximum is @127@.
                    | HtmlColor Color       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlColSpan Word16    -- ^ Valid for: 'HtmlCell'.  Default is @1@.
                    | HtmlFace String       -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
@@ -291,7 +291,7 @@ instance PrintDot HtmlAttribute where
   unqtDot (HtmlBorder v)      = printHtmlField  "BORDER" v
   unqtDot (HtmlCellBorder v)  = printHtmlField  "CELLBORDER" v
   unqtDot (HtmlCellPadding v) = printHtmlField  "CELLPADDING" v
-  unqtDot (HtmlCellSpace v)   = printHtmlField  "CELLSPACE" v
+  unqtDot (HtmlCellSpacing v) = printHtmlField  "CELLSPACING" v
   unqtDot (HtmlColor v)       = printHtmlField  "COLOR" v
   unqtDot (HtmlColSpan v)     = printHtmlField  "COLSPAN" v
   unqtDot (HtmlFace v)        = printHtmlField' "FACE" $ escapeAttribute v
@@ -328,7 +328,7 @@ instance ParseDot HtmlAttribute where
                     , parseHtmlField  HtmlBorder "BORDER"
                     , parseHtmlField  HtmlCellBorder "CELLBORDER"
                     , parseHtmlField  HtmlCellPadding "CELLPADDING"
-                    , parseHtmlField  HtmlCellSpace "CELLSPACE"
+                    , parseHtmlField  HtmlCellSpacing "CELLSPACING"
                     , parseHtmlField  HtmlColor "COLOR"
                     , parseHtmlField  HtmlColSpan "COLSPAN"
                     , parseHtmlField' HtmlFace "FACE" unescapeAttribute
