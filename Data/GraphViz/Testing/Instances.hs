@@ -909,7 +909,7 @@ instance Arbitrary HtmlTable where
     where
       arbRows s = resize (min s 10) arbList
 
-  shrink ht@(HTable fas as rs) = map (HTable fas as) $ shrinkL rs
+  shrink (HTable fas as rs) = map (HTable fas as) $ shrinkL rs
 
 instance Arbitrary HtmlRow where
   arbitrary = liftM HtmlRow arbList

@@ -62,7 +62,7 @@ import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
 import Control.Exception.Extensible( SomeException(..), catch
                                    , bracket, evaluate, handle)
 import Control.Monad(liftM)
-import System.FilePath(FilePath, (<.>))
+import System.FilePath((<.>))
 
 -- -----------------------------------------------------------------------------
 

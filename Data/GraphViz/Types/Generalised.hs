@@ -44,7 +44,7 @@ import Data.GraphViz.Printing
 import qualified Data.Sequence as Seq
 import Data.Sequence(Seq, (><))
 import qualified Data.Foldable as F
-import Control.Monad(liftM, when)
+import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
 

@@ -485,19 +485,19 @@ unescapeValue = unescapeHtml True
 --   used.
 unescapeHtml               :: Bool -> Parse String
 unescapeHtml quotesAllowed = liftM concat
-                             . many1 . oneOf $ [ parseEscaped
+                             . many1 . oneOf $ [ parseEscpd
                                                , validChars
                                                ]
   where
-    parseEscaped = do character '&'
-                      esc <- many1 $ satisfy ((/=) ';')
-                      character ';'
-                      let c = case esc of
-                                ('#':'x':hex) -> readMaybe readHex hex
-                                ('#':'X':hex) -> readMaybe readHex hex
-                                ('#':dec)     -> readMaybe readInt dec
-                                _             -> esc `Map.lookup` escMap
-                      return $ maybeToList c
+    parseEscpd = do character '&'
+                    esc <- many1 $ satisfy ((/=) ';')
+                    character ';'
+                    let c = case esc of
+                              ('#':'x':hex) -> readMaybe readHex hex
+                              ('#':'X':hex) -> readMaybe readHex hex
+                              ('#':dec)     -> readMaybe readInt dec
+                              _             -> esc `Map.lookup` escMap
+                    return $ maybeToList c
 
     readMaybe f str = do (n, []) <- listToMaybe $ f str
                          return $ chr n
