@@ -396,8 +396,8 @@ commaSep' pa pb = do a <- pa
                      b <- pb
                      return (a,b)
 
-parseComma :: Parse Char
-parseComma = character ','
+parseComma :: Parse ()
+parseComma = character ',' >> return ()
 
 tryParseList :: (ParseDot a) => Parse [a]
 tryParseList = tryParseList' parse
