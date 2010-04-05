@@ -642,7 +642,6 @@ instance Arbitrary Pos where
                       -- is just a point...
                     , liftM SplinePos $ suchThat arbList validSplineList
                     ]
-    where
 
   shrink (PointPos p)   = map PointPos $ shrink p
   shrink (SplinePos ss) = map SplinePos . filter validSplineList
