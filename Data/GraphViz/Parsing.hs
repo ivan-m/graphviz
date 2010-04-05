@@ -260,7 +260,7 @@ bracket               :: PolyParse p => p bra -> p ket -> p a -> p a
 bracket open close pa = open >> pa `discard` close
 
 parseAndSpace   :: Parse a -> Parse a
-parseAndSpace p = p `discard` whitespace'
+parseAndSpace p = p `discard` allWhitespace'
 
 string :: String -> Parse String
 string = mapM character
