@@ -197,7 +197,7 @@ instance PrintDot HtmlRow where
 instance ParseDot HtmlRow where
   -- To save doing it manually, use 'parseHtmlTag' and ignore any
   -- 'HtmlAttributes' that it might accidentally parse.
-  parseUnqt = parseHtmlTag (const HtmlRow) "TR" parseUnqt
+  parseUnqt = wrapWhitespace $ parseHtmlTag (const HtmlRow) "TR" parseUnqt
               `adjustErr`
               (++ "\nCan't parse HtmlRow")
 
@@ -226,7 +226,7 @@ printCell = printHtmlTag (text "TD")
 
 instance ParseDot HtmlCell where
   parseUnqt = oneOf [ parseCell HtmlLabelCell parse
-                    , parseCell HtmlImgCell parseUnqt
+                    , parseCell HtmlImgCell $ wrapWhitespace parseUnqt
                     ]
               `adjustErr`
               (++ "\nCan't parse HtmlCell")
