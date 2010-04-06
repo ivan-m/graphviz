@@ -14,7 +14,7 @@
 
    The actual definition of the syntax specifies that these types must
    be valid XML syntax.  As such, this assumed when printing and parsing,
-   though the correct escape/descaping for @\"@, @&@, @<@ and @>@ are
+   though the correct escape/descaping for @\"@, @&@, @\<@ and @\>@ are
    automatically done when printing and parsing.
 
    Differences from how Graphviz treats HTML-like values:
@@ -108,9 +108,9 @@ instance ParseDot HtmlLabel where
 --   individual ones.  Note that when printing, the individual values
 --   are concatenated together without spaces, and when parsing
 --   anything that isn't a tag is assumed to be an 'HtmlStr': that is,
---   something like @<BR/> <BR/>@ is parsed as:
+--   something like \"@\<BR\/\> \<BR\/\>@\" is parsed as:
 --
---  > ['HtmlNewline' [], 'HtmlStr' \" \", 'HtmlNewline' []]
+--  > [HtmlNewline [], HtmlStr " ", HtmlNewline []]
 type HtmlText = [HtmlTextItem]
 
 -- | Textual items in HTML-like labels.

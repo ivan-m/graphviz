@@ -186,11 +186,11 @@ commaDel a b = unqtDot a <> comma <> unqtDot b
 printField     :: (PrintDot a) => String -> a -> DotCode
 printField f v = text f <> equals <> toDot v
 
--- | Escape the specified chars as well as @"@.
+-- | Escape the specified chars as well as @\"@.
 unqtEscaped    :: [Char] -> String -> DotCode
 unqtEscaped cs = text . addEscapes cs
 
--- | Escape the specified chars as well as @"@ and then wrap the
+-- | Escape the specified chars as well as @\"@ and then wrap the
 --   result in quotes.
 printEscaped        :: [Char] -> String -> DotCode
 printEscaped cs str = addQuotes str' $ text str'

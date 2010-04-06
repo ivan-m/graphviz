@@ -321,7 +321,7 @@ orQuote p = stringRep quoteChar "\\\""
 quoteChar :: Char
 quoteChar = '"'
 
--- | Parse a 'String' where the provided 'Char's (as well as @"@) are
+-- | Parse a 'String' where the provided 'Char's (as well as @\"@) are
 --   escaped.  Note: does not parse surrounding quotes, and assumes
 --   that @\\@ is not an escaped character.  The 'Bool' value
 --   indicates whether empty 'String's are allowed or not.
