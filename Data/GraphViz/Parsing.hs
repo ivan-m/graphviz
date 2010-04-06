@@ -40,7 +40,6 @@ module Data.GraphViz.Parsing
     , parseAndSpace
     , string
     , strings
-    , hasString
     , character
     , parseStrictFloat
     , noneOf
@@ -273,9 +272,6 @@ stringReps v ss = oneOf (map string ss) >> return v
 
 strings :: [String] -> Parse String
 strings = oneOf . map string
-
-hasString :: String -> Parse Bool
-hasString = liftM isJust . optional . string
 
 character   :: Char -> Parse Char
 character c = satisfy parseC
