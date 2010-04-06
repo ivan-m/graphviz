@@ -97,19 +97,10 @@ generaliseDotGraph dg = GDotGraph { gStrictGraph = strictGraph dg
 type GDotStatements a = Seq (GDotStatement a)
 
 printGStmts :: (PrintDot a) => GDotStatements a -> DotCode
-printGStmts = vcat . map toDot . F.toList
+printGStmts = toDot . F.toList
 
 parseGStmts :: (ParseDot a) => Parse (GDotStatements a)
-parseGStmts = liftM (Seq.fromList . concat)
-              $ sepBy (whitespace' >> p) statementEnd
-                `discard`
-                optional statementEnd
-  where
-    -- Have to do something special here because of "a -> b -> c"
-    -- syntax for edges.
-    p = liftM (map DE) parseEdgeLine
-        `onFail`
-        liftM return parse
+parseGStmts = liftM Seq.fromList parse
 
 statementNodes :: GDotStatements a -> [DotNode a]
 statementNodes = concatMap stmtNodes . F.toList
@@ -138,6 +129,10 @@ instance (PrintDot a) => PrintDot (GDotStatement a) where
   unqtDot (DN dn) = unqtDot dn
   unqtDot (DE de) = unqtDot de
 
+  unqtListToDot = vcat . map unqtDot
+
+  listToDot = unqtListToDot
+
 instance (ParseDot a) => ParseDot (GDotStatement a) where
   parseUnqt = oneOf [ liftM GA parseUnqt
                     , liftM SG parseUnqt
@@ -148,6 +143,19 @@ instance (ParseDot a) => ParseDot (GDotStatement a) where
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
           (++ "Not a valid statement")
+
+  parseUnqtList = liftM concat . wrapWhitespace
+                  $ sepBy (whitespace' >> p) statementEnd
+                    `discard`
+                    optional statementEnd
+    where
+      -- Have to do something special here because of "a -> b -> c"
+      -- syntax for edges.
+      p = liftM (map DE) parseEdgeLine
+          `onFail`
+          liftM return parse
+
+  parseList = parseUnqtList
 
 instance Functor GDotStatement where
   fmap _ (GA ga) = GA ga -- Have to re-make this to make the type checker happy.
