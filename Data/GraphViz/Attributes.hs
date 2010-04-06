@@ -1316,7 +1316,7 @@ instance ParseDot RecordField where
 
   -- Note: a singleton unquoted 'FieldLabel' is /not/ valid, as it
   -- will cause parsing problems for other 'Label' types.
-  parseList = do rfs <- quotedParse $ parseUnqtList
+  parseList = do rfs <- quotedParse parseUnqtList
                  if validRFs rfs
                    then return rfs
                    else fail "This is a StrLabel, not a RecordLabel"
@@ -1446,7 +1446,7 @@ defLayerSep = [' ', ':', '\t']
 
 parseLayerName :: Parse String
 parseLayerName = many1 . orQuote
-                 $ satisfy (liftM2 (&&) notLayerSep ((/=) quoteChar))
+                 $ satisfy (liftM2 (&&) notLayerSep (quoteChar /=))
 
 parseLayerName' :: Parse String
 parseLayerName' = stringBlock

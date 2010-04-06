@@ -490,7 +490,7 @@ unescapeHtml quotesAllowed = liftM concat
                                                ]
   where
     parseEscpd = do character '&'
-                    esc <- many1 $ satisfy ((/=) ';')
+                    esc <- many1 $ satisfy (';' /=)
                     character ';'
                     let c = case esc of
                               ('#':'x':hex) -> readMaybe readHex hex

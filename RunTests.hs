@@ -10,7 +10,7 @@
 -}
 module Main where
 
-import Data.GraphViz.Testing
+import Data.GraphViz.Testing(runDefaultTests)
 
 main :: IO ()
 main = runDefaultTests
