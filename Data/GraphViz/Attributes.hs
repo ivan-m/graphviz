@@ -2049,13 +2049,9 @@ instance PrintDot StyleName where
 instance ParseDot StyleName where
     parseUnqt = liftM checkDD parseStyleName
 
-    parse = liftM checkDD
-            $ quotedParse parseStyleName
-              `onFail`
-              -- In case a singleton DD is at the end of an attribute list.
-              do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ', ']']
-                 r <- many (orQuote $ noneOf [quoteChar, '(', ')', ',', ']'])
-                 return $ f:r
+    parse = quotedParse parseUnqt
+            `onFail`
+            liftM checkDD quotelessString
 
 checkDD     :: String -> StyleName
 checkDD str = case map toLower str of
@@ -2070,9 +2066,11 @@ checkDD str = case map toLower str of
                 _           -> DD str
 
 parseStyleName :: Parse String
-parseStyleName = do f <- orQuote $ noneOf [quoteChar, '(', ')', ',', ' ']
-                    r <- many (orQuote $ noneOf [quoteChar, '(', ')', ','])
+parseStyleName = do f <- orQuote . noneOf $ ' ' : disallowedChars
+                    r <- many (orQuote $ noneOf disallowedChars)
                     return $ f:r
+  where
+    disallowedChars = [quoteChar, '(', ')', ',']
 
 -- -----------------------------------------------------------------------------
 
