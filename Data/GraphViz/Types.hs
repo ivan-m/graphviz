@@ -396,9 +396,12 @@ parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
 parseNodeID = liftM DotNode parseAndCheck
   where
     parseAndCheck = do a <- parse
-                       me <- optional $ whitespace >> parseEdgeType
+                       me <- optional parseUnwanted
                        maybe (return a) (const notANode) me
     notANode = fail "This appears to be an edge, not a node"
+    parseUnwanted = oneOf [ whitespace' >> parseEdgeType >> return ()
+                          , character ':' >> return () -- PortPos value
+                          ]
 
 instance Functor DotNode where
     fmap f n = n { nodeID = f $ nodeID n }
