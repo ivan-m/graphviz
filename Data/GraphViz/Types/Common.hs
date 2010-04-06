@@ -314,8 +314,7 @@ printAttrBasedList ff fas = vcat . map (printAttrBased ff fas)
 
 parseAttrBased   :: Parse (Attributes -> a) -> Parse a
 parseAttrBased p = do f <- p
-                      whitespace'
-                      atts <- tryParseList
+                      atts <- tryParseList' (whitespace' >> parse)
                       return $ f atts
                    `adjustErr`
                    (++ "\n\nNot a valid attribute-based structure")
