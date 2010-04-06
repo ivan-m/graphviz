@@ -146,7 +146,7 @@ printDotGraph = printIt
 --
 --   Also removes any comments, etc. before parsing.
 parseDotGraph :: (DotRepr dg n) => String -> dg n
-parseDotGraph = fst . parseIt . preProcess
+parseDotGraph = parseIt' . preProcess
 
 -- -----------------------------------------------------------------------------
 
