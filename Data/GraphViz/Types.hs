@@ -76,6 +76,14 @@
      However, pre-processing within HTML-like labels is currently not
      supported.
 
+   * Graphviz allows a node to be \"defined\" twice (e.g. the actual
+     node definition, and then in a subgraph with extra global attributes
+     applied to it).  This actually represents the same node, but when
+     parsing they will be considered as separate 'DotNode's (such that
+     'graphNodes' will return both \"definitions\").  The canonical form
+     (see @prettyPrint@ in "Data.GraphViz") combines the \"definitions\"
+     into one.
+
    See "Data.GraphViz.Attributes" for more limitations.
 
 -}
