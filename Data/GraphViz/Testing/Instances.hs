@@ -935,7 +935,7 @@ instance Arbitrary HtmlAttribute where
                     , liftM HtmlBorder arbitrary
                     , liftM HtmlCellBorder arbitrary
                     , liftM HtmlCellPadding arbitrary
-                    , liftM HtmlCellSpace arbitrary
+                    , liftM HtmlCellSpacing arbitrary
                     , liftM HtmlColor arbitrary
                     , liftM HtmlColSpan arbitrary
                     , liftM HtmlFace arbString
@@ -959,7 +959,7 @@ instance Arbitrary HtmlAttribute where
   shrink (HtmlBorder v)      = map HtmlBorder      $ shrink v
   shrink (HtmlCellBorder v)  = map HtmlCellBorder  $ shrink v
   shrink (HtmlCellPadding v) = map HtmlCellPadding $ shrink v
-  shrink (HtmlCellSpace v)   = map HtmlCellSpace   $ shrink v
+  shrink (HtmlCellSpacing v) = map HtmlCellSpacing $ shrink v
   shrink (HtmlColor v)       = map HtmlColor       $ shrink v
   shrink (HtmlColSpan v)     = map HtmlColSpan     $ shrink v
   shrink (HtmlFace v)        = map HtmlFace        $ shrink v
