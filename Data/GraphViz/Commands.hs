@@ -170,7 +170,7 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                     | WBmp      -- ^ Wireless BitMap format;
                                 --   monochrome format usually used
                                 --   for mobile computing devices.
-                      deriving (Eq, Ord, Show, Read)
+                      deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance GraphvizResult GraphvizOutput where
     outputCall Bmp       = "bmp"
@@ -255,7 +255,7 @@ defaultExtension WBmp      = "wbmp"
 --   file; instead, they directly draw a canvas (i.e. a window) with
 --   the resulting image.
 data GraphvizCanvas = Gtk | Xlib
-                      deriving (Eq, Ord, Read, Show)
+                      deriving (Eq, Ord, Bounded, Enum, Read, Show)
 
 instance GraphvizResult GraphvizCanvas where
     outputCall Gtk       = "gtk"
