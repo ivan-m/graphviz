@@ -82,7 +82,7 @@ import Data.Char( digitToInt
                 , isSpace
                 , toLower
                 )
-import Data.Maybe(isJust, fromMaybe, isNothing)
+import Data.Maybe(fromMaybe, isNothing)
 import Data.Ratio((%))
 import qualified Data.Set as Set
 import Data.Word(Word8, Word16)
