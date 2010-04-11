@@ -138,6 +138,7 @@ createDefn att = hdr $+$ constructors $+$ derivs
       constructors = nest tab
                      . asRows
                      . firstOthers equals (char '|')
+                     . (++ [defUnknown])
                      . map createDefn
                      $ atts att
       derivs = nest (tab + 2) $ text "deriving (Eq, Ord, Show, Read)"
@@ -148,6 +149,9 @@ createDefn att = hdr $+$ constructors $+$ derivs
                      ]
           where
             cm = comment a
+      defUnknown = [ unknownAttr <+> vtype Strng <+> vtype Strng
+                   , text "-- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively."
+                   ]
 
 createAlias     :: Atts -> Code
 createAlias att = text "type"
@@ -165,12 +169,17 @@ showInstance att = hdr $+$ insts'
       sFunc = text "unqtDot"
       cnct = text "<>"
       insts = asRows
+              . (++ [unknownInst])
               . map mkInstance
               $ atts att
       mkInstance a = [ sFunc <+> parens (cnst a <+> var)
                      , equals <+> text "printField" <+> doubleQuotes (name a)
                                   <+>  var
                      ]
+      unknownInst = [ sFunc <+> parens (unknownAttr <+> char 'a' <+> var)
+                    , equals <+> text "toDot" <+> char 'a'
+                      <+> text "<> equals <>" <+> text "toDot" <+> var
+                    ]
       insts' = nest tab
               $ vsep [ insts
                      , text "listToDot" <+> equals <+> text "unqtListToDot"
@@ -188,22 +197,23 @@ parseInstance att = hdr $+$ nest tab fns
       ops = flip ($$) rbrack
             . asRows
             . firstOthers lbrack comma
+            . map return
+            . (++ [pUnknown])
             . map parseAttr
             $ atts att
       pFunc = text "parseUnqt"
-      parseAttr a = [ text "liftM" <+> cnst a
-                    , dollar <+> pfFunc a
-                    ]
       pType b a
-          | valtype a == Bl     = pFld <> text "Bool"
-          | isJust $ parseDef a = pFld <> text "Def" <+> fromJust (parseDef a)
-          | otherwise           = pFld
+          | valtype a == Bl     = pFld <> text "Bool" <+> cnst a
+          | isJust $ parseDef a = pFld <> text "Def"  <+> cnst a <+> fromJust (parseDef a)
+          | otherwise           = pFld <+> cnst a
           where
             pFld = text "parseField" <> if b then char 's' else empty
 
-      pfFunc a = case map doubleQuotes $ parseNames a of
-                   [n] -> pType False a <+> n
-                   ns  -> pType True  a <+> docList ns
+      parseAttr a = case map doubleQuotes $ parseNames a of
+                      [n] -> pType False a <+> n
+                      ns  -> pType True  a <+> docList ns
+      pUnknown = text "liftM2" <+> unknownAttr <+> text "stringBlock"
+                 <+> parens (text "parseEq >> parse")
 
 arbitraryInstance     :: Atts -> Code
 arbitraryInstance att = hdr $+$ fns
@@ -256,7 +266,7 @@ usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])
               ]
       fn = text "usedBy" <> nm'
       tr = text "True"
-      trs = map aTr as'
+      trs = map aTr as' ++ [unknownATr]
       fl = text "False"
       fls = [ fn <+> char '_'
             , equals <+> fl
@@ -265,6 +275,9 @@ usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])
       aTr a = [ fn <+> cnst a <> braces empty
               , equals <+> tr
               ]
+      unknownATr = [ fn <+> unknownAttr <> braces empty
+                   , equals <+> tr
+                   ]
 
 
 -- -----------------------------------------------------------------------------
@@ -460,6 +473,9 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "Width" ["width"] "N" Dbl Nothing (Just "@0.75@") (Just "@0.01@") Nothing
              , makeAttr "Z" ["z"] "N" Dbl Nothing (Just "@0.0@") (Just "@-MAXFLOAT@, @-1000@") Nothing
              ]
+
+unknownAttr :: Doc
+unknownAttr = text "UnknownAttribute"
 
 attrs = take 10 $ drop 5 attributes
 

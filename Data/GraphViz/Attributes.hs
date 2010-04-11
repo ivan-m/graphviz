@@ -204,6 +204,15 @@ import Control.Monad(liftM, liftM2)
    is used).  The /Parsing Default/ listings represent what value is
    used (i.e. corresponds to 'True') when the 'Attribute' name is
    listed on its own in /Dot/ source code.
+
+   Please note that the 'UnknownAttribute' 'Attribute' is defined for
+   /backwards-compatibility purposes only/ (specifically, to be able to
+   parse old Dot code containing 'Attribute's that are no longer valid).
+   As such, this 'Attribute' should not be used directly.  The attribute
+   name is assumed to match the first type of identifier listed in
+   "Data.GraphViz.Printing" (i.e. a non-number that does not need to be
+   quoted).
+
 -}
 data Attribute
     = Damping Double                   -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
@@ -350,6 +359,7 @@ data Attribute
     | Weight Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
     | Width Double                     -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
     | Z Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
+    | UnknownAttribute String String   -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
       deriving (Eq, Ord, Show, Read)
 
 type Attributes = [Attribute]
@@ -499,154 +509,156 @@ instance PrintDot Attribute where
     unqtDot (Weight v)             = printField "weight" v
     unqtDot (Width v)              = printField "width" v
     unqtDot (Z v)                  = printField "z" v
+    unqtDot (UnknownAttribute a v) = toDot a <> equals <> toDot v
 
     listToDot = unqtListToDot
 
 instance ParseDot Attribute where
-    parseUnqt = oneOf [ liftM Damping            $ parseField "Damping"
-                      , liftM K                  $ parseField "K"
-                      , liftM URL                $ parseFields ["URL", "href"]
-                      , liftM ArrowHead          $ parseField "arrowhead"
-                      , liftM ArrowSize          $ parseField "arrowsize"
-                      , liftM ArrowTail          $ parseField "arrowtail"
-                      , liftM Aspect             $ parseField "aspect"
-                      , liftM Bb                 $ parseField "bb"
-                      , liftM BgColor            $ parseField "bgcolor"
-                      , liftM Center             $ parseFieldBool "center"
-                      , liftM Charset            $ parseField "charset"
-                      , liftM ClusterRank        $ parseField "clusterrank"
-                      , liftM ColorScheme        $ parseField "colorscheme"
-                      , liftM Color              $ parseField "color"
-                      , liftM Comment            $ parseField "comment"
-                      , liftM Compound           $ parseFieldBool "compound"
-                      , liftM Concentrate        $ parseFieldBool "concentrate"
-                      , liftM Constraint         $ parseFieldBool "constraint"
-                      , liftM Decorate           $ parseFieldBool "decorate"
-                      , liftM DefaultDist        $ parseField "defaultdist"
-                      , liftM Dimen              $ parseField "dimen"
-                      , liftM Dim                $ parseField "dim"
-                      , liftM Dir                $ parseField "dir"
-                      , liftM DirEdgeConstraints $ parseFieldDef EdgeConstraints "diredgeconstraints"
-                      , liftM Distortion         $ parseField "distortion"
-                      , liftM DPI                $ parseFields ["dpi", "resolution"]
-                      , liftM EdgeURL            $ parseFields ["edgeURL", "edgehref"]
-                      , liftM EdgeTarget         $ parseField "edgetarget"
-                      , liftM EdgeTooltip        $ parseField "edgetooltip"
-                      , liftM Epsilon            $ parseField "epsilon"
-                      , liftM ESep               $ parseField "esep"
-                      , liftM FillColor          $ parseField "fillcolor"
-                      , liftM FixedSize          $ parseFieldBool "fixedsize"
-                      , liftM FontColor          $ parseField "fontcolor"
-                      , liftM FontName           $ parseField "fontname"
-                      , liftM FontNames          $ parseField "fontnames"
-                      , liftM FontPath           $ parseField "fontpath"
-                      , liftM FontSize           $ parseField "fontsize"
-                      , liftM Group              $ parseField "group"
-                      , liftM HeadURL            $ parseFields ["headURL", "headhref"]
-                      , liftM HeadClip           $ parseFieldBool "headclip"
-                      , liftM HeadLabel          $ parseField "headlabel"
-                      , liftM HeadPort           $ parseField "headport"
-                      , liftM HeadTarget         $ parseField "headtarget"
-                      , liftM HeadTooltip        $ parseField "headtooltip"
-                      , liftM Height             $ parseField "height"
-                      , liftM ID                 $ parseField "id"
-                      , liftM Image              $ parseField "image"
-                      , liftM ImageScale         $ parseFieldDef UniformScale "imagescale"
-                      , liftM LabelURL           $ parseFields ["labelURL", "labelhref"]
-                      , liftM LabelAngle         $ parseField "labelangle"
-                      , liftM LabelDistance      $ parseField "labeldistance"
-                      , liftM LabelFloat         $ parseFieldBool "labelfloat"
-                      , liftM LabelFontColor     $ parseField "labelfontcolor"
-                      , liftM LabelFontName      $ parseField "labelfontname"
-                      , liftM LabelFontSize      $ parseField "labelfontsize"
-                      , liftM LabelJust          $ parseField "labeljust"
-                      , liftM LabelLoc           $ parseField "labelloc"
-                      , liftM LabelTarget        $ parseField "labeltarget"
-                      , liftM LabelTooltip       $ parseField "labeltooltip"
-                      , liftM Label              $ parseField "label"
-                      , liftM Landscape          $ parseFieldBool "landscape"
-                      , liftM LayerSep           $ parseField "layersep"
-                      , liftM Layers             $ parseField "layers"
-                      , liftM Layer              $ parseField "layer"
-                      , liftM Layout             $ parseField "layout"
-                      , liftM Len                $ parseField "len"
-                      , liftM LevelsGap          $ parseField "levelsgap"
-                      , liftM Levels             $ parseField "levels"
-                      , liftM LHead              $ parseField "lhead"
-                      , liftM LPos               $ parseField "lp"
-                      , liftM LTail              $ parseField "ltail"
-                      , liftM Margin             $ parseField "margin"
-                      , liftM MaxIter            $ parseField "maxiter"
-                      , liftM MCLimit            $ parseField "mclimit"
-                      , liftM MinDist            $ parseField "mindist"
-                      , liftM MinLen             $ parseField "minlen"
-                      , liftM Model              $ parseField "model"
-                      , liftM Mode               $ parseField "mode"
-                      , liftM Mosek              $ parseFieldBool "mosek"
-                      , liftM NodeSep            $ parseField "nodesep"
-                      , liftM NoJustify          $ parseFieldBool "nojustify"
-                      , liftM Normalize          $ parseFieldBool "normalize"
-                      , liftM Nslimit1           $ parseField "nslimit1"
-                      , liftM Nslimit            $ parseField "nslimit"
-                      , liftM Ordering           $ parseField "ordering"
-                      , liftM Orientation        $ parseField "orientation"
-                      , liftM OutputOrder        $ parseField "outputorder"
-                      , liftM OverlapScaling     $ parseField "overlap_scaling"
-                      , liftM Overlap            $ parseFieldDef KeepOverlaps "overlap"
-                      , liftM PackMode           $ parseField "packmode"
-                      , liftM Pack               $ parseFieldDef DoPack "pack"
-                      , liftM Pad                $ parseField "pad"
-                      , liftM PageDir            $ parseField "pagedir"
-                      , liftM Page               $ parseField "page"
-                      , liftM PenColor           $ parseField "pencolor"
-                      , liftM PenWidth           $ parseField "penwidth"
-                      , liftM Peripheries        $ parseField "peripheries"
-                      , liftM Pin                $ parseFieldBool "pin"
-                      , liftM Pos                $ parseField "pos"
-                      , liftM QuadTree           $ parseFieldDef NormalQT "quadtree"
-                      , liftM Quantum            $ parseField "quantum"
-                      , liftM RankDir            $ parseField "rankdir"
-                      , liftM RankSep            $ parseField "ranksep"
-                      , liftM Rank               $ parseField "rank"
-                      , liftM Ratio              $ parseField "ratio"
-                      , liftM Rects              $ parseField "rects"
-                      , liftM Regular            $ parseFieldBool "regular"
-                      , liftM ReMinCross         $ parseFieldBool "remincross"
-                      , liftM RepulsiveForce     $ parseField "repulsiveforce"
-                      , liftM Root               $ parseFieldDef IsCentral "root"
-                      , liftM Rotate             $ parseField "rotate"
-                      , liftM SameHead           $ parseField "samehead"
-                      , liftM SameTail           $ parseField "sametail"
-                      , liftM SamplePoints       $ parseField "samplepoints"
-                      , liftM SearchSize         $ parseField "searchsize"
-                      , liftM Sep                $ parseField "sep"
-                      , liftM ShapeFile          $ parseField "shapefile"
-                      , liftM Shape              $ parseField "shape"
-                      , liftM ShowBoxes          $ parseField "showboxes"
-                      , liftM Sides              $ parseField "sides"
-                      , liftM Size               $ parseField "size"
-                      , liftM Skew               $ parseField "skew"
-                      , liftM Smoothing          $ parseField "smoothing"
-                      , liftM SortV              $ parseField "sortv"
-                      , liftM Splines            $ parseFieldDef SplineEdges "splines"
-                      , liftM Start              $ parseField "start"
-                      , liftM StyleSheet         $ parseField "stylesheet"
-                      , liftM Style              $ parseField "style"
-                      , liftM TailURL            $ parseFields ["tailURL", "tailhref"]
-                      , liftM TailClip           $ parseFieldBool "tailclip"
-                      , liftM TailLabel          $ parseField "taillabel"
-                      , liftM TailPort           $ parseField "tailport"
-                      , liftM TailTarget         $ parseField "tailtarget"
-                      , liftM TailTooltip        $ parseField "tailtooltip"
-                      , liftM Target             $ parseField "target"
-                      , liftM Tooltip            $ parseField "tooltip"
-                      , liftM TrueColor          $ parseFieldBool "truecolor"
-                      , liftM Vertices           $ parseField "vertices"
-                      , liftM ViewPort           $ parseField "viewport"
-                      , liftM VoroMargin         $ parseField "voro_margin"
-                      , liftM Weight             $ parseField "weight"
-                      , liftM Width              $ parseField "width"
-                      , liftM Z                  $ parseField "z"
+    parseUnqt = oneOf [ parseField Damping "Damping"
+                      , parseField K "K"
+                      , parseFields URL ["URL", "href"]
+                      , parseField ArrowHead "arrowhead"
+                      , parseField ArrowSize "arrowsize"
+                      , parseField ArrowTail "arrowtail"
+                      , parseField Aspect "aspect"
+                      , parseField Bb "bb"
+                      , parseField BgColor "bgcolor"
+                      , parseFieldBool Center "center"
+                      , parseField Charset "charset"
+                      , parseField ClusterRank "clusterrank"
+                      , parseField ColorScheme "colorscheme"
+                      , parseField Color "color"
+                      , parseField Comment "comment"
+                      , parseFieldBool Compound "compound"
+                      , parseFieldBool Concentrate "concentrate"
+                      , parseFieldBool Constraint "constraint"
+                      , parseFieldBool Decorate "decorate"
+                      , parseField DefaultDist "defaultdist"
+                      , parseField Dimen "dimen"
+                      , parseField Dim "dim"
+                      , parseField Dir "dir"
+                      , parseFieldDef DirEdgeConstraints EdgeConstraints "diredgeconstraints"
+                      , parseField Distortion "distortion"
+                      , parseFields DPI ["dpi", "resolution"]
+                      , parseFields EdgeURL ["edgeURL", "edgehref"]
+                      , parseField EdgeTarget "edgetarget"
+                      , parseField EdgeTooltip "edgetooltip"
+                      , parseField Epsilon "epsilon"
+                      , parseField ESep "esep"
+                      , parseField FillColor "fillcolor"
+                      , parseFieldBool FixedSize "fixedsize"
+                      , parseField FontColor "fontcolor"
+                      , parseField FontName "fontname"
+                      , parseField FontNames "fontnames"
+                      , parseField FontPath "fontpath"
+                      , parseField FontSize "fontsize"
+                      , parseField Group "group"
+                      , parseFields HeadURL ["headURL", "headhref"]
+                      , parseFieldBool HeadClip "headclip"
+                      , parseField HeadLabel "headlabel"
+                      , parseField HeadPort "headport"
+                      , parseField HeadTarget "headtarget"
+                      , parseField HeadTooltip "headtooltip"
+                      , parseField Height "height"
+                      , parseField ID "id"
+                      , parseField Image "image"
+                      , parseFieldDef ImageScale UniformScale "imagescale"
+                      , parseFields LabelURL ["labelURL", "labelhref"]
+                      , parseField LabelAngle "labelangle"
+                      , parseField LabelDistance "labeldistance"
+                      , parseFieldBool LabelFloat "labelfloat"
+                      , parseField LabelFontColor "labelfontcolor"
+                      , parseField LabelFontName "labelfontname"
+                      , parseField LabelFontSize "labelfontsize"
+                      , parseField LabelJust "labeljust"
+                      , parseField LabelLoc "labelloc"
+                      , parseField LabelTarget "labeltarget"
+                      , parseField LabelTooltip "labeltooltip"
+                      , parseField Label "label"
+                      , parseFieldBool Landscape "landscape"
+                      , parseField LayerSep "layersep"
+                      , parseField Layers "layers"
+                      , parseField Layer "layer"
+                      , parseField Layout "layout"
+                      , parseField Len "len"
+                      , parseField LevelsGap "levelsgap"
+                      , parseField Levels "levels"
+                      , parseField LHead "lhead"
+                      , parseField LPos "lp"
+                      , parseField LTail "ltail"
+                      , parseField Margin "margin"
+                      , parseField MaxIter "maxiter"
+                      , parseField MCLimit "mclimit"
+                      , parseField MinDist "mindist"
+                      , parseField MinLen "minlen"
+                      , parseField Model "model"
+                      , parseField Mode "mode"
+                      , parseFieldBool Mosek "mosek"
+                      , parseField NodeSep "nodesep"
+                      , parseFieldBool NoJustify "nojustify"
+                      , parseFieldBool Normalize "normalize"
+                      , parseField Nslimit1 "nslimit1"
+                      , parseField Nslimit "nslimit"
+                      , parseField Ordering "ordering"
+                      , parseField Orientation "orientation"
+                      , parseField OutputOrder "outputorder"
+                      , parseField OverlapScaling "overlap_scaling"
+                      , parseFieldDef Overlap KeepOverlaps "overlap"
+                      , parseField PackMode "packmode"
+                      , parseFieldDef Pack DoPack "pack"
+                      , parseField Pad "pad"
+                      , parseField PageDir "pagedir"
+                      , parseField Page "page"
+                      , parseField PenColor "pencolor"
+                      , parseField PenWidth "penwidth"
+                      , parseField Peripheries "peripheries"
+                      , parseFieldBool Pin "pin"
+                      , parseField Pos "pos"
+                      , parseFieldDef QuadTree NormalQT "quadtree"
+                      , parseField Quantum "quantum"
+                      , parseField RankDir "rankdir"
+                      , parseField RankSep "ranksep"
+                      , parseField Rank "rank"
+                      , parseField Ratio "ratio"
+                      , parseField Rects "rects"
+                      , parseFieldBool Regular "regular"
+                      , parseFieldBool ReMinCross "remincross"
+                      , parseField RepulsiveForce "repulsiveforce"
+                      , parseFieldDef Root IsCentral "root"
+                      , parseField Rotate "rotate"
+                      , parseField SameHead "samehead"
+                      , parseField SameTail "sametail"
+                      , parseField SamplePoints "samplepoints"
+                      , parseField SearchSize "searchsize"
+                      , parseField Sep "sep"
+                      , parseField ShapeFile "shapefile"
+                      , parseField Shape "shape"
+                      , parseField ShowBoxes "showboxes"
+                      , parseField Sides "sides"
+                      , parseField Size "size"
+                      , parseField Skew "skew"
+                      , parseField Smoothing "smoothing"
+                      , parseField SortV "sortv"
+                      , parseFieldDef Splines SplineEdges "splines"
+                      , parseField Start "start"
+                      , parseField StyleSheet "stylesheet"
+                      , parseField Style "style"
+                      , parseFields TailURL ["tailURL", "tailhref"]
+                      , parseFieldBool TailClip "tailclip"
+                      , parseField TailLabel "taillabel"
+                      , parseField TailPort "tailport"
+                      , parseField TailTarget "tailtarget"
+                      , parseField TailTooltip "tailtooltip"
+                      , parseField Target "target"
+                      , parseField Tooltip "tooltip"
+                      , parseFieldBool TrueColor "truecolor"
+                      , parseField Vertices "vertices"
+                      , parseField ViewPort "viewport"
+                      , parseField VoroMargin "voro_margin"
+                      , parseField Weight "weight"
+                      , parseField Width "width"
+                      , parseField Z "z"
+                      , liftM2 UnknownAttribute stringBlock (parseEq >> parse)
                       ]
 
     parse = parseUnqt
@@ -734,142 +746,147 @@ usedByGraphs Target{}             = True
 usedByGraphs TrueColor{}          = True
 usedByGraphs ViewPort{}           = True
 usedByGraphs VoroMargin{}         = True
+usedByGraphs UnknownAttribute{}   = True
 usedByGraphs _                    = False
 
 -- | Determine if this Attribute is valid for use with Clusters.
-usedByClusters               :: Attribute -> Bool
-usedByClusters K{}           = True
-usedByClusters URL{}         = True
-usedByClusters BgColor{}     = True
-usedByClusters ColorScheme{} = True
-usedByClusters Color{}       = True
-usedByClusters FillColor{}   = True
-usedByClusters FontColor{}   = True
-usedByClusters FontName{}    = True
-usedByClusters FontSize{}    = True
-usedByClusters LabelJust{}   = True
-usedByClusters LabelLoc{}    = True
-usedByClusters Label{}       = True
-usedByClusters LPos{}        = True
-usedByClusters NoJustify{}   = True
-usedByClusters PenColor{}    = True
-usedByClusters PenWidth{}    = True
-usedByClusters Peripheries{} = True
-usedByClusters Rank{}        = True
-usedByClusters SortV{}       = True
-usedByClusters Style{}       = True
-usedByClusters Target{}      = True
-usedByClusters Tooltip{}     = True
-usedByClusters _             = False
+usedByClusters                    :: Attribute -> Bool
+usedByClusters K{}                = True
+usedByClusters URL{}              = True
+usedByClusters BgColor{}          = True
+usedByClusters ColorScheme{}      = True
+usedByClusters Color{}            = True
+usedByClusters FillColor{}        = True
+usedByClusters FontColor{}        = True
+usedByClusters FontName{}         = True
+usedByClusters FontSize{}         = True
+usedByClusters LabelJust{}        = True
+usedByClusters LabelLoc{}         = True
+usedByClusters Label{}            = True
+usedByClusters LPos{}             = True
+usedByClusters NoJustify{}        = True
+usedByClusters PenColor{}         = True
+usedByClusters PenWidth{}         = True
+usedByClusters Peripheries{}      = True
+usedByClusters Rank{}             = True
+usedByClusters SortV{}            = True
+usedByClusters Style{}            = True
+usedByClusters Target{}           = True
+usedByClusters Tooltip{}          = True
+usedByClusters UnknownAttribute{} = True
+usedByClusters _                  = False
 
 -- | Determine if this Attribute is valid for use with SubGraphs.
-usedBySubGraphs        :: Attribute -> Bool
-usedBySubGraphs Rank{} = True
-usedBySubGraphs _      = False
+usedBySubGraphs                    :: Attribute -> Bool
+usedBySubGraphs Rank{}             = True
+usedBySubGraphs UnknownAttribute{} = True
+usedBySubGraphs _                  = False
 
 -- | Determine if this Attribute is valid for use with Nodes.
-usedByNodes                :: Attribute -> Bool
-usedByNodes URL{}          = True
-usedByNodes ColorScheme{}  = True
-usedByNodes Color{}        = True
-usedByNodes Comment{}      = True
-usedByNodes Distortion{}   = True
-usedByNodes FillColor{}    = True
-usedByNodes FixedSize{}    = True
-usedByNodes FontColor{}    = True
-usedByNodes FontName{}     = True
-usedByNodes FontSize{}     = True
-usedByNodes Group{}        = True
-usedByNodes Height{}       = True
-usedByNodes ID{}           = True
-usedByNodes Image{}        = True
-usedByNodes ImageScale{}   = True
-usedByNodes LabelLoc{}     = True
-usedByNodes Label{}        = True
-usedByNodes Layer{}        = True
-usedByNodes Margin{}       = True
-usedByNodes NoJustify{}    = True
-usedByNodes Orientation{}  = True
-usedByNodes PenWidth{}     = True
-usedByNodes Peripheries{}  = True
-usedByNodes Pin{}          = True
-usedByNodes Pos{}          = True
-usedByNodes Rects{}        = True
-usedByNodes Regular{}      = True
-usedByNodes Root{}         = True
-usedByNodes SamplePoints{} = True
-usedByNodes ShapeFile{}    = True
-usedByNodes Shape{}        = True
-usedByNodes ShowBoxes{}    = True
-usedByNodes Sides{}        = True
-usedByNodes Skew{}         = True
-usedByNodes SortV{}        = True
-usedByNodes Style{}        = True
-usedByNodes Target{}       = True
-usedByNodes Tooltip{}      = True
-usedByNodes Vertices{}     = True
-usedByNodes Width{}        = True
-usedByNodes Z{}            = True
-usedByNodes _              = False
+usedByNodes                    :: Attribute -> Bool
+usedByNodes URL{}              = True
+usedByNodes ColorScheme{}      = True
+usedByNodes Color{}            = True
+usedByNodes Comment{}          = True
+usedByNodes Distortion{}       = True
+usedByNodes FillColor{}        = True
+usedByNodes FixedSize{}        = True
+usedByNodes FontColor{}        = True
+usedByNodes FontName{}         = True
+usedByNodes FontSize{}         = True
+usedByNodes Group{}            = True
+usedByNodes Height{}           = True
+usedByNodes ID{}               = True
+usedByNodes Image{}            = True
+usedByNodes ImageScale{}       = True
+usedByNodes LabelLoc{}         = True
+usedByNodes Label{}            = True
+usedByNodes Layer{}            = True
+usedByNodes Margin{}           = True
+usedByNodes NoJustify{}        = True
+usedByNodes Orientation{}      = True
+usedByNodes PenWidth{}         = True
+usedByNodes Peripheries{}      = True
+usedByNodes Pin{}              = True
+usedByNodes Pos{}              = True
+usedByNodes Rects{}            = True
+usedByNodes Regular{}          = True
+usedByNodes Root{}             = True
+usedByNodes SamplePoints{}     = True
+usedByNodes ShapeFile{}        = True
+usedByNodes Shape{}            = True
+usedByNodes ShowBoxes{}        = True
+usedByNodes Sides{}            = True
+usedByNodes Skew{}             = True
+usedByNodes SortV{}            = True
+usedByNodes Style{}            = True
+usedByNodes Target{}           = True
+usedByNodes Tooltip{}          = True
+usedByNodes Vertices{}         = True
+usedByNodes Width{}            = True
+usedByNodes Z{}                = True
+usedByNodes UnknownAttribute{} = True
+usedByNodes _                  = False
 
 -- | Determine if this Attribute is valid for use with Edges.
-usedByEdges                  :: Attribute -> Bool
-usedByEdges URL{}            = True
-usedByEdges ArrowHead{}      = True
-usedByEdges ArrowSize{}      = True
-usedByEdges ArrowTail{}      = True
-usedByEdges ColorScheme{}    = True
-usedByEdges Color{}          = True
-usedByEdges Comment{}        = True
-usedByEdges Constraint{}     = True
-usedByEdges Decorate{}       = True
-usedByEdges Dir{}            = True
-usedByEdges EdgeURL{}        = True
-usedByEdges EdgeTarget{}     = True
-usedByEdges EdgeTooltip{}    = True
-usedByEdges FontColor{}      = True
-usedByEdges FontName{}       = True
-usedByEdges FontSize{}       = True
-usedByEdges HeadURL{}        = True
-usedByEdges HeadClip{}       = True
-usedByEdges HeadLabel{}      = True
-usedByEdges HeadPort{}       = True
-usedByEdges HeadTarget{}     = True
-usedByEdges HeadTooltip{}    = True
-usedByEdges ID{}             = True
-usedByEdges LabelURL{}       = True
-usedByEdges LabelAngle{}     = True
-usedByEdges LabelDistance{}  = True
-usedByEdges LabelFloat{}     = True
-usedByEdges LabelFontColor{} = True
-usedByEdges LabelFontName{}  = True
-usedByEdges LabelFontSize{}  = True
-usedByEdges LabelTarget{}    = True
-usedByEdges LabelTooltip{}   = True
-usedByEdges Label{}          = True
-usedByEdges Layer{}          = True
-usedByEdges Len{}            = True
-usedByEdges LHead{}          = True
-usedByEdges LPos{}           = True
-usedByEdges LTail{}          = True
-usedByEdges MinLen{}         = True
-usedByEdges NoJustify{}      = True
-usedByEdges PenWidth{}       = True
-usedByEdges Pos{}            = True
-usedByEdges SameHead{}       = True
-usedByEdges SameTail{}       = True
-usedByEdges ShowBoxes{}      = True
-usedByEdges Style{}          = True
-usedByEdges TailURL{}        = True
-usedByEdges TailClip{}       = True
-usedByEdges TailLabel{}      = True
-usedByEdges TailPort{}       = True
-usedByEdges TailTarget{}     = True
-usedByEdges TailTooltip{}    = True
-usedByEdges Target{}         = True
-usedByEdges Tooltip{}        = True
-usedByEdges Weight{}         = True
-usedByEdges _                = False
+usedByEdges                    :: Attribute -> Bool
+usedByEdges URL{}              = True
+usedByEdges ArrowHead{}        = True
+usedByEdges ArrowSize{}        = True
+usedByEdges ArrowTail{}        = True
+usedByEdges ColorScheme{}      = True
+usedByEdges Color{}            = True
+usedByEdges Comment{}          = True
+usedByEdges Constraint{}       = True
+usedByEdges Decorate{}         = True
+usedByEdges Dir{}              = True
+usedByEdges EdgeURL{}          = True
+usedByEdges EdgeTarget{}       = True
+usedByEdges EdgeTooltip{}      = True
+usedByEdges FontColor{}        = True
+usedByEdges FontName{}         = True
+usedByEdges FontSize{}         = True
+usedByEdges HeadURL{}          = True
+usedByEdges HeadClip{}         = True
+usedByEdges HeadLabel{}        = True
+usedByEdges HeadPort{}         = True
+usedByEdges HeadTarget{}       = True
+usedByEdges HeadTooltip{}      = True
+usedByEdges ID{}               = True
+usedByEdges LabelURL{}         = True
+usedByEdges LabelAngle{}       = True
+usedByEdges LabelDistance{}    = True
+usedByEdges LabelFloat{}       = True
+usedByEdges LabelFontColor{}   = True
+usedByEdges LabelFontName{}    = True
+usedByEdges LabelFontSize{}    = True
+usedByEdges LabelTarget{}      = True
+usedByEdges LabelTooltip{}     = True
+usedByEdges Label{}            = True
+usedByEdges Layer{}            = True
+usedByEdges Len{}              = True
+usedByEdges LHead{}            = True
+usedByEdges LPos{}             = True
+usedByEdges LTail{}            = True
+usedByEdges MinLen{}           = True
+usedByEdges NoJustify{}        = True
+usedByEdges PenWidth{}         = True
+usedByEdges Pos{}              = True
+usedByEdges SameHead{}         = True
+usedByEdges SameTail{}         = True
+usedByEdges ShowBoxes{}        = True
+usedByEdges Style{}            = True
+usedByEdges TailURL{}          = True
+usedByEdges TailClip{}         = True
+usedByEdges TailLabel{}        = True
+usedByEdges TailPort{}         = True
+usedByEdges TailTarget{}       = True
+usedByEdges TailTooltip{}      = True
+usedByEdges Target{}           = True
+usedByEdges Tooltip{}          = True
+usedByEdges Weight{}           = True
+usedByEdges UnknownAttribute{} = True
+usedByEdges _                  = False
 {- Delete to here -}
 
 -- -----------------------------------------------------------------------------
