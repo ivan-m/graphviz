@@ -78,9 +78,9 @@ instance (PrintDot a) => PrintDot (DotEdge a) where
     listToDot = unqtListToDot
 
 printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
-printEdgeID e = unqtDot (edgeFromNodeID e)
+printEdgeID e = toDot (edgeFromNodeID e)
                 <+> bool undirEdge' dirEdge' (directedEdge e)
-                <+> unqtDot (edgeToNodeID e)
+                <+> toDot (edgeToNodeID e)
 
 
 instance (ParseDot a) => ParseDot (DotEdge a) where
