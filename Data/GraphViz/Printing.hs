@@ -67,6 +67,7 @@ import Text.PrettyPrint hiding ( Style(..)
 
 import qualified Text.PrettyPrint as PP
 
+import Data.Char(toLower)
 import qualified Data.Set as Set
 import Data.Word(Word8, Word16)
 
@@ -130,6 +131,12 @@ instance PrintDot Double where
                 else double d
         where
           di = round d
+
+    toDot d = if any ((==) 'e' . toLower) $ show d
+              then doubleQuotes ud
+              else ud
+      where
+        ud = unqtDot d
 
     unqtListToDot = hcat . punctuate colon . map unqtDot
 
