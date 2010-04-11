@@ -275,7 +275,8 @@ data GlobalAttributes = GraphAttrs { attrs :: Attributes }
                         deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GlobalAttributes where
-    unqtDot = printAttrBased printGlobAttrType attrs
+    -- Can't use printAttrBased because an empty list still must be printed.
+    unqtDot ga = printGlobAttrType ga <+> toDot (attrs ga) <> semi
 
     unqtListToDot = printAttrBasedList printGlobAttrType attrs
 
