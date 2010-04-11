@@ -140,6 +140,9 @@ instance PrintDot Double where
 
     unqtListToDot = hcat . punctuate colon . map unqtDot
 
+    listToDot [d] = toDot d
+    listToDot ds  = doubleQuotes $ unqtListToDot ds
+
 instance PrintDot Bool where
     unqtDot True  = text "true"
     unqtDot False = text "false"
