@@ -453,7 +453,7 @@ preview g = ign $ forkIO (ign $ runGraphvizCanvas' dg Xlib)
 -- | Used for obtaining results from 'graphvizWithHandle', etc. when
 --   errors should only occur when Graphviz isn't installed.  If the
 --   value is @'Left' _@, then 'error' is used.
-fromDotResult           :: Either l r -> r
-fromDotResult (Right r) = r
-fromDotResult Left{}    = error "Could not run the relevant Graphviz command; \
-                                 \is the Graphviz suite of tools installed?"
+fromDotResult            :: Either String r -> r
+fromDotResult (Right r)  = r
+fromDotResult (Left err) = error $ "Error when running the relevant Graphviz\
+                                   \ command:\n" ++ err
