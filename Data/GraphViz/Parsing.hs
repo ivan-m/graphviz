@@ -360,29 +360,29 @@ consumeLine = many (noneOf ['\n','\r'])
 parseEq :: Parse ()
 parseEq = wrapWhitespace (character '=') >> return ()
 
-parseField     :: (ParseDot a) => String -> Parse a
-parseField fld = do string fld
-                    parseEq
-                    parse
+parseField       :: (ParseDot a) => (a -> b) -> String -> Parse b
+parseField c fld = do string fld
+                      parseEq
+                      liftM c parse
 
-parseFields :: (ParseDot a) => [String] -> Parse a
-parseFields = oneOf . map parseField
+parseFields   :: (ParseDot a) => (a -> b) -> [String] -> Parse b
+parseFields c = oneOf . map (parseField c)
 
-parseFieldBool :: String -> Parse Bool
-parseFieldBool = parseFieldDef True
+parseFieldBool :: (Bool -> b) -> String -> Parse b
+parseFieldBool = flip parseFieldDef True
 
-parseFieldsBool :: [String] -> Parse Bool
-parseFieldsBool = oneOf . map parseFieldBool
+parseFieldsBool   :: (Bool -> b) -> [String] -> Parse b
+parseFieldsBool c = oneOf . map (parseFieldBool c)
 
 -- | For 'Bool'-like data structures where the presence of the field
 --   name without a value implies a default value.
-parseFieldDef       :: (ParseDot a) => a -> String -> Parse a
-parseFieldDef d fld = parseField fld
-                      `onFail`
-                      stringRep d fld
+parseFieldDef         :: (ParseDot a) => (a -> b) -> a -> String -> Parse b
+parseFieldDef c d fld = parseField c fld
+                        `onFail`
+                        liftM c (stringRep d fld)
 
-parseFieldsDef   :: (ParseDot a) => a -> [String] -> Parse a
-parseFieldsDef d = oneOf . map (parseFieldDef d)
+parseFieldsDef     :: (ParseDot a) => (a -> b) -> a -> [String] -> Parse b
+parseFieldsDef c d = oneOf . map (parseFieldDef c d)
 
 commaSep :: (ParseDot a, ParseDot b) => Parse (a, b)
 commaSep = commaSep' parse parse
