@@ -407,7 +407,7 @@ parseNodeID = liftM DotNode parseAndCheck
                        me <- optional parseUnwanted
                        maybe (return a) (const notANode) me
     notANode = fail "This appears to be an edge, not a node"
-    parseUnwanted = oneOf [ whitespace' >> parseEdgeType >> return ()
+    parseUnwanted = oneOf [ parseEdgeType >> return ()
                           , character ':' >> return () -- PortPos value
                           ]
 

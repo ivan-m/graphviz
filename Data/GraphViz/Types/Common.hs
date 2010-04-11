@@ -98,9 +98,7 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
 
 parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
 parseEdgeID = do eFrom <- parseEdgeNode
-                 whitespace'
                  eType <- parseEdgeType
-                 whitespace'
                  eTo <- parseEdgeNode
                  return $ mkEdge eFrom eType eTo
 
@@ -119,9 +117,9 @@ addPortPos   :: (PortPos -> Attribute) -> Maybe PortPos
 addPortPos c = maybe id ((:) . c)
 
 parseEdgeType :: Parse Bool
-parseEdgeType = stringRep True dirEdge
-                `onFail`
-                stringRep False undirEdge
+parseEdgeType = wrapWhitespace $ stringRep True dirEdge
+                                 `onFail`
+                                 stringRep False undirEdge
 
 parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
 parseEdgeLine = do n1 <- parseEdgeNode
