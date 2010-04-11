@@ -141,6 +141,10 @@ instance ParseDot Double where
 
     parseUnqtList = sepBy1 parseUnqt (character ':')
 
+    parseList = quotedParse parseUnqtList
+                `onFail`
+                liftM return parse
+
 instance ParseDot Bool where
     parseUnqt = onlyBool
                 `onFail`
