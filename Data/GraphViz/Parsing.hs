@@ -111,9 +111,12 @@ class ParseDot a where
 
     parseUnqtList :: Parse [a]
     parseUnqtList = bracketSep (parseAndSpace $ character '[')
-                               (parseAndSpace $ parseComma)
-                               (parseAndSpace $ character ']')
-                               (parseAndSpace parse)
+                               ( wrapWhitespace parseComma
+                                 `onFail`
+                                 allWhitespace
+                               )
+                               (allWhitespace' >> character ']')
+                               parseUnqt
 
     parseList :: Parse [a]
     parseList = quotedParse parseUnqtList

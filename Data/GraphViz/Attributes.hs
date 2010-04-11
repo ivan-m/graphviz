@@ -651,14 +651,6 @@ instance ParseDot Attribute where
 
     parse = parseUnqt
 
-    parseUnqtList = bracketSep (parseAndSpace $ character '[')
-                               ( wrapWhitespace parseComma
-                                 `onFail`
-                                 allWhitespace
-                               )
-                               (allWhitespace' >> character ']')
-                               parseUnqt
-
     parseList = parseUnqtList
 
 -- | Determine if this Attribute is valid for use with Graphs.
