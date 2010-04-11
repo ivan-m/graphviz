@@ -41,7 +41,9 @@ withParse toStr withDG cmbErr a = do dc <- toStr a
                                      edg <- tryParse dc
                                      case edg of
                                        (Right dg) -> withDG dg
-                                       (Left err) -> putStrLn $ cmbErr err
+                                       (Left err) -> do putStrLn "Parsing problem!"
+                                                        putStrLn $ cmbErr err
+                                                        putStrLn  ""
 
 type DG = DotGraph String
 type GDG = GDotGraph String
