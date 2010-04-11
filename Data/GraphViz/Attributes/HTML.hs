@@ -363,9 +363,7 @@ parseHtmlField c f = parseHtmlField' c f parseUnqt
 parseHtmlField'       :: (a -> HtmlAttribute) -> String -> Parse a
                          -> Parse HtmlAttribute
 parseHtmlField' c f p = do string f
-                           whitespace'
-                           character '='
-                           whitespace'
+                           parseEq
                            liftM c $ quotedParse p
 
 -- | Specifies horizontal placement. When an object is allocated more

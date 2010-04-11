@@ -56,6 +56,7 @@ module Data.GraphViz.Parsing
     , newline
     , newline'
     , parseComma
+    , parseEq
     , tryParseList
     , tryParseList'
     , consumeLine
@@ -356,11 +357,12 @@ newline' = many (whitespace' >> newline) >> return ()
 consumeLine :: Parse String
 consumeLine = many (noneOf ['\n','\r'])
 
+parseEq :: Parse ()
+parseEq = wrapWhitespace (character '=') >> return ()
+
 parseField     :: (ParseDot a) => String -> Parse a
 parseField fld = do string fld
-                    whitespace'
-                    character '='
-                    whitespace'
+                    parseEq
                     parse
 
 parseFields :: (ParseDot a) => [String] -> Parse a
