@@ -974,12 +974,12 @@ instance PrintDot ArrowType where
           appMod (m, a) = unqtDot m <> unqtDot a
 
 instance ParseDot ArrowType where
-    parseUnqt = do mas <- many1 $ do m <- parseUnqt
+    parseUnqt = specialArrowParse
+                `onFail`
+                do mas <- many1 $ do m <- parseUnqt
                                      a <- parseUnqt
                                      return (m,a)
                    return $ AType mas
-                `onFail`
-                specialArrowParse
 
 specialArrowParse :: Parse ArrowType
 specialArrowParse = oneOf [ stringRep eDiamond "ediamond"
