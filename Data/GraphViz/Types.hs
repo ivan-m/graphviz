@@ -62,8 +62,6 @@
      possible to specify that @'directedGraph' = d@, but 'DotEdge'
      values with @'directedEdge' = 'not' d@.
 
-   * Nodes cannot have Port values.
-
    * Cannot place items in an arbitrary order: in particular, this
      means that it is not possible to use the normal Graphviz hack of
      having graph attributes that do not apply to subgraphs\/clusters by
