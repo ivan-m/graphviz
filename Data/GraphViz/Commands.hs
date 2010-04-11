@@ -342,8 +342,8 @@ graphvizWithHandle' cmd gr t f
           mvOutput <- newEmptyMVar
           mvErr    <- newEmptyMVar
 
-          _ <- forkIO $ signalWhenDone hGetContents' errp mvErr
-          _ <- forkIO $ signalWhenDone f' outp mvOutput
+          forkIO $ signalWhenDone hGetContents' errp mvErr
+          forkIO $ signalWhenDone f' outp mvOutput
 
           -- When these are both able to be taken, then the forks are finished
           err <- takeMVar mvErr
