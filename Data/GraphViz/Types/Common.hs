@@ -134,9 +134,7 @@ parseEdgeType = wrapWhitespace $ stringRep True dirEdge
 
 parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
 parseEdgeLine = do n1 <- parseEdgeNodes
-                   ens <- many1 $ do whitespace'
-                                     eType <- parseEdgeType
-                                     whitespace'
+                   ens <- many1 $ do eType <- parseEdgeType
                                      n <- parseEdgeNodes
                                      return (eType, n)
                    let ens' = (True, n1) : ens
