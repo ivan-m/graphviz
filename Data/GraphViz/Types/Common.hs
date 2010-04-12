@@ -206,7 +206,8 @@ printGraphID str isDir mID g = bool empty strGraph' (str g)
                                <+> maybe empty toDot (mID g)
 
 parseGraphID   :: (Bool -> Bool -> Maybe GraphID -> a) -> Parse a
-parseGraphID f = do str <- liftM isJust
+parseGraphID f = do allWhitespace'
+                    str <- liftM isJust
                            $ optional (parseAndSpace $ string strGraph)
                     dir <- parseAndSpace ( stringRep True dirGraph
                                            `onFail`
