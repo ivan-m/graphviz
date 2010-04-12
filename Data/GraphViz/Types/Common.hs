@@ -102,11 +102,22 @@ parseEdgeID = do eFrom <- parseEdgeNode
                  eTo <- parseEdgeNode
                  return $ mkEdge eFrom eType eTo
 
+-- | Takes into account edge statements containing something like
+--   @a -> \{b c\}@.
+parseEdgeNodes :: (ParseDot a) => Parse [(a, Maybe PortPos)]
+parseEdgeNodes = parseBraced (sepBy1 parseEdgeNode whitespace)
+                 `onFail`
+                 liftM return parseEdgeNode
+
 mkEdge :: (a, Maybe PortPos) -> Bool -> (a, Maybe PortPos)
           -> Attributes -> DotEdge a
 mkEdge (eFrom, mFP) eDir (eTo, mTP) = DotEdge eFrom eTo eDir
                                       . addPortPos TailPort mFP
                                       . addPortPos HeadPort mTP
+
+mkEdges :: [(a, Maybe PortPos)] -> Bool -> [(a, Maybe PortPos)]
+           -> Attributes -> [DotEdge a]
+mkEdges fs eDir ts as = liftM2 (\f t -> mkEdge f eDir t as) fs ts
 
 parseEdgeNode :: (ParseDot a) => Parse (a, Maybe PortPos)
 parseEdgeNode = liftM2 (,) parse
@@ -122,18 +133,18 @@ parseEdgeType = wrapWhitespace $ stringRep True dirEdge
                                  stringRep False undirEdge
 
 parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
-parseEdgeLine = do n1 <- parseEdgeNode
+parseEdgeLine = do n1 <- parseEdgeNodes
                    ens <- many1 $ do whitespace'
                                      eType <- parseEdgeType
                                      whitespace'
-                                     n <- parseEdgeNode
+                                     n <- parseEdgeNodes
                                      return (eType, n)
                    let ens' = (True, n1) : ens
                        efs = zipWith mkEdg ens' (tail ens')
-                       ef = return $ \ as -> map ($as) efs
+                       ef = return $ \ as -> concatMap ($as) efs
                    parseAttrBased ef
     where
-      mkEdg (_, hn) (et, tn) = mkEdge hn et tn
+      mkEdg (_, hn) (et, tn) = mkEdges hn et tn
 
 instance Functor DotEdge where
     fmap f e = e { edgeFromNodeID = f $ edgeFromNodeID e
