@@ -264,7 +264,18 @@ parseFloat' = parseSigned ( parseFloat
 --   'adjustErrBad' and thus doesn't allow backtracking and trying the
 --   next possible parser.  This is a version of @bracket@ that does.
 bracket               :: Parse bra -> Parse ket -> Parse a -> Parse a
-bracket open close pa = open >> pa `discard` close
+bracket open close pa = do open
+                             `adjustErr` ("Missing opening bracket:\n\t"++)
+                           a <- pa
+                                `adjustErr` ("Unable to parse interior of bracket:\n\t"++)
+                           mcl <- optional close
+                           case mcl of
+                             Nothing -> close -- Get the error out
+                                          `adjustErr`
+                                          ("Missing closing bracket:\n\t"++)
+                                        >> return a -- Just to fix the type
+                             Just{}  -> return a
+
 
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` allWhitespace'
