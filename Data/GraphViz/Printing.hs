@@ -28,6 +28,10 @@
 
        * an HTML string (<...>).
 
+   (Note that the first restriction is referring to a byte-by-byte
+   comparison using octal values; when using UTF-8 this corresponds to
+   all characters @c@ where @ord c >= 128@.)
+
    Due to these restrictions, you should only use 'text' when you are
    sure that the 'String' in question is static and quotes are
    definitely needed/unneeded; it is better to use the 'String'

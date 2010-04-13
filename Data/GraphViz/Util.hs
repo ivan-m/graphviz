@@ -15,6 +15,7 @@ import Data.Char( isAsciiUpper
                 , isAsciiLower
                 , isDigit
                 , toLower
+                , ord
                 )
 
 import Data.List(groupBy, sortBy)
@@ -22,7 +23,6 @@ import Data.Maybe(isJust)
 import Data.Function(on)
 import qualified Data.Set as Set
 import Data.Set(Set)
-import Control.Monad(liftM2)
 
 -- -----------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ frstIDString   :: Char -> Bool
 frstIDString c = any ($c) [ isAsciiUpper
                           , isAsciiLower
                           , (==) '_'
-                          , liftM2 (&&) (>= '\200') (<= '\377')
+                          , (\ x -> ord x >= 128)
                           ]
 
 -- | The rest of a non-quoted 'String' must match this.
