@@ -288,7 +288,11 @@ printGlobAttrType NodeAttrs{}  = text "node"
 printGlobAttrType EdgeAttrs{}  = text "edge"
 
 instance ParseDot GlobalAttributes where
-    parseUnqt = parseAttrBased parseGlobAttrType
+    -- Not using parseAttrBased here because we want to force usage of
+    -- Attributes.
+    parseUnqt = do gat <- parseGlobAttrType
+                   as <- whitespace' >> parse
+                   return $ gat as
                 `onFail`
                 liftM determineType parse
 
