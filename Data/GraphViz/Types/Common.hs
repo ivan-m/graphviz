@@ -105,7 +105,7 @@ parseEdgeID = do eFrom <- parseEdgeNode
 -- | Takes into account edge statements containing something like
 --   @a -> \{b c\}@.
 parseEdgeNodes :: (ParseDot a) => Parse [(a, Maybe PortPos)]
-parseEdgeNodes = parseBraced (sepBy1 parseEdgeNode whitespace)
+parseEdgeNodes = parseBraced (wrapWhitespace $ sepBy1 parseEdgeNode whitespace)
                  `onFail`
                  liftM return parseEdgeNode
 
