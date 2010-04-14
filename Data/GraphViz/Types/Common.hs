@@ -102,26 +102,31 @@ parseEdgeID = do eFrom <- parseEdgeNode
                  eTo <- parseEdgeNode
                  return $ mkEdge eFrom eType eTo
 
+type EdgeNode a = (a, Maybe PortPos)
+
 -- | Takes into account edge statements containing something like
 --   @a -> \{b c\}@.
-parseEdgeNodes :: (ParseDot a) => Parse [(a, Maybe PortPos)]
-parseEdgeNodes = parseBraced (wrapWhitespace $ sepBy1 parseEdgeNode whitespace)
+parseEdgeNodes :: (ParseDot a) => Parse [EdgeNode a]
+parseEdgeNodes = parseBraced ( wrapWhitespace
+                               -- Should really use sepBy1, but this will do.
+                               $ parseStatements parseEdgeNode
+                             )
                  `onFail`
                  liftM return parseEdgeNode
 
-mkEdge :: (a, Maybe PortPos) -> Bool -> (a, Maybe PortPos)
+parseEdgeNode :: (ParseDot a) => Parse (EdgeNode a)
+parseEdgeNode = liftM2 (,) parse
+                           (optional $ character ':' >> parseEdgeBasedPP)
+
+mkEdge :: EdgeNode a -> Bool -> EdgeNode a
           -> Attributes -> DotEdge a
 mkEdge (eFrom, mFP) eDir (eTo, mTP) = DotEdge eFrom eTo eDir
                                       . addPortPos TailPort mFP
                                       . addPortPos HeadPort mTP
 
-mkEdges :: [(a, Maybe PortPos)] -> Bool -> [(a, Maybe PortPos)]
+mkEdges :: [EdgeNode a] -> Bool -> [EdgeNode a]
            -> Attributes -> [DotEdge a]
 mkEdges fs eDir ts as = liftM2 (\f t -> mkEdge f eDir t as) fs ts
-
-parseEdgeNode :: (ParseDot a) => Parse (a, Maybe PortPos)
-parseEdgeNode = liftM2 (,) parse
-                           (optional $ character ':' >> parseEdgeBasedPP)
 
 addPortPos   :: (PortPos -> Attribute) -> Maybe PortPos
                 -> Attributes -> Attributes
@@ -328,7 +333,7 @@ parseAttrBased p = do f <- p
                    (++ "\n\nNot a valid attribute-based structure")
 
 parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
-parseAttrBasedList p = sepBy (whitespace' >> parseAttrBased p) statementEnd
+parseAttrBasedList p = parseStatements (parseAttrBased p)
                        `discard`
                        optional statementEnd
 
@@ -342,3 +347,8 @@ statementEnd = parseSplit >> newline'
                  )
                  `onFail`
                  whitespace
+
+parseStatements   :: Parse a -> Parse [a]
+parseStatements p = sepBy (whitespace' >> p) statementEnd
+                    `discard`
+                    optional statementEnd
