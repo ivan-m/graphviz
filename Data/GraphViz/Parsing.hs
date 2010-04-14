@@ -229,9 +229,8 @@ parseFloat :: (RealFrac a) => Parse a
 parseFloat = do ds   <- many (satisfy isDigit)
                 frac <- optional
                         $ do character '.'
-                             many1 (satisfy isDigit)
-                               `adjustErr` (++ "\nexpected digit after .")
-                when (isNothing frac && null ds)
+                             many (satisfy isDigit)
+                when (null ds && noDec frac)
                   (fail "No actual digits in floating point number!")
                 expn  <- optional parseExp
                 when (isNothing frac && isNothing expn)
@@ -242,10 +241,12 @@ parseFloat = do ds   <- many (satisfy isDigit)
                   . (%1) . runParser' parseInt) (ds++frac')
              `onFail`
              fail "Expected a floating point number"
-    where parseExp = do character 'e'
-                        ((character '+' >> parseInt)
-                         `onFail`
-                         parseInt')
+    where
+      parseExp = do character 'e'
+                    ((character '+' >> parseInt)
+                     `onFail`
+                     parseInt')
+      noDec = maybe True null
 
 parseFloat' :: Parse Double
 parseFloat' = parseSigned ( parseFloat
