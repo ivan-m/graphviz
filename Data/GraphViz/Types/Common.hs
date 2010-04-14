@@ -90,9 +90,7 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
 
     -- Have to take into account edges of the type "n1 -> n2 -> n3", etc.
     parseUnqtList = liftM concat
-                    $ sepBy (whitespace' >> parseEdgeLine) statementEnd
-                      `discard`
-                      optional statementEnd
+                    $ parseStatements parseEdgeLine
 
     parseList = parseUnqtList
 
@@ -332,10 +330,8 @@ parseAttrBased p = do f <- p
                    `adjustErr`
                    (++ "\n\nNot a valid attribute-based structure")
 
-parseAttrBasedList   :: Parse (Attributes -> a) -> Parse [a]
-parseAttrBasedList p = parseStatements (parseAttrBased p)
-                       `discard`
-                       optional statementEnd
+parseAttrBasedList :: Parse (Attributes -> a) -> Parse [a]
+parseAttrBasedList = parseStatements . parseAttrBased
 
 -- | Parse the separator (and any other whitespace present) between statements.
 statementEnd :: Parse ()

@@ -301,9 +301,7 @@ instance ParseDot GlobalAttributes where
             (++ "\n\nNot a valid listing of global attributes")
 
     -- Have to do this manually because of the special case
-    parseUnqtList = sepBy (whitespace' >> parse) statementEnd
-                    `discard`
-                    optional statementEnd
+    parseUnqtList = parseStatements parse
 
     parseList = parseUnqtList
 

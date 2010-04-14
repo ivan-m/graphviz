@@ -145,9 +145,7 @@ instance (ParseDot a) => ParseDot (GDotStatement a) where
           (++ "Not a valid statement")
 
   parseUnqtList = liftM concat . wrapWhitespace
-                  $ sepBy (whitespace' >> p) statementEnd
-                    `discard`
-                    optional statementEnd
+                  $ parseStatements p
     where
       -- Have to do something special here because of "a -> b -> c"
       -- syntax for edges.
