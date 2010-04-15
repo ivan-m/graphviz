@@ -29,6 +29,7 @@ module Data.GraphViz.Parsing
     , runParser'
       -- * Convenience parsing combinators.
     , bracket
+    , discard
     , onlyBool
     , quotelessString
     , stringBlock
@@ -77,7 +78,7 @@ module Data.GraphViz.Parsing
 
 import Data.GraphViz.Util
 
-import Text.ParserCombinators.Poly.Lazy hiding (bracket)
+import Text.ParserCombinators.Poly.Lazy hiding (bracket, discard)
 import Data.Char( digitToInt
                 , isDigit
                 , isSpace
@@ -265,18 +266,22 @@ parseFloat' = parseSigned ( parseFloat
 --   'adjustErrBad' and thus doesn't allow backtracking and trying the
 --   next possible parser.  This is a version of @bracket@ that does.
 bracket               :: Parse bra -> Parse ket -> Parse a -> Parse a
-bracket open close pa = do open
-                             `adjustErr` ("Missing opening bracket:\n\t"++)
-                           a <- pa
-                                `adjustErr` ("Unable to parse interior of bracket:\n\t"++)
-                           mcl <- optional close
-                           case mcl of
-                             Nothing -> close -- Get the error out
-                                          `adjustErr`
-                                          ("Missing closing bracket:\n\t"++)
-                                        >> return a -- Just to fix the type
-                             Just{}  -> return a
+bracket open close pa = do open `adjustErr` ("Missing opening bracket:\n\t"++)
+                           pa `discard`
+                             (close
+                              `adjustErr` ("Missing closing bracket:\n\t"++))
 
+infixl 3 `discard`
+
+-- | @x `discard` y@ parses both x and y, but discards the result of y.
+--
+--   The definition of @discard@ defined in Polyparse is too strict
+--   and prevents backtracking.  This should be fixed in the next
+--   release after 1.4.
+discard :: Parse a -> Parse b -> Parse a
+pa `discard` pb = do a <- pa
+                     pb
+                     return a
 
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` allWhitespace'
