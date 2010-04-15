@@ -29,7 +29,11 @@ main = tryParsing =<< getArgs
   where
     tryParsing [] = putStrLn "Test that the graphviz library can parse\
                              \ \"real life\" Dot code by passing a list\n\
-                             \of files in which contain Dot graphs."
+                             \of files in which contain Dot graphs.\n\
+                             \\n\
+                             \One way of using this file:\n\t\
+                             \$locate -r \".*\\.\\(gv\\|dot\\)$\" -0\
+                             \| xargs -0 runhaskell TestParsing.hs"
     tryParsing fs = mapM_ tryParseFile fs
 
 -- -----------------------------------------------------------------------------
