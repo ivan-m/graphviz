@@ -17,10 +17,10 @@ import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Parsing(runParser, parse, discard, allWhitespace', eof)
 import Data.GraphViz.PreProcessing(preProcess)
 
-import Data.Either(either)
-import Control.Exception(try, ErrorCall(..))
+import Control.Exception(try, ErrorCall(..), IOException)
 import Control.Monad(liftM)
 import System.Environment(getArgs)
+import System.IO(openFile, IOMode(ReadMode))
 
 -- -----------------------------------------------------------------------------
 
@@ -49,12 +49,19 @@ type DG = DotGraph String
 type GDG = GDotGraph String
 type ErrMsg = String
 
+-- tryParseFile ::
+
 tryParseFile    :: FilePath -> IO ()
-tryParseFile fp = withParse readFile
-                            (tryParseCanon fp)
-                            (\ e -> fp ++ ": Cannot parse as a GDotGraph:\n"
-                                    ++ e)
-                            fp
+tryParseFile fp = readFile' fp >>= maybeParse
+  where
+    maybeParse (Left err)  = putStrLn $ "Error parsing \"" ++ fp ++ "\":\n\t"
+                                        ++ err ++ "\n"
+    maybeParse (Right dot) = withParse (const $ return dot)
+                                       (tryParseCanon fp)
+                                       (\ e -> fp ++ ": Cannot parse as a GDotGraph:\n"
+                                               ++ e)
+                                       fp
+
 
 tryParseCanon    :: FilePath -> GDG -> IO ()
 tryParseCanon fp = withParse prettyPrint
@@ -77,4 +84,9 @@ getErrMsg = either getEC Right
   where
     getEC (ErrorCall e) = Left e
 
-
+readFile'    :: FilePath -> IO (Either ErrMsg String)
+readFile' fp = liftM getMsg . try
+               $ openFile fp ReadMode >>= hGetContents'
+  where
+    getMsg :: Either IOException String -> Either ErrMsg String
+    getMsg = either (Left . show) Right
