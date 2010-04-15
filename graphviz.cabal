@@ -46,6 +46,7 @@ Extra-Source-Files: TODO
                     Changelog
                     README
                     Data/GraphViz/AttributeGenerator.hs
+                    TestParsing.hs
 
 Source-Repository head
     Type:         darcs
