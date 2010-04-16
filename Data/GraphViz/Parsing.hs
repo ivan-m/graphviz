@@ -399,7 +399,14 @@ parseFieldsBool c = oneOf . map (parseFieldBool c)
 parseFieldDef         :: (ParseDot a) => (a -> b) -> a -> String -> Parse b
 parseFieldDef c d fld = parseField c fld
                         `onFail`
-                        liftM c (stringRep d fld)
+                        -- Have to make sure it isn't too greedy
+                        -- guessing something is a global attribute
+                        -- when its actually a node/edge/etc.
+                        do string fld
+                           nxt <- optional $ satisfy restIDString
+                           bool (fail "Not actually the field you were after")
+                                (return $ c d)
+                                (isNothing nxt)
 
 parseFieldsDef     :: (ParseDot a) => (a -> b) -> a -> [String] -> Parse b
 parseFieldsDef c d = oneOf . map (parseFieldDef c d)
