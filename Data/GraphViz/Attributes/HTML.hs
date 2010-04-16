@@ -298,7 +298,7 @@ instance PrintDot HtmlAttribute where
   unqtDot (HtmlFixedSize v)   = printHtmlField' "FIXEDSIZE" $ printBoolHtml v
   unqtDot (HtmlHeight v)      = printHtmlField  "HEIGHT" v
   unqtDot (HtmlHRef v)        = printHtmlField' "HREF" $ escapeAttribute v
-  unqtDot (HtmlPointSize v)   = printHtmlField  "POINTSIZE" v
+  unqtDot (HtmlPointSize v)   = printHtmlField  "POINT-SIZE" v
   unqtDot (HtmlPort v)        = printHtmlField' "PORT" . escapeAttribute $ portName v
   unqtDot (HtmlRowSpan v)     = printHtmlField  "ROWSPAN" v
   unqtDot (HtmlScale v)       = printHtmlField  "SCALE" v
@@ -335,7 +335,7 @@ instance ParseDot HtmlAttribute where
                     , parseHtmlField' HtmlFixedSize "FIXEDSIZE" parseBoolHtml
                     , parseHtmlField  HtmlHeight "HEIGHT"
                     , parseHtmlField' HtmlHRef "HREF" unescapeAttribute
-                    , parseHtmlField  HtmlPointSize "POINTSIZE"
+                    , parseHtmlField  HtmlPointSize "POINT-SIZE"
                     , parseHtmlField' (HtmlPort . PN) "PORT" unescapeAttribute
                     , parseHtmlField  HtmlRowSpan "ROWSPAN"
                     , parseHtmlField  HtmlScale "SCALE"
