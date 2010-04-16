@@ -78,10 +78,8 @@ tryParseCanon fp = withParse prettyPrint
 
 tryParse    :: (DotRepr dg n) => String -> IO (Either ErrMsg (dg n))
 tryParse dc = liftM getErrMsg . try
-              $ let (dg, rst) = runParser p $ preProcess dc
+              $ let (dg, rst) = runParser parse $ preProcess dc
                 in length rst `seq` return dg
-  where
-    p = parse `discard` (allWhitespace' >> eof)
 
 getErrMsg :: Either ErrorCall a -> Either ErrMsg a
 getErrMsg = either getEC Right
