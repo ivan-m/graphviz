@@ -76,6 +76,8 @@ import qualified Data.Map as Map
 import Control.Monad(liftM)
 import System.IO.Unsafe(unsafePerformIO)
 import Control.Concurrent(forkIO)
+import Control.Exception.Extensible(throw, IOException)
+import System.IO.Error(userError)
 
 -- -----------------------------------------------------------------------------
 
@@ -385,8 +387,8 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr a (EdgeID b)
                  -> dg Node -> IO (gr (AttributeNode a) (AttributeEdge b))
 dotAttributes isDir gr dot
-  = liftM (augmentGraph gr . parseDG . fromDotResult)
-    $ graphvizWithHandle command dot DotOutput hGetContents'
+  = liftM (augmentGraph gr . parseDG)
+    $ fromDotResult =<< graphvizWithHandle command dot DotOutput hGetContents'
     where
       parseDG = asTypeOf dot . parseDotGraph
       command = if isDir then dirCommand else undirCommand
@@ -428,18 +430,25 @@ augmentGraph g dg = mkGraph lns les
 --   functions in "Data.GraphViz.Types.Printing") no longer uses
 --   indentation (this is to ensure the Dot code is printed correctly
 --   due to the limitations of the Pretty Printer used).
+--
+--   This will throw an 'IOException' if an error occurs when calling
+--   the relevant 'GraphvizCommand': likely causes are that Graphviz
+--   suite isn't installed, or it has an 'Image' or 'HtmlImg'
+--   Attribute that references an image that can't be found from the
+--   working directory.
 prettyPrint    :: (DotRepr dg n) => dg n -> IO String
-prettyPrint dg = liftM fromDotResult
+prettyPrint dg = fromDotResult
                  -- Note that the choice of command here should be
                  -- arbitrary.
-                 $ graphvizWithHandle (commandFor dg)
-                                      dg
-                                      Canon
-                                      hGetContents'
+                 =<< graphvizWithHandle (commandFor dg)
+                                        dg
+                                        Canon
+                                        hGetContents'
 
 -- | The 'unsafePerformIO'd version of 'prettyPrint'.  Graphviz should
 --   always produce the same pretty-printed output, so this should be
---   safe.
+--   safe.  However, it is not recommended to use it in production
+--   code, just for testing purposes.
 prettyPrint' :: (DotRepr dg n) => dg n -> String
 prettyPrint' = unsafePerformIO . prettyPrint
 
@@ -453,7 +462,8 @@ preview g = ign $ forkIO (ign $ runGraphvizCanvas' dg Xlib)
 -- | Used for obtaining results from 'graphvizWithHandle', etc. when
 --   errors should only occur when Graphviz isn't installed.  If the
 --   value is @'Left' _@, then 'error' is used.
-fromDotResult            :: Either String r -> r
-fromDotResult (Right r)  = r
-fromDotResult (Left err) = error $ "Error when running the relevant Graphviz\
-                                   \ command:\n" ++ err
+fromDotResult            :: (Either String r) -> IO r
+fromDotResult (Right r)  = return r
+fromDotResult (Left err) = throw . userError
+                           $ "Error when running the relevant Graphviz\
+                             \ command:\n" ++ err
