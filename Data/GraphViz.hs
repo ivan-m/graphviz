@@ -55,6 +55,7 @@ module Data.GraphViz
       -- * Utility functions
     , prettyPrint
     , prettyPrint'
+    , canonicalise
     , preview
       -- * Re-exporting other modules.
     , module Data.GraphViz.Types
@@ -451,6 +452,13 @@ prettyPrint dg = fromDotResult
 --   code, just for testing purposes.
 prettyPrint' :: (DotRepr dg n) => dg n -> String
 prettyPrint' = unsafePerformIO . prettyPrint
+
+-- | Convert the 'DotRepr' into its canonical form.  This /should/
+--   work as it appears that the 'prettyPrint'ed form is always in the
+--   format of a 'DotGraph', but the Graphviz code hasn't been
+--   examined to verify this.
+canonicalise :: (DotRepr dg n, DotRepr DotGraph n) => dg n -> IO (DotGraph n)
+canonicalise = liftM parseDotGraph . prettyPrint
 
 -- | Quickly visualise a graph using the 'Xlib' 'GraphvizCanvas'.
 preview   :: (Ord b, Graph gr) => gr a b -> IO ()
