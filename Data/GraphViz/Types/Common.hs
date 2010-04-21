@@ -42,19 +42,18 @@ instance PrintDot GraphID where
     toDot gID       = unqtDot gID
 
 instance ParseDot GraphID where
-    parseUnqt = liftM stringNum parseUnqt
+    -- Have to do Dbl case first so that a Dbl isn't parsed as an Int.
+    parseUnqt = oneOf [ liftM Str parseUnqt
+                      , liftM Dbl parseStrictFloat
+                      , liftM Int parseUnqt
+                      ]
 
-    parse = liftM stringNum parse
+    parse = oneOf [ liftM Str parse
+                  , liftM Dbl $ optionalQuoted parseStrictFloat
+                  , liftM Int parse
+                  ]
             `adjustErr`
             (++ "\nNot a valid GraphID")
-
-stringNum     :: String -> GraphID
-stringNum str = maybe checkDbl Int $ stringToInt str
-  where
-    checkDbl = if isNumString str
-               then Dbl $ toDouble str
-               else Str str
-
 
 -- -----------------------------------------------------------------------------
 
@@ -81,7 +80,6 @@ printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
 printEdgeID e = toDot (edgeFromNodeID e)
                 <+> bool undirEdge' dirEdge' (directedEdge e)
                 <+> toDot (edgeToNodeID e)
-
 
 instance (ParseDot a) => ParseDot (DotEdge a) where
     parseUnqt = parseAttrBased parseEdgeID
@@ -293,8 +291,17 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
     emptyID = Just $ Str ""
 
     -- For Strings, there are no more quotes to unescape, so consume
-    -- what you can.
+    -- what you can.  Note that we can't assume that if it starts with
+    -- a digit it's a number, since the `String' starts with cluster_,
+    -- so "1h" is a valid value here.
     pID = liftM stringNum (many next)
+
+stringNum     :: String -> GraphID
+stringNum str = maybe checkDbl Int $ stringToInt str
+  where
+    checkDbl = if isNumString str
+               then Dbl $ toDouble str
+               else Str str
 
 {- This is a much nicer definition, but unfortunately it doesn't work.
    The problem is that Graphviz decides that a subgraph is a cluster
