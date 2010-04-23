@@ -1,0 +1,214 @@
+% graphviz - FAQ
+% Ivan Lazar Miljenovic
+
+Fortuitously Anticipated Queries (FAQ)
+======================================
+
+Graphviz vs _graphviz_
+----------------------
+
+### What is the difference between Graphviz and _graphviz_? ###
+
+[Graphviz] is an open source library and collection of utility
+programs using that library to visualise [graphs] (which are specified
+using the [Dot] language).
+
+_graphviz_ is a library for the [Haskell] purely functional
+programming language that provides "bindings" to Graphviz's programs.
+It does so by allowing programmers to specify the layout of the graph
+and then converts that to Dot code before calling the appropriate
+program to perform the visualisation.
+
+[Graphviz]: http://www.graphviz.org/
+[graphs]: http://en.wikipedia.org/wiki/Graph_theory
+[Dot]: http://www.graphviz.org/doc/info/lang.html
+[Haskell]: http://haskell.org/
+
+### Why should I use graphviz over one of the other Haskell Graphviz libraries? ###
+
+Various Haskell libraries have support for Graphviz to one extent or
+another; however _graphviz_ has the most comprehensive support
+available out of all of them:
+
+* Two different methods of specifying Dot graphs:
+
+    - Strict, which matches the layout of `dot -Tcanon`.
+    - Liberal, which allows statements to be in any order.
+
+  There are also conversion functions between the two of them.
+
+* The ability to parse and generate most aspects of Dot syntax and
+  attributes (including being the only such package known to have
+  cluster support).  This includes taking into account escaping and
+  quoting rules.
+
+* The ability to use a custom node type for Dot graphs.
+
+* Support for the all five layout algorithm programs and all specified
+  [output formats].
+
+  [output formats]: http://www.graphviz.org/doc/info/output.html
+
+* Functions to convert [FGL] graphs to and from the internal Dot
+  representations.
+
+  [FGL]: http://web.engr.oregonstate.edu/~erwig/fgl/haskell/
+
+* The ability to augment Dot and FGL graphs with positioning
+  information by round-trip passing through Graphviz.
+
+### What aspects of Dot syntax and attributes are covered? ###
+
+It's easier to state what _isn't_ covered:
+
+#### Overall syntax items not covered ####
+
+* Cannot specify a subraph as an end point in an edge;
+
+* Comments, pre-processor lines and split lines are not supported
+  within HTML-like labels.
+
+* _graphviz_ is currently locale-specific: Dot graphs are meant to be
+  encoded in UTF-8 by default unless specified to be Latin-1, but this
+  isn't verified or checked.  Dot code that is parsed in is assumed to
+  be in UTF-8; in future this will be enforced (both for printing and
+  parsing purposes).
+
+* Graphviz is more liberal in accepting "invalid" values
+  (e.g. accepting a floating-point value when only integer values are
+  meant to be accepted); _graphviz_ is more strict in this aspect (and
+  will indeed throw an exception if it cannot parse something
+  properly).
+
+* No extensions (e.g. postscript-specific attributes) are available.
+
+#### Attribute and value items not covered ####
+
+* The global `orientation` attribute is not defined; however its
+  behaviour is duplicated by the `rotate` attribute.
+
+* The deprecated `overlap` algorithms have not been defined.
+
+* `pointf` and `point` values have been combined into one datatype;
+  however the optional `!` and third value for `point` values is not
+  accepted.
+
+* Only polygon-based `shape`s are available.
+
+* The default `layersep` is used when printing and parsing
+  `layerRange` and `layerList` values; this will be fixed in a future
+  release (when state-based printing and parsing is implemented).
+
+* The `/ssss/yyyy` and `//yyyy` forms of printing and prsing `color`s
+  are not yet available.
+
+#### Available items of note ####
+
+There are a few items of note that are available that are worthy of
+special note (as they may not be immediately obvious from the
+generated documentation):
+
+* _graphviz_ is able to parse (but not print) the following special
+  aspects of specifying edges in Dot code:
+
+    - The `node:port` method of specifying of head/tail `portPos`
+      values.
+
+    - Stating multiple edges with common interior nodes (e.g. `a -> b
+      -> c`).
+
+    - Stating edges with a grouping of nodes (e.g. `a -> {b c}`).
+
+* Subgraphs are specified as being clusters when the subgraph name
+  starts with either `"cluster"` or `"cluster_"`; note that this
+  prefix is removed when determining the subraph's name for the
+  internal datatypes.
+
+* Anonymous subgraphs (where not even the `subgraph` keyword is
+  specified) are also parseable.
+
+* HTML-like and record labels are available, and feature proper
+  escaping/unescaping when printing/parsing.
+
+Getting _graphviz_ and more documentation
+-----------------------------------------
+
+### Where can I obtain _graphviz_? ###
+
+The best place to get _graphviz_ is from its [HackageDB] page.
+
+[HackageDB]: http://hackage.haskell.org/package/graphviz
+
+### Where can I find the API documentation for _graphviz_? ###
+
+Also on its [HackageDB] page.
+
+### Is it safe to install and use _graphviz_ from its darcs repository? ###
+
+No; unlike other projects I make no guarantees as to the stability of
+the live version of _graphviz_.  Whilst the [darcs] [repository] is
+_usually_ stable, it's often in a state of flux and at times patches
+that break the repository are recorded (when it's simpler/cleaner to
+break one patch into several smaller patches).
+
+[darcs]: http://darcs.net/
+[repository]: http://code.haskell.org/graphviz/
+
+### How is _graphviz_ licensed? ###
+
+_graphviz_ is licensed under a [3-Clause BSD License] (note that the
+ColorBrewer Color Schemes found in `Data.GraphViz.Attributes.Colors`
+are covered under (their own
+license)[http://graphviz.org/doc/info/colors.html#brewer_license]).
+
+[3-Clause BSD License]: http://www.opensource.org/licenses/bsd-license.php
+
+Simplistically, this means that you can do whatever you want with
+_graphviz_ as long as you cite both myself and Matthew Sackman (the
+original author) as being the authors of _graphviz_.
+
+### Where can I find more information on _graphviz_? ###
+
+From its [home page].
+
+[home page]: http://projects.haskell.org/graphviz/
+
+### Are there any tutorials on how to use _graphviz_? ###
+
+There will be soon.
+
+### What other packages use _graphviz_? ###
+
+This is a list of all known packages that use _graphviz_: if you know
+of any others please let me know and I'll add it to the list.
+
+* (Graphalyze)[http://hackage.haskell.org/package/Graphalyze]
+* (SourceGraph)[http://hackage.haskell.org/package/SourceGraph]
+
+### What is the history of _graphviz_? ###
+
+_graphviz_ was originally written by [Matthew Sackman] (if you want
+his reasons for doing so, you'll have to ask him yourself) with the
+first known release being on 10 July, 2008.  In 2008 I (Ivan
+Miljenovic) needed a library that provided bindings to Graphviz with
+clustering support; at the time _graphviz_ was the most fully featured
+and closest to what I wanted, so I submitted a patch that provided
+support for both clustering and undirected graphs.
+
+[Matthew Sackman]: http://www.wellquite.org/
+
+In April 2009, Matthew wanted to step down from maintaining _graphviz_
+and asked if I wanted to take over.  Since then the library has been
+almost completely re-written with greatly improved coverage of the Dot
+language and extra features.  However, the original outline of the
+library still remains.
+
+<!--
+     Local Variables:
+     mode:markdown
+     End:
+  -->
+
+
+<!--  LocalWords:  graphviz subgraph
+ -->

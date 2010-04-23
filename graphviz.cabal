@@ -45,6 +45,7 @@ Cabal-Version:      >= 1.6
 Extra-Source-Files: TODO
                     Changelog
                     README
+                    FAQ
                     Data/GraphViz/AttributeGenerator.hs
                     TestParsing.hs
 
