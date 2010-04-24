@@ -57,6 +57,21 @@ available out of all of them:
 * The ability to augment Dot and FGL graphs with positioning
   information by round-trip passing through Graphviz.
 
+### Is the API of _graphviz_ stable? ###
+
+For the most part, yes: the only items that are likely to change in
+the future are those with bugs/errors or if a radically better way of
+doing things is found.  For most uses, however, the API should not
+change for the foreseeable future.
+
+Note that _graphviz_'s version numbers follow the
+[package versioning policy]; this means that you can immediately tell
+when the API has had a backwards-incompatible change by comparing the
+first two elements of the version.  However, these changes won't
+affect most users.
+
+[package versioning policy]: http://www.haskell.org/haskellwiki/Package_versioning_policy
+
 ### What aspects of Dot syntax and attributes are covered? ###
 
 It's easier to state what _isn't_ covered:
@@ -119,7 +134,7 @@ generated documentation):
 
     - Stating edges with a grouping of nodes (e.g. `a -> {b c}`).
 
-* Subgraphs are specified as being clusters when the subgraph name
+* Sub-graphs are specified as being clusters when the subgraph name
   starts with either `"cluster"` or `"cluster_"`; note that this
   prefix is removed when determining the subraph's name for the
   internal datatypes.
@@ -182,8 +197,8 @@ There will be soon.
 This is a list of all known packages that use _graphviz_: if you know
 of any others please let me know and I'll add it to the list.
 
-* (Graphalyze)[http://hackage.haskell.org/package/Graphalyze]
-* (SourceGraph)[http://hackage.haskell.org/package/SourceGraph]
+* [Graphalyze](http://hackage.haskell.org/package/Graphalyze)
+* [SourceGraph](http://hackage.haskell.org/package/SourceGraph)
 
 ### What is the history of _graphviz_? ###
 
@@ -202,6 +217,205 @@ and asked if I wanted to take over.  Since then the library has been
 almost completely re-written with greatly improved coverage of the Dot
 language and extra features.  However, the original outline of the
 library still remains.
+
+Using _graphviz_
+----------------
+
+### Can I start using _graphviz_ without knowing anything about Graphviz? ###
+
+Unfortunately, no: the layout and design of _graphviz_ is heavily
+based upon the Dot language and the various [attributes] that Graphviz
+supports.  As such, you can't just suffice on the documentation
+available in _graphviz_ (unless you're doing something _very_
+simplistic).
+
+[attributes]: http://graphviz.org/doc/info/attrs.html
+
+### Can I just use _graphviz_ without reading its documentation? ###
+
+You should _at least_ read the various messages about possible
+ambiguities, etc. at the top of each module and for the attributes you
+use before you use _graphviz_.
+
+### Do I need to have Graphviz installed to use _graphviz_? ###
+
+Technically, no if you're only dealing with the Dot language aspects.
+However, usage of the functions in the Commands module, or the
+augmentation of pretty-printing functions in the GraphViz module _do_
+require Graphviz to be installed.
+
+### What's the difference between `DotGraph` and `GDotGraph`? ###
+
+The layout of `DotGraph` matches the output of `dot -Tcanon`.  It has
+a fixed layout which makes it easier to reason about and get
+sub-components.
+
+`GDotGraph` on the other hand is more liberal in its layout, allowing
+you to put statements in any order you please.  This is useful in
+cases where you want to use the common Graphviz "hack" of specifying
+global attributes that don't apply to sub-graphs _after_ the
+sub-graphs in question.
+
+### What's the best way to parse Dot code? ###
+
+In both cases below, you should use the `parseDotGraph` function to
+parse the Dot code: this is because it will strip out comments and
+pre-processor lines and join together split lines (if any of these
+remain the parser will fail).  Also, if you are not sure what the type
+of the nodes are, use either String or else the `GraphID` type as it
+explicitly caters for both Strings and numbers (whereas just assuming
+it being a String will result in numbers being stored internally as a
+String).
+
+If you can, first run `dot -Tcanon` on the Dot code and parse it as a
+`DotGraph` value.  This is because `DotGraph` types are easier to deal
+with.
+
+If, however, this isn't possible (e.g. it uses an image that isn't in
+the current working directory) then use the `GDotGraph` type.
+
+### There are too many attributes!!! Which ones should I use? ###
+
+The following attributes are easy to use and recommended:
+
+* `ArrowHead` and `ArrowTail` (for directed graphs) to set the styles
+  of the ends of edges: note that in Graphviz parlance, "Head" refers
+  to the end node and "Tail" refers to the start node of the edge (see
+  below).
+
+* When wanting to use different colours, use the following criteria to
+  pick the correct attribute.  Note: for the first two, you should
+  also have `SItem Filled []` set as one of the `Style` values for
+  that item.
+
+    - `BgColor` to set the background colour of a graph/cluster.
+
+    - `FillColor` to set the background colour for a node.
+
+    - `Color` to set the colour of an edge; if you supply more than
+      one value then the edge is drawn using parallel splines/lines
+      (one per colour in the list).
+
+    - `PenColor` to set the colour of the bounding box for a cluster.
+
+  When choosing a `Color` value for one of the above, it is better to
+  use one of the `X11Color` values (note: these are **not** the same
+  as the standard X11 colours) or - if you have to - one of the manual
+  colours over a `BrewerColor`, as they come under a different license
+  and have no real standard on what the values are.
+
+* `Label`: `StrLabel` can be used for both nodes and edges; the other
+  two only for nodes.  `RecordLabel` and `HtmlLabel` provide ways of
+  having more fine-grained control over a node's layout with different
+  sub-components, etc.; in most cases these won't be needed.
+
+* `Rank`: this lets you control relative placement of sub-graphs and
+  clusters.
+
+* `Shape`: Use `Record` and `MRecord` for `RecordLabel` labels; feel
+  free to use any other ones at any time (though you probably want to
+  use `PlainText` for `HtmlLabel` labels).
+
+* `Style`: use this to set line types, etc. for nodes and edges.  You
+  should **not** use a `DD` (device-dependent) value.
+
+The following attributes are **not** recommended for use:
+
+* `Charset`: the only accepted options are `"UTF-8"` and `"Latin-1"`,
+  but in future _graphviz_ will not contain this attribute and will
+  only allow UTF-8 usage.
+
+* `Color` for anything except edge colours.
+
+* `ColorScheme`: just stick with X11 colours.
+
+* `Comment`: pretty useless, but will interfere with the augmentation
+  functions (since they use the `Comment` attribute to distinguish
+  between multiple edges).
+
+### Can I use any attribute wherever I want? ###
+
+No: attributes are all defined in one big datatype for the sake of
+simplicity, but not all attributes are valid in all places.  Read the
+documentation (either in Graphviz or _graphviz_) to determine which is
+suitable where.
+
+### How can I use _graphviz_ to visualise non-FGL graphs? ###
+
+At the moment, you unfortunately have to write your own manual
+conversion functions (see `graphToDot`, etc. in the GraphViz module
+for ideas on how to do this).  In future, it should be possible to
+convert any graph-like datatype into a `DotGraph` (this requires me to
+go write another library first...).
+
+### How can I use/process multiple graphs like Graphviz does? ###
+
+At one stage, _graphviz_ supported dealing with lists of `DotGraph`s;
+however, it was found to be faster to deal with each graph
+individually rather than try to get Graphviz to deal with them all in
+one go.  In future, once the problem causing this has been tracked
+down and fixed this feature will be returned.
+
+### How do I set portPos values for nodes in edges? ###
+
+Graphviz allows you to specify edges such as `from:a -> to:b` where
+the nodes "from" and "to" are defined with either `RecordLabel` or
+`HtmlLabel` labels and have different sections; the edge is then drawn
+from the "a" section of the "from" node to the "b" section of the "to"
+node.
+
+Whilst _graphviz_ can parse this, you can't define this yourself:
+instead, do it the manual way:
+
+    ~~~~~~~~~~~~~~~~~~~~ {.dot}
+    DotEdge "from" "to" True [ TailPort (LabelledPort (PN "a") Nothing)
+                             , HeadPort (LabelledPort (PN "b") Nothing)
+                             ]
+    ~~~~~~~~~~~~~~~~~~~~
+
+Note where `TailPort` and `HeadPort` are used; the next question
+explains this.
+
+### Is there anything else I should know? ###
+
+A few other things of note that you should know about:
+
+* For an edge `a -> b`, Graphviz terms "a" to be the _tail_ node and
+  "b" to be the _head_ node.
+
+* When creating `GraphID` values for the graphs and sub-graphs, you
+  should ensure that they won't clash with any of the `nodeID` values
+  when printed to avoid possible problems.
+
+* It is a good idea to have unique IDs for sub-graphs to ensure that
+  global attributes are applied only to items in that sub-graph and so
+  that clusters aren't combined (it took me a _long_ time to find out
+  that this was the case).
+
+* You should specify an ID for the overall graph when outputting to a
+  format such as SVG as it becomes the title of that image.
+
+* It is possible to specify a graph as being directed/undirected but
+  having individual edges being the opposite; care should be taken to
+  avoid this (this possible issue may be resolved in future).
+
+* Graphviz allows a node to be "defined" twice with different
+  attributes; in practice they are combined into one node.  Running
+  Dot code through `dot -Tcanon` before parsing removes this problem.
+
+* Several attributes are defined with taking a list of items; all of
+  these assume that the provided lists are non-empty (sub-values are a
+  different story).
+
+Design Decisions
+----------------
+
+TODO
+
+Bugs and Feature Requests
+-------------------------
+
+TODO
 
 <!--
      Local Variables:
