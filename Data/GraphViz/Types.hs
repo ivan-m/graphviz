@@ -55,8 +55,8 @@
      to @n2@ and from @n2@ to @n3@).  These types of edge definitions
      are parseable; however, they are converted to singleton edges.
 
-   * Cannot create edges with subgraphs\/clusters as one of the
-     end points.
+   * It is not yet possible to create or parse edges with
+     subgraphs\/clusters as one of the end points.
 
    * When either creating a 'DotGraph' by hand or parsing one, it is
      possible to specify that @'directedGraph' = d@, but 'DotEdge'
