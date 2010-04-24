@@ -1992,6 +1992,8 @@ instance ParseDot STStyle where
 
 -- -----------------------------------------------------------------------------
 
+-- | An individual style item.  Except for 'DD', the @['String']@
+--   should be empty.
 data StyleItem = SItem StyleName [String]
              deriving (Eq, Ord, Show, Read)
 
