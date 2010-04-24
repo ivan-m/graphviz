@@ -1004,7 +1004,7 @@ posArbitrary :: (Arbitrary a, Num a, Ord a) => Gen a
 posArbitrary = liftM fromPositive arbitrary
 
 arbString :: Gen String
-arbString = suchThat (liftM (map toLower) genStr) validString
+arbString = suchThat genStr validString
   where
     genStr = listOf1 $ elements strChr
     strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '(', ')'
