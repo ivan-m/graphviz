@@ -77,8 +77,7 @@ import qualified Data.Map as Map
 import Control.Monad(liftM)
 import System.IO.Unsafe(unsafePerformIO)
 import Control.Concurrent(forkIO)
-import Control.Exception.Extensible(throw, IOException)
-import System.IO.Error(userError)
+import Control.Exception.Extensible(throw)
 
 -- -----------------------------------------------------------------------------
 
