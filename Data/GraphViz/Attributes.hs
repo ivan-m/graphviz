@@ -1482,22 +1482,18 @@ instance PrintDot LayerID where
     toDot li          = unqtDot li
 
 instance ParseDot LayerID where
-    parseUnqt = liftM LRInt parseUnqt
-                `onFail`
-                liftM checkLayerName parseLayerName -- tests for Int and All
+    parseUnqt = liftM checkLayerName parseLayerName -- tests for Int and All
 
-    parse = oneOf [ liftM LRInt parse
-                  , liftM checkLayerName parseLayerName'
+    parse = oneOf [ liftM checkLayerName parseLayerName'
+                  , liftM LRInt parse -- Mainly for unquoted case.
                   ]
 
--- Can't just use stringRep AllLayers "all" since allFoo would be
--- parsed and would thus fail.
 checkLayerName     :: String -> LayerID
-checkLayerName str = if map toLower str == "all"
-                     then AllLayers
-                     else LRName str
-
-
+checkLayerName str = maybe checkAll LRInt $ stringToInt str
+  where
+    checkAll = if map toLower str == "all"
+               then AllLayers
+               else LRName str
 
 -- | The list represent (Separator, Name).  You should not have any
 --   quote characters for any of the 'String's, since there are
