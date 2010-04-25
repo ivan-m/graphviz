@@ -216,7 +216,7 @@ parseInstance att = hdr $+$ nest tab fns
                  <+> parens (text "parseEq >> parse")
 
 arbitraryInstance     :: Atts -> Code
-arbitraryInstance att = hdr $+$ fns
+arbitraryInstance att = vsep [hdr $+$ fns, kFunc]
     where
       hdr = text "instance" <+> text "Arbitrary" <+> tpNm att <+> text "where"
       fns = nest tab $ vsep [aFn, sFn]
@@ -224,11 +224,13 @@ arbitraryInstance att = hdr $+$ fns
       ops = flip ($$) rbrack
             . asRows
             . firstOthers lbrack comma
+            . (++ [[aUnknown]])
             . map (return . arbAttr)
             $ atts att
       aFunc = text "arbitrary"
       arbAttr a = text "liftM" <+> cnst a <+> arbitraryFor' a
       sFn = asRows
+            . (++ [sUnknown])
             . map shrinkAttr
             $ atts att
       sFunc = text "shrink"
@@ -237,6 +239,28 @@ arbitraryInstance att = hdr $+$ fns
                      , equals <+> text "map" <+> cnst a
                      , dollar <+> shrinkFor (valtype a) <+> var
                      ]
+      aUnknown = text "liftM2" <+> unknownAttr
+                 <+> parens (text "suchThat" <+> text "arbIDString" <+> kFuncNm)
+                 <+> arbitraryFor Strng
+      sUnknown = [ sFunc <+> parens (unknownAttr <+> char 'a' <+> var)
+                 , equals <+> text "liftM2" <+> unknownAttr
+                 , parens (text "liftM" <+> parens (text "filter" <+> kFuncNm)
+                           <+> shrinkFor Strng <+> char 'a')
+                   <+> parens (shrinkFor Strng <+> var)
+                 ]
+
+      kFunc = asRows (kTpSig : kTrs ++ [kOth])
+      kFuncNm = text "validUnknown"
+      kTpSig = [ kFuncNm
+               , colon <> colon <+> text "String -> Bool"
+               ]
+      kTrs = map kTr . concatMap parseNames $ atts att
+      kTr pn = [ kFuncNm <+> doubleQuotes pn
+               , equals <+> text "False"
+               ]
+      kOth = [ kFuncNm <+> char '_'
+             , equals <+> text "True"
+             ]
 
 arbitraryFor                :: VType -> Doc
 arbitraryFor Strng          = text "arbString"
