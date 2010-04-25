@@ -4,6 +4,9 @@
 Fortuitously Anticipated Queries (FAQ)
 ======================================
 
+Note that to distinguish it from [Graphviz], the library shall be
+henceforth referred to as _graphviz_.
+
 Graphviz vs _graphviz_
 ----------------------
 
@@ -32,8 +35,8 @@ available out of all of them:
 
 * Two different methods of specifying Dot graphs:
 
-    - Strict, which matches the layout of `dot -Tcanon`.
-    - Liberal, which allows statements to be in any order.
+    1. Strict, which matches the layout of `dot -Tcanon`.
+    2. Liberal, which allows statements to be in any order.
 
   There are also conversion functions between the two of them.
 
@@ -179,8 +182,13 @@ license)[http://graphviz.org/doc/info/colors.html#brewer_license]).
 [3-Clause BSD License]: http://www.opensource.org/licenses/bsd-license.php
 
 Simplistically, this means that you can do whatever you want with
-_graphviz_ as long as you cite both myself and Matthew Sackman (the
-original author) as being the authors of _graphviz_.
+_graphviz_ as long as you cite both myself and [Matthew Sackman] (the
+original author) as being the authors of _graphviz_.  However, I would
+appreciate at least an [email] letting me know how _graphviz_ is being
+used.
+
+[Matthew Sackman]: http://www.wellquite.org/
+[email]: mailto:Ivan.Miljenovic+graphviz@gmail.com
 
 ### Where can I find more information on _graphviz_? ###
 
@@ -209,8 +217,6 @@ Miljenovic) needed a library that provided bindings to Graphviz with
 clustering support; at the time _graphviz_ was the most fully featured
 and closest to what I wanted, so I submitted a patch that provided
 support for both clustering and undirected graphs.
-
-[Matthew Sackman]: http://www.wellquite.org/
 
 In April 2009, Matthew wanted to step down from maintaining _graphviz_
 and asked if I wanted to take over.  Since then the library has been
@@ -244,7 +250,20 @@ However, usage of the functions in the Commands module, or the
 augmentation of pretty-printing functions in the GraphViz module _do_
 require Graphviz to be installed.
 
-### What's the difference between `DotGraph` and `GDotGraph`? ###
+### Why didn't you use FFI to bind to the Graphviz library? ###
+
+Because I just kept working where [Matthew Sackman] left off and it
+was already using Graphviz's tools rather than the actual library.
+However, most other language bindings (for Python, Perl, etc.) seem to
+do the same: generate Dot code and pass that to the relevant tool.
+
+This, however, does provide a fortunate side effect where the ability
+to print and parse Dot code means that _graphviz_ can be used for more
+than just visualising graphs created solely in Haskell: it can also
+import pre-defined graphs, or else generate Dot code for use with
+other tools.
+
+### What's the difference between DotGraph and GDotGraph? ###
 
 The layout of `DotGraph` matches the output of `dot -Tcanon`.  It has
 a fixed layout which makes it easier to reason about and get
@@ -356,6 +375,56 @@ individually rather than try to get Graphviz to deal with them all in
 one go.  In future, once the problem causing this has been tracked
 down and fixed this feature will be returned.
 
+### How can I use custom datatypes for node IDs? ###
+
+The important thing here is to ensure that your custom datatype has
+defined instances of `PrintDot` and `ParseDot`.  Probably the easiest
+way of doing this is to have functions that convert between your type
+and `String` and let graphviz determine how to print and parse those.
+Here is an example of a more difficult type that should be printed
+like "1: Foo":
+
+~~~~~~~~~~~~~~~~~~~~ {.haskell}
+data MyType = MyType String Int
+
+instance PrintDot MyType where
+  unqtDot (MyType s i) = unqtDot i <> colon <+> unqtDot s
+
+  -- We have a space in there, so we need quotes.
+  toDot = doubleQuotes . unqtDot
+
+instance ParseDot MyType where
+  parseUnqt = do i <- parseUnqt
+                 character ':'
+                 whitespace -- This will consume all whitespace characters
+                 s <- parseUnqt
+                 return $ MyType s i
+
+  -- Has at least one space, so it will be quoted.
+  parse = quotedParse parseUnqt
+~~~~~~~~~~~~~~~~~~~~
+
+Things to note from this example:
+
+* Whilst `PrintDot` and `ParseDot` have default definitions for
+  `toDot` and `parse`, they assume the datatype doesn't need quotes;
+  as such if the value will
+  [need quoting](http://www.graphviz.org/doc/info/lang.html), then you
+  should do so explicitly.
+
+* It is better to use the `PrintDot` instances for common types such
+  as `Int` and `String` rather than using the pretty-printers inbuilt
+  conversion functions (`int`, `text`, etc.) to ensure that
+  quotations, etc. are dealt with correctly.
+
+* Be as liberal as you can when printing, especially with whitespace:
+  when printing only one space is used, yet when parsing we use the
+  `whitespace` parsing combinator that will parse all whitespace
+  characters (but it must consume _at least_ one; there is a variant
+  that does not need to parse any).  However, we're not being so
+  liberal as to allow parsing of newline characters (for which there
+  is a separate parsing combinator).
+
 ### How do I set portPos values for nodes in edges? ###
 
 Graphviz allows you to specify edges such as `from:a -> to:b` where
@@ -367,11 +436,11 @@ node.
 Whilst _graphviz_ can parse this, you can't define this yourself:
 instead, do it the manual way:
 
-    ~~~~~~~~~~~~~~~~~~~~ {.dot}
-    DotEdge "from" "to" True [ TailPort (LabelledPort (PN "a") Nothing)
-                             , HeadPort (LabelledPort (PN "b") Nothing)
-                             ]
-    ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~ {.haskell}
+DotEdge "from" "to" True [ TailPort (LabelledPort (PN "a") Nothing)
+                         , HeadPort (LabelledPort (PN "b") Nothing)
+                         ]
+~~~~~~~~~~~~~~~~~~~~
 
 Note where `TailPort` and `HeadPort` are used; the next question
 explains this.
@@ -407,15 +476,141 @@ A few other things of note that you should know about:
   these assume that the provided lists are non-empty (sub-values are a
   different story).
 
+* If a particular Dot graph is not parseable, the parser throws an
+  error rather than failing gracefully.
+
 Design Decisions
 ----------------
 
-TODO
+### Why does _graphviz_ use Polyparse rather than Parsec? ###
 
-Bugs and Feature Requests
--------------------------
+Short answer: because _graphviz_ was already using [Polyparse] when I
+started working on it (and I hadn't done any parsing before so I had
+no preference either way).
 
-TODO
+[Polyparse]: http://www.cs.york.ac.uk/fp/polyparse/
+
+Longer answer: Polyparse has several advantages I feel over [Parsec]:
+
+* Simpler types.
+* Avoids the whole "but Parsec-3 is slower than Parsec-2" debate (with
+  its associated baggage/problems).
+* Few inbuilt combinators: since there is no inbuilt `character`
+  parsing combinator, there are no problems with _graphviz_ using its
+  own case-less one.
+* [Easier backtracking](http://www.cs.york.ac.uk/fp/polyparse/#how)
+
+[Parsec]: http://hackage.haskell.org/package/parsec
+
+### Why do you have two different representations of Dot graphs? ###
+
+_graphviz_ has
+[two different representations](#whats-the-difference-between-dotgraph-and-gdotgraph)
+of Dot graphs.  Apart from the reasons given before, `DotGraph` was
+the original representation, whereas `GDotGraph` was only introduced
+in the 2999.8.0.0 release.
+
+Note, however, that I was thinking of adding something like
+`GDotGraph` back around the time of the
+[2999.0.0.0 release](http://www.haskell.org/pipermail/haskell-cafe/2009-July/064436.html),
+yet
+[people didn't like the idea](http://www.haskell.org/pipermail/haskell-cafe/2009-July/064442.html).
+
+As such, `GDotGraph` is there if anyone needs/wants to use it, but
+usage of `DotGraph` is recommended/preferred.
+
+### Why are only FGL graphs supported? ###
+
+Love them or hate them, [FGL] currently provides the best graph
+datatype and library available for Haskell at this time.  As such, if
+any one graph type had to be chosen to have conversion functions
+written for it then FGL is the best option.  Furthermore, I needed FGL
+graph support (which is the much more important reason!).
+
+### Why are the version numbers so high? ###
+
+To make sure the latest release has the highest version number:
+Matthew Sackman originally made releases with date-based versioning,
+but when I switched to using the [package versioning policy] I had to
+change this.  I could have started with 2010.x.y.z or so, but at the
+time I had initial hopes of introducing compatibility with other
+graphs (not just [FGL] ones) soon and wanted to make that the
+3000.0.0.0 release; however that has not yet come to pass.
+
+Bugs, Feature Requests and Development
+--------------------------------------
+
+### Do you have any future plans for _graphviz_? ###
+
+Yes, I do!  See the TODO file for more information.
+
+### Does _graphviz_ have a test suite? ###
+
+Yes, there is: to get it, you have to build it with the `test` flag
+enabled; for example:
+
+~~~~~~~~~~~~~~~~~~~~ {.bash}
+cabal install graphviz --flags=test
+~~~~~~~~~~~~~~~~~~~~
+
+Then run the `graphviz-testsuite` executable.  This test suite uses
+[QuickCheck] to ensure that _graphviz_ can parse the Dot code it
+generates (as well as a few other things).  Note that it isn't
+perfect: there are no guarantees that the Dot graphs that are
+generated are indeed valid, and those more extensive tests are not yet
+available.
+
+[QuickCheck]: http://hackage.haskell.org/package/QuickCheck
+
+Furthermore, you can do more controlled testing to try and track down
+the source of a bug as the above flag will also expose several
+testing modules which give you access to the various tests used as
+well as the `Arbitrary` instances for use with [QuickCheck].
+
+For proper testing of real-life Dot code, there is also the
+`TestParsing.hs` script that comes in the _graphviz_ tarball (but is
+not installed).  Once you have _graphviz_ installed you can just run
+this script, passing it any files containing Dot graphs you wish to
+test.  It will attempt to parse each Dot graph as a `GDotGraph`, and
+then test to see if the canonicalised form is parseable as a
+`DotGraph`.
+
+### I've found a bug! ###
+
+Oh-oh... please [email] me the specifics of what you were doing
+(including the Dot file in question if it's a parsing problem) and
+I'll get right on it.
+
+### I have a feature request. ###
+
+Is it in the TODO?  If not, [email] me and I'll consider implementing
+it (depending on time and how well I think it will fit in the overall
+library).
+
+### I want to help out with developing _graphviz_. ###
+
+Great!  Whether you have a specific feature in mind or want to help
+clear the TODO list, please [email] me to check with what you're doing
+(who knows, I could already be implementing that very feature).
+
+Once we've discussed what you're going to do, first get yourself a
+copy of the darcs repository:
+
+~~~~~~~~~~~~~~~~~~~~ {.bash}
+darcs get --lazy http://code.haskell.org/
+~~~~~~~~~~~~~~~~~~~~
+
+Once you've made your changes, make sure you build and run the
+testsuite (and ensure it passes!).  Then record the patch[es] and
+`darcs send` them.  I'll then review them and if I'm happy with them,
+I'll apply them.
+
+### What is the purpose of the AttributeGenerator.hs file? ###
+
+Graphviz has a large number of attributes.  Rather than try to edit
+everything manually each time I want to change how I use the large
+`Attribute` datatype, the AttributeGenerator script generates the
+datatype, instances, etc. for me.
 
 <!--
      Local Variables:
@@ -424,5 +619,5 @@ TODO
   -->
 
 
-<!--  LocalWords:  graphviz subgraph
+<!--  LocalWords:  graphviz
  -->
