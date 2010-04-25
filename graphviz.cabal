@@ -39,7 +39,7 @@ License:            BSD3
 License-File:       LICENSE
 Copyright:          Matthew Sackman, Ivan Lazar Miljenovic
 Author:             Matthew Sackman, Ivan Lazar Miljenovic
-Maintainer:         Ivan.Miljenovic@gmail.com
+Maintainer:         Ivan.Miljenovic+graphviz@gmail.com
 Build-Type:         Simple
 Cabal-Version:      >= 1.6
 Extra-Source-Files: TODO
