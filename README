@@ -44,8 +44,10 @@ Main features of the graphviz library include:
   augment node and edge labels with positional information, etc.
 
 graphviz is free software licensed under a [3-Clause BSD License].
-© 2008 - 2009 [Matthew Sackman](http://www.wellquite.org/); © 2008 -
-2010 [Ivan Lazar Miljenovic](http://ivanmiljenovic.wordpress.com/).
+
+(C) 2008 [Matthew Sackman](http://www.wellquite.org/)
+
+(C) 2008 - 2010 [Ivan Lazar Miljenovic](http://ivanmiljenovic.wordpress.com/)
 
 [3-Clause BSD License]: http://www.opensource.org/licenses/bsd-license.php
 
