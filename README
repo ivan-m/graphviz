@@ -1,18 +1,29 @@
-The graphviz library provides bindings for Haskell to the Dot language
-used by the Graphviz [1] suite of tools for graph visualisation.  The
-latest version of this library is available from Hackage [2].
+% graphviz - Haskell bindings to the Graphviz toolkit
+% Ivan Lazar Miljenovic
 
-[1] http://graphviz.org/
-[2] http://hackage.haskell.org/package/graphviz
+The graphviz Library
+====================
 
-Features of the graphviz library include:
+The _graphviz_ library provides bindings to the [Graphviz] graph
+visualisation suite of tools for Haskell.  It can be downloaded from
+[HackageDB] or - if you have [cabal-install] - it can be installed as
+simply as:
 
-* Almost complete coverage of all Graphviz attributes, etc. for
-  graphs, sub-graphs, clusters, nodes and edges:
-  http://graphviz.org/doc/info/attrs.html
+~~~~~~~~~~~~~~~~~~~~ {.bash}
+cabal update
+cabal install graphviz
+~~~~~~~~~~~~~~~~~~~~
 
-* Thorough documentation on known problems with the library and how it
-  differs from the actual Dot specification.
+[Graphviz]: http://www.graphviz.org/
+[HackageDB]: http://hackage.haskell.org/package/graphviz
+[cabal-install]: http://haskell.org/haskellwiki/Cabal-Install
+
+Library features
+----------------
+
+Main features of the graphviz library include:
+
+* Almost complete coverage of all Graphviz attributes and syntax.
 
 * Support for specifying clusters.
 
@@ -24,54 +35,22 @@ Features of the graphviz library include:
 * The ability to not only generate but also parse Dot code with two
   options: strict and liberal (in terms of ordering of statements).
 
-* Functions to convert FGL graphs to Dot code - including support to
+* Functions to convert [FGL] graphs to Dot code - including support to
   group them into clusters - with a high degree of customisation by
-  specifying which attributes to use.
+  specifying which attributes to use and limited support for the
+  inverse operation.
 
-* Round-trip support for passing an FGL graph through Graphviz to
+* Round-trip support for passing an [FGL] graph through Graphviz to
   augment node and edge labels with positional information, etc.
 
-Please note that currently the convenience functions are only
-available for FGL [3] graphs; this will be extended in future once a
-method for dealing with generic graph types is developed.
+graphviz is free software licensed under a [3-Clause BSD License].
+© 2008 - 2009 [Matthew Sackman](http://www.wellquite.org/); © 2008 -
+2010 [Ivan Lazar Miljenovic](http://ivanmiljenovic.wordpress.com/).
 
-[3] http://web.engr.oregonstate.edu/~erwig/fgl/haskell/
+[3-Clause BSD License]: http://www.opensource.org/licenses/bsd-license.php
 
---------------------------------------------------------------------------------
-
-Developing graphviz
--------------------
-
-Following are some notes on what to keep in mind if you want to
-contribute to the development of graphviz:
-
-* When printing and parsing values, there are two options: with or
-  without quotes.  Some values (e.g. numbers) may optionally be quoted
-  in Dot code; others (namely strings with spaces, etc.) _must_ be
-  quoted.
-
-* Whenever you are parsing a type of value where the Dot
-  representation of one is the prefix of the Dot representation of
-  another, be sure to parse the longer value first.
-
-* Because there are so many attributes, the definition, instances for
-  and functions using the overall Attribute type are all defined using
-  the AttributeGenerator.hs script.  This file is not an actual part
-  of the library, but should be used if any top-level work is being
-  done for Attributes.
-
-* Any changes should pass the testsuite, which is built by enabling
-  the "test" flag.  There are three ways of testing:
-
-  - Run the graphviz-testsuite program; this takes approximately 90
-    minutes to run and covers various properties that should hold.
-
-  - Import the "Data.GraphViz.Testing" module for manual testing.
-
-  - If you did not build the library with the "test" flag enabled, you
-    can extract Data.GraphViz.Testing and Data.GraphViz.Testing.* from
-    the source tarball to be able to use them directly; they only use
-    graphviz's public API.
+For more information, feel free to
+[email](mailto:Ivan.Miljenovic+graphviz@gmail.com) me.
 
 <!--
      Local Variables:
