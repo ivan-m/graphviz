@@ -1,8 +1,19 @@
-The overall graphviz library is covered by this 3-Clause BSD license.
--------------------------------------------------------------------
+% graphviz - License
+% Ivan Lazar Miljenovic
 
-Copyright (c) 2008-2009, Matthew Sackman
-                         Ivan Lazar Miljenovic
+The overall graphviz library is covered by a [3-Clause BSD License].
+However, the _ColorBrewer_ colours are licensed under their own
+license.
+
+[3-Clause BSD License]: http://www.opensource.org/licenses/bsd-license.php
+
+License for graphviz
+--------------------
+
+Copyright (c) 2008, Matthew Sackman
+
+Copyright (c) 2008 - 2010, Ivan Lazar Miljenovic
+                           <Ivan.Miljenovic+graphviz@gmail.com>
 
 All rights reserved.
 
@@ -34,12 +45,12 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-================================================================================
+The ColorBrewer license
+-----------------------
 
-The ColorBrewer Color Schemes (see Data.GraphViz.Attributes.Colors)
-are covered by the following license:
--------------------------------------------------------------------
-
+> The _ColorBrewer_ colours and colour schemes found in
+> `Data.GraphViz.Attributes.Colors` are covered by the following
+> license.  This text is not part of the license.
 
 Apache-Style Software License for ColorBrewer software and ColorBrewer
 Color Schemes, Version 1.1
@@ -85,3 +96,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGE.
+
+<!--
+     Local Variables:
+     mode:markdown
+     End:
+  -->
