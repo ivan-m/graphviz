@@ -43,7 +43,7 @@ available out of all of them:
 * The ability to parse and generate most aspects of Dot syntax and
   attributes (including being the only such package known to have
   cluster support).  This includes taking into account escaping and
-  quoting rules.
+  quoting rules where applicable.
 
 * The ability to use a custom node type for Dot graphs.
 
