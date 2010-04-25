@@ -1010,6 +1010,13 @@ arbString = suchThat genStr validString
     strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '(', ')'
                                          , ',', ':', '.']
 
+arbIDString :: Gen String
+arbIDString = suchThat genStr validString
+  where
+    genStr = liftM2 (:) (elements frst) $ listOf (elements rest)
+    frst = ['a'..'z'] ++ ['_']
+    rest = frst ++ ['0'.. '9']
+
 validString         :: String -> Bool
 validString "true"  = False
 validString "false" = False
