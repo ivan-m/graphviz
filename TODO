@@ -1,6 +1,45 @@
-Areas to work on:
+% graphviz - TODO
+% Ivan Lazar Miljenovic
 
-* Utilise the generic graph class once it is finalised.
+This is a list of planned feature improvements to graphviz along with
+an indication of when it's likely to be implemented (note that these
+time scales are in relation to releases, not actual time).
 
-* Encoding: Graphviz uses UTF-8 by default, Latin1 when set; should
-  graphviz use utf8-string and disable changing the encoding?
+Short term
+----------
+
+* Make the parsers and printers state-based, which means they will be
+  better able to cope with `ColorScheme` and layers better.
+
+* Improve the printer and parser performance (to be done whilst making
+  them state-based).
+
+* Fix encoding problems: Graphviz uses UTF-8 by default, Latin1 when
+  set; to resolve ambiguities force usage of UTF-8 and remove the
+  option of Latin-1.  To do so, will probably use the
+  [text](http://hackage.haskell.org/package/text) library (which will
+  hopefully also improve performance for the previous point).
+
+Medium term
+-----------
+
+* Improve the test suite such that the generated `DotGraph` and
+  `GDotGraph` values are valid (and thus can be passed to Graphviz
+  proper).  This will require the state-based printer and parser from
+  above to be implemented.
+
+* Add support for non-visualisation Graphviz tools (e.g. dijkstra and
+  tred).
+
+Long term
+---------
+
+* Allow usage of non-FGL graphs with graphviz.  This will require
+  implementing a separate library to represent graphs.
+
+<!--
+     Local Variables:
+     mode:markdown
+     End:
+  -->
+
