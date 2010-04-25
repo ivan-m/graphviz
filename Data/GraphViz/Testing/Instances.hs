@@ -27,7 +27,6 @@ import Data.GraphViz.Util(bool)
 
 import Test.QuickCheck
 
-import Data.Char(toLower)
 import Data.List(nub, delete, groupBy)
 import qualified Data.Sequence as Seq
 import qualified Data.Map as Map
