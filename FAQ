@@ -537,6 +537,11 @@ time I had initial hopes of introducing compatibility with other
 graphs (not just [FGL] ones) soon and wanted to make that the
 3000.0.0.0 release; however that has not yet come to pass.
 
+### Why do you use the American spelling of colour in _graphviz_? ###
+
+Because that's how Graphviz spells it, and I was following upstream to
+avoid confusion.
+
 Bugs, Feature Requests and Development
 --------------------------------------
 
