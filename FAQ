@@ -425,6 +425,12 @@ Things to note from this example:
   liberal as to allow parsing of newline characters (for which there
   is a separate parsing combinator).
 
+### When parsing Dot code, do I have to worry about the case? ###
+
+Not at all: _graphviz_'s parser is case-insensitive; however, the
+correct case is checked first so there is a slight degradation in
+performance when the wrong case is used.
+
 ### How do I set portPos values for nodes in edges? ###
 
 Graphviz allows you to specify edges such as `from:a -> to:b` where
