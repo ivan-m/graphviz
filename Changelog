@@ -11,7 +11,8 @@ Changes in 2999.9.0.0
 
 * Add support for record labels; values are automatically
   escaped/unescaped.  The `Record` and `MRecord` shapes have been
-  added for use with these labels.
+  added for use with these labels.  **Requested by Minh Thu and Eric
+  Kow.**
 
 * Add support for HTML-like values (this replaces the wrong and
   completely broken URL datatype).  Strings are automatically
