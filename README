@@ -5,9 +5,9 @@ The graphviz Library
 ====================
 
 The _graphviz_ library provides bindings to the [Graphviz] graph
-visualisation suite of tools for Haskell.  It can be downloaded from
-[HackageDB] or - if you have [cabal-install] - it can be installed as
-simply as:
+visualisation suite of tools for the purely functional programming
+language [Haskell].  It can be downloaded from [HackageDB] or - if you
+have [cabal-install] - installing it is as simple as:
 
 ~~~~~~~~~~~~~~~~~~~~ {.bash}
 cabal update
@@ -15,6 +15,7 @@ cabal install graphviz
 ~~~~~~~~~~~~~~~~~~~~
 
 [Graphviz]: http://www.graphviz.org/
+[Haskell]: http://haskell.org/
 [HackageDB]: http://hackage.haskell.org/package/graphviz
 [cabal-install]: http://haskell.org/haskellwiki/Cabal-Install
 
@@ -42,6 +43,8 @@ Main features of the graphviz library include:
 
 * Round-trip support for passing an [FGL] graph through Graphviz to
   augment node and edge labels with positional information, etc.
+
+[FGL]: http://web.engr.oregonstate.edu/~erwig/fgl/haskell/
 
 graphviz is free software licensed under a [3-Clause BSD License].
 
