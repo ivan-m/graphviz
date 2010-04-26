@@ -23,6 +23,9 @@ Short term
   [text](http://hackage.haskell.org/package/text) library (which will
   hopefully also improve performance for the previous point).
 
+* Quickstart-style documentation to help users get going with graphviz
+  quickly.
+
 Medium term
 -----------
 
