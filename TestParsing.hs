@@ -55,8 +55,6 @@ type DG = DotGraph String
 type GDG = GDotGraph String
 type ErrMsg = String
 
--- tryParseFile ::
-
 tryParseFile    :: FilePath -> IO ()
 tryParseFile fp = readFile' fp >>= maybeParse
   where
