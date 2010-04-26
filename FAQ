@@ -16,11 +16,11 @@ Graphviz vs _graphviz_
 programs using that library to visualise [graphs] (which are specified
 using the [Dot] language).
 
-_graphviz_ is a library for the [Haskell] purely functional
-programming language that provides "bindings" to Graphviz's programs.
-It does so by allowing programmers to specify the layout of the graph
-and then converts that to Dot code before calling the appropriate
-program to perform the visualisation.
+_graphviz_ is a library for the purely functional programming language
+[Haskell] that provides "bindings" to Graphviz's programs.  It does so
+by allowing programmers to specify the layout of the graph and then
+converts that to Dot code before calling the appropriate program to
+perform the visualisation.
 
 [Graphviz]: http://www.graphviz.org/
 [graphs]: http://en.wikipedia.org/wiki/Graph_theory
@@ -40,10 +40,12 @@ available out of all of them:
 
   There are also conversion functions between the two of them.
 
-* The ability to parse and generate most aspects of Dot syntax and
-  attributes (including being the only such package known to have
-  cluster support).  This includes taking into account escaping and
+* The ability to parse and generate most aspects of Dot [syntax] and
+  [attributes].  This includes taking into account escaping and
   quoting rules where applicable.
+
+  [syntax]: http://graphviz.org/doc/info/lang.html
+  [attributes]: http://graphviz.org/doc/info/attrs.html
 
 * The ability to use a custom node type for Dot graphs.
 
@@ -77,14 +79,15 @@ affect most users.
 
 ### What aspects of Dot syntax and attributes are covered? ###
 
-It's easier to state what _isn't_ covered:
+It's easier to state which aspects of Dot [syntax] and [attributes]
+_aren't_ covered:
 
 #### Overall syntax items not covered ####
 
-* Cannot specify a subraph as an end point in an edge;
+* Cannot specify a sub-graph as an end point in an edge;
 
-* Comments, pre-processor lines and split lines are not supported
-  within HTML-like labels.
+* Comments, pre-processor lines and split lines are (currently) not
+  supported within HTML-like labels.
 
 * _graphviz_ is currently locale-specific: Dot graphs are meant to be
   encoded in UTF-8 by default unless specified to be Latin-1, but this
@@ -234,8 +237,6 @@ based upon the Dot language and the various [attributes] that Graphviz
 supports.  As such, you can't just suffice on the documentation
 available in _graphviz_ (unless you're doing something _very_
 simplistic).
-
-[attributes]: http://graphviz.org/doc/info/attrs.html
 
 ### Can I just use _graphviz_ without reading its documentation? ###
 
