@@ -38,7 +38,9 @@ Long term
 ---------
 
 * Allow usage of non-FGL graphs with graphviz.  This will require
-  implementing a separate library to represent graphs.
+  implementing a separate library to represent graphs (see initial
+  discussions about this
+  [here](http://www.haskell.org/pipermail/haskell-cafe/2009-June/063402.html)).
 
 <!--
      Local Variables:
