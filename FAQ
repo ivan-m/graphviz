@@ -397,7 +397,7 @@ instance PrintDot MyType where
 instance ParseDot MyType where
   parseUnqt = do i <- parseUnqt
                  character ':'
-                 whitespace -- This will consume all whitespace characters
+                 whitespace
                  s <- parseUnqt
                  return $ MyType s i
 
