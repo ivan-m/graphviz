@@ -10,7 +10,8 @@ each release.
 Changes in 2999.9.0.0
 ---------------------
 
-* graphviz now has an FAQ and an improved README.
+* graphviz now has an FAQ and an improved README as well as its own
+  [homepage](http://projects.haskell.org/graphviz/).
 
 * Canonicalisation of `DotRepr` values is now available with the
   `canonicalise` function.

@@ -30,6 +30,7 @@ Main features of the graphviz library include:
   augment node and edge labels with positional information, etc.
 }
 
+Homepage:           http://projects.haskell.org/graphviz/
 Category:           Graphs, Graphics
 License:            BSD3
 License-File:       LICENSE
