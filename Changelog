@@ -56,10 +56,6 @@ Changes in 2999.9.0.0
 * A new script to assist in testing whether "real-world" Dot graphs
   are parseable.
 
-* The augmentation functions and `prettyPrint` now throw an
-  `IOException` rather than using `error` when an error occurs with
-  the used Graphviz tool.
-
 * Slight performance increase when parsing: whereas parsing is done
   case-insensitively, the "correct" case is now checked by default
   which has a moderate affect on parsing times.
