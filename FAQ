@@ -179,8 +179,8 @@ break one patch into several smaller patches).
 
 _graphviz_ is licensed under a [3-Clause BSD License] (note that the
 ColorBrewer Color Schemes found in `Data.GraphViz.Attributes.Colors`
-are covered under (their own
-license)[http://graphviz.org/doc/info/colors.html#brewer_license]).
+are covered under
+[their own license](http://graphviz.org/doc/info/colors.html#brewer_license)).
 
 [3-Clause BSD License]: http://www.opensource.org/licenses/bsd-license.php
 
