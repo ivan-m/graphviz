@@ -154,7 +154,7 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                     | PlainExt  -- ^ As for 'Plain', but provides port
                                 --   names on head and tail nodes when
                                 --   applicable.
-                    | Png       -- ^ Portable Network Graphvics format.
+                    | Png       -- ^ Portable Network Graphics format.
                     | Ps        -- ^ PostScript.
                     | Ps2       -- ^ PostScript for PDF.
                     | Svg       -- ^ Scalable Vector Graphics format.
