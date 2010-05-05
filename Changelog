@@ -50,8 +50,8 @@ Changes in 2999.9.0.0
       UTF-8).  **Thanks to Jules Bean (aka quicksilver) for working
       out how to do this.**
 
-  More specifically: almost all Dot files that ship with Graphviz, as
-  documentation in the Linux kernel, etc. are now parseable.
+    More specifically: almost all Dot files that ship with Graphviz, as
+    documentation in the Linux kernel, etc. are now parseable.
 
 * A new script to assist in testing whether "real-world" Dot graphs
   are parseable.
