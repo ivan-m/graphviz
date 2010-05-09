@@ -282,8 +282,8 @@ usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])
     where
       nm' = text nm
       dt = tpNm att
-      cmnt = text "-- | Determine if this" <+> dt
-             <+> text "is valid for use with" <+> nm' <> dot
+      cmnt = text "-- | Determine if this '" <> dt
+             <> text "' is valid for use with" <+> nm' <> dot
       tpSig = [ fn
               , colon <> colon
                 <+> dt <+> text "->" <+> text "Bool"

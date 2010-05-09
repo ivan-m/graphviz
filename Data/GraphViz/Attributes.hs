@@ -665,7 +665,7 @@ instance ParseDot Attribute where
 
     parseList = parseUnqtList
 
--- | Determine if this Attribute is valid for use with Graphs.
+-- | Determine if this 'Attribute' is valid for use with Graphs.
 usedByGraphs                      :: Attribute -> Bool
 usedByGraphs Damping{}            = True
 usedByGraphs K{}                  = True
@@ -749,7 +749,7 @@ usedByGraphs VoroMargin{}         = True
 usedByGraphs UnknownAttribute{}   = True
 usedByGraphs _                    = False
 
--- | Determine if this Attribute is valid for use with Clusters.
+-- | Determine if this 'Attribute' is valid for use with Clusters.
 usedByClusters                    :: Attribute -> Bool
 usedByClusters K{}                = True
 usedByClusters URL{}              = True
@@ -776,13 +776,13 @@ usedByClusters Tooltip{}          = True
 usedByClusters UnknownAttribute{} = True
 usedByClusters _                  = False
 
--- | Determine if this Attribute is valid for use with SubGraphs.
+-- | Determine if this 'Attribute' is valid for use with SubGraphs.
 usedBySubGraphs                    :: Attribute -> Bool
 usedBySubGraphs Rank{}             = True
 usedBySubGraphs UnknownAttribute{} = True
 usedBySubGraphs _                  = False
 
--- | Determine if this Attribute is valid for use with Nodes.
+-- | Determine if this 'Attribute' is valid for use with Nodes.
 usedByNodes                    :: Attribute -> Bool
 usedByNodes URL{}              = True
 usedByNodes ColorScheme{}      = True
@@ -828,7 +828,7 @@ usedByNodes Z{}                = True
 usedByNodes UnknownAttribute{} = True
 usedByNodes _                  = False
 
--- | Determine if this Attribute is valid for use with Edges.
+-- | Determine if this 'Attribute' is valid for use with Edges.
 usedByEdges                    :: Attribute -> Bool
 usedByEdges URL{}              = True
 usedByEdges ArrowHead{}        = True
