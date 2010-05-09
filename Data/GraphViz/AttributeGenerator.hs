@@ -43,6 +43,7 @@ genCode att = vsep $ map ($att) cds
             , usedByFunc "SubGraphs" forSubGraphs
             , usedByFunc "Nodes" forNodes
             , usedByFunc "Edges" forEdges
+            , sameAttributeFunc
             ]
 
 genArbitrary :: Atts -> Doc
@@ -302,6 +303,39 @@ usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])
       unknownATr = [ fn <+> unknownAttr <> braces empty
                    , equals <+> tr
                    ]
+
+sameAttributeFunc     :: Atts -> Code
+sameAttributeFunc att = cmnt $$ asRows (tpSig : stmts ++ [unknownAtr, rst])
+  where
+    cmnt = text "-- | Determine if two '" <> dt
+           <> text "s' are the same type of '"<> dt <> text"'."
+    sFunc = text "sameAttribute"
+    dt = tpNm att
+    tpSig = [ sFunc
+            , char ' ' -- first arg, for some reason won't line up
+                       -- properly if its empty
+            , empty -- second arg
+            , colon <> colon
+              <+> dt <+> text "->" <+> dt <+> text "->" <+> text "Bool"
+            ]
+    stmts = map sf $ atts att
+    sf a = [ sFunc
+           , cnst a <> braces empty
+           , cnst a <> braces empty
+           , equals <+> tr
+           ]
+    tr = text "True"
+    catchAll = char '_'
+    unknownAtr = [ sFunc
+                 , parens $ unknownAttr <+> text "a1" <+> catchAll
+                 , parens $ unknownAttr <+> text "a2" <+> catchAll
+                 , equals <+> text "a1" <+> equals <> equals <+> text "a2"
+                 ]
+    rst = [ sFunc
+          , catchAll
+          , catchAll
+          , equals <+> text "False"
+          ]
 
 
 -- -----------------------------------------------------------------------------
