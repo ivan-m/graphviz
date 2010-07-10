@@ -23,6 +23,7 @@ module Data.GraphViz
       -- ** Specifying parameters.
       GraphvizParams(..)
     , defaultParams
+    , nonClusteredParams
     , setDirectedness
       -- ** Converting graphs.
     , graphToDot
@@ -130,6 +131,13 @@ defaultParams = Params { isDirected       = True
                        , fmtNode          = const []
                        , fmtEdge          = const []
                        }
+
+-- | A variant of 'defaultParams' that enforces that the clustering
+--   type is @'()'@; this avoids problems when using 'defaultParams'
+--   internally within a function without any constraint on what the
+--   clustering type is.
+nonClusteredParams :: GraphvizParams nl el () nl
+nonClusteredParams = defaultParams
 
 -- | Determine if the provided 'Graph' is directed or not and set the
 --   value of 'isDirected' appropriately.
@@ -394,9 +402,7 @@ canonicalise = liftM parseDotGraph . prettyPrint
 preview   :: (Ord el, Graph gr) => gr nl el -> IO ()
 preview g = ign $ forkIO (ign $ runGraphvizCanvas' dg Xlib)
   where
-    params :: GraphvizParams nl el () nl
-    params = defaultParams
-    dg = setDirectedness graphToDot params g
+    dg = setDirectedness graphToDot nonClusteredParams g
     ign = (>> return ())
 
 -- | Used for obtaining results from 'graphvizWithHandle', etc. when
