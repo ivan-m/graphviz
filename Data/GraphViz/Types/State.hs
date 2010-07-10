@@ -44,7 +44,7 @@ import qualified Data.Set as Set
 import Data.Set(Set)
 import qualified Data.Sequence as Seq
 import Data.Sequence(Seq, (|>), ViewL(..))
-import Control.Arrow((&&&))
+import Control.Arrow((&&&), (***))
 import Control.Monad(when)
 import Control.Monad.Trans.State
 
@@ -132,32 +132,30 @@ type GraphState a = GVState ClusterLookup' a
 -- | The available information for each cluster; the @['Path']@
 --   denotes all locations where that particular cluster is located
 --   (more than one location can indicate possible problems).
-type ClusterLookup = Map (Maybe GraphID) (GlobalAttributes, [Path])
+type ClusterLookup = Map (Maybe GraphID) ([Path], GlobalAttributes)
 
 type ClusterLookup' = Map (Maybe GraphID) ClusterInfo
 
-data ClusterInfo = CI { parents :: DList Path
-                      , cAttrs  :: SAttrs
-                      }
+type ClusterInfo = (DList Path, SAttrs)
 
 getGraphInfo :: GraphState a -> (GlobalAttributes, ClusterLookup)
 getGraphInfo = (toGlobal . globalAttrs &&& convert . value)
                . flip execState initState
   where
-    convert = Map.map (\(CI ps as) -> (toGlobal as, uniq $ toList ps))
+    convert = Map.map ((uniq . toList) *** toGlobal)
     toGlobal = GraphAttrs . unSame
     initState = SV Set.empty True Seq.empty Map.empty
     uniq = Set.toList . Set.fromList
 
-mergeCInfos                         :: ClusterInfo -> ClusterInfo -> ClusterInfo
-mergeCInfos (CI p1 as1) (CI p2 as2) = CI (p1 `append` p2) (as1 `Set.union` as2)
+mergeCInfos          :: ClusterInfo -> ClusterInfo -> ClusterInfo
+mergeCInfos (p1,as1) = (append p1 *** Set.union as1)
 
 addCluster                 :: Maybe (Maybe GraphID) -> Path -> SAttrs
                               -> GraphState ()
 addCluster Nothing    _ _  = return ()
 addCluster (Just gid) p as = modifyValue $ Map.insertWith mergeCInfos gid ci
   where
-    ci = CI (singleton p) as
+    ci = (singleton p, as)
 
 -- Use this instead of recursiveCall
 addSubGraph           :: Maybe (Maybe GraphID) -> GraphState a -> GraphState ()
@@ -168,9 +166,9 @@ addSubGraph mid cntns = do pth <- getPath -- Want path before we add it...
                                                   gas <- getGlobals
                                                   addCluster mid pth gas
 
-addGraphGlobals                :: GlobalAttributes -> GraphState ()
+addGraphGlobals                 :: GlobalAttributes -> GraphState ()
 addGraphGlobals (GraphAttrs as) = addGlobals as
-addGraphGlobals _              = return ()
+addGraphGlobals _               = return ()
 
 -- -----------------------------------------------------------------------------
 -- Dealing with DotNodes
