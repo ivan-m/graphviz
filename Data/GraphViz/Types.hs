@@ -88,6 +88,12 @@
 module Data.GraphViz.Types
     ( -- * Abstraction from the representation type
       DotRepr(..)
+      -- ** Helper types for looking up information within a @DotRepr@.
+    , NodeLookup
+    , Path
+      -- ** Obtaining the @DotNode@s and @DotEdges@.
+    , graphNodes
+    , graphEdges
       -- ** Printing and parsing a @DotRepr@.
     , printDotGraph
     , parseDotGraph
@@ -107,6 +113,7 @@ module Data.GraphViz.Types
     ) where
 
 import Data.GraphViz.Types.Common
+import Data.GraphViz.Types.State
 import Data.GraphViz.Attributes( Attribute
                                , usedByGraphs, usedByClusters, usedBySubGraphs)
 import Data.GraphViz.Util
@@ -130,13 +137,30 @@ class (PrintDot (dg n), ParseDot (dg n)) => DotRepr dg n where
   -- | Set the ID of the graph.
   setID :: GraphID -> dg n -> dg n
 
-  -- | Return all the 'DotNode's contained within this 'DotRepr'.
-  --   There is no requirement for it to return implicitly defined
-  --   nodes found only within a 'DotEdge'.
-  graphNodes :: dg n -> [DotNode n]
+  -- | Return information on all the clusters contained within this
+  --   'DotRepr', as well as the top-level 'GraphAttrs' for the
+  --   overall graph.
+  graphStructureInformation :: dg n -> (GlobalAttributes, ClusterLookup)
 
-  -- | Return all the 'DotEdge's contained within this 'DotRepr'.
-  graphEdges :: dg n -> [DotEdge n]
+  -- | Return information on the 'DotNode's contained within this
+  --   'DotRepr'.  The 'Bool' parameter indicates if applicable
+  --   'NodeAttrs' should be included.
+  nodeInformation :: Bool -> dg n -> NodeLookup n
+
+  -- | Return information on the 'DotEdge's contained within this
+  --   'DotRepr'.  The 'Bool' parameter indicates if applicable
+  --   'EdgeAttrs' should be included.
+  edgeInformation :: Bool -> dg n -> [DotEdge n]
+
+-- | Returns all resultant 'DotNode's in the 'DotRepr' (not including
+--   'NodeAttr's).
+graphNodes :: (DotRepr dg n, Ord n) => dg n -> [DotNode n]
+graphNodes = toDotNodes . nodeInformation False
+
+-- | Returns all resultant 'DotEdge's in the 'DotRepr' (not including
+--   'EdgeAttr's).
+graphEdges :: (DotRepr dg n) => dg n -> [DotEdge n]
+graphEdges = edgeInformation False
 
 -- | The actual /Dot/ code for an instance of 'DotRepr'.  Note that it
 --   is expected that @'parseDotGraph' . 'printDotGraph' == 'id'@
@@ -163,16 +187,21 @@ data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multipl
                            }
                   deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot n, ParseDot n) => DotRepr DotGraph n where
+instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
   graphIsDirected = directedGraph
 
   makeStrict g = g { strictGraph = True }
 
   setID i g = g { graphID = Just i }
 
-  graphNodes = statementNodes . graphStatements
+  graphStructureInformation = getGraphInfo
+                              . statementStructure . graphStatements
 
-  graphEdges = statementEdges . graphStatements
+  nodeInformation wGlobal = getNodeLookup wGlobal
+                            . statementNodes . graphStatements
+
+  edgeInformation wGlobal = getDotEdges wGlobal
+                            . statementEdges . graphStatements
 
 -- | Check if all the 'Attribute's are being used correctly.
 isValidGraph :: DotGraph a -> Bool
@@ -241,18 +270,23 @@ invalidStmts f stmts = concatMap (invalidGlobal f) (attrStmts stmts)
                        ++ concatMap invalidNode (nodeStmts stmts)
                        ++ concatMap invalidEdge (edgeStmts stmts)
 
-statementNodes       :: DotStatements a -> [DotNode a]
-statementNodes stmts = concatMap subGraphNodes (subGraphs stmts)
-                       ++ nodeStmts stmts
+statementStructure :: DotStatements n -> GraphState ()
+statementStructure stmts
+  = do mapM_ addGraphGlobals $ attrStmts stmts
+       mapM_ (withSubGraphID addSubGraph statementStructure) $ subGraphs stmts
 
-statementEdges       :: DotStatements a -> [DotEdge a]
-statementEdges stmts = concatMap subGraphEdges (subGraphs stmts)
-                       ++ edgeStmts stmts
+statementNodes :: (Ord a) => DotStatements a -> NodeState a ()
+statementNodes stmts
+  = do mapM_ addNodeGlobals $ attrStmts stmts
+       mapM_ (withSubGraphID recursiveCall statementNodes) $ subGraphs stmts
+       mapM_ addNode $ nodeStmts stmts
+       mapM_ addEdgeNodes $ edgeStmts stmts
 
--- -----------------------------------------------------------------------------
-
-
-
+statementEdges :: DotStatements a -> EdgeState a ()
+statementEdges stmts
+  = do mapM_ addEdgeGlobals $ attrStmts stmts
+       mapM_ (withSubGraphID recursiveCall statementEdges) $ subGraphs stmts
+       mapM_ addEdge $ edgeStmts stmts
 
 -- -----------------------------------------------------------------------------
 
@@ -294,12 +328,8 @@ invalidSubGraph sg = invalidStmts valFunc (subGraphStmts sg)
     where
       valFunc = bool usedBySubGraphs usedByClusters (isCluster sg)
 
-subGraphNodes :: DotSubGraph a -> [DotNode a]
-subGraphNodes = statementNodes . subGraphStmts
-
-subGraphEdges :: DotSubGraph a -> [DotEdge a]
-subGraphEdges = statementEdges . subGraphStmts
-
--- -----------------------------------------------------------------------------
-
+withSubGraphID        :: (Maybe (Maybe GraphID) -> b -> a)
+                         -> (DotStatements n -> b) -> DotSubGraph n -> a
+withSubGraphID f g sg = f mid . g $ subGraphStmts sg
   where
+    mid = bool Nothing (Just $ subGraphID sg) $ isCluster sg

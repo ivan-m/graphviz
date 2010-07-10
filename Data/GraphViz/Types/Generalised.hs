@@ -58,16 +58,21 @@ data GDotGraph a = GDotGraph { gStrictGraph     :: Bool  -- ^ If 'True', no mult
                              }
                  deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot n, ParseDot n) => DotRepr GDotGraph n where
+instance (Ord n, PrintDot n, ParseDot n) => DotRepr GDotGraph n where
   graphIsDirected = gDirectedGraph
 
   makeStrict g = g { gStrictGraph = True }
 
   setID i g = g { gGraphID = Just i }
 
-  graphNodes = statementNodes . gGraphStatements
+  graphStructureInformation = getGraphInfo
+                              . statementStructure . gGraphStatements
 
-  graphEdges = statementEdges . gGraphStatements
+  nodeInformation wGlobal = getNodeLookup wGlobal
+                            . statementNodes . gGraphStatements
+
+  edgeInformation wGlobal = getDotEdges wGlobal
+                            . statementEdges . gGraphStatements
 
 instance (PrintDot a) => PrintDot (GDotGraph a) where
   unqtDot = printStmtBased printGraphID' gGraphStatements printGStmts
@@ -104,11 +109,14 @@ printGStmts = toDot . F.toList
 parseGStmts :: (ParseDot a) => Parse (GDotStatements a)
 parseGStmts = liftM Seq.fromList parse
 
-statementNodes :: GDotStatements a -> [DotNode a]
-statementNodes = concatMap stmtNodes . F.toList
+statementStructure :: GDotStatements a -> GraphState ()
+statementStructure = F.mapM_ stmtStructure
 
-statementEdges :: GDotStatements a -> [DotEdge a]
-statementEdges = concatMap stmtEdges . F.toList
+statementNodes :: (Ord a) => GDotStatements a -> NodeState a ()
+statementNodes = F.mapM_ stmtNodes
+
+statementEdges :: GDotStatements a -> EdgeState a ()
+statementEdges = F.mapM_ stmtEdges
 
 generaliseStatements       :: DotStatements a -> GDotStatements a
 generaliseStatements stmts = atts >< sgs >< ns >< es
@@ -163,15 +171,22 @@ instance Functor GDotStatement where
   fmap f (DN dn) = DN $ fmap f dn
   fmap f (DE de) = DE $ fmap f de
 
-stmtNodes         :: GDotStatement a -> [DotNode a]
-stmtNodes (SG sg) = subGraphNodes sg
-stmtNodes (DN dn) = [dn]
-stmtNodes _       = []
+stmtStructure         :: GDotStatement n -> GraphState ()
+stmtStructure (GA ga) = addGraphGlobals ga
+stmtStructure (SG sg) = withSubGraphID addSubGraph statementStructure sg
+stmtStructure _       = return ()
 
-stmtEdges         :: (GDotStatement a) -> [DotEdge a]
-stmtEdges (SG sg) = subGraphEdges sg
-stmtEdges (DE de) = [de]
-stmtEdges _       = []
+stmtNodes         :: (Ord a) => GDotStatement a -> NodeState a ()
+stmtNodes (GA ga) = addNodeGlobals ga
+stmtNodes (SG sg) = withSubGraphID recursiveCall statementNodes sg
+stmtNodes (DN dn) = addNode dn
+stmtNodes (DE de) = addEdgeNodes de
+
+stmtEdges         :: (GDotStatement a) -> EdgeState a ()
+stmtEdges (GA ga) = addEdgeGlobals ga
+stmtEdges (SG sg) = withSubGraphID recursiveCall statementEdges sg
+stmtEdges (DE de) = addEdge de
+stmtEdges _       = return ()
 
 -- -----------------------------------------------------------------------------
 
@@ -208,12 +223,6 @@ instance (ParseDot a) => ParseDot (GDotSubGraph a) where
 instance Functor GDotSubGraph where
     fmap f sg = sg { gSubGraphStmts = (fmap . fmap) f $ gSubGraphStmts sg }
 
-subGraphNodes :: GDotSubGraph a -> [DotNode a]
-subGraphNodes = statementNodes . gSubGraphStmts
-
-subGraphEdges :: GDotSubGraph a -> [DotEdge a]
-subGraphEdges = statementEdges . gSubGraphStmts
-
 generaliseSubGraph                       :: DotSubGraph a -> GDotSubGraph a
 generaliseSubGraph (DotSG isC mID stmts) = GDotSG { gIsCluster     = isC
                                                   , gSubGraphID    = mID
@@ -221,3 +230,9 @@ generaliseSubGraph (DotSG isC mID stmts) = GDotSG { gIsCluster     = isC
                                                   }
   where
     stmts' = generaliseStatements stmts
+
+withSubGraphID        :: (Maybe (Maybe GraphID) -> b -> a)
+                         -> (GDotStatements n -> b) -> GDotSubGraph n -> a
+withSubGraphID f g sg = f mid . g $ gSubGraphStmts sg
+  where
+    mid = bool Nothing (Just $ gSubGraphID sg) $ gIsCluster sg

@@ -64,7 +64,8 @@ Library {
                            polyparse >= 1.4,
                            pretty,
                            bytestring < 0.10,
-                           colour >= 2.3 && < 2.4
+                           colour >= 2.3 && < 2.4,
+                           transformers == 0.2.*
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types
@@ -80,6 +81,7 @@ Library {
         Other-Modules:     Data.GraphViz.Attributes.Internal
                            Data.GraphViz.Types.Clustering
                            Data.GraphViz.Types.Common
+                           Data.GraphViz.Types.State
                            Data.GraphViz.Util
         if flag(test)
            Build-Depends:       QuickCheck >= 2.1 && < 2.2
