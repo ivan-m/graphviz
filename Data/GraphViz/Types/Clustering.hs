@@ -25,14 +25,14 @@ import Data.Graph.Inductive.Graph(Graph, Node, LNode, labNodes)
 
 -- | Define into which cluster a particular node belongs.
 --   Clusters can be nested to arbitrary depth.
-data NodeCluster c a = N (LNode a) -- ^ Indicates the actual Node in the Graph.
+data NodeCluster c a = N a -- ^ Indicates the actual Node in the Graph.
                      | C c (NodeCluster c a) -- ^ Indicates that the
                                              --   'NodeCluster' is in
                                              --   the Cluster /c/.
                         deriving (Show)
 
 -- | Create the /Dot/ representation for the given graph.
-clustersToNodes :: (Ord c, Graph gr) => (LNode a -> NodeCluster c l)
+clustersToNodes :: (Ord c, Graph gr) => (LNode a -> NodeCluster c (LNode l))
                    -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
                    -> (LNode l -> Attributes) -> gr a b
                    -> ([DotSubGraph Node], [DotNode Node])
@@ -45,7 +45,7 @@ clustersToNodes clusterBy cID fmtCluster fmtNode
 -- -----------------------------------------------------------------------------
 
 -- | A tree representation of a cluster.
-data ClusterTree c a = NT (LNode a)
+data ClusterTree c a = NT a
                      | CT c [ClusterTree c a]
                        deriving (Show)
 
@@ -87,7 +87,7 @@ collapseNClusts = concatMap grpCls
 --   and 'DotSubGraph's (with @'isCluster' = 'True'@, and
 --   @'subGraphID' = 'Nothing'@).
 treesToDot :: (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-              -> (LNode a -> Attributes) -> [ClusterTree c a]
+              -> (LNode a -> Attributes) -> [ClusterTree c (LNode a)]
               -> ([DotSubGraph Node], [DotNode Node])
 treesToDot cID fmtCluster fmtNode
     = partitionEithers
@@ -95,7 +95,7 @@ treesToDot cID fmtCluster fmtNode
 
 -- | Convert this 'ClusterTree' into its /Dot/ representation.
 treeToDot :: (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-             -> (LNode a -> Attributes) -> ClusterTree c a
+             -> (LNode a -> Attributes) -> ClusterTree c (LNode a)
              -> Either (DotSubGraph Node) (DotNode Node)
 treeToDot _ _ fmtNode (NT ln)
     = Right DotNode { nodeID         = fst ln
