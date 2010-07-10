@@ -9,7 +9,8 @@
 -}
 module Data.GraphViz.Testing.Properties where
 
-import Data.GraphViz(dotizeGraph', prettyPrint')
+import Data.GraphViz( dotizeGraph, setDirectedness, nonClusteredParams
+                    , prettyPrint')
 import Data.GraphViz.Types(DotRepr, DotGraph, printDotGraph)
 import Data.GraphViz.Types.Generalised(generaliseDotGraph)
 import Data.GraphViz.Printing(PrintDot(..), printIt)
@@ -38,7 +39,8 @@ prop_printParseListID as =  not (null as) ==> prop_printParseID as
 
 -- | When converting a 'DotGraph' value to a 'GDotGraph' one, they
 --   should generate the same Dot code.
-prop_generalisedSameDot    :: (ParseDot n, PrintDot n) => DotGraph n -> Bool
+prop_generalisedSameDot    :: (Ord n, ParseDot n, PrintDot n)
+                              => DotGraph n -> Bool
 prop_generalisedSameDot dg = printDotGraph dg == printDotGraph gdg
   where
     gdg = generaliseDotGraph dg
@@ -57,16 +59,16 @@ prop_parsePrettyID    :: (DotRepr dg n, Eq (dg n), ParseDot (dg n))
                          => dg n -> Bool
 prop_parsePrettyID dg = (parseIt' . prettyPrint') dg == dg
 
--- | This property verifies that 'dotizeGraph'', etc. only /augment/ the
+-- | This property verifies that 'dotizeGraph', etc. only /augment/ the
 --   original graph; that is, the actual nodes, edges and labels for
---   each remain unchanged.  Whilst 'dotize'', etc. only require
+--   each remain unchanged.  Whilst 'dotize', etc. only require
 --   'Graph' instances, this property requires 'DynGraph' (which is a
 --   sub-class of 'Graph') instances to be able to strip off the
 --   'Attributes' augmentations.
 prop_dotizeAugment   :: (DynGraph g, Eq n, Ord e) => g n e -> Bool
 prop_dotizeAugment g = equal g (unAugment g')
   where
-    g' = dotizeGraph' g
+    g' = setDirectedness dotizeGraph nonClusteredParams g
     unAugment = nmap snd . emap snd
 
 -- | When a graph with multiple edges is augmented, then all edges
@@ -76,7 +78,7 @@ prop_dotizeAugment g = equal g (unAugment g')
 prop_dotizeAugmentUniq   :: (DynGraph g, Eq n, Ord e) => g n e -> Bool
 prop_dotizeAugmentUniq g = all uniqLs lss
   where
-    g' = dotizeGraph' g
+    g' = setDirectedness dotizeGraph nonClusteredParams g
     les = map (\(f,t,l) -> ((f,t),l)) $ labEdges g'
     lss = map (map snd) . filter (not . isSingle)
           $ groupSortBy fst les
