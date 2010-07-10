@@ -128,8 +128,14 @@ import Control.Monad(liftM)
 -- | This class is used to provide a common interface to different
 --   ways of representing a graph in /Dot/ form.
 class (PrintDot (dg n), ParseDot (dg n)) => DotRepr dg n where
+  -- | Return the ID of the graph.
+  getID :: dg n -> Maybe GraphID
+
   -- | Is this graph directed?
   graphIsDirected :: dg n -> Bool
+
+  -- | Is this graph strict?
+  graphIsStrict :: dg n -> Bool
 
   -- | A strict graph disallows multiple edges.
   makeStrict :: dg n -> dg n
@@ -188,7 +194,11 @@ data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multipl
                   deriving (Eq, Ord, Show, Read)
 
 instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
+  getID = graphID
+
   graphIsDirected = directedGraph
+
+  graphIsStrict = strictGraph
 
   makeStrict g = g { strictGraph = True }
 

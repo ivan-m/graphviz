@@ -40,8 +40,10 @@ import Data.GraphViz.Types hiding ( GraphID(..)
                                   , GlobalAttributes(..)
                                   , DotEdge(..))
 import Data.GraphViz.Types.Common
+import Data.GraphViz.Types.State
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
+import Data.GraphViz.Util(bool)
 
 import qualified Data.Sequence as Seq
 import Data.Sequence(Seq, (><))
@@ -59,7 +61,11 @@ data GDotGraph a = GDotGraph { gStrictGraph     :: Bool  -- ^ If 'True', no mult
                  deriving (Eq, Ord, Show, Read)
 
 instance (Ord n, PrintDot n, ParseDot n) => DotRepr GDotGraph n where
+  getID = gGraphID
+
   graphIsDirected = gDirectedGraph
+
+  graphIsStrict = gStrictGraph
 
   makeStrict g = g { gStrictGraph = True }
 
