@@ -312,45 +312,7 @@ subGraphEdges = statementEdges . subGraphStmts
 
 -- -----------------------------------------------------------------------------
 
--- | A node in 'DotGraph'.
-data DotNode a = DotNode { nodeID :: a
-                         , nodeAttributes :: Attributes
-                         }
-                 deriving (Eq, Ord, Show, Read)
-
-instance (PrintDot a) => PrintDot (DotNode a) where
-    unqtDot = printAttrBased printNodeID nodeAttributes
-
-    unqtListToDot = printAttrBasedList printNodeID nodeAttributes
-
-    listToDot = unqtListToDot
-
-printNodeID :: (PrintDot a) => DotNode a -> DotCode
-printNodeID = toDot . nodeID
-
-instance (ParseDot a) => ParseDot (DotNode a) where
-    parseUnqt = parseAttrBased parseNodeID
-
-    parse = parseUnqt -- Don't want the option of quoting
-
-    parseUnqtList = parseAttrBasedList parseNodeID
-
-    parseList = parseUnqtList
-
-parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
-parseNodeID = liftM DotNode parseAndCheck
   where
-    parseAndCheck = do a <- parse
-                       me <- optional parseUnwanted
-                       maybe (return a) (const notANode) me
-    notANode = fail "This appears to be an edge, not a node"
-    parseUnwanted = oneOf [ parseEdgeType >> return ()
-                          , character ':' >> return () -- PortPos value
-                          ]
-
-instance Functor DotNode where
-    fmap f n = n { nodeID = f $ nodeID n }
-
 invalidNode   :: DotNode a -> [DotError a]
 invalidNode n = map (NodeError (Just $ nodeID n))
                 $ filter (not . usedByNodes) (nodeAttributes n)

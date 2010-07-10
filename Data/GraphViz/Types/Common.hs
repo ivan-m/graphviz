@@ -121,6 +121,47 @@ determineType attr
 
 -- -----------------------------------------------------------------------------
 
+-- | A node in 'DotGraph'.
+data DotNode a = DotNode { nodeID :: a
+                         , nodeAttributes :: Attributes
+                         }
+                 deriving (Eq, Ord, Show, Read)
+
+instance (PrintDot a) => PrintDot (DotNode a) where
+    unqtDot = printAttrBased printNodeID nodeAttributes
+
+    unqtListToDot = printAttrBasedList printNodeID nodeAttributes
+
+    listToDot = unqtListToDot
+
+printNodeID :: (PrintDot a) => DotNode a -> DotCode
+printNodeID = toDot . nodeID
+
+instance (ParseDot a) => ParseDot (DotNode a) where
+    parseUnqt = parseAttrBased parseNodeID
+
+    parse = parseUnqt -- Don't want the option of quoting
+
+    parseUnqtList = parseAttrBasedList parseNodeID
+
+    parseList = parseUnqtList
+
+parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
+parseNodeID = liftM DotNode parseAndCheck
+  where
+    parseAndCheck = do a <- parse
+                       me <- optional parseUnwanted
+                       maybe (return a) (const notANode) me
+    notANode = fail "This appears to be an edge, not a node"
+    parseUnwanted = oneOf [ parseEdgeType >> return ()
+                          , character ':' >> return () -- PortPos value
+                          ]
+
+instance Functor DotNode where
+    fmap f n = n { nodeID = f $ nodeID n }
+
+-- -----------------------------------------------------------------------------
+
 -- This is re-exported in Data.GraphViz.Types; defined here so that
 -- Generalised can access and use parseEdgeLine (needed for "a -> b ->
 -- c"-style edge statements).
