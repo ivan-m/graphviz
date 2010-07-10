@@ -36,7 +36,9 @@ module Data.GraphViz.Types.Generalised
        , generaliseDotGraph
        ) where
 
-import Data.GraphViz.Types hiding (GraphID(..), DotEdge(..))
+import Data.GraphViz.Types hiding ( GraphID(..)
+                                  , GlobalAttributes(..)
+                                  , DotEdge(..))
 import Data.GraphViz.Types.Common
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing

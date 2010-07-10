@@ -15,7 +15,9 @@ module Data.GraphViz.Types.Common where
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 import Data.GraphViz.Util
-import Data.GraphViz.Attributes(Attributes, Attribute(HeadPort, TailPort))
+import Data.GraphViz.Attributes( Attributes, Attribute(HeadPort, TailPort)
+                               , usedByGraphs, usedByClusters
+                               , usedByNodes, usedByEdges)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
 
 import Data.Maybe(isJust)
@@ -55,6 +57,67 @@ stringNum str = maybe checkDbl Int $ stringToInt str
                then Dbl $ toDouble str
                else Str str
 
+-- -----------------------------------------------------------------------------
+
+-- Re-exported by Data.GraphViz.Types and Data.GraphViz.Types.Generalised
+
+-- | Represents a list of top-level list of 'Attribute's for the
+--   entire graph/sub-graph.  Note that 'GraphAttrs' also applies to
+--   'DotSubGraph's.
+--
+--   Note that Dot allows a single 'Attribute' to be listen on a line;
+--   if this is the case then when parsing, the type of 'Attribute' it
+--   is determined and that type of 'GlobalAttribute' is created.
+data GlobalAttributes = GraphAttrs { attrs :: Attributes }
+                      | NodeAttrs  { attrs :: Attributes }
+                      | EdgeAttrs  { attrs :: Attributes }
+                        deriving (Eq, Ord, Show, Read)
+
+instance PrintDot GlobalAttributes where
+    -- Can't use printAttrBased because an empty list still must be printed.
+    unqtDot ga = printGlobAttrType ga <+> toDot (attrs ga) <> semi
+
+    unqtListToDot = printAttrBasedList printGlobAttrType attrs
+
+    listToDot = unqtListToDot
+
+printGlobAttrType              :: GlobalAttributes -> DotCode
+printGlobAttrType GraphAttrs{} = text "graph"
+printGlobAttrType NodeAttrs{}  = text "node"
+printGlobAttrType EdgeAttrs{}  = text "edge"
+
+instance ParseDot GlobalAttributes where
+    -- Not using parseAttrBased here because we want to force usage of
+    -- Attributes.
+    parseUnqt = do gat <- parseGlobAttrType
+                   as <- whitespace' >> parse
+                   return $ gat as
+                `onFail`
+                liftM determineType parse
+
+    parse = parseUnqt -- Don't want the option of quoting
+            `adjustErr`
+            (++ "\n\nNot a valid listing of global attributes")
+
+    -- Have to do this manually because of the special case
+    parseUnqtList = parseStatements parse
+
+    parseList = parseUnqtList
+
+parseGlobAttrType :: Parse (Attributes -> GlobalAttributes)
+parseGlobAttrType = oneOf [ stringRep GraphAttrs "graph"
+                          , stringRep NodeAttrs "node"
+                          , stringRep EdgeAttrs "edge"
+                          ]
+
+determineType :: Attribute -> GlobalAttributes
+determineType attr
+    | usedByGraphs attr   = GraphAttrs attr'
+    | usedByClusters attr = GraphAttrs attr' -- Also covers SubGraph case
+    | usedByNodes attr    = NodeAttrs attr'
+    | otherwise           = EdgeAttrs attr' -- Must be for edges.
+    where
+      attr' = [attr]
 
 -- -----------------------------------------------------------------------------
 
