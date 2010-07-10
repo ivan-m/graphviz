@@ -121,6 +121,7 @@ import Data.GraphViz.Parsing
 import Data.GraphViz.PreProcessing
 import Data.GraphViz.Printing
 
+import Control.Arrow((&&&))
 import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
@@ -314,7 +315,7 @@ instance (PrintDot a) => PrintDot (DotSubGraph a) where
     listToDot = unqtListToDot
 
 printSubGraphID' :: DotSubGraph a -> DotCode
-printSubGraphID' = printSubGraphID (\sg -> (isCluster sg, subGraphID sg))
+printSubGraphID' = printSubGraphID (isCluster &&& subGraphID)
 
 instance (ParseDot a) => ParseDot (DotSubGraph a) where
     parseUnqt = parseStmtBased parseUnqt (parseSubGraphID DotSG)

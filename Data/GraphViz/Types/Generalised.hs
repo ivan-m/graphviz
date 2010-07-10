@@ -48,6 +48,7 @@ import Data.GraphViz.Util(bool)
 import qualified Data.Sequence as Seq
 import Data.Sequence(Seq, (><))
 import qualified Data.Foldable as F
+import Control.Arrow((&&&))
 import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
@@ -188,7 +189,7 @@ stmtNodes (SG sg) = withSubGraphID recursiveCall statementNodes sg
 stmtNodes (DN dn) = addNode dn
 stmtNodes (DE de) = addEdgeNodes de
 
-stmtEdges         :: (GDotStatement a) -> EdgeState a ()
+stmtEdges         :: GDotStatement a -> EdgeState a ()
 stmtEdges (GA ga) = addEdgeGlobals ga
 stmtEdges (SG sg) = withSubGraphID recursiveCall statementEdges sg
 stmtEdges (DE de) = addEdge de
@@ -210,7 +211,7 @@ instance (PrintDot a) => PrintDot (GDotSubGraph a) where
   listToDot = unqtListToDot
 
 printSubGraphID' :: GDotSubGraph a -> DotCode
-printSubGraphID' = printSubGraphID (\sg -> (gIsCluster sg, gSubGraphID sg))
+printSubGraphID' = printSubGraphID (gIsCluster &&& gSubGraphID)
 
 instance (ParseDot a) => ParseDot (GDotSubGraph a) where
   parseUnqt = parseStmtBased parseGStmts (parseSubGraphID GDotSG)

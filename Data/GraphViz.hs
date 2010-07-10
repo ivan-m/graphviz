@@ -162,7 +162,7 @@ graphToDot params graph
                                    graph
         es = mapMaybe mkDotEdge . labEdges $ graph
         mkDotEdge e@(f,t,_) = if dirGraph || f <= t
-                              then Just $
+                              then Just
                                    DotEdge { edgeFromNodeID = f
                                            , edgeToNodeID   = t
                                            , edgeAttributes = fmtEdge params e
@@ -185,7 +185,7 @@ dotToGraph dg = mkGraph ns' es
     nSet = Set.fromList $ map fst ns
     nEs = map (flip (,) [])
           . uniq
-          . filter (flip Set.notMember nSet)
+          . filter (`Set.notMember` nSet)
           $ concatMap (\(n1,n2,_) -> [n1,n2]) es
     ns' = ns ++ nEs
     -- Conversion functions
@@ -340,7 +340,7 @@ augmentGraph g dg = mkGraph lns les
     lns = map (\(n, l) -> (n, (nodeMap Map.! n, l)))
           $ labNodes g
     les = map augmentEdge $ labEdges g
-    augmentEdge (f,t,(EID eid l)) = (f,t, (edgeMap Map.! eid, l))
+    augmentEdge (f,t,EID eid l) = (f,t, (edgeMap Map.! eid, l))
     ns = graphNodes dg
     es = graphEdges dg
     nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns

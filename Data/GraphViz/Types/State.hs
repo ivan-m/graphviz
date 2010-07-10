@@ -44,7 +44,7 @@ import qualified Data.Set as Set
 import Data.Set(Set)
 import qualified Data.Sequence as Seq
 import Data.Sequence(Seq, (|>), ViewL(..))
-import Control.Arrow(second, (&&&))
+import Control.Arrow((&&&))
 import Control.Monad(when)
 import Control.Monad.Trans.State
 
@@ -71,9 +71,9 @@ modifyValue f = modify f'
   where
     f' sv@(SV{value = s}) = sv{value = f s}
 
-addGlobals      :: Attributes -> GVState s ()
-addGlobals atts = do addG <- gets useGlobals
-                     when addG $ modifyGlobal (flip unionWith atts)
+addGlobals    :: Attributes -> GVState s ()
+addGlobals as = do addG <- gets useGlobals
+                   when addG $ modifyGlobal (`unionWith` as)
 
 getGlobals :: GVState s SAttrs
 getGlobals = gets globalAttrs
@@ -252,7 +252,7 @@ type EdgeState n a = GVState (DList (DotEdge n)) a
 getDotEdges       :: Bool -> EdgeState n a -> [DotEdge n]
 getDotEdges addGs = toList . value . flip execState initState
   where
-    initState = SV (Set.empty) addGs Seq.empty empty
+    initState = SV Set.empty addGs Seq.empty empty
 
 addEdgeGlobals                :: GlobalAttributes -> EdgeState n ()
 addEdgeGlobals (EdgeAttrs as) = addGlobals as
