@@ -199,16 +199,6 @@ instance Functor DotGraph where
 
 -- -----------------------------------------------------------------------------
 
--- | Used to record invalid 'Attribute' usage.  A 'Just' value denotes
---   that it was used in an explicit 'DotNode' or 'DotEdge' usage;
---   'Nothing' means that it was used in a 'GlobalAttributes' value.
-data DotError a = GraphError Attribute
-                | NodeError (Maybe a) Attribute
-                | EdgeError (Maybe (a,a)) Attribute
-                deriving (Eq, Ord, Show, Read)
-
--- -----------------------------------------------------------------------------
-
 data DotStatements a = DotStmts { attrStmts :: [GlobalAttributes]
                                 , subGraphs :: [DotSubGraph a]
                                 , nodeStmts :: [DotNode a]
@@ -313,17 +303,3 @@ subGraphEdges = statementEdges . subGraphStmts
 -- -----------------------------------------------------------------------------
 
   where
-invalidNode   :: DotNode a -> [DotError a]
-invalidNode n = map (NodeError (Just $ nodeID n))
-                $ filter (not . usedByNodes) (nodeAttributes n)
-
--- -----------------------------------------------------------------------------
-
--- Defined here rather than in Common with the rest of the Edge stuff
--- because all the DotError stuff is here.
-
-invalidEdge   :: DotEdge a -> [DotError a]
-invalidEdge e = map (EdgeError eID)
-                $ filter (not . usedByEdges) (edgeAttributes e)
-    where
-      eID = Just (edgeFromNodeID e, edgeToNodeID e)

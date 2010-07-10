@@ -59,6 +59,16 @@ stringNum str = maybe checkDbl Int $ stringToInt str
 
 -- -----------------------------------------------------------------------------
 
+-- | Used to record invalid 'Attribute' usage.  A 'Just' value denotes
+--   that it was used in an explicit 'DotNode' or 'DotEdge' usage;
+--   'Nothing' means that it was used in a 'GlobalAttributes' value.
+data DotError a = GraphError Attribute
+                | NodeError (Maybe a) Attribute
+                | EdgeError (Maybe (a,a)) Attribute
+                deriving (Eq, Ord, Show, Read)
+
+-- -----------------------------------------------------------------------------
+
 -- Re-exported by Data.GraphViz.Types and Data.GraphViz.Types.Generalised
 
 -- | Represents a list of top-level list of 'Attribute's for the
@@ -119,6 +129,14 @@ determineType attr
     where
       attr' = [attr]
 
+invalidGlobal                   :: (Attribute -> Bool) -> GlobalAttributes
+                                   -> [DotError a]
+invalidGlobal f (GraphAttrs as) = map GraphError $ filter (not . f) as
+invalidGlobal _ (NodeAttrs  as) = map (NodeError Nothing)
+                                  $ filter (not . usedByNodes) as
+invalidGlobal _ (EdgeAttrs  as) = map (EdgeError Nothing)
+                                  $ filter (not . usedByEdges) as
+
 -- -----------------------------------------------------------------------------
 
 -- | A node in 'DotGraph'.
@@ -159,6 +177,10 @@ parseNodeID = liftM DotNode parseAndCheck
 
 instance Functor DotNode where
     fmap f n = n { nodeID = f $ nodeID n }
+
+invalidNode   :: DotNode a -> [DotError a]
+invalidNode n = map (NodeError (Just $ nodeID n))
+                $ filter (not . usedByNodes) (nodeAttributes n)
 
 -- -----------------------------------------------------------------------------
 
@@ -267,6 +289,12 @@ undirEdge = "--"
 
 undirEdge' :: DotCode
 undirEdge' = text undirEdge
+
+invalidEdge   :: DotEdge a -> [DotError a]
+invalidEdge e = map (EdgeError eID)
+                $ filter (not . usedByEdges) (edgeAttributes e)
+    where
+      eID = Just (edgeFromNodeID e, edgeToNodeID e)
 
 -- -----------------------------------------------------------------------------
 -- Labels
