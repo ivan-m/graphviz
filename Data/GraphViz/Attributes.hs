@@ -174,6 +174,7 @@ import Data.GraphViz.Printing
 
 import Data.Char(toLower)
 import Data.Maybe(isJust)
+import Data.Word(Word16)
 import Control.Arrow(first)
 import Control.Monad(liftM, liftM2)
 
@@ -1539,7 +1540,10 @@ data Overlap = KeepOverlaps
              | RemoveOverlaps
              | ScaleOverlaps
              | ScaleXYOverlaps
-             | PrismOverlap (Maybe Int) -- ^ Only when sfdp is available, 'Int' is non-negative
+             | PrismOverlap (Maybe Word16) -- ^ Only when sfdp is
+                                           --   available, @'Nothing'@
+                                           --   is equivalent to
+                                           --   @'Just' 1000@.
              | CompressOverlap
              | VpscOverlap
              | IpsepOverlap -- ^ Only when @mode == 'IpSep'@
