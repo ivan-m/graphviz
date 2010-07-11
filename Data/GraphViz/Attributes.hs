@@ -175,7 +175,6 @@ import Data.GraphViz.Printing
 import Data.Char(toLower)
 import Data.Maybe(isJust)
 import Data.Word(Word16)
-import Control.Arrow(first)
 import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
@@ -1500,13 +1499,11 @@ recordEscChars = ['{', '}', '|', ' ', '<', '>']
 
 -- -----------------------------------------------------------------------------
 
-data Point = Point Int Int
-           | PointD Double Double
+data Point = Point Double Double
              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Point where
     unqtDot (Point  x y) = commaDel x y
-    unqtDot (PointD x y) = commaDel x y
 
     toDot = doubleQuotes . unqtDot
 
@@ -1519,16 +1516,7 @@ instance ParseDot Point where
     -- integer, second a double: if Point parsing first, then it won't
     -- parse the second number properly; but if PointD first then it
     -- will treat Int/Int as Double/Double.
-    parseUnqt = intDblPoint
-                `onFail`
-                liftM (uncurry Point)  commaSepUnqt
-                `onFail`
-                liftM (uncurry PointD) commaSepUnqt
-        where
-          intDblPoint = liftM (uncurry PointD . first fI)
-                        $ commaSep' parseUnqt parseStrictFloat
-          fI :: Int -> Double
-          fI = fromIntegral
+    parseUnqt = liftM (uncurry Point) commaSepUnqt
 
     parse = quotedParse parseUnqt
 
