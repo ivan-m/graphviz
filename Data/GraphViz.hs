@@ -24,6 +24,7 @@ module Data.GraphViz
       GraphvizParams(..)
     , defaultParams
     , nonClusteredParams
+    , blankParams
     , setDirectedness
       -- ** Converting graphs.
     , graphToDot
@@ -139,6 +140,21 @@ defaultParams = Params { isDirected       = True
 --   clustering type is.
 nonClusteredParams :: GraphvizParams nl el () nl
 nonClusteredParams = defaultParams
+
+-- | A 'GraphvizParams' value where every field is set to
+--   @'undefined'@.  This is useful when you have a function that will
+--   set some of the values for you (e.g. 'setDirectedness') but you
+--   don't want to bother thinking of default values to set in the
+--   meantime.
+blankParams :: GraphvizParams nl el cl l
+blankParams = Params { isDirected       = undefined
+                     , globalAttributes = undefined
+                     , clusterBy        = undefined
+                     , clusterID        = undefined
+                     , fmtCluster       = undefined
+                     , fmtNode          = undefined
+                     , fmtEdge          = undefined
+                     }
 
 -- | Determine if the provided 'Graph' is directed or not and set the
 --   value of 'isDirected' appropriately.
