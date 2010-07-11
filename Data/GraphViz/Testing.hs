@@ -40,11 +40,12 @@
 -}
 module Data.GraphViz.Testing
        ( -- * Running the test suite.
-         runDefaultTests
+         runChosenTests
        , runTests
        , runTest
          -- ** The tests themselves
        , Test(..)
+       , defaultTests
        , test_printParseID_Attributes
        , test_generalisedSameDot
        , test_printParseID
@@ -91,18 +92,18 @@ import System.IO(hPutStrLn, stderr)
 
 -- -----------------------------------------------------------------------------
 
-runDefaultTests :: IO ()
-runDefaultTests = do putStrLn msg
-                     blankLn
-                     runTests defaultTests
-                     spacerLn
-                     putStrLn successMsg
+runChosenTests       :: [Test] -> IO ()
+runChosenTests tests = do putStrLn msg
+                          blankLn
+                          runTests tests
+                          spacerLn
+                          putStrLn successMsg
   where
     msg = "This is the test suite for the graphviz library.\n\
            \If any of these tests fail, please inform the maintainer,\n\
            \including full output of this test suite.\n\
            \\n\
-           \This test suite takes approximately 55 minutes to run on a\n\
+           \The entire test suite takes approximately 55 minutes to run on a\n\
            \2 GHz Mobile Core 2 Duo (running with a single thread)."
 
     successMsg = "All tests were successful!"
@@ -112,9 +113,10 @@ runDefaultTests = do putStrLn msg
 -- Defining a Test structure and how to run tests.
 
 -- | Defines the test structure being used.
-data Test = Test { name :: String
-                 , desc :: String
-                 , test :: IO Result -- ^ QuickCheck test.
+data Test = Test { name       :: String
+                 , lookupName :: String    -- ^ Should be lowercase
+                 , desc       :: String
+                 , test       :: IO Result -- ^ QuickCheck test.
                  }
 
 -- | Run all of the provided tests.
@@ -181,9 +183,10 @@ defaultTests = [ test_printParseID_Attributes
 -- | Test that 'Attributes' can be printed and then parsed back.
 test_printParseID_Attributes :: Test
 test_printParseID_Attributes
-  = Test { name = "Printing and parsing of Attributes"
-         , desc = dsc
-         , test = quickCheckWithResult args prop
+  = Test { name       = "Printing and parsing of Attributes"
+         , lookupName = "attributes"
+         , desc       = dsc
+         , test       = quickCheckWithResult args prop
          }
     where
       prop :: Attributes -> Property
@@ -200,9 +203,10 @@ test_printParseID_Attributes
 
 test_generalisedSameDot :: Test
 test_generalisedSameDot
-  = Test { name = "Printing generalised Dot code"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Printing generalised Dot code"
+         , lookupName = "makegeneralised"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: DotGraph Int -> Bool
@@ -213,9 +217,10 @@ test_generalisedSameDot
 
 test_printParseID :: Test
 test_printParseID
-  = Test { name = "Printing and Parsing DotGraphs"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Printing and Parsing DotGraphs"
+         , lookupName = "printparseid"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: DotGraph Int -> Bool
@@ -227,9 +232,10 @@ test_printParseID
 
 test_printParseGID :: Test
 test_printParseGID
-  = Test { name = "Printing and Parsing Generalised DotGraphs"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Printing and Parsing Generalised DotGraphs"
+         , lookupName = "printparseidg"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: GDotGraph Int -> Bool
@@ -241,9 +247,10 @@ test_printParseGID
 
 test_preProcessingID :: Test
 test_preProcessingID
-  = Test { name = "Pre-processing Dot code"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Pre-processing Dot code"
+         , lookupName = "preprocessing"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: DotGraph Int -> Bool
@@ -259,9 +266,10 @@ test_preProcessingID
 -- | This test is not valid for use until valid DotGraphs can be generated.
 test_parsePrettyID :: Test
 test_parsePrettyID
-  = Test { name = "Parsing pretty-printed code"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Parsing pretty-printed code"
+         , lookupName = "parsepretty"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: DotGraph Int -> Bool
@@ -275,9 +283,10 @@ test_parsePrettyID
 
 test_dotizeAugment :: Test
 test_dotizeAugment
-  = Test { name = "Augmenting FGL Graphs"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Augmenting FGL Graphs"
+         , lookupName = "augment"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr Char Double -> Bool
@@ -290,9 +299,10 @@ test_dotizeAugment
 
 test_dotizeAugmentUniq :: Test
 test_dotizeAugmentUniq
-  = Test { name = "Unique edges in augmented FGL Graphs"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Unique edges in augmented FGL Graphs"
+         , lookupName = "augmentuniq"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr Char Double -> Bool
@@ -305,9 +315,10 @@ test_dotizeAugmentUniq
 
 test_findAllNodes :: Test
 test_findAllNodes
-  = Test { name = "Ensure all nodes are found in a DotGraph"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Ensure all nodes are found in a DotGraph"
+         , lookupName = "findnodes"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr () () -> Bool
@@ -319,9 +330,10 @@ test_findAllNodes
 
 test_findAllNodesG :: Test
 test_findAllNodesG
-  = Test { name = "Ensure all nodes are found in a GDotGraph"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Ensure all nodes are found in a GDotGraph"
+         , lookupName = "findnodesg"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr () () -> Bool
@@ -333,9 +345,10 @@ test_findAllNodesG
 
 test_findAllNodesE :: Test
 test_findAllNodesE
-  = Test { name = "Ensure all nodes are found in a node-less DotGraph"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Ensure all nodes are found in a node-less DotGraph"
+         , lookupName = "findedgelessnodes"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr () () -> Bool
@@ -348,9 +361,10 @@ test_findAllNodesE
 
 test_findAllNodesEG :: Test
 test_findAllNodesEG
-  = Test { name = "Ensure all nodes are found in a node-less GDotGraph"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Ensure all nodes are found in a node-less GDotGraph"
+         , lookupName = "findedgelessnodesg"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr () () -> Bool
@@ -363,9 +377,10 @@ test_findAllNodesEG
 
 test_findAllEdges :: Test
 test_findAllEdges
-  = Test { name = "Ensure all edges are found in a DotGraph"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Ensure all edges are found in a DotGraph"
+         , lookupName = "findedges"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr () () -> Bool
@@ -377,9 +392,10 @@ test_findAllEdges
 
 test_findAllEdgesG :: Test
 test_findAllEdgesG
-  = Test { name = "Ensure all edges are found in a GDotGraph"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Ensure all edges are found in a GDotGraph"
+         , lookupName = "findedgesg"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr () () -> Bool
@@ -391,9 +407,10 @@ test_findAllEdgesG
 
 test_noGraphInfo :: Test
 test_noGraphInfo
-  = Test { name = "Plain DotGraphs should have no structural information"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Plain DotGraphs should have no structural information"
+         , lookupName = "nographinfo"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr () () -> Bool
@@ -404,9 +421,10 @@ test_noGraphInfo
 
 test_noGraphInfoG :: Test
 test_noGraphInfoG
-  = Test { name = "Plain GDotGraphs should have no structural information"
-         , desc = dsc
-         , test = quickCheckResult prop
+  = Test { name       = "Plain GDotGraphs should have no structural information"
+         , lookupName = "nographinfog"
+         , desc       = dsc
+         , test       = quickCheckResult prop
          }
     where
       prop :: Gr () () -> Bool
