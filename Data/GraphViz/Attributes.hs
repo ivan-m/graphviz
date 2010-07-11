@@ -341,7 +341,7 @@ data Attribute
     | Size Point                       -- ^ /Valid for/: G
     | Skew Double                      -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
     | Smoothing SmoothType             -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
-    | SortV Int                        -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
+    | SortV Word16                     -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
     | Splines EdgeType                 -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
     | Start StartType                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: fdp, neato only
     | StyleSheet String                -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only

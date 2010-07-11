@@ -512,7 +512,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "Size" ["size"] "G" (Cust "Point") Nothing Nothing Nothing Nothing
              , makeAttr "Skew" ["skew"] "N" Dbl Nothing (Just "@0.0@") (Just "@-100.0@") Nothing
              , makeAttr "Smoothing" ["smoothing"] "G" (Cust "SmoothType") Nothing (Just "@'NoSmooth'@") Nothing (Just "sfdp only")
-             , makeAttr "SortV" ["sortv"] "GCN" Integ Nothing (Just "@0@") (Just "@0@") Nothing
+             , makeAttr "SortV" ["sortv"] "GCN" (Cust "Word16") Nothing (Just "@0@") (Just "@0@") Nothing
              , makeAttr "Splines" ["splines"] "G" (Cust "EdgeType") (Just "SplineEdges") Nothing Nothing Nothing
              , makeAttr "Start" ["start"] "G" (Cust "StartType") Nothing (Just "@\\\"\\\"@") Nothing (Just "fdp, neato only")
              , makeAttr "StyleSheet" ["stylesheet"] "G" Strng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg only")
