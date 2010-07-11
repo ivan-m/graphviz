@@ -60,6 +60,9 @@ helpMsg = getProgName >>= (putStr . msg) >> exitWith ExitSuccess
       , "        (where <key> denotes a space-separated list of keys"
       , "         from the table below)."
       , ""
+      , "The entire test suite takes approximately 50 minutes to run on a"
+      , "2 GHz Mobile Core 2 Duo (running with a single thread)."
+      , ""
       , helpTable
       ]
 
