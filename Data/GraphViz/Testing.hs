@@ -174,6 +174,8 @@ defaultTests = [ test_printParseID_Attributes
                , test_findAllNodesEG
                , test_findAllEdges
                , test_findAllEdgesG
+               , test_noGraphInfo
+               , test_noGraphInfoG
                ]
 
 -- | Test that 'Attributes' can be printed and then parsed back.
@@ -386,3 +388,29 @@ test_findAllEdgesG
       dsc = "nodeInformation should find all edges in a GDotGraph;\n\
              \this is tested by converting an FGL graph and comparing\n\
              \the edges it should have to those that are found."
+
+test_noGraphInfo :: Test
+test_noGraphInfo
+  = Test { name = "Plain DotGraphs should have no structural information"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr () () -> Bool
+      prop = prop_noGraphInfo
+
+      dsc = "When converting a Graph to a DotGraph, there should be no\n\
+             \clusters or global attributes."
+
+test_noGraphInfoG :: Test
+test_noGraphInfoG
+  = Test { name = "Plain GDotGraphs should have no structural information"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr () () -> Bool
+      prop = prop_noGraphInfoG
+
+      dsc = "When converting a Graph to a GDotGraph, there should be no\n\
+             \clusters or global attributes."

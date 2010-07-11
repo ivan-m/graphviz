@@ -12,8 +12,9 @@ module Data.GraphViz.Testing.Properties where
 import Data.GraphViz( dotizeGraph, graphToDot
                     , setDirectedness, nonClusteredParams, prettyPrint')
 import Data.GraphViz.Types( DotRepr, DotGraph(..), DotStatements(..)
-                          , DotNode(..), DotEdge(..)
-                          , printDotGraph, graphNodes, graphEdges)
+                          , DotNode(..), DotEdge(..), GlobalAttributes(..)
+                          , printDotGraph, graphNodes, graphEdges
+                          , graphStructureInformation)
 import Data.GraphViz.Types.Generalised(generaliseDotGraph)
 import Data.GraphViz.Printing(PrintDot(..), printIt)
 import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt')
@@ -26,6 +27,8 @@ import Data.Graph.Inductive( Graph, DynGraph
                            , equal, nmap, emap, labEdges, nodes, edges)
 import Data.List(nub, sort)
 import Data.Function(on)
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 import Control.Arrow((&&&))
 
 -- -----------------------------------------------------------------------------
@@ -149,6 +152,22 @@ prop_findAllEdgesG g = ((==) `on` sort) ges dges
     ges = edges g
     dg = generaliseDotGraph $ setDirectedness graphToDot nonClusteredParams g
     dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
+
+-- | There should be no clusters or global attributes when converting
+--   a 'Graph' to a 'DotGraph' without any formatting or clustering.
+prop_noGraphInfo   :: (Ord el, Graph g) => g nl el -> Bool
+prop_noGraphInfo g = info == (GraphAttrs [], Map.empty)
+  where
+    dg = setDirectedness graphToDot nonClusteredParams g
+    info = graphStructureInformation dg
+
+-- | There should be no clusters or global attributes when converting
+--   a 'Graph' to a 'GDotGraph' without any formatting or clustering.
+prop_noGraphInfoG   :: (Ord el, Graph g) => g nl el -> Bool
+prop_noGraphInfoG g = info == (GraphAttrs [], Map.empty)
+  where
+    dg = generaliseDotGraph $ setDirectedness graphToDot nonClusteredParams g
+    info = graphStructureInformation dg
 
 -- -----------------------------------------------------------------------------
 -- Helper utility functions
