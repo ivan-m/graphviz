@@ -28,6 +28,7 @@ module Data.GraphViz
       -- ** Converting graphs.
     , graphToDot
       -- ** Conversion with support for clusters.
+    , LNodeCluster
     , NodeCluster(..)
       -- ** Pseudo-inverse conversion.
     , dotToGraph
@@ -104,7 +105,7 @@ data GraphvizParams nl el cl l
               , globalAttributes :: [GlobalAttributes]
                 -- | A function to specify which cluster a particular
                 --   'LNode' is in.
-              , clusterBy        :: (LNode nl -> NodeCluster cl (LNode l))
+              , clusterBy        :: (LNode nl -> LNodeCluster cl l)
                 -- | The 'GraphID' for a cluster.
               , clusterID        :: (cl -> Maybe GraphID)
                 -- | Specify which global attributes are applied in

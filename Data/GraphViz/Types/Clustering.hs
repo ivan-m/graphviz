@@ -10,7 +10,8 @@
    This module defines types for creating clusters.
 -}
 module Data.GraphViz.Types.Clustering
-    ( NodeCluster(..)
+    ( LNodeCluster
+    , NodeCluster(..)
     , clustersToNodes
     ) where
 
@@ -22,6 +23,10 @@ import Data.List(groupBy, sortBy)
 import Data.Graph.Inductive.Graph(Graph, Node, LNode, labNodes)
 
 -- -----------------------------------------------------------------------------
+
+-- | A type alias for 'NodeCluster' that specifies that the node value
+--   is an 'LNode'.
+type LNodeCluster c a = NodeCluster c (LNode a)
 
 -- | Define into which cluster a particular node belongs.
 --   Clusters can be nested to arbitrary depth.
