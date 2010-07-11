@@ -149,7 +149,7 @@ prop_findAllEdges   :: (Ord el, Graph g) => g nl el -> Bool
 prop_findAllEdges g = ((==) `on` sort) ges dges
   where
     ges = edges g
-    dg = setDirectedness graphToDot nonClusteredParams g
+    dg = graphToDot nonClusteredParams g
     dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
 
 -- | Ensure that the definition of 'edgeInformation' for 'GDotGraph'
@@ -158,7 +158,7 @@ prop_findAllEdgesG   :: (Ord el, Graph g) => g nl el -> Bool
 prop_findAllEdgesG g = ((==) `on` sort) ges dges
   where
     ges = edges g
-    dg = generaliseDotGraph $ setDirectedness graphToDot nonClusteredParams g
+    dg = generaliseDotGraph $ graphToDot nonClusteredParams g
     dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
 
 -- | There should be no clusters or global attributes when converting
