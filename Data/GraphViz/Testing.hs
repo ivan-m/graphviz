@@ -168,6 +168,12 @@ defaultTests = [ test_printParseID_Attributes
                  -- , test_parsePrettyID
                , test_dotizeAugment
                , test_dotizeAugmentUniq
+               , test_findAllNodes
+               , test_findAllNodesG
+               , test_findAllNodesE
+               , test_findAllNodesEG
+               , test_findAllEdges
+               , test_findAllEdgesG
                ]
 
 -- | Test that 'Attributes' can be printed and then parsed back.
@@ -295,3 +301,88 @@ test_dotizeAugmentUniq
              \then each edge between two nodes should have a unique position\n\
              \Attribute, etc."
 
+test_findAllNodes :: Test
+test_findAllNodes
+  = Test { name = "Ensure all nodes are found in a DotGraph"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr () () -> Bool
+      prop = prop_findAllNodes
+
+      dsc = "nodeInformation should find all nodes in a DotGraph;\n\
+             \this is tested by converting an FGL graph and comparing\n\
+             \the nodes it should have to those that are found."
+
+test_findAllNodesG :: Test
+test_findAllNodesG
+  = Test { name = "Ensure all nodes are found in a GDotGraph"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr () () -> Bool
+      prop = prop_findAllNodesG
+
+      dsc = "nodeInformation should find all nodes in a GDotGraph;\n\
+             \this is tested by converting an FGL graph and comparing\n\
+             \the nodes it should have to those that are found."
+
+test_findAllNodesE :: Test
+test_findAllNodesE
+  = Test { name = "Ensure all nodes are found in a node-less DotGraph"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr () () -> Bool
+      prop = prop_findAllNodesE
+
+      dsc = "nodeInformation should find all nodes in a DotGraph,\n\
+             \even if there are no explicit nodes in that graph.\n\
+             \This is tested by converting an FGL graph and comparing\n\
+             \the nodes it should have to those that are found."
+
+test_findAllNodesEG :: Test
+test_findAllNodesEG
+  = Test { name = "Ensure all nodes are found in a node-less GDotGraph"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr () () -> Bool
+      prop = prop_findAllNodesEG
+
+      dsc = "nodeInformation should find all nodes in a GDotGraph,\n\
+             \even if there are no explicit nodes in that graph.\n\
+             \This is tested by converting an FGL graph and comparing\n\
+             \the nodes it should have to those that are found."
+
+test_findAllEdges :: Test
+test_findAllEdges
+  = Test { name = "Ensure all edges are found in a DotGraph"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr () () -> Bool
+      prop = prop_findAllEdges
+
+      dsc = "nodeInformation should find all edges in a DotGraph;\n\
+             \this is tested by converting an FGL graph and comparing\n\
+             \the edges it should have to those that are found."
+
+test_findAllEdgesG :: Test
+test_findAllEdgesG
+  = Test { name = "Ensure all edges are found in a GDotGraph"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: Gr () () -> Bool
+      prop = prop_findAllEdgesG
+
+      dsc = "nodeInformation should find all edges in a GDotGraph;\n\
+             \this is tested by converting an FGL graph and comparing\n\
+             \the edges it should have to those that are found."

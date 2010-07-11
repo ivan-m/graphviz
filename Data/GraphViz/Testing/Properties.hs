@@ -9,9 +9,11 @@
 -}
 module Data.GraphViz.Testing.Properties where
 
-import Data.GraphViz( dotizeGraph, setDirectedness, nonClusteredParams
-                    , prettyPrint')
-import Data.GraphViz.Types(DotRepr, DotGraph, printDotGraph)
+import Data.GraphViz( dotizeGraph, graphToDot
+                    , setDirectedness, nonClusteredParams, prettyPrint')
+import Data.GraphViz.Types( DotRepr, DotGraph(..), DotStatements(..)
+                          , DotNode(..), DotEdge(..)
+                          , printDotGraph, graphNodes, graphEdges)
 import Data.GraphViz.Types.Generalised(generaliseDotGraph)
 import Data.GraphViz.Printing(PrintDot(..), printIt)
 import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt')
@@ -20,8 +22,11 @@ import Data.GraphViz.Util(groupSortBy, isSingle)
 
 import Test.QuickCheck
 
-import Data.Graph.Inductive(DynGraph, equal, nmap, emap, labEdges)
-import Data.List(nub)
+import Data.Graph.Inductive( Graph, DynGraph
+                           , equal, nmap, emap, labEdges, nodes, edges)
+import Data.List(nub, sort)
+import Data.Function(on)
+import Control.Arrow((&&&))
 
 -- -----------------------------------------------------------------------------
 -- The properties to test for
@@ -83,6 +88,67 @@ prop_dotizeAugmentUniq g = all uniqLs lss
     lss = map (map snd) . filter (not . isSingle)
           $ groupSortBy fst les
     uniqLs ls = ls == nub ls
+
+-- | Ensure that the definition of 'nodeInformation' for 'DotGraph'
+--   finds all the nodes.
+prop_findAllNodes   :: (Ord el, Graph g) => g nl el -> Bool
+prop_findAllNodes g = ((==) `on` sort) gns dgns
+  where
+    gns = nodes g
+    dg = setDirectedness graphToDot nonClusteredParams g
+    dgns = map nodeID $ graphNodes dg
+
+-- | Ensure that the definition of 'nodeInformation' for 'GDotGraph'
+--   finds all the nodes.
+prop_findAllNodesG   :: (Ord el, Graph g) => g nl el -> Bool
+prop_findAllNodesG g = ((==) `on` sort) gns dgns
+  where
+    gns = nodes g
+    dg = generaliseDotGraph $ setDirectedness graphToDot nonClusteredParams g
+    dgns = map nodeID $ graphNodes dg
+
+-- | Ensure that the definition of 'nodeInformation' for 'DotGraph'
+--   finds all the nodes when the explicit 'DotNode' definitions are
+--   removed.
+prop_findAllNodesE   :: (Ord el, Graph g) => g nl el -> Bool
+prop_findAllNodesE g = ((==) `on` sort) gns dgns
+  where
+    gns = nodes g
+    dg = removeNodes $ setDirectedness graphToDot nonClusteredParams g
+    dgns = map nodeID $ graphNodes dg
+    removeNodes dot@DotGraph{graphStatements = stmts}
+      = dot { graphStatements = stmts {nodeStmts = []} }
+
+-- | Ensure that the definition of 'nodeInformation' for 'GDotGraph'
+--   finds all the nodes when the explicit 'DotNode' definitions are
+--   removed.
+prop_findAllNodesEG   :: (Ord el, Graph g) => g nl el -> Bool
+prop_findAllNodesEG g = ((==) `on` sort) gns dgns
+  where
+    gns = nodes g
+    dg = generaliseDotGraph . removeNodes
+         $ setDirectedness graphToDot nonClusteredParams g
+    dgns = map nodeID $ graphNodes dg
+    removeNodes dot@DotGraph{graphStatements = stmts}
+      = dot { graphStatements = stmts {nodeStmts = []} }
+
+-- | Ensure that the definition of 'edgeInformation' for 'DotGraph'
+--   finds all the nodes.
+prop_findAllEdges   :: (Ord el, Graph g) => g nl el -> Bool
+prop_findAllEdges g = ((==) `on` sort) ges dges
+  where
+    ges = edges g
+    dg = setDirectedness graphToDot nonClusteredParams g
+    dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
+
+-- | Ensure that the definition of 'edgeInformation' for 'GDotGraph'
+--   finds all the nodes.
+prop_findAllEdgesG   :: (Ord el, Graph g) => g nl el -> Bool
+prop_findAllEdgesG g = ((==) `on` sort) ges dges
+  where
+    ges = edges g
+    dg = generaliseDotGraph $ setDirectedness graphToDot nonClusteredParams g
+    dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
 
 -- -----------------------------------------------------------------------------
 -- Helper utility functions
