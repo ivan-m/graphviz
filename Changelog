@@ -7,6 +7,52 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.10.0.0
+----------------------
+
+* Conversion of `FGL`-style graphs to `DotRepr` values is now achieved
+  using the new `GraphvizParams` configuration type.  This allows us
+  to define a single parameter that stores all the conversion
+  functions to pass around rather than having to pass around several
+  functions.  This also allows all the non-clustered and clustered
+  functions to be collapsed together, whereas what used to be handled
+  by the primed functions is now achieved by using the
+  `setDirectedness` function.
+
+* Expansion of the `DotRepr` class:
+
+    - More common functions are now defined as methods (`getID`,
+      etc.).
+
+    - The ability to get more information about the structure of the
+      `DotRepr` graph, as well as where all the `DotNode`s are, etc.
+
+    - `graphNodes` now returns `DotNode`s defined only as part of
+      `DotEdge`s, and will also merge duplicate `DotNode`s together.
+
+    - `graphNodes` and `graphEdges` also return `GlobalAttributes`
+      that apply to them.
+
+* The `Point` type now only has one constructor: `Point Double
+  Double`.  The `Int`-only constructor was present due to historical
+  purposes and I thought that the `Pos` value for a `DotNode` would
+  always be a pair of `Int`s; this turns out not to be the case.
+
+* `SortV` and `PrismOverlap` now only take `Word16` values rather than
+  `Int`s, as they're not meant to allow negative values (the choice of
+  using `Word16` rather than `Word` was arbitrary, and because it's
+  unlikely those values will be large enough to require the larger
+  values available in `Word`).
+
+* `NodeCluster` has been generalised to not have to take an `LNode`
+  for the node type; the type alias `LNodeCluster` is available if you
+  still want this.
+
+* Several documentation typos fixed, including one spotted by **Kevin
+  Quick**.
+
+* The test-suite now allows running individual tests.
+
 Changes in 2999.9.0.0
 ---------------------
 
