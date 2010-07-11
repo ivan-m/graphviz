@@ -120,7 +120,11 @@ prop_findAllNodesE g = ((==) `on` sort) gns dgns
     dg = removeNodes $ setDirectedness graphToDot nonClusteredParams g
     dgns = map nodeID $ graphNodes dg
     removeNodes dot@DotGraph{graphStatements = stmts}
-      = dot { graphStatements = stmts {nodeStmts = []} }
+      = dot { graphStatements
+               = stmts {nodeStmts = filter notInEdge $ nodeStmts stmts}
+            }
+    gnes = Set.fromList . concatMap (\(f,t) -> [f,t]) $ edges g
+    notInEdge dn = nodeID dn `Set.notMember` gnes
 
 -- | Ensure that the definition of 'nodeInformation' for 'GDotGraph'
 --   finds all the nodes when the explicit 'DotNode' definitions are
@@ -133,7 +137,11 @@ prop_findAllNodesEG g = ((==) `on` sort) gns dgns
          $ setDirectedness graphToDot nonClusteredParams g
     dgns = map nodeID $ graphNodes dg
     removeNodes dot@DotGraph{graphStatements = stmts}
-      = dot { graphStatements = stmts {nodeStmts = []} }
+      = dot { graphStatements
+               = stmts {nodeStmts = filter notInEdge $ nodeStmts stmts}
+            }
+    gnes = Set.fromList . concatMap (\(f,t) -> [f,t]) $ edges g
+    notInEdge dn = nodeID dn `Set.notMember` gnes
 
 -- | Ensure that the definition of 'edgeInformation' for 'DotGraph'
 --   finds all the nodes.
