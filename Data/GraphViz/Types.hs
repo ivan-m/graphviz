@@ -89,6 +89,7 @@ module Data.GraphViz.Types
     ( -- * Abstraction from the representation type
       DotRepr(..)
       -- ** Helper types for looking up information within a @DotRepr@.
+    , ClusterLookup
     , NodeLookup
     , Path
       -- ** Obtaining the @DotNode@s and @DotEdges@.
