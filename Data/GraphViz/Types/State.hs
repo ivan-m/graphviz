@@ -174,7 +174,7 @@ addGraphGlobals _               = return ()
 -- Dealing with DotNodes
 
 -- | The available information on each 'DotNode' (both explicit and implicit).
-type NodeLookup n = Map n (Path, SAttrs)
+type NodeLookup n = Map n (Path, Attributes)
 
 type NodeLookup' n = Map n NodeInfo
 
@@ -187,13 +187,13 @@ data NodeInfo = NI { atts :: SAttrs
 type NodeState n a = GVState (NodeLookup' n) a
 
 toDotNodes :: (Ord n) => NodeLookup n -> [DotNode n]
-toDotNodes = map (\(n,(_,as)) -> DotNode n $ unSame as) . Map.assocs
+toDotNodes = map (\(n,(_,as)) -> DotNode n as) . Map.assocs
 
 getNodeLookup       :: (Ord n) => Bool -> NodeState n a -> NodeLookup n
 getNodeLookup addGs = Map.map combine . value . flip execState initState
   where
     initState = SV Set.empty addGs Seq.empty Map.empty
-    combine ni = (location ni, atts ni `Set.union` gAtts ni)
+    combine ni = (location ni, unSame $ atts ni `Set.union` gAtts ni)
 
 -- New -> Old -> Inserted
 --
