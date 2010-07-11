@@ -43,5 +43,5 @@ instance (Graph g, Arbitrary n, Arbitrary e) => Arbitrary (g n e) where
 
   shrink gr = case nodes gr of
                    -- Need to have at least 2 nodes before we delete one!
-                   ns@(_:_:_) -> map (flip delNode gr) ns
+                   ns@(_:_:_) -> map (`delNode` gr) ns
                    _          -> []

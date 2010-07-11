@@ -149,7 +149,7 @@ getGraphInfo = (toGlobal . globalAttrs &&& convert . value)
     uniq = Set.toList . Set.fromList
 
 mergeCInfos          :: ClusterInfo -> ClusterInfo -> ClusterInfo
-mergeCInfos (p1,as1) = (append p1 *** Set.union as1)
+mergeCInfos (p1,as1) = append p1 *** Set.union as1
 
 addCluster                 :: Maybe (Maybe GraphID) -> Path -> SAttrs
                               -> GraphState ()

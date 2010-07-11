@@ -166,7 +166,7 @@ onlyBool = oneOf [ stringRep True "true"
 
 instance ParseDot Char where
     -- Can't be a quote character.
-    parseUnqt = satisfy ((/=) quoteChar)
+    parseUnqt = satisfy (quoteChar /=)
 
     parse = satisfy restIDString
             `onFail`

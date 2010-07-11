@@ -81,10 +81,10 @@ parseMultiLineComment = bracket start end (liftM concat $ many inner)
     where
       start = string "/*"
       end = string "*/"
-      inner = many1 (satisfy ((/=) '*'))
+      inner = many1 (satisfy ('*' /=))
               `onFail`
               do ast <- character '*'
-                 n <- satisfy ((/=) '/')
+                 n <- satisfy ('/' /=)
                  liftM ((:) ast . (:) n) inner
 
 parseConcatStrings :: Parse String
@@ -96,7 +96,7 @@ parseConcatStrings = liftM (wrapQuotes . concat)
                  `onFail`
                  parseSplitLine -- in case there's a split mid-quote
                  `onFail`
-                 liftM return (satisfy ((/=) quoteChar))
+                 liftM return (satisfy (quoteChar /=))
     parseConcat = parseSep >> character '+' >> parseSep
     parseSep = many $ allWhitespace `onFail` parseUnwanted
     wrapQuotes str = quoteChar : str ++ [quoteChar]

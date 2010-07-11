@@ -85,8 +85,8 @@ collapseNClusts = concatMap grpCls
                   . sortBy clustOrder
     where
       grpCls []              = []
-      grpCls ns@((NT _):_)   = ns
-      grpCls cs@((CT c _):_) = [CT c (collapseNClusts $ concatMap getNodes cs)]
+      grpCls ns@(NT _ : _)   = ns
+      grpCls cs@(CT c _ : _) = [CT c (collapseNClusts $ concatMap getNodes cs)]
 
 -- | Convert the cluster representation of the trees into 'DotNode's
 --   and 'DotSubGraph's (with @'isCluster' = 'True'@, and
