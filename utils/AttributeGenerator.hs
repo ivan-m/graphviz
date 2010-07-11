@@ -1,5 +1,7 @@
+#!/usr/bin/runhaskell
+
 {- |
-   Module      : Data.GraphViz.AttributeGenerator
+   Module      : AttributeGenerator
    Description : Definition of the Graphviz attributes.
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
