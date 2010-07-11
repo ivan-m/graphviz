@@ -59,6 +59,7 @@ data StateValue a = SV { globalAttrs :: SAttrs
                        }
                   deriving (Eq, Ord, Show, Read)
 
+-- | The path of clusters that must be traversed to reach this spot.
 type Path = Seq (Maybe GraphID)
 
 modifyGlobal   :: (SAttrs -> SAttrs) -> GVState s ()
