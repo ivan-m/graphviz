@@ -30,7 +30,7 @@ import Test.QuickCheck
 import Data.List(nub, delete, groupBy)
 import qualified Data.Sequence as Seq
 import qualified Data.Map as Map
-import Control.Monad(liftM, liftM2, liftM3, liftM4, guard)
+import Control.Monad(liftM, liftM2, liftM3, liftM4)
 import Data.Word(Word8, Word16)
 
 -- -----------------------------------------------------------------------------
@@ -645,19 +645,11 @@ instance Arbitrary Rect where
 
 instance Arbitrary Point where
   -- Pretty sure points have to be positive...
-  arbitrary = oneof [ liftM2 Point  posArbitrary posArbitrary
-                    , liftM (uncurry PointD)
-                      $ suchThat (liftM2 (,) posArbitrary posArbitrary)
-                                 notBothInt
-                    ]
+  arbitrary = liftM2 Point posArbitrary posArbitrary
 
-  shrink (Point  v1 v2) = do v1s <- shrink v1
-                             v2s <- shrink v2
-                             return $ Point v1s v2s
-  shrink (PointD v1 v2) = do v1s <- shrink v1
-                             v2s <- shrink v2
-                             guard $ notBothInt (v1s,v2s)
-                             return $ PointD v1s v2s
+  shrink (Point v1 v2) = do v1s <- shrink v1
+                            v2s <- shrink v2
+                            return $ Point v1s v2s
 
 instance Arbitrary ClusterMode where
   arbitrary = arbBounded
@@ -1238,9 +1230,6 @@ shrinkL xs = case shrinkList xs of
 
 notInt   :: Double -> Bool
 notInt d = fromIntegral (round d :: Int) /= d
-
-notBothInt         :: (Double, Double) -> Bool
-notBothInt (p1,p2) = notInt p1 && notInt p2
 
 returnCheck     :: (Eq a) => a -> a -> [a]
 returnCheck o n = if o == n
