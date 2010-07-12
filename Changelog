@@ -19,6 +19,21 @@ Changes in 2999.10.0.0
   by the primed functions is now achieved by using the
   `setDirectedness` function.
 
+  There are three default `GraphvizParams` available:
+
+    - `defaultParams` provides some sensible defaults (no attributes
+      or clustering).
+
+    - `nonClusteredParams` is an alias of `defaultParams` where the
+      clustering type is explicitly set to be `()` for cases where you
+      don't want any clustering at all (whereas `defaultParams` allows
+      you to set your own clustering functions).
+
+    - `blankParams` sets all fields to be `undefined`; this is useful
+      for situations where you have functions that will set some
+      values for you and there is no sensible default you can use
+      (mainly for the clustering function).
+
 * Expansion of the `DotRepr` class:
 
     - More common functions are now defined as methods (`getID`,
