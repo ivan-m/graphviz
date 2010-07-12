@@ -19,7 +19,7 @@ Changes in 2999.10.0.0
   by the primed functions is now achieved by using the
   `setDirectedness` function.
 
-  There are three default `GraphvizParams` available:
+    There are three default `GraphvizParams` available:
 
     - `defaultParams` provides some sensible defaults (no attributes
       or clustering).
