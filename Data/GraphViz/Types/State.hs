@@ -140,7 +140,7 @@ type ClusterLookup' = Map (Maybe GraphID) ClusterInfo
 type ClusterInfo = (DList Path, SAttrs)
 
 getGraphInfo :: GraphState a -> (GlobalAttributes, ClusterLookup)
-getGraphInfo = (toGlobal . (globalAttrs &&& convert) . value)
+getGraphInfo = ((toGlobal . globalAttrs) &&& (convert . value))
                . flip execState initState
   where
     convert = Map.map ((uniq . toList) *** toGlobal)
