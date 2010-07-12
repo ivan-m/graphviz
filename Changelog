@@ -7,6 +7,17 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.10.0.1
+----------------------
+
+* Fixed a mistake in one of the source files that was made just to
+  make
+  [haskell-src-exts](http://hackage.haskell.org/package/haskell-src-exts)
+  happier.
+
+* Fix the `Arbitrary` instance for `Point` in the testsuite (since
+  there's only one constructor now).
+
 Changes in 2999.10.0.0
 ----------------------
 
