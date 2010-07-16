@@ -59,7 +59,7 @@ import System.IO( Handle, hClose, hPutStr
 import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
 import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
-import Control.Exception.Extensible( SomeException(..), catch
+import Control.Exception.Extensible( IOException, catch
                                    , bracket, evaluate, handle)
 import Control.Monad(liftM)
 import System.FilePath((<.>))
@@ -355,22 +355,25 @@ graphvizWithHandle' cmd gr t f
             ExitSuccess -> return output
             _           -> return $ Left $ othErr ++ err
     where
-      notRunnable e@SomeException{} = return . Left $ unwords
-                                      [ "Unable to call the Graphviz command "
-                                      , cmd'
-                                      , " with the arguments: "
-                                      , unwords args
-                                      , " because of: "
-                                      , show e
-                                      ]
+      notRunnable :: IOException -> IO (Either String a)
+      notRunnable e = return . Left $ unwords
+                      [ "Unable to call the Graphviz command "
+                      , cmd'
+                      , " with the arguments: "
+                      , unwords args
+                      , " because of: "
+                      , show e
+                      ]
       cmd' = showCmd cmd
       args = ["-T" ++ outputCall t]
 
       -- Augmenting the f function to let it work within the forkIO:
       f' h = liftM Right (f h)
              `catch`
-             (\e@SomeException{} -> return . Left $ fErr ++ show e)
-      fErr = "Error re-directing the output from " ++ cmd' ++ ": "
+             fErr
+      fErr :: IOException -> IO (Either String a)
+      fErr e = return . Left $ "Error re-directing the output from "
+               ++ cmd' ++ ": " ++ show e
 
       othErr = "Error messages from " ++ cmd' ++ ":\n"
 
