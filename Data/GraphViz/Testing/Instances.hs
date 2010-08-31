@@ -599,14 +599,6 @@ validUnknown "z"                  = False
 validUnknown _                    = True
 {- delete to here -}
 
-instance Arbitrary Word8 where
-  arbitrary = arbitraryBoundedIntegral
-  shrink = shrinkIntegral
-
-instance Arbitrary Word16 where
-  arbitrary = arbitraryBoundedIntegral
-  shrink = shrinkIntegral
-
 instance Arbitrary ArrowType where
   arbitrary = liftM AType
               -- Arrow specifications have between 1 and 4 elements.

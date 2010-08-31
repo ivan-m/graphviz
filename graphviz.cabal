@@ -84,7 +84,7 @@ Library {
                            Data.GraphViz.Types.State
                            Data.GraphViz.Util
         if flag(test)
-           Build-Depends:       QuickCheck >= 2.1 && < 2.2
+           Build-Depends:       QuickCheck == 2.2.*
 
            Exposed-Modules:     Data.GraphViz.Testing
                                 Data.GraphViz.Testing.Properties
