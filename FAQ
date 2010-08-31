@@ -111,7 +111,7 @@ _aren't_ covered:
 * The deprecated `overlap` algorithms have not been defined.
 
 * `pointf` and `point` values have been combined into one datatype;
-  however the optional `!` and third value for `point` values is not
+  however the optional `!` and third value for `point` values are not
   accepted.
 
 * Only polygon-based `shape`s are available.
@@ -150,6 +150,12 @@ generated documentation):
 
 * HTML-like and record labels are available, and feature proper
   escaping/unescaping when printing/parsing.
+
+* Other syntactic issues are taken care of for you automatically (such
+  as escaping/unescaping quotation marks).  Note, however, that
+  newlines are _not_ escaped/unescaped for you (since there are three
+  different types of newlines); as such, you will need to explicitly
+  use `"\\n"` when wanting to use a centre-justified newline.
 
 Getting _graphviz_ and more documentation
 -----------------------------------------
@@ -314,15 +320,18 @@ The following attributes are easy to use and recommended:
 
     - `Color` to set the colour of an edge; if you supply more than
       one value then the edge is drawn using parallel splines/lines
-      (one per colour in the list).
+      (one per colour in the list).  This can also be used to set the
+      border colour for a node, but if a filled style is used and
+      `FillColor` isn't set then this will also set the background
+      colour.
 
     - `PenColor` to set the colour of the bounding box for a cluster.
 
-  When choosing a `Color` value for one of the above, it is better to
-  use one of the `X11Color` values (note: these are **not** the same
-  as the standard X11 colours) or - if you have to - one of the manual
-  colours over a `BrewerColor`, as they come under a different license
-  and have no real standard on what the values are.
+    When choosing a `Color` value for one of the above, it is better to
+    use one of the `X11Color` values (note: these are **not** the same
+    as the standard X11 colours) or - if you have to - one of the manual
+    colours over a `BrewerColor`, as they come under a different license
+    and have no real standard on what the values are.
 
 * `Label`: `StrLabel` can be used for both nodes and edges; the other
   two only for nodes.  `RecordLabel` and `HtmlLabel` provide ways of
@@ -345,7 +354,8 @@ The following attributes are **not** recommended for use:
   but in future _graphviz_ will not contain this attribute and will
   only allow UTF-8 usage.
 
-* `Color` for anything except edge colours.
+* `Color` for anything except edge colours (and if you must, the
+  border colour for a node).
 
 * `ColorScheme`: just stick with X11 colours.
 
@@ -383,7 +393,7 @@ defined instances of `PrintDot` and `ParseDot`.  Probably the easiest
 way of doing this is to have functions that convert between your type
 and `String` and let graphviz determine how to print and parse those.
 Here is an example of a more difficult type that should be printed
-like "1: Foo":
+like `"1: Foo"`:
 
 ~~~~~~~~~~~~~~~~~~~~ {.haskell}
 data MyType = MyType String Int
