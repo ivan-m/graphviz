@@ -63,8 +63,8 @@ Library {
                            filepath,
                            polyparse == 1.4.*,
                            pretty,
-                           bytestring < 0.10,
-                           colour >= 2.3 && < 2.4,
+                           bytestring == 0.9.*,
+                           colour == 2.3.*,
                            transformers == 0.2.*
 
         Exposed-Modules:   Data.GraphViz
