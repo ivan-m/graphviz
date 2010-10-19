@@ -1169,7 +1169,7 @@ validString "false" = False
 validString str     = notNumStr str
 
 shrinkString :: String -> [String]
-shrinkString = filter validString . nonEmptyShrinks
+shrinkString = filter validString . nonEmptyShrinks'
 
 notNumStr :: String -> Bool
 notNumStr = not . isNumString
@@ -1194,11 +1194,18 @@ arbList = listOf1 arbitrary
 nonEmptyShrinks :: (Arbitrary a) => [a] -> [[a]]
 nonEmptyShrinks = filter (not . null) . shrinkList
 
+nonEmptyShrinks' :: [a] -> [[a]]
+nonEmptyShrinks' = filter (not . null) . shrinkList'
+
 -- Shrink lists with more than one value only by removing values, not
 -- by shrinking individual items.
 shrinkList     :: (Arbitrary a) => [a] -> [[a]]
 shrinkList [a] = map return $ shrink a
-shrinkList as  = rm (length as) as
+shrinkList as  = shrinkList' as
+
+-- Just shrink the size.
+shrinkList'     :: [a] -> [[a]]
+shrinkList' as  = rm (length as) as
   where
     rm 0 _  = []
     rm 1 _  = [[]]
