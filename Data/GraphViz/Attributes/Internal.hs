@@ -50,8 +50,8 @@ instance PrintDot PortName where
   toDot = toDot . portName
 
 instance ParseDot PortName where
-  parseUnqt = liftM PN . many1
-              . orQuote $ satisfy (`notElem` ['"', ':'])
+  parseUnqt = liftM PN
+              $ parseEscaped False [] ['"', ':']
 
   parse= quotedParse parseUnqt
          `onFail`

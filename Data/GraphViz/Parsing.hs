@@ -204,7 +204,7 @@ stringBlock = do frst <- satisfy frstIDString
 
 -- | Used when quotes are explicitly required;
 quotedString :: Parse String
-quotedString = parseEscaped True []
+quotedString = parseEscaped True [] []
 
 parseSigned :: Real a => Parse a -> Parse a
 parseSigned p = (character '-' >> liftM negate p)
@@ -346,22 +346,24 @@ orQuote p = stringRep quoteChar "\\\""
 quoteChar :: Char
 quoteChar = '"'
 
--- | Parse a 'String' where the provided 'Char's (as well as @\"@) are
---   escaped.  Note: does not parse surrounding quotes, and assumes
---   that @\\@ is not an escaped character.  The 'Bool' value
---   indicates whether empty 'String's are allowed or not.
-parseEscaped         :: Bool -> [Char] -> Parse String
-parseEscaped empt cs = lots $ qPrs `onFail` oth
+-- | Parse a 'String' where the provided 'Char's (as well as @\"@ and
+--   @\\@) are escaped and the second list of 'Char's are those that
+--   are not permitted.  Note: does not parse surrounding quotes.  The
+--   'Bool' value indicates whether empty 'String's are allowed or
+--   not.
+parseEscaped             :: Bool -> [Char] -> [Char] -> Parse String
+parseEscaped empt cs bnd = lots $ qPrs `onFail` oth
   where
     lots = if empt then many else many1
-    cs' = quoteChar : cs
+    cs' = quoteChar : slash : cs
     csSet = Set.fromList cs'
+    bndSet = Set.fromList bnd `Set.union` csSet
     slash = '\\'
     -- Have to allow standard slashes
     qPrs = do character slash
               mE <- optional $ oneOf (map character cs')
               return $ fromMaybe slash mE
-    oth = satisfy (`Set.notMember` csSet)
+    oth = satisfy (`Set.notMember` bndSet)
 
 newline :: Parse String
 newline = oneOf $ map string ["\r\n", "\n", "\r"]

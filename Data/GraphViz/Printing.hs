@@ -74,6 +74,7 @@ import qualified Text.PrettyPrint as PP
 import Data.Char(toLower)
 import qualified Data.Set as Set
 import Data.Word(Word8, Word16)
+import Control.Monad(ap)
 
 -- -----------------------------------------------------------------------------
 
@@ -216,13 +217,23 @@ printEscaped cs str = addQuotes str' $ text str'
 --   needs to pass the result from this to 'addQuotes' to determine if
 --   it needs to be quoted or not.
 addEscapes   :: [Char] -> String ->  String
-addEscapes cs = foldr escape ""
+addEscapes cs = foldr escape "" . withNext
   where
-    cs' = Set.fromList $ quote : cs
+    cs' = Set.fromList $ quote : slash : cs
     slash = '\\'
     quote = '"'
-    escape c str | c `Set.member` cs' = slash : c : str
-                 | otherwise          = c : str
+    escape (c,c') str
+      | c == slash && c' `Set.member` escLetters = c : str
+      | c `Set.member` cs'                       = slash : c : str
+      | c == '\n'                                = slash : 'n' : str
+      | otherwise                                = c : str
+
+    -- When a slash precedes one of these characters, don't escape the slash.
+    escLetters = Set.fromList ['N', 'G', 'E', 'T', 'H', 'L', 'n', 'l', 'r']
+
+    -- Need to check subsequent characters when escaping slashes, but
+    -- don't want to lose the last character when zipping, so append a space.
+    withNext = zip `ap` ((++" ") . tail)
 
 angled :: DotCode -> DotCode
 angled = wrap lang rang

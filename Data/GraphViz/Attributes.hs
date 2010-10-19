@@ -1489,7 +1489,7 @@ printPortName :: PortName -> DotCode
 printPortName = angled . unqtRecordString . portName
 
 parseRecord :: Parse String
-parseRecord = parseEscaped False recordEscChars
+parseRecord = parseEscaped False recordEscChars []
 
 unqtRecordString :: String -> DotCode
 unqtRecordString = unqtEscaped recordEscChars
@@ -1596,8 +1596,7 @@ defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
 
 parseLayerName :: Parse String
-parseLayerName = many1 . orQuote
-                 $ satisfy (liftM2 (&&) notLayerSep (quoteChar /=))
+parseLayerName = parseEscaped False [] defLayerSep
 
 parseLayerName' :: Parse String
 parseLayerName' = stringBlock
@@ -2219,11 +2218,14 @@ checkDD str = case map toLower str of
                 _           -> DD str
 
 parseStyleName :: Parse String
-parseStyleName = do f <- orQuote . noneOf $ ' ' : disallowedChars
-                    r <- many (orQuote $ noneOf disallowedChars)
+parseStyleName = do f <- orEscaped . noneOf $ ' ' : disallowedChars
+                    r <- parseEscaped True [] disallowedChars
                     return $ f:r
   where
     disallowedChars = [quoteChar, '(', ')', ',']
+    -- Used because the first character has slightly stricter requirements than the rest.
+    orSlash p = stringRep '\\' "\\\\" `onFail` p
+    orEscaped = orQuote . orSlash
 
 -- -----------------------------------------------------------------------------
 

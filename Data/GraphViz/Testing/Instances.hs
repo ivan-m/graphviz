@@ -1146,7 +1146,7 @@ arbString = suchThat genStr validString
   where
     genStr = listOf1 $ elements strChr
     strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '(', ')'
-                                         , ',', ':', '.']
+                                         , ',', ':', '.', '\\']
 
 arbIDString :: Gen String
 arbIDString = suchThat genStr validString
