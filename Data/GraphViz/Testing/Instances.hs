@@ -721,13 +721,21 @@ instance Arbitrary Overlap where
   shrink _                 = []
 
 instance Arbitrary LayerList where
-  arbitrary = do fs <- arbLayerName
-                 oths <- listOf $ liftM2 (,) arbLayerSep arbLayerName
+  arbitrary = do fs <- arbName
+                 oths <- listOf $ liftM2 (,) arbLayerSep arbName
                  return $ LL fs oths
+    where
+      arbName = suchThat arbitrary isLayerName
 
-  -- This should be improved to try actually shrinking the seps and names.
-  -- shrink (LL _ [(_,fs')]) = [LL fs' []]
-  -- shrink (LL fs oths)     = map (LL fs) $ shrink oths
+      isLayerName LRName{} = True
+      isLayerName _        = False
+
+  shrink (LL nm [])          = map (flip LL []) $ shrink nm
+  shrink (LL nm [(sep,nm')]) = LL nm []
+                               : LL nm' []
+                               : map (LL nm . return . flip (,) nm')
+                                     (nonEmptyShrinks sep)
+  shrink (LL nm lst)         = map (LL nm) $ shrinkList lst
 
 instance Arbitrary LayerRange where
   arbitrary = oneof [ liftM  LRID arbitrary

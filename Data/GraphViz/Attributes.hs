@@ -1606,8 +1606,8 @@ parseLayerName' = stringBlock
 notLayerSep :: Char -> Bool
 notLayerSep = flip notElem defLayerSep
 
--- | You should not have any quote characters for the 'LRName' option,
---   as it won't be parseable.
+-- | You should not have any layer separator characters for the
+--   'LRName' option, as they won't be parseable.
 data LayerID = AllLayers
              | LRInt Int
              | LRName String
@@ -1636,10 +1636,9 @@ checkLayerName str = maybe checkAll LRInt $ stringToInt str
                then AllLayers
                else LRName str
 
--- | The list represent (Separator, Name).  You should not have any
---   quote characters for any of the 'String's, since there are
---   parsing problems with them.
-data LayerList = LL String [(String, String)]
+-- | The list represent (Separator, Name).  The 'LayerID' values
+--   should all be 'LRName' values.
+data LayerList = LL LayerID [(String, LayerID)]
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerList where
@@ -1652,15 +1651,15 @@ instance PrintDot LayerList where
     toDot ll         = doubleQuotes $ unqtDot ll
 
 instance ParseDot LayerList where
-    parseUnqt = do l1 <- parseLayerName
+    parseUnqt = do l1 <- parseUnqt
                    ols <- many $ do s   <- parseLayerSep
-                                    lnm <- parseLayerName
+                                    lnm <- parseUnqt
                                     return (s, lnm)
                    return $ LL l1 ols
 
     parse = quotedParse parseUnqt
             `onFail`
-            liftM (flip LL []) (parseLayerName' `onFail` numString)
+            liftM (flip LL []) parse
 
 -- -----------------------------------------------------------------------------
 
