@@ -31,7 +31,6 @@ import Data.List(nub, delete, groupBy)
 import qualified Data.Sequence as Seq
 import qualified Data.Map as Map
 import Control.Monad(liftM, liftM2, liftM3, liftM4)
-import Data.Word(Word8, Word16)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the overall types
