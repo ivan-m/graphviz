@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 {- |
    Module      : Data.GraphViz.Attributes
    Description : Definition of the Graphviz attributes.
@@ -91,6 +93,7 @@ module Data.GraphViz.Attributes
     , ModeType(..)
     , Model(..)
     , Label(..)
+    , Labellable(..)
     , Point(..)
     , Overlap(..)
     , LayerRange(..)
@@ -1425,6 +1428,46 @@ instance ParseDot Label where
                   , liftM RecordLabel parse
                   , liftM StrLabel parse
                   ]
+
+-- | A convenience class to make it easier to create labels.
+class Labellable a where
+  label :: a -> Attribute
+
+instance Labellable EscString where
+  label = Label . StrLabel
+
+instance Labellable Char where
+  label = label . (:[])
+
+instance Labellable Int where
+  label = label . show
+
+instance Labellable Double where
+  label = label . show
+
+instance Labellable Bool where
+  label = label . show
+
+instance Labellable HtmlLabel where
+  label = Label . HtmlLabel
+
+instance Labellable HtmlText where
+  label = label . HtmlText
+
+instance Labellable HtmlTable where
+  label = label . HtmlTable
+
+instance Labellable RecordFields where
+  label = Label . RecordLabel
+
+instance Labellable RecordField where
+  label = label . (:[])
+
+instance Labellable PortName where
+  label = label . PortName
+
+instance Labellable (PortName, EscString) where
+  label = label . uncurry LabelledTarget
 
 -- -----------------------------------------------------------------------------
 
