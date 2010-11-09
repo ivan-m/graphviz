@@ -303,7 +303,7 @@ character c = satisfy parseC
               `adjustErr`
               (++ "\nnot the expected char: " ++ [c])
   where
-    parseC c' = c' == c || toLower c == c'
+    parseC c' = c' == c || toLower c == toLower c'
 
 noneOf :: (Eq a) => [a] -> Parser a a
 noneOf t = satisfy (\x -> all (/= x) t)
