@@ -619,7 +619,7 @@ Once we've discussed what you're going to do, first get yourself a
 copy of the darcs repository:
 
 ~~~~~~~~~~~~~~~~~~~~ {.bash}
-darcs get --lazy http://code.haskell.org/
+darcs get --lazy http://code.haskell.org/graphviz
 ~~~~~~~~~~~~~~~~~~~~
 
 Once you've made your changes, make sure you build and run the
