@@ -1429,45 +1429,50 @@ instance ParseDot Label where
                   , liftM StrLabel parse
                   ]
 
--- | A convenience class to make it easier to create labels.
+-- | A convenience class to make it easier to create labels.  It is
+--   highly recommended that you make any other types that you wish to
+--   create labels from an instance of this class, preferably via the
+--   @String@ instance.
 class Labellable a where
-  label :: a -> Attribute
+  toLabel :: a -> Attribute
 
 instance Labellable EscString where
-  label = Label . StrLabel
+  toLabel = Label . StrLabel
 
 instance Labellable Char where
-  label = label . (:[])
+  toLabel = toLabel . (:[])
 
 instance Labellable Int where
-  label = label . show
+  toLabel = toLabel . show
 
 instance Labellable Double where
-  label = label . show
+  toLabel = toLabel . show
 
 instance Labellable Bool where
-  label = label . show
+  toLabel = toLabel . show
 
 instance Labellable HtmlLabel where
-  label = Label . HtmlLabel
+  toLabel = Label . HtmlLabel
 
 instance Labellable HtmlText where
-  label = label . HtmlText
+  toLabel = toLabel . HtmlText
 
 instance Labellable HtmlTable where
-  label = label . HtmlTable
+  toLabel = toLabel . HtmlTable
 
 instance Labellable RecordFields where
-  label = Label . RecordLabel
+  toLabel = Label . RecordLabel
 
 instance Labellable RecordField where
-  label = label . (:[])
+  toLabel = toLabel . (:[])
 
+-- | A shorter variant than using @PortName@ from 'RecordField'.
 instance Labellable PortName where
-  label = label . PortName
+  toLabel = toLabel . PortName
 
+-- | A shorter variant than using 'LabelledTarget'.
 instance Labellable (PortName, EscString) where
-  label = label . uncurry LabelledTarget
+  toLabel = toLabel . uncurry LabelledTarget
 
 -- -----------------------------------------------------------------------------
 
