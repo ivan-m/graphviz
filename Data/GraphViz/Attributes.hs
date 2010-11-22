@@ -1260,6 +1260,7 @@ instance ParseDot AspectType where
 
 -- -----------------------------------------------------------------------------
 
+-- | Should only have 2D points (i.e. created with 'createPoint').
 data Rect = Rect Point Point
             deriving (Eq, Ord, Show, Read)
 
@@ -1269,7 +1270,7 @@ instance PrintDot Rect where
     toDot = doubleQuotes . unqtDot
 
 instance ParseDot Rect where
-    parseUnqt = liftM (uncurry Rect) commaSepUnqt
+    parseUnqt = liftM (uncurry Rect) $ commaSep' parsePoint2D parsePoint2D
 
     parse = quotedParse parseUnqt
 
@@ -1331,7 +1332,8 @@ instance ParseDot DEConstraints where
 
 -- -----------------------------------------------------------------------------
 
--- | Either a 'Double' or a 'Point'.
+-- | Either a 'Double' or a (2D) 'Point' (i.e. created with
+--   'createPoint').
 data DPoint = DVal Double
             | PVal Point
              deriving (Eq, Ord, Show, Read)
@@ -1344,13 +1346,13 @@ instance PrintDot DPoint where
     toDot (PVal p) = toDot p
 
 instance ParseDot DPoint where
-    parseUnqt = liftM PVal parseUnqt
+    parseUnqt = liftM PVal parsePoint2D
                 `onFail`
                 liftM DVal parseUnqt
 
-    parse = liftM PVal parse
+    parse = quotedParse parseUnqt
             `onFail`
-            liftM DVal parse
+            liftM DVal parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -1561,6 +1563,9 @@ data Point = Point { xCoord   :: Double
 createPoint     :: Double -> Double -> Point
 createPoint x y = Point x y Nothing False
 
+parsePoint2D :: Parse Point
+parsePoint2D = liftM (uncurry createPoint) commaSepUnqt
+
 instance PrintDot Point where
     unqtDot (Point x y mz frs) = bool id (<> char '!') frs
                                  . maybe id (\ z -> (<> unqtDot z) . (<> comma)) mz
@@ -1724,7 +1729,7 @@ instance ParseDot LayerList where
 
   parse = quotedParse parseUnqt
           `onFail`
-          liftM (LL . (:[])) parseUnqt
+          liftM (LL . (:[]) . LRName) stringBlock
 
 -- -----------------------------------------------------------------------------
 

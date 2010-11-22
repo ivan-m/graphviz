@@ -628,7 +628,7 @@ instance Arbitrary AspectType where
                                    return $ RatioPassCount ds is
 
 instance Arbitrary Rect where
-  arbitrary = liftM2 Rect arbitrary arbitrary
+  arbitrary = liftM2 Rect point2D point2D
 
   shrink (Rect p1 p2) = do p1s <- shrink p1
                            p2s <- shrink p2
@@ -645,6 +645,9 @@ instance Arbitrary Point where
                 z' <- shrinkM $ zCoord p
                 return $ Point x' y' z' False
 
+point2D :: Gen Point
+point2D = liftM2 createPoint posArbitrary posArbitrary
+
 instance Arbitrary ClusterMode where
   arbitrary = arbBounded
 
@@ -656,7 +659,7 @@ instance Arbitrary DEConstraints where
 
 instance Arbitrary DPoint where
   arbitrary = oneof [ liftM DVal arbitrary
-                    , liftM PVal arbitrary
+                    , liftM PVal point2D
                     ]
 
   shrink (DVal d) = map DVal $ shrink d
