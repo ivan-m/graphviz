@@ -55,12 +55,17 @@ available out of all of them:
   [output formats]: http://www.graphviz.org/doc/info/output.html
 
 * Functions to convert [FGL] graphs to and from the internal Dot
-  representations.
+  representations.  In future, this will be expanded to a much larger
+  range of graph-like values once a suitable abstraction is available.
 
   [FGL]: http://web.engr.oregonstate.edu/~erwig/fgl/haskell/
 
 * The ability to augment Dot and FGL graphs with positioning
   information by round-trip passing through Graphviz.
+
+* _graphviz_ is continually being worked upon and expanded to better
+  suit/match the requirements of Graphviz, to improve performance and
+  to make it easier for the programmer to use.
 
 ### Is the API of _graphviz_ stable? ###
 
@@ -152,10 +157,9 @@ generated documentation):
   escaping/unescaping when printing/parsing.
 
 * Other syntactic issues are taken care of for you automatically (such
-  as escaping/unescaping quotation marks).  Note, however, that
-  newlines are _not_ escaped/unescaped for you (since there are three
-  different types of newlines); as such, you will need to explicitly
-  use `"\\n"` when wanting to use a centre-justified newline.
+  as escaping/unescaping quotation marks).  Even newlines are
+  automatically escaped (but not unescaped) for you, defaulting to
+  centered lines.
 
 Getting _graphviz_ and more documentation
 -----------------------------------------
@@ -207,7 +211,10 @@ From its [home page].
 
 ### Are there any tutorials on how to use _graphviz_? ###
 
-There will be soon.
+There will be soon.  The current stumbling block is that each time I
+sit down to write a tutorial, I find that it would be even better if
+_graphviz_ had some extra features in it first, so the tutorial has to
+wait until I have finished that feature...
 
 ### What other packages use _graphviz_? ###
 
@@ -238,11 +245,11 @@ Using _graphviz_
 
 ### Can I start using _graphviz_ without knowing anything about Graphviz? ###
 
-Unfortunately, no: the layout and design of _graphviz_ is heavily
-based upon the Dot language and the various [attributes] that Graphviz
-supports.  As such, you can't just suffice on the documentation
-available in _graphviz_ (unless you're doing something _very_
-simplistic).
+You can, but if you want to start doing anything more advanced then
+you should be reading Graphviz's documentation as well as
+_graphviz_'s.  This is because the layout and design of _graphviz_ is
+heavily based upon the Dot language and the various [attributes] that
+Graphviz supports.
 
 ### Can I just use _graphviz_ without reading its documentation? ###
 
@@ -327,23 +334,24 @@ The following attributes are easy to use and recommended:
 
     - `PenColor` to set the colour of the bounding box for a cluster.
 
-    When choosing a `Color` value for one of the above, it is better to
-    use one of the `X11Color` values (note: these are **not** the same
-    as the standard X11 colours) or - if you have to - one of the manual
-    colours over a `BrewerColor`, as they come under a different license
-    and have no real standard on what the values are.
+        When choosing a `Color` value for one of the above, it is
+        better to use one of the `X11Color` values (note: these
+        colours slightly differ from the standard X11 colours) or - if
+        you have to - one of the manual colours over a `BrewerColor`,
+        as they come under a different license and have no real
+        standard on what the values are.
 
-* `Label`: `StrLabel` can be used for both nodes and edges; the other
-  two only for nodes.  `RecordLabel` and `HtmlLabel` provide ways of
-  having more fine-grained control over a node's layout with different
-  sub-components, etc.; in most cases these won't be needed.
+* For labels, use the `Labellable` class to more easily construct
+  labels.  In most cases, a `String`-based label will suffice; for
+  more fine-grained control over layout, colours, etc. use either a
+  `RecordFields` or an `HtmlLabel`.
 
 * `Rank`: this lets you control relative placement of sub-graphs and
   clusters.
 
-* `Shape`: Use `Record` and `MRecord` for `RecordLabel` labels; feel
-  free to use any other ones at any time (though you probably want to
-  use `PlainText` for `HtmlLabel` labels).
+* `Shape`: Use `Record` and `MRecord` for `RecordFields`-based labels;
+  feel free to use any other ones at any time (though you probably
+  want to use `PlainText` for `HtmlLabel` labels).
 
 * `Style`: use this to set line types, etc. for nodes and edges.  You
   should **not** use a `DD` (device-dependent) value.
@@ -367,7 +375,7 @@ The following attributes are **not** recommended for use:
 
 No: attributes are all defined in one big datatype for the sake of
 simplicity, but not all attributes are valid in all places.  Read the
-documentation (either in Graphviz or _graphviz_) to determine which is
+documentation (either for Graphviz or _graphviz_) to determine which is
 suitable where.
 
 ### How can I use _graphviz_ to visualise non-FGL graphs? ###
@@ -428,7 +436,7 @@ Things to note from this example:
   conversion functions (`int`, `text`, etc.) to ensure that
   quotations, etc. are dealt with correctly.
 
-* Be as liberal as you can when printing, especially with whitespace:
+* Be as liberal as you can when parsing, especially with whitespace:
   when printing only one space is used, yet when parsing we use the
   `whitespace` parsing combinator that will parse all whitespace
   characters (but it must consume _at least_ one; there is a variant
@@ -458,6 +466,9 @@ DotEdge "from" "to" True [ TailPort (LabelledPort (PN "a") Nothing)
                          , HeadPort (LabelledPort (PN "b") Nothing)
                          ]
 ~~~~~~~~~~~~~~~~~~~~
+
+I realise that doing this manually isn't as convenient, but I am open
+to suggestions on how this can be improved.
 
 Note where `TailPort` and `HeadPort` are used; the next question
 explains this.
