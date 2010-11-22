@@ -7,6 +7,31 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.11.0.0
+----------------------
+
+* Addition of the `Labellable` class (and its method `toLabel`) to
+  make it easier to construct labels.
+
+* Backslashes (i.e. the `\` character) are now escaped/unescaped
+  properly (bug spotted by **Han Joosten**).  As part of this:
+
+    - Dot-specific escapes such as `\N` are now also handled
+      correctly, so the slash does not need to be escaped.
+
+    - Newline (`'\n'`) characters in labels, etc. are escaped to
+      centred-newlines in Dot code, but not unescaped.
+
+* `Point` values can now have the optional third dimension and end in
+  a `!` to indicate that that position should be used (as input to
+  Graphviz).
+
+* `LayerList` uses `LayerID` values, and now has a proper `shrink`
+  implementation in the test suite.
+
+* The optional `z` coordinate and `!` argument for `Point` values are
+  now supported.
+
 Changes in 2999.10.0.1
 ----------------------
 
