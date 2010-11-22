@@ -1172,9 +1172,6 @@ notNumStr = not . isNumString
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]
 
-arbLayerSep :: Gen [Char]
-arbLayerSep = listOf1 (elements defLayerSep)
-
 arbLayerName :: Gen String
 arbLayerName = suchThat arbString (all notLayerSep)
 

@@ -94,6 +94,7 @@ module Data.GraphViz.Attributes
     , Label(..)
     , Labellable(..)
     , Point(..)
+    , createPoint
     , Overlap(..)
     , LayerRange(..)
     , LayerID(..)
@@ -1564,8 +1565,6 @@ instance PrintDot Point where
     unqtDot (Point x y mz frs) = bool id (<> char '!') frs
                                  . maybe id (\ z -> (<> unqtDot z) . (<> comma)) mz
                                  $ commaDel x y
-      where
-        xy = commaDel x y
 
     toDot = doubleQuotes . unqtDot
 
@@ -1686,9 +1685,9 @@ instance PrintDot LayerID where
     -- Other two don't need quotes
     toDot li          = unqtDot li
 
-    unqtListToDot = hcat . punctuate sep . map unqtDot
+    unqtListToDot = hcat . punctuate s . map unqtDot
       where
-        sep = unqtDot $ head defLayerSep
+        s = unqtDot $ head defLayerSep
 
     listToDot [l] = toDot l
     -- Might not need quotes, but probably will.  Can't tell either
