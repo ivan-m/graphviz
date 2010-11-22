@@ -44,10 +44,8 @@
      expanded upon to give an idea of what they represent rather than
      using generic terms.
 
-   * @PointF@ and 'Point' have been combined, and feature support for pure
-     'Int'-based co-ordinates as well as 'Double' ones (i.e. no floating
-     point-only points for Point).  The optional '!' and third value
-     for Point are not available.
+   * @PointF@ and 'Point' have been combined.  The optional '!' and
+     third value for Point are also available.
 
    * 'Rect' uses two 'Point' values to denote the lower-left and
      top-right corners.
@@ -1548,11 +1546,26 @@ recordEscChars = ['{', '}', '|', ' ', '<', '>']
 
 -- -----------------------------------------------------------------------------
 
-data Point = Point Double Double
-             deriving (Eq, Ord, Show, Read)
+data Point = Point { xCoord   :: Double
+                   , yCoord   :: Double
+                      -- | Can only be 'Just' for @'Dim' 3@ or greater.
+                   , zCoord   :: Maybe Double
+                     -- | Input to Graphviz only: specify that the
+                     --   node position should not change.
+                   , forcePos :: Bool
+                   }
+           deriving (Eq, Ord, Show, Read)
+
+-- | Create a point with only @x@ and @y@ values.
+createPoint     :: Double -> Double -> Point
+createPoint x y = Point x y Nothing False
 
 instance PrintDot Point where
-    unqtDot (Point  x y) = commaDel x y
+    unqtDot (Point x y mz frs) = bool id (<> char '!') frs
+                                 . maybe id (\ z -> (<> unqtDot z) . (<> comma)) mz
+                                 $ commaDel x y
+      where
+        xy = commaDel x y
 
     toDot = doubleQuotes . unqtDot
 
@@ -1561,11 +1574,10 @@ instance PrintDot Point where
     listToDot = doubleQuotes . unqtListToDot
 
 instance ParseDot Point where
-    -- Need to take into account the situation where first value is an
-    -- integer, second a double: if Point parsing first, then it won't
-    -- parse the second number properly; but if PointD first then it
-    -- will treat Int/Int as Double/Double.
-    parseUnqt = liftM (uncurry Point) commaSepUnqt
+    parseUnqt = do (x,y) <- commaSepUnqt
+                   mz <- optional $ parseComma >> parseUnqt
+                   bng <- liftM isJust . optional $ character '!'
+                   return $ Point x y mz bng
 
     parse = quotedParse parseUnqt
 

@@ -636,11 +636,14 @@ instance Arbitrary Rect where
 
 instance Arbitrary Point where
   -- Pretty sure points have to be positive...
-  arbitrary = liftM2 Point posArbitrary posArbitrary
+  arbitrary = liftM4 Point posArbitrary posArbitrary posZ arbitrary
+    where
+      posZ = frequency [(1, return Nothing), (3, liftM Just posArbitrary)]
 
-  shrink (Point v1 v2) = do v1s <- shrink v1
-                            v2s <- shrink v2
-                            return $ Point v1s v2s
+  shrink p = do x' <- shrink $ xCoord p
+                y' <- shrink $ yCoord p
+                z' <- shrinkM $ zCoord p
+                return $ Point x' y' z' False
 
 instance Arbitrary ClusterMode where
   arbitrary = arbBounded
