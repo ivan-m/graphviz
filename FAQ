@@ -115,9 +115,9 @@ _aren't_ covered:
 
 * The deprecated `overlap` algorithms have not been defined.
 
-* `pointf` and `point` values have been combined into one datatype;
-  however the optional `!` and third value for `point` values are not
-  accepted.
+* `pointf` and `point` values have been combined into one datatype; as
+  such, when constructing values such as `Rect` care should be taken
+  about which parts of a `Point` are allowed.
 
 * Only polygon-based `shape`s are available.
 
