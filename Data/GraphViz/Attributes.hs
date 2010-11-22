@@ -29,11 +29,12 @@
      (since /A/ is at the tail end of the arrow).
 
    * @ColorList@, @DoubleList@ and @PointfList@ are defined as actual
-     lists (but 'LayerList' is not).  All of these are assumed to be
-     non-empty lists.  Note that for the @Color@ 'Attribute' for node
-     values, only a single Color is valid; edges are allowed multiple
-     colors with one spline/arrow per color in the list (but you must have
-     at least one 'Color' in the list).  This might be changed in future.
+     lists (@'LayerList'@ needs a newtype for other reasons).  All of these
+     are assumed to be non-empty lists.  Note that for the @Color@
+     'Attribute' for node values, only a single Color is valid; edges are
+     allowed multiple colors with one spline/arrow per color in the list
+     (but you must have at least one 'Color' in the list).  This might be
+     changed in future.
 
    * Style is implemented as a list of 'StyleItem' values; note that
      empty lists are not allowed.
@@ -1609,29 +1610,31 @@ instance ParseDot Overlap where
 -- -----------------------------------------------------------------------------
 
 data LayerRange = LRID LayerID
-                | LRS LayerID String LayerID
+                | LRS LayerID LayerID
                   deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerRange where
-    unqtDot (LRID lid)      = unqtDot lid
-    unqtDot (LRS id1 s id2) = unqtDot id1 <> unqtDot s <> unqtDot id2
+    unqtDot (LRID lid)    = unqtDot lid
+    unqtDot (LRS id1 id2) = unqtDot id1 <> s <> unqtDot id2
+      where
+        s = unqtDot $ head defLayerSep
 
     toDot (LRID lid) = toDot lid
     toDot lrs        = doubleQuotes $ unqtDot lrs
 
 instance ParseDot LayerRange where
     parseUnqt = do id1 <- parseUnqt
-                   s   <- parseLayerSep
+                   _   <- parseLayerSep
                    id2 <- parseUnqt
-                   return $ LRS id1 s id2
+                   return $ LRS id1 id2
                 `onFail`
                 liftM LRID parseUnqt
 
 
     parse = quotedParse ( do id1 <- parseUnqt
-                             s   <- parseLayerSep
+                             _   <- parseLayerSep
                              id2 <- parseUnqt
-                             return $ LRS id1 s id2
+                             return $ LRS id1 id2
                         )
             `onFail`
             liftM LRID parse
@@ -1640,6 +1643,7 @@ parseLayerSep :: Parse String
 parseLayerSep = many1 . oneOf
                 $ map character defLayerSep
 
+-- | The default separators for 'LayerSep'.
 defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
 
@@ -1658,7 +1662,7 @@ notLayerSep = flip notElem defLayerSep
 --   'LRName' option, as they won't be parseable.
 data LayerID = AllLayers
              | LRInt Int
-             | LRName String
+             | LRName String -- ^ Should not be a number of @"all"@.
                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerID where
@@ -1669,6 +1673,15 @@ instance PrintDot LayerID where
     toDot (LRName nm) = toDot nm
     -- Other two don't need quotes
     toDot li          = unqtDot li
+
+    unqtListToDot = hcat . punctuate sep . map unqtDot
+      where
+        sep = unqtDot $ head defLayerSep
+
+    listToDot [l] = toDot l
+    -- Might not need quotes, but probably will.  Can't tell either
+    -- way since we don't know what the separator character will be.
+    listToDot ll  = doubleQuotes $ unqtDot ll
 
 instance ParseDot LayerID where
     parseUnqt = liftM checkLayerName parseLayerName -- tests for Int and All
@@ -1684,30 +1697,23 @@ checkLayerName str = maybe checkAll LRInt $ stringToInt str
                then AllLayers
                else LRName str
 
--- | The list represent (Separator, Name).  The 'LayerID' values
---   should all be 'LRName' values.
-data LayerList = LL LayerID [(String, LayerID)]
-                 deriving (Eq, Ord, Show, Read)
+-- | A non-empty list of layer names.  The names should all be
+--   'LRName' values, and when printed will use an arbitrary character
+--   from 'defLayerSep'.
+newtype LayerList = LL [LayerID]
+                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerList where
-    unqtDot (LL l1 ols) = unqtDot l1 <> hcat (map subLL ols)
-        where
-          subLL (s, l) = unqtDot s <> unqtDot l
+  unqtDot (LL ll) = unqtDot ll
 
-    toDot (LL l1 []) = toDot l1
-    -- Might not need quotes, but probably will.
-    toDot ll         = doubleQuotes $ unqtDot ll
+  toDot (LL ll) = toDot ll
 
 instance ParseDot LayerList where
-    parseUnqt = do l1 <- parseUnqt
-                   ols <- many $ do s   <- parseLayerSep
-                                    lnm <- parseUnqt
-                                    return (s, lnm)
-                   return $ LL l1 ols
+  parseUnqt = liftM LL $ sepBy1 parseUnqt parseLayerSep
 
-    parse = quotedParse parseUnqt
-            `onFail`
-            liftM (flip LL []) parse
+  parse = quotedParse parseUnqt
+          `onFail`
+          liftM (LL . (:[])) parseUnqt
 
 -- -----------------------------------------------------------------------------
 
