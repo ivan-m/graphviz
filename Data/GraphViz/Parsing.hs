@@ -82,7 +82,9 @@ import Text.ParserCombinators.Poly.Lazy hiding (bracket, discard)
 import Data.Char( digitToInt
                 , isDigit
                 , isSpace
+                , isLower
                 , toLower
+                , toUpper
                 )
 import Data.Maybe(fromMaybe, isNothing)
 import Data.Ratio((%))
@@ -303,7 +305,10 @@ character c = satisfy parseC
               `adjustErr`
               (++ "\nnot the expected char: " ++ [c])
   where
-    parseC c' = c' == c || toLower c == toLower c'
+    parseC c' = c' == c || c == flipCase c'
+    flipCase c' = if isLower c'
+                  then toUpper c'
+                  else toLower c'
 
 noneOf :: (Eq a) => [a] -> Parser a a
 noneOf t = satisfy (\x -> all (/= x) t)
