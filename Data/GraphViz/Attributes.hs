@@ -80,65 +80,41 @@ module Data.GraphViz.Attributes
     , usedByClusters
     , usedByNodes
     , usedByEdges
+
       -- * Value types for @Attribute@s.
+    , module Data.GraphViz.Attributes.Colors
+
+      -- ** Labels
     , EscString
-    , ArrowType(..)
-    , AspectType(..)
-    , Rect(..)
-    , ClusterMode(..)
-    , DirType(..)
-    , DEConstraints(..)
-    , DPoint(..)
-    , ModeType(..)
-    , Model(..)
     , Label(..)
     , Labellable(..)
-    , Point(..)
-    , createPoint
-    , Overlap(..)
-    , LayerRange(..)
-    , LayerID(..)
-    , LayerList(..)
-    , OutputMode(..)
-    , Pack(..)
-    , PackMode(..)
-    , Pos(..)
-    , EdgeType(..)
-    , PageDir(..)
-    , Spline(..)
-    , QuadType(..)
-    , Root(..)
-    , RankType(..)
-    , RankDir(..)
-    , Shape(..)
-    , SmoothType(..)
-    , StartType(..)
-    , STStyle(..)
-    , StyleItem(..)
-    , StyleName(..)
-    , ViewPort(..)
-    , FocusType(..)
     , VerticalPlacement(..)
-    , ScaleType(..)
+    , module Data.GraphViz.Attributes.HTML
+      -- *** Types representing the Dot grammar for records.
+    , RecordFields
+    , RecordField(..)
+    , Rect(..)
     , Justification(..)
-    , Ratios(..)
-      -- Re-exported from Data.GraphViz.Attributes.Internal
+
+      -- ** Nodes
+    , Shape(..)
+    , ScaleType(..)
+
+      -- ** Edges
+    , DirType(..)
+    , EdgeType(..)
+      -- *** Modifying where edges point
     , PortName(..)
     , PortPos(..)
     , CompassPoint(..)
-      -- Re-exporting modules
-    , module Data.GraphViz.Attributes.Colors
-    , module Data.GraphViz.Attributes.HTML
-      -- * Types representing the Dot grammar for records.
-    , RecordFields
-    , RecordField(..)
-      -- * Types representing the Dot grammar for @ArrowType@.
+      -- *** Arrows
+    , ArrowType(..)
     , ArrowShape(..)
     , ArrowModifier(..)
     , ArrowFill(..)
     , ArrowSide(..)
-      -- ** Default @ArrowType@ aliases.
-      -- *** The 9 primitive @ArrowShape@s.
+      -- **** Default @ArrowType@ aliases.
+      -- ***** The 9 primitive @ArrowShape@s.
     , box
     , crow
     , diamond
@@ -148,24 +124,63 @@ module Data.GraphViz.Attributes
     , normal
     , tee
     , vee
-      -- *** 5 derived Arrows.
+      -- ***** 5 derived Arrows.
     , oDot
     , invDot
     , invODot
     , oBox
     , oDiamond
-      -- *** 5 supported cases for backwards compatibility
+      -- ***** 5 supported cases for backwards compatibility
     , eDiamond
     , openArr
     , halfOpen
     , emptyArr
     , invEmpty
-      -- ** @ArrowModifier@ instances
+      -- **** @ArrowModifier@ instances
     , noMods
     , openMod
-      -- * Other exported functions\/values
+
+      -- ** Positioning
+    , Point(..)
+    , createPoint
+    , Pos(..)
+    , Spline(..)
+    , DPoint(..)
+
+      -- ** Layout
+    , AspectType(..)
+    , ClusterMode(..)
+    , Model(..)
+    , Overlap(..)
+    , Root(..)
+    , OutputMode(..)
+    , Pack(..)
+    , PackMode(..)
+    , PageDir(..)
+    , QuadType(..)
+    , RankType(..)
+    , RankDir(..)
+    , StartType(..)
+    , ViewPort(..)
+    , FocusType(..)
+    , Ratios(..)
+
+      -- ** Modes
+    , ModeType(..)
+    , DEConstraints(..)
+
+      -- ** Layers
+    , LayerRange(..)
+    , LayerID(..)
+    , LayerList(..)
     , defLayerSep
     , notLayerSep
+
+      -- ** Stylistic
+    , SmoothType(..)
+    , STStyle(..)
+    , StyleItem(..)
+    , StyleName(..)
     ) where
 
 import Data.GraphViz.Attributes.Colors
@@ -2325,6 +2340,7 @@ instance ParseDot ViewPort where
 
     parse = quotedParse parseUnqt
 
+-- | For use with 'ViewPort'.
 data FocusType = XY Point
                | NodeFocus String
                  deriving (Eq, Ord, Show, Read)
