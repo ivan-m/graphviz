@@ -1148,23 +1148,28 @@ posArbitrary :: (Arbitrary a, Num a, Ord a) => Gen a
 posArbitrary = liftM fromPositive arbitrary
 
 arbString :: Gen String
-arbString = suchThat genStr validString
+arbString = suchThat genStr notBool
   where
-    genStr = listOf1 $ elements strChr
-    strChr = ['a'..'z'] ++ ['0'..'9'] ++ ['\'', '"', ' ', '(', ')'
-                                         , ',', ':', '.', '\\']
+    genStr = liftM2 (:) (elements notDigits) (listOf $ elements strChr)
+    notDigits = ['a'..'z'] ++ ['\'', '"', ' ', '(', ')', ',', ':', '\\']
+    strChr = notDigits ++ '.' : ['0'..'9']
+
+{-# INLINE arbString #-}
 
 arbIDString :: Gen String
-arbIDString = suchThat genStr validString
+arbIDString = suchThat genStr notBool
   where
     genStr = liftM2 (:) (elements frst) $ listOf (elements rest)
     frst = ['a'..'z'] ++ ['_']
     rest = frst ++ ['0'.. '9']
 
-validString         :: String -> Bool
-validString "true"  = False
-validString "false" = False
-validString str     = notNumStr str
+validString :: String -> Bool
+validString = liftM2 (&&) notBool notNumStr
+
+notBool         :: String -> Bool
+notBool "true"  = False
+notBool "false" = False
+notBool _       = True
 
 shrinkString :: String -> [String]
 shrinkString = filter validString . nonEmptyShrinks'
