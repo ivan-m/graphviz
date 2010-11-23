@@ -1130,8 +1130,8 @@ instance Arbitrary HtmlVAlign where
   arbitrary = arbBounded
 
 instance Arbitrary PortName where
-  arbitrary = liftM PN . flip suchThat (liftM2 (&&) (not . null) notCP)
-              $ liftM (filter (/= ':')) arbString
+  arbitrary = liftM PN
+              $ suchThat arbString (liftM2 (&&) (notElem ':') notCP)
 
   shrink = map PN . filter notCP . shrinkString . portName
 
