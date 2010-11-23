@@ -111,35 +111,36 @@ isUndirected g = all hasFlip es
 
    Example usages of 'GraphvizParams' follow:
 
-   @
-     -- Quickly visualise a graph using the default parameters.  Note the
-     -- usage of 'nonClusteredParams' over 'defaultParams' to avoid
-     -- type-checking problems with the cluster type.
-     defaultVis :: (Graph gr) => gr nl el -> DotGraph Node
-     defaultVis = graphToDot nonClusteredParams
+   * Quickly visualise a graph using the default parameters.  Note the
+     usage of @'nonClusteredParams'@ over @'defaultParams'@ to avoid
+     type-checking problems with the cluster type.
 
-     -- As with defaultVis, but determine whether or not the graph is
-     -- directed or undirected.
-     checkDirectednessVis :: (Graph gr, Ord el) => gr nl el -> DotGraph Node
-     checkDirectednessVis = setDirectedness graphToDot nonClusteredParams
+     > defaultVis :: (Graph gr) => gr nl el -> DotGraph Node
+     > defaultVis = graphToDot nonClusteredParams
 
-     -- Clustering nodes based upon whether they are even or odd.  We have
-     -- the option of either constructing a GraphvizParams directly, or
-     -- using blankParams.  Going with the latter to avoid setting
-     -- isDirected.
-     evenOdd :: (Graph gr, Ord el) => gr Int el -> DotGraph Node
-     evenOdd = setDirectedness dotToGraph params
-       where
-         params = blankParams { globalAttributes = []
-                              , clusterBy        = clustBy
-                              , clusterID        = Just . Int
-                              , fmtCluster       = clFmt
-                              , fmtNode          = const []
-                              , fmtEdge          = const []
-                              }
-         clustBy (n,l) = C (n `mod` 2) $ N (n,l)
-         clFmt m = [GraphAttrs [toLabel $ "n == " ++ show m ++ " (mod 2)"]]
-   @
+   * As with @defaultVis@, but determine whether or not the graph is
+     directed or undirected.
+
+     > checkDirectednessVis :: (Graph gr, Ord el) => gr nl el -> DotGraph Node
+     > checkDirectednessVis = setDirectedness graphToDot nonClusteredParams
+
+   * Clustering nodes based upon whether they are even or odd.  We have
+     the option of either constructing a @GraphvizParams@ directly, or
+     using @'blankParams'@.  Going with the latter to avoid setting
+     @'isDirected'@.
+
+     > evenOdd :: (Graph gr, Ord el) => gr Int el -> DotGraph Node
+     > evenOdd = setDirectedness dotToGraph params
+     >   where
+     >     params = blankParams { globalAttributes = []
+     >                          , clusterBy        = clustBy
+     >                          , clusterID        = Just . Int
+     >                          , fmtCluster       = clFmt
+     >                          , fmtNode          = const []
+     >                          , fmtEdge          = const []
+     >                          }
+     >     clustBy (n,l) = C (n `mod` 2) $ N (n,l)
+     >     clFmt m = [GraphAttrs [toLabel $ "n == " ++ show m ++ " (mod 2)"]]
 
    For more examples, see the source of 'dotizeGraph' and 'preview'.
 
