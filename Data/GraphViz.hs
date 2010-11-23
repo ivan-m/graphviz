@@ -1,6 +1,4 @@
-{-# LANGUAGE   MultiParamTypeClasses
-             , FlexibleContexts
-  #-}
+{-# LANGUAGE   MultiParamTypeClasses, FlexibleContexts #-}
 
 {- |
    Module      : Data.GraphViz
@@ -27,11 +25,11 @@ module Data.GraphViz
     , nonClusteredParams
     , blankParams
     , setDirectedness
-      -- ** Converting graphs.
-    , graphToDot
-      -- ** Conversion with support for clusters.
+      -- *** Specifying clusters.
     , LNodeCluster
     , NodeCluster(..)
+      -- ** Converting graphs.
+    , graphToDot
       -- ** Pseudo-inverse conversion.
     , dotToGraph
       -- * Graph augmentation.
@@ -99,15 +97,14 @@ isUndirected g = all hasFlip es
 
    * Which top-level 'GlobalAttributes' values should be applied;
 
-   * How to define (and name) subgraphs and clusters;
+   * How to define (and name) clusters;
 
-   * How to format subgraphs/clusters, nodes and edges.
+   * How to format clusters, nodes and edges.
 
    Apart from not having to pass multiple values around, another
    advantage of using 'GraphvizParams' over the previous approach is that
    there is no distinction between clustering and non-clustering variants
    of the same functions.
-
 
    Example usages of 'GraphvizParams' follow:
 
@@ -156,32 +153,33 @@ isUndirected g = all hasFlip es
 --
 --   The clustering in 'clusterBy' can be to arbitrary depth.
 data GraphvizParams nl el cl l
-     = Params { -- | 'True' if the 'Graph' is directed; 'False'
+     = Params { -- | @True@ if the graph is directed; @False@
                 --   otherwise.
                 isDirected       :: Bool
                 -- | The top-level global 'Attributes' for the entire
-                --   'Graph'.
+                --   graph.
               , globalAttributes :: [GlobalAttributes]
                 -- | A function to specify which cluster a particular
                 --   'LNode' is in.
               , clusterBy        :: (LNode nl -> LNodeCluster cl l)
-                -- | The 'GraphID' for a cluster.
+                -- | The name/identifier for a cluster.
               , clusterID        :: (cl -> Maybe GraphID)
                 -- | Specify which global attributes are applied in
                 --   the given cluster.
               , fmtCluster       :: (cl -> [GlobalAttributes])
-                -- | The specific 'Attributes' for that 'LNode'.
+                -- | The specific @Attributes@ for a node.
               , fmtNode          :: (LNode l -> Attributes)
-                -- | The specific 'Attributes' for that 'LEdge'.
+                -- | The specific @Attributes@ for an edge.
               , fmtEdge          :: (LEdge el -> Attributes)
               }
 
 -- | A default 'GraphvizParams' value which assumes the graph is
 --   directed, contains no clusters and has no 'Attribute's set.
 --
---   If you wish to have the labels of the nodes after applying
---   'clusterBy' to have a different from before clustering, then you
---   will have to specify your own 'GraphvizParams' value from scratch.
+--   If you wish to have the labels of the nodes to have a different
+--   type after applying 'clusterBy' from before clustering, then you
+--   will have to specify your own 'GraphvizParams' value from
+--   scratch (or use 'blankParams').
 defaultParams :: GraphvizParams nl el cl nl
 defaultParams = Params { isDirected       = True
                        , globalAttributes = []
@@ -193,9 +191,9 @@ defaultParams = Params { isDirected       = True
                        }
 
 -- | A variant of 'defaultParams' that enforces that the clustering
---   type is @'()'@; this avoids problems when using 'defaultParams'
---   internally within a function without any constraint on what the
---   clustering type is.
+--   type is @'()'@ (i.e.: no clustering); this avoids problems when
+--   using 'defaultParams' internally within a function without any
+--   constraint on what the clustering type is.
 nonClusteredParams :: GraphvizParams nl el () nl
 nonClusteredParams = defaultParams
 
@@ -203,7 +201,9 @@ nonClusteredParams = defaultParams
 --   @'undefined'@.  This is useful when you have a function that will
 --   set some of the values for you (e.g. 'setDirectedness') but you
 --   don't want to bother thinking of default values to set in the
---   meantime.
+--   meantime.  This is especially useful when you are
+--   programmatically setting the clustering function (and as such do
+--   not know what the types might be).
 blankParams :: GraphvizParams nl el cl l
 blankParams = Params { isDirected       = undefined
                      , globalAttributes = undefined
