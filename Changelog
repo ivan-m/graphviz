@@ -29,9 +29,6 @@ Changes in 2999.11.0.0
 * `LayerList` uses `LayerID` values, and now has a proper `shrink`
   implementation in the test suite.
 
-* The optional `z` coordinate and `!` argument for `Point` values are
-  now supported.
-
 Changes in 2999.10.0.1
 ----------------------
 
