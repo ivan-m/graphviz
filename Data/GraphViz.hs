@@ -127,7 +127,7 @@ isUndirected g = all hasFlip es
      @'isDirected'@.
 
      > evenOdd :: (Graph gr, Ord el) => gr Int el -> DotGraph Node
-     > evenOdd = setDirectedness dotToGraph params
+     > evenOdd = setDirectedness graphToDot params
      >   where
      >     params = blankParams { globalAttributes = []
      >                          , clusterBy        = clustBy
