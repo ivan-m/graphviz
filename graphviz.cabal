@@ -1,5 +1,5 @@
 Name:               graphviz
-Version:            2999.10.0.1
+Version:            2999.11.0.0
 Stability:          Beta
 Synopsis:           Graphviz bindings for Haskell.
 Description: {
