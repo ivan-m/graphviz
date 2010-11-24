@@ -473,7 +473,10 @@ prettyPrint' = unsafePerformIO . prettyPrint
 canonicalise :: (DotRepr dg n, DotRepr DotGraph n) => dg n -> IO (DotGraph n)
 canonicalise = liftM parseDotGraph . prettyPrint
 
--- | Quickly visualise a graph using the 'Xlib' 'GraphvizCanvas'.
+-- | Quickly visualise a graph using the 'Xlib' 'GraphvizCanvas'.  If
+--   your label types are not (and cannot) be instances of 'Labellable',
+--   you may wish to use 'gmap', 'nmap' or 'emap' to set them to a value
+--   such as @\"\"@.
 preview   :: (Ord el, Graph gr, Labellable nl, Labellable el) => gr nl el -> IO ()
 preview g = ign $ forkIO (ign $ runGraphvizCanvas' dg Xlib)
   where
