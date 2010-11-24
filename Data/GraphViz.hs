@@ -474,10 +474,13 @@ canonicalise :: (DotRepr dg n, DotRepr DotGraph n) => dg n -> IO (DotGraph n)
 canonicalise = liftM parseDotGraph . prettyPrint
 
 -- | Quickly visualise a graph using the 'Xlib' 'GraphvizCanvas'.
-preview   :: (Ord el, Graph gr) => gr nl el -> IO ()
+preview   :: (Ord el, Graph gr, Labellable nl, Labellable el) => gr nl el -> IO ()
 preview g = ign $ forkIO (ign $ runGraphvizCanvas' dg Xlib)
   where
-    dg = setDirectedness graphToDot nonClusteredParams g
+    dg = setDirectedness graphToDot params g
+    params = nonClusteredParams { fmtNode = \ (_,l) -> [toLabel l]
+                                , fmtEdge = \ (_, _, l) -> [toLabel l]
+                                }
     ign = (>> return ())
 
 -- | Used for obtaining results from 'graphvizWithHandle', etc. when
