@@ -21,6 +21,7 @@ import Data.GraphViz.Attributes( Attributes, Attribute(HeadPort, TailPort)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
 
 import Data.Maybe(isJust)
+import qualified Data.Text.Lazy as Text
 import Control.Monad(liftM, liftM2, when)
 
 -- -----------------------------------------------------------------------------
@@ -408,7 +409,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
   where
     -- If it's a String value, check to see if it's actually a
     -- cluster_Blah value; thus need to manually re-parse it.
-    getClustFrom (Str str) = runParser' pStr str
+    getClustFrom (Str str) = runParser' pStr $ Text.pack str
     getClustFrom gid       = (False, Just gid)
 
     checkCl = stringRep True clust

@@ -20,7 +20,7 @@
 -}
 module Data.GraphViz.Parsing
     ( -- * Re-exporting pertinent parts of Polyparse.
-      module Text.ParserCombinators.Poly.Lazy
+      module Text.ParserCombinators.Poly.Text
       -- * The ParseDot class.
     , Parse
     , ParseDot(..)
@@ -77,7 +77,7 @@ module Data.GraphViz.Parsing
 
 import Data.GraphViz.Util
 
-import Text.ParserCombinators.Poly.Lazy hiding (bracket, empty)
+import Text.ParserCombinators.Poly.Text hiding (bracket, empty)
 import Data.Char( digitToInt
                 , isDigit
                 , isSpace
@@ -88,20 +88,23 @@ import Data.Char( digitToInt
 import Data.Maybe(fromMaybe, isNothing)
 import Data.Ratio((%))
 import qualified Data.Set as Set
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy(Text)
 import Data.Word(Word8, Word16)
+import Control.Arrow(first)
 import Control.Monad(liftM, when)
 
 -- -----------------------------------------------------------------------------
 -- Based off code from Text.Parse in the polyparse library
 
 -- | A @ReadS@-like type alias.
-type Parse a = Parser Char a
+type Parse a = Parser a
 
 -- | A variant of 'runParser' where it is assumed that the provided
 --   parsing function consumes all of the 'String' input (with the
 --   exception of whitespace at the end).
-runParser'   :: Parse a -> String -> a
-runParser' p = fst . runParser p'
+runParser'   :: Parse a -> Text -> a
+runParser' p = right . fst . runParser p'
   where
     p' = p `discard` (allWhitespace' >> eof)
 
@@ -125,12 +128,16 @@ class ParseDot a where
 
 -- | Parse the required value, returning also the rest of the input
 --   'String' that hasn't been parsed (for debugging purposes).
-parseIt :: (ParseDot a) => String -> (a, String)
-parseIt = runParser parse
+parseIt :: (ParseDot a) => Text -> (a, Text)
+parseIt = first right . runParser parse
+
+right           :: Either a b -> b
+right Left{}    = error "Not a Right value"
+right (Right r) = r
 
 -- | Parse the required value with the assumption that it will parse
 --   all of the input 'String'.
-parseIt' :: (ParseDot a) => String -> a
+parseIt' :: (ParseDot a) => Text -> a
 parseIt' = runParser' parse
 
 instance ParseDot Int where
@@ -240,7 +247,7 @@ parseFloat = do ds   <- many (satisfy isDigit)
                 let frac' = fromMaybe "" frac
                     expn' = fromMaybe 0 expn
                 ( return . fromRational . (* (10^^(expn' - length frac')))
-                  . (%1) . runParser' parseInt) (ds++frac')
+                  . (%1) . runParser' parseInt) (T.pack $ ds++frac')
              `onFail`
              fail "Expected a floating point number"
     where
@@ -297,7 +304,7 @@ character c = satisfy parseC
                   then toUpper c'
                   else toLower c'
 
-noneOf :: (Eq a) => [a] -> Parser a a
+noneOf   :: [Char] -> Parse Char
 noneOf t = satisfy (\x -> all (/= x) t)
 
 whitespace :: Parse String
@@ -368,8 +375,8 @@ newline' = many (whitespace' >> newline) >> return ()
 
 -- | Parses and returns all characters up till the end of the line,
 --   but does not touch the newline characters.
-consumeLine :: Parse String
-consumeLine = many (noneOf ['\n','\r'])
+consumeLine :: Parse Text
+consumeLine = manySatisfy (`notElem` ['\n','\r'])
 
 parseEq :: Parse ()
 parseEq = wrapWhitespace (character '=') >> return ()

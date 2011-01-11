@@ -23,6 +23,8 @@ module Data.GraphViz.PreProcessing(preProcess) where
 
 import Data.GraphViz.Parsing
 
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy(Text)
 import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
@@ -30,23 +32,23 @@ import Control.Monad(liftM)
 
 -- | Remove unparseable features of Dot, such as comments and
 --   multi-line strings (which are converted to single-line strings).
-preProcess :: String -> String
+preProcess :: Text -> Text
 preProcess = runParser' parseOutUnwanted
              -- snd should be null
 
 -- | Parse out comments and make quoted strings spread over multiple
 --   lines only over a single line.  Should parse the /entire/ input
---   'String'.
-parseOutUnwanted :: Parse String
-parseOutUnwanted = liftM concat (many getNext)
+--   'Text'.
+parseOutUnwanted :: Parse Text
+parseOutUnwanted = liftM T.concat (many getNext)
     where
       getNext = parseConcatStrings
                 `onFail`
                 parseHTML
                 `onFail`
-                (parseUnwanted >> return [])
+                (parseUnwanted >> return T.empty)
                 `onFail`
-                liftM return next
+                liftM T.singleton next
 
 -- | Parses an unwanted part of the Dot code (comments and
 --   pre-processor lines; also un-splits lines).
@@ -62,13 +64,13 @@ parseUnwanted = oneOf [ parseLineComment
 --   @#@).  Will consume the newline from the beginning of the
 --   previous line, but will leave the one from the pre-processor line
 --   there (so in the end it just removes the line).
-parsePreProcessor :: Parse String
+parsePreProcessor :: Parse Text
 parsePreProcessor = do newline
                        character '#'
                        consumeLine
 
 -- | Parse @//@-style comments.
-parseLineComment :: Parse String
+parseLineComment :: Parse Text
 parseLineComment = string "//"
                    -- Note: do /not/ consume the newlines, as they're
                    -- needed in case the next line is a pre-processor
@@ -76,43 +78,43 @@ parseLineComment = string "//"
                    >> consumeLine
 
 -- | Parse @/* ... */@-style comments.
-parseMultiLineComment :: Parse String
-parseMultiLineComment = bracket start end (liftM concat $ many inner)
+parseMultiLineComment :: Parse Text
+parseMultiLineComment = bracket start end (liftM T.concat $ many inner)
     where
       start = string "/*"
       end = string "*/"
-      inner = many1 (satisfy ('*' /=))
+      inner = many1Satisfy ('*' /=)
               `onFail`
               do ast <- character '*'
                  n <- satisfy ('/' /=)
-                 liftM ((:) ast . (:) n) inner
+                 liftM (T.cons ast . T.cons n) inner
 
-parseConcatStrings :: Parse String
-parseConcatStrings = liftM (wrapQuotes . concat)
+parseConcatStrings :: Parse Text
+parseConcatStrings = liftM (wrapQuotes . T.concat)
                      $ sepBy1 parseString parseConcat
   where
-    parseString = quotedParse (liftM concat $ many parseInner)
-    parseInner = string "\\\""
+    parseString = quotedParse (liftM T.concat $ many parseInner)
+    parseInner = liftM T.pack (string "\\\"")
                  `onFail`
                  parseSplitLine -- in case there's a split mid-quote
                  `onFail`
-                 liftM return (satisfy (quoteChar /=))
+                 liftM T.singleton (satisfy (quoteChar /=))
     parseConcat = parseSep >> character '+' >> parseSep
     parseSep = many $ allWhitespace `onFail` parseUnwanted
-    wrapQuotes str = quoteChar : str ++ [quoteChar]
+    wrapQuotes str = quoteChar `T.cons` str `T.snoc` quoteChar
 
 
 -- | Lines can be split with a @\\@ at the end of the line.
-parseSplitLine :: Parse String
-parseSplitLine = character '\\' >> newline >> return ""
+parseSplitLine :: Parse Text
+parseSplitLine = character '\\' >> newline >> return T.empty
 
-parseHTML :: Parse String
-parseHTML = liftM (addQuotes . concat)
+parseHTML :: Parse Text
+parseHTML = liftM (addAngled . T.concat)
             . parseAngled $ many inner
   where
     inner = parseHTML
             `onFail`
-            many1 (satisfy (\c -> c /= open && c /= close))
-    addQuotes str = open : str ++ [close]
+            many1Satisfy (\c -> c /= open && c /= close)
+    addAngled str = open `T.cons` str `T.snoc` close
     open = '<'
     close = '>'

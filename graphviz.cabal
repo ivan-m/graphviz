@@ -65,7 +65,8 @@ Library {
                            pretty,
                            bytestring == 0.9.*,
                            colour == 2.3.*,
-                           transformers == 0.2.*
+                           transformers == 0.2.*,
+                           text
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types

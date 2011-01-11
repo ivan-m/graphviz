@@ -122,6 +122,7 @@ import Data.GraphViz.Parsing
 import Data.GraphViz.PreProcessing
 import Data.GraphViz.Printing
 
+import Data.Text.Lazy(Text)
 import Control.Arrow((&&&))
 import Control.Monad(liftM)
 
@@ -182,7 +183,7 @@ printDotGraph = printIt
 --   may or may not be parseable Dot code.
 --
 --   Also removes any comments, etc. before parsing.
-parseDotGraph :: (DotRepr dg n) => String -> dg n
+parseDotGraph :: (DotRepr dg n) => Text -> dg n
 parseDotGraph = fst . parseIt . preProcess
 
 -- -----------------------------------------------------------------------------

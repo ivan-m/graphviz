@@ -70,6 +70,8 @@ import qualified Data.Set as Set
 import Control.Arrow((&&&))
 import Data.Maybe(mapMaybe, isNothing)
 import qualified Data.Map as Map
+import qualified Data.Text.Lazy as Text
+import Data.Text.Lazy(Text)
 import Control.Monad(liftM)
 import System.IO.Unsafe(unsafePerformIO)
 import Control.Concurrent(forkIO)
@@ -401,7 +403,7 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr nl (EdgeID el)
                  -> dg Node -> IO (gr (AttributeNode nl) (AttributeEdge el))
 dotAttributes isDir gr dot
-  = liftM (augmentGraph gr . parseDG . fromDotResult)
+  = liftM (augmentGraph gr . parseDG . Text.pack . fromDotResult)
     $ graphvizWithHandle command dot DotOutput hGetContents'
     where
       parseDG = asTypeOf dot . parseDotGraph
@@ -450,8 +452,8 @@ augmentGraph g dg = mkGraph lns les
 --   isn't installed, or it has an 'Image' or 'HtmlImg' Attribute that
 --   references an image that can't be found from the working
 --   directory.
-prettyPrint    :: (DotRepr dg n) => dg n -> IO String
-prettyPrint dg = liftM fromDotResult
+prettyPrint    :: (DotRepr dg n) => dg n -> IO Text
+prettyPrint dg = liftM (Text.pack . fromDotResult)
                  -- Note that the choice of command here should be
                  -- arbitrary.
                  $ graphvizWithHandle (commandFor dg)
@@ -463,7 +465,7 @@ prettyPrint dg = liftM fromDotResult
 --   always produce the same pretty-printed output, so this should be
 --   safe.  However, it is not recommended to use it in production
 --   code, just for testing purposes.
-prettyPrint' :: (DotRepr dg n) => dg n -> String
+prettyPrint' :: (DotRepr dg n) => dg n -> Text
 prettyPrint' = unsafePerformIO . prettyPrint
 
 -- | Convert the 'DotRepr' into its canonical form.  This /should/
