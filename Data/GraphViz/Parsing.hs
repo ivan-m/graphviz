@@ -29,7 +29,6 @@ module Data.GraphViz.Parsing
     , runParser'
       -- * Convenience parsing combinators.
     , bracket
-    , discard
     , onlyBool
     , quotelessString
     , stringBlock
@@ -78,7 +77,7 @@ module Data.GraphViz.Parsing
 
 import Data.GraphViz.Util
 
-import Text.ParserCombinators.Poly.Lazy hiding (bracket, discard)
+import Text.ParserCombinators.Poly.Lazy hiding (bracket, empty)
 import Data.Char( digitToInt
                 , isDigit
                 , isSpace
@@ -272,18 +271,6 @@ bracket open close pa = do open `adjustErr` ("Missing opening bracket:\n\t"++)
                            pa `discard`
                              (close
                               `adjustErr` ("Missing closing bracket:\n\t"++))
-
-infixl 3 `discard`
-
--- | @x `discard` y@ parses both x and y, but discards the result of y.
---
---   The definition of @discard@ defined in Polyparse is too strict
---   and prevents backtracking.  This should be fixed in the next
---   release after 1.4.
-discard :: Parse a -> Parse b -> Parse a
-pa `discard` pb = do a <- pa
-                     pb
-                     return a
 
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` allWhitespace'
