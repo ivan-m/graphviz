@@ -52,7 +52,7 @@ isNumString str = case str of
                     _          -> go str
     where
       go s = case span isDigit (map toLower s) of
-               (ds@(_:_),[]) -> all isDigit ds
+               (ds,[])       -> not $ null ds
                ([],'.':[])   -> False
                ([],'.':d:ds) -> isDigit d && checkEs' ds
                (_,'.':ds)    -> checkEs $ dropWhile isDigit ds
