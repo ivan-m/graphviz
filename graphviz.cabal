@@ -1,11 +1,11 @@
 Name:               graphviz
 Version:            2999.11.0.0
 Stability:          Beta
-Synopsis:           Graphviz bindings for Haskell.
+Synopsis:           Bindings to Graphviz for graph visualisation.
 Description: {
 This library provides bindings for the Dot language used by the
-Graphviz (<http://graphviz.org/>) suite of programs, as well as
-functions to call those programs.
+Graphviz (<http://graphviz.org/>) suite of programs for visualising
+graphs, as well as functions to call those programs.
 .
 Main features of the graphviz library include:
 .
