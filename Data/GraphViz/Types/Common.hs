@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
@@ -21,7 +22,8 @@ import Data.GraphViz.Attributes( Attributes, Attribute(HeadPort, TailPort)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
 
 import Data.Maybe(isJust)
-import qualified Data.Text.Lazy as Text
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2, when)
 
 -- -----------------------------------------------------------------------------
@@ -31,7 +33,7 @@ import Control.Monad(liftM, liftM2, when)
 --   Dot syntax.  Note that whilst the 'ParseDot' and 'PrintDot'
 --   instances for 'String' will properly take care of the special
 --   cases for numbers, they are treated differently here.
-data GraphID = Str String
+data GraphID = Str Text
              | Int Int
              | Dbl Double
                deriving (Eq, Ord, Show, Read)
@@ -51,7 +53,7 @@ instance ParseDot GraphID where
             `adjustErr`
             (++ "\nNot a valid GraphID")
 
-stringNum     :: String -> GraphID
+stringNum     :: Text -> GraphID
 stringNum str = maybe checkDbl Int $ stringToInt str
   where
     checkDbl = if isNumString str
@@ -283,13 +285,13 @@ dirEdge :: String
 dirEdge = "->"
 
 dirEdge' :: DotCode
-dirEdge' = text dirEdge
+dirEdge' = text $ T.pack dirEdge
 
 undirEdge :: String
 undirEdge = "--"
 
 undirEdge' :: DotCode
-undirEdge' = text undirEdge
+undirEdge' = text $ T.pack undirEdge
 
 invalidEdge   :: DotEdge a -> [DotError a]
 invalidEdge e = map (EdgeError eID)
@@ -304,31 +306,31 @@ dirGraph :: String
 dirGraph = "digraph"
 
 dirGraph' :: DotCode
-dirGraph' = text dirGraph
+dirGraph' = text $ T.pack dirGraph
 
 undirGraph :: String
 undirGraph = "graph"
 
 undirGraph' :: DotCode
-undirGraph' = text undirGraph
+undirGraph' = text $ T.pack undirGraph
 
 strGraph :: String
 strGraph = "strict"
 
 strGraph' :: DotCode
-strGraph' = text strGraph
+strGraph' = text $ T.pack strGraph
 
 sGraph :: String
 sGraph = "subgraph"
 
 sGraph' :: DotCode
-sGraph' = text sGraph
+sGraph' = text $ T.pack sGraph
 
 clust :: String
 clust = "cluster"
 
 clust' :: DotCode
-clust' = text clust
+clust' = text $ T.pack clust
 
 -- -----------------------------------------------------------------------------
 
@@ -392,7 +394,7 @@ printSGID isCl sID = bool noClust addClust isCl
   where
     noClust = toDot sID
     -- Have to manually render it as we need the un-quoted form.
-    addClust = toDot . (++) clust . (:) '_'
+    addClust = toDot . T.append (T.pack clust) . T.cons '_'
                . renderDot $ mkDot sID
     mkDot (Str str) = text str -- Quotes will be escaped later
     mkDot gid       = unqtDot gid
@@ -409,7 +411,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
   where
     -- If it's a String value, check to see if it's actually a
     -- cluster_Blah value; thus need to manually re-parse it.
-    getClustFrom (Str str) = runParser' pStr $ Text.pack str
+    getClustFrom (Str str) = runParser' pStr str
     getClustFrom gid       = (False, Just gid)
 
     checkCl = stringRep True clust
@@ -427,7 +429,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
 
     -- For Strings, there are no more quotes to unescape, so consume
     -- what you can.
-    pID = liftM stringNum (many next)
+    pID = liftM stringNum $ manySatisfy (const True)
 
 {- This is a much nicer definition, but unfortunately it doesn't work.
    The problem is that Graphviz decides that a subgraph is a cluster
@@ -470,7 +472,7 @@ parseAttrBasedList = parseStatements . parseAttrBased
 statementEnd :: Parse ()
 statementEnd = parseSplit >> newline'
   where
-    parseSplit = (whitespace' >> oneOf [ liftM return $ character ';'
+    parseSplit = (whitespace' >> oneOf [ character ';' >> return ()
                                        , newline
                                        ]
                  )

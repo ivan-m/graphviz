@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz.Testing.Instances
@@ -30,6 +31,8 @@ import Test.QuickCheck
 import Data.List(nub, delete, groupBy)
 import qualified Data.Sequence as Seq
 import qualified Data.Map as Map
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2, liftM3, liftM4)
 
 -- -----------------------------------------------------------------------------
@@ -42,12 +45,12 @@ instance (Eq a, Arbitrary a) => Arbitrary (DotGraph a) where
                                         $ shrink stmts
 
 instance Arbitrary GraphID where
-  arbitrary = oneof [ liftM Str arbString
+  arbitrary = oneof [ liftM Str arbitrary
                     , liftM Int arbitrary
                     , liftM Dbl $ suchThat arbitrary notInt
                     ]
 
-  shrink (Str s) = map Str $ shrinkString s
+  shrink (Str s) = map Str $ shrink s
   shrink (Int i) = map Int $ shrink i
   shrink (Dbl d) = map Dbl $ filter notInt $ shrink d
 
@@ -153,7 +156,7 @@ instance (Eq a, Arbitrary a) => Arbitrary (GDotSubGraph a) where
 instance Arbitrary Attribute where
     arbitrary = oneof [ liftM Damping arbitrary
                       , liftM K arbitrary
-                      , liftM URL arbString
+                      , liftM URL arbitrary
                       , liftM ArrowHead arbitrary
                       , liftM ArrowSize arbitrary
                       , liftM ArrowTail arbitrary
@@ -161,11 +164,11 @@ instance Arbitrary Attribute where
                       , liftM Bb arbitrary
                       , liftM BgColor arbitrary
                       , liftM Center arbitrary
-                      , liftM Charset arbString
+                      , liftM Charset arbitrary
                       , liftM ClusterRank arbitrary
                       , liftM ColorScheme arbitrary
                       , liftM Color arbList
-                      , liftM Comment arbString
+                      , liftM Comment arbitrary
                       , liftM Compound arbitrary
                       , liftM Concentrate arbitrary
                       , liftM Constraint arbitrary
@@ -177,52 +180,52 @@ instance Arbitrary Attribute where
                       , liftM DirEdgeConstraints arbitrary
                       , liftM Distortion arbitrary
                       , liftM DPI arbitrary
-                      , liftM EdgeURL arbString
-                      , liftM EdgeTarget arbString
-                      , liftM EdgeTooltip arbString
+                      , liftM EdgeURL arbitrary
+                      , liftM EdgeTarget arbitrary
+                      , liftM EdgeTooltip arbitrary
                       , liftM Epsilon arbitrary
                       , liftM ESep arbitrary
                       , liftM FillColor arbitrary
                       , liftM FixedSize arbitrary
                       , liftM FontColor arbitrary
-                      , liftM FontName arbString
-                      , liftM FontNames arbString
-                      , liftM FontPath arbString
+                      , liftM FontName arbitrary
+                      , liftM FontNames arbitrary
+                      , liftM FontPath arbitrary
                       , liftM FontSize arbitrary
-                      , liftM Group arbString
-                      , liftM HeadURL arbString
+                      , liftM Group arbitrary
+                      , liftM HeadURL arbitrary
                       , liftM HeadClip arbitrary
                       , liftM HeadLabel arbitrary
                       , liftM HeadPort arbitrary
-                      , liftM HeadTarget arbString
-                      , liftM HeadTooltip arbString
+                      , liftM HeadTarget arbitrary
+                      , liftM HeadTooltip arbitrary
                       , liftM Height arbitrary
                       , liftM ID arbitrary
-                      , liftM Image arbString
+                      , liftM Image arbitrary
                       , liftM ImageScale arbitrary
-                      , liftM LabelURL arbString
+                      , liftM LabelURL arbitrary
                       , liftM LabelAngle arbitrary
                       , liftM LabelDistance arbitrary
                       , liftM LabelFloat arbitrary
                       , liftM LabelFontColor arbitrary
-                      , liftM LabelFontName arbString
+                      , liftM LabelFontName arbitrary
                       , liftM LabelFontSize arbitrary
                       , liftM LabelJust arbitrary
                       , liftM LabelLoc arbitrary
-                      , liftM LabelTarget arbString
-                      , liftM LabelTooltip arbString
+                      , liftM LabelTarget arbitrary
+                      , liftM LabelTooltip arbitrary
                       , liftM Label arbitrary
                       , liftM Landscape arbitrary
-                      , liftM LayerSep arbString
+                      , liftM LayerSep arbitrary
                       , liftM Layers arbitrary
                       , liftM Layer arbitrary
-                      , liftM Layout arbString
+                      , liftM Layout arbitrary
                       , liftM Len arbitrary
                       , liftM LevelsGap arbitrary
                       , liftM Levels arbitrary
-                      , liftM LHead arbString
+                      , liftM LHead arbitrary
                       , liftM LPos arbitrary
-                      , liftM LTail arbString
+                      , liftM LTail arbitrary
                       , liftM Margin arbitrary
                       , liftM MaxIter arbitrary
                       , liftM MCLimit arbitrary
@@ -236,7 +239,7 @@ instance Arbitrary Attribute where
                       , liftM Normalize arbitrary
                       , liftM Nslimit1 arbitrary
                       , liftM Nslimit arbitrary
-                      , liftM Ordering arbString
+                      , liftM Ordering arbitrary
                       , liftM Orientation arbitrary
                       , liftM OutputOrder arbitrary
                       , liftM OverlapScaling arbitrary
@@ -263,12 +266,12 @@ instance Arbitrary Attribute where
                       , liftM RepulsiveForce arbitrary
                       , liftM Root arbitrary
                       , liftM Rotate arbitrary
-                      , liftM SameHead arbString
-                      , liftM SameTail arbString
+                      , liftM SameHead arbitrary
+                      , liftM SameTail arbitrary
                       , liftM SamplePoints arbitrary
                       , liftM SearchSize arbitrary
                       , liftM Sep arbitrary
-                      , liftM ShapeFile arbString
+                      , liftM ShapeFile arbitrary
                       , liftM Shape arbitrary
                       , liftM ShowBoxes arbitrary
                       , liftM Sides arbitrary
@@ -278,16 +281,16 @@ instance Arbitrary Attribute where
                       , liftM SortV arbitrary
                       , liftM Splines arbitrary
                       , liftM Start arbitrary
-                      , liftM StyleSheet arbString
+                      , liftM StyleSheet arbitrary
                       , liftM Style arbList
-                      , liftM TailURL arbString
+                      , liftM TailURL arbitrary
                       , liftM TailClip arbitrary
                       , liftM TailLabel arbitrary
                       , liftM TailPort arbitrary
-                      , liftM TailTarget arbString
-                      , liftM TailTooltip arbString
-                      , liftM Target arbString
-                      , liftM Tooltip arbString
+                      , liftM TailTarget arbitrary
+                      , liftM TailTooltip arbitrary
+                      , liftM Target arbitrary
+                      , liftM Tooltip arbitrary
                       , liftM TrueColor arbitrary
                       , liftM Vertices arbList
                       , liftM ViewPort arbitrary
@@ -295,12 +298,12 @@ instance Arbitrary Attribute where
                       , liftM Weight arbitrary
                       , liftM Width arbitrary
                       , liftM Z arbitrary
-                      , liftM2 UnknownAttribute (suchThat arbIDString validUnknown) arbString
+                      , liftM2 UnknownAttribute (suchThat arbIDString validUnknown) arbitrary
                       ]
 
     shrink (Damping v)            = map Damping             $ shrink v
     shrink (K v)                  = map K                   $ shrink v
-    shrink (URL v)                = map URL                 $ shrinkString v
+    shrink (URL v)                = map URL                 $ shrink v
     shrink (ArrowHead v)          = map ArrowHead           $ shrink v
     shrink (ArrowSize v)          = map ArrowSize           $ shrink v
     shrink (ArrowTail v)          = map ArrowTail           $ shrink v
@@ -308,11 +311,11 @@ instance Arbitrary Attribute where
     shrink (Bb v)                 = map Bb                  $ shrink v
     shrink (BgColor v)            = map BgColor             $ shrink v
     shrink (Center v)             = map Center              $ shrink v
-    shrink (Charset v)            = map Charset             $ shrinkString v
+    shrink (Charset v)            = map Charset             $ shrink v
     shrink (ClusterRank v)        = map ClusterRank         $ shrink v
     shrink (ColorScheme v)        = map ColorScheme         $ shrink v
     shrink (Color v)              = map Color               $ nonEmptyShrinks v
-    shrink (Comment v)            = map Comment             $ shrinkString v
+    shrink (Comment v)            = map Comment             $ shrink v
     shrink (Compound v)           = map Compound            $ shrink v
     shrink (Concentrate v)        = map Concentrate         $ shrink v
     shrink (Constraint v)         = map Constraint          $ shrink v
@@ -324,52 +327,52 @@ instance Arbitrary Attribute where
     shrink (DirEdgeConstraints v) = map DirEdgeConstraints  $ shrink v
     shrink (Distortion v)         = map Distortion          $ shrink v
     shrink (DPI v)                = map DPI                 $ shrink v
-    shrink (EdgeURL v)            = map EdgeURL             $ shrinkString v
-    shrink (EdgeTarget v)         = map EdgeTarget          $ shrinkString v
-    shrink (EdgeTooltip v)        = map EdgeTooltip         $ shrinkString v
+    shrink (EdgeURL v)            = map EdgeURL             $ shrink v
+    shrink (EdgeTarget v)         = map EdgeTarget          $ shrink v
+    shrink (EdgeTooltip v)        = map EdgeTooltip         $ shrink v
     shrink (Epsilon v)            = map Epsilon             $ shrink v
     shrink (ESep v)               = map ESep                $ shrink v
     shrink (FillColor v)          = map FillColor           $ shrink v
     shrink (FixedSize v)          = map FixedSize           $ shrink v
     shrink (FontColor v)          = map FontColor           $ shrink v
-    shrink (FontName v)           = map FontName            $ shrinkString v
-    shrink (FontNames v)          = map FontNames           $ shrinkString v
-    shrink (FontPath v)           = map FontPath            $ shrinkString v
+    shrink (FontName v)           = map FontName            $ shrink v
+    shrink (FontNames v)          = map FontNames           $ shrink v
+    shrink (FontPath v)           = map FontPath            $ shrink v
     shrink (FontSize v)           = map FontSize            $ shrink v
-    shrink (Group v)              = map Group               $ shrinkString v
-    shrink (HeadURL v)            = map HeadURL             $ shrinkString v
+    shrink (Group v)              = map Group               $ shrink v
+    shrink (HeadURL v)            = map HeadURL             $ shrink v
     shrink (HeadClip v)           = map HeadClip            $ shrink v
     shrink (HeadLabel v)          = map HeadLabel           $ shrink v
     shrink (HeadPort v)           = map HeadPort            $ shrink v
-    shrink (HeadTarget v)         = map HeadTarget          $ shrinkString v
-    shrink (HeadTooltip v)        = map HeadTooltip         $ shrinkString v
+    shrink (HeadTarget v)         = map HeadTarget          $ shrink v
+    shrink (HeadTooltip v)        = map HeadTooltip         $ shrink v
     shrink (Height v)             = map Height              $ shrink v
     shrink (ID v)                 = map ID                  $ shrink v
-    shrink (Image v)              = map Image               $ shrinkString v
+    shrink (Image v)              = map Image               $ shrink v
     shrink (ImageScale v)         = map ImageScale          $ shrink v
-    shrink (LabelURL v)           = map LabelURL            $ shrinkString v
+    shrink (LabelURL v)           = map LabelURL            $ shrink v
     shrink (LabelAngle v)         = map LabelAngle          $ shrink v
     shrink (LabelDistance v)      = map LabelDistance       $ shrink v
     shrink (LabelFloat v)         = map LabelFloat          $ shrink v
     shrink (LabelFontColor v)     = map LabelFontColor      $ shrink v
-    shrink (LabelFontName v)      = map LabelFontName       $ shrinkString v
+    shrink (LabelFontName v)      = map LabelFontName       $ shrink v
     shrink (LabelFontSize v)      = map LabelFontSize       $ shrink v
     shrink (LabelJust v)          = map LabelJust           $ shrink v
     shrink (LabelLoc v)           = map LabelLoc            $ shrink v
-    shrink (LabelTarget v)        = map LabelTarget         $ shrinkString v
-    shrink (LabelTooltip v)       = map LabelTooltip        $ shrinkString v
+    shrink (LabelTarget v)        = map LabelTarget         $ shrink v
+    shrink (LabelTooltip v)       = map LabelTooltip        $ shrink v
     shrink (Label v)              = map Label               $ shrink v
     shrink (Landscape v)          = map Landscape           $ shrink v
-    shrink (LayerSep v)           = map LayerSep            $ shrinkString v
+    shrink (LayerSep v)           = map LayerSep            $ shrink v
     shrink (Layers v)             = map Layers              $ shrink v
     shrink (Layer v)              = map Layer               $ shrink v
-    shrink (Layout v)             = map Layout              $ shrinkString v
+    shrink (Layout v)             = map Layout              $ shrink v
     shrink (Len v)                = map Len                 $ shrink v
     shrink (LevelsGap v)          = map LevelsGap           $ shrink v
     shrink (Levels v)             = map Levels              $ shrink v
-    shrink (LHead v)              = map LHead               $ shrinkString v
+    shrink (LHead v)              = map LHead               $ shrink v
     shrink (LPos v)               = map LPos                $ shrink v
-    shrink (LTail v)              = map LTail               $ shrinkString v
+    shrink (LTail v)              = map LTail               $ shrink v
     shrink (Margin v)             = map Margin              $ shrink v
     shrink (MaxIter v)            = map MaxIter             $ shrink v
     shrink (MCLimit v)            = map MCLimit             $ shrink v
@@ -383,7 +386,7 @@ instance Arbitrary Attribute where
     shrink (Normalize v)          = map Normalize           $ shrink v
     shrink (Nslimit1 v)           = map Nslimit1            $ shrink v
     shrink (Nslimit v)            = map Nslimit             $ shrink v
-    shrink (Ordering v)           = map Ordering            $ shrinkString v
+    shrink (Ordering v)           = map Ordering            $ shrink v
     shrink (Orientation v)        = map Orientation         $ shrink v
     shrink (OutputOrder v)        = map OutputOrder         $ shrink v
     shrink (OverlapScaling v)     = map OverlapScaling      $ shrink v
@@ -410,12 +413,12 @@ instance Arbitrary Attribute where
     shrink (RepulsiveForce v)     = map RepulsiveForce      $ shrink v
     shrink (Root v)               = map Root                $ shrink v
     shrink (Rotate v)             = map Rotate              $ shrink v
-    shrink (SameHead v)           = map SameHead            $ shrinkString v
-    shrink (SameTail v)           = map SameTail            $ shrinkString v
+    shrink (SameHead v)           = map SameHead            $ shrink v
+    shrink (SameTail v)           = map SameTail            $ shrink v
     shrink (SamplePoints v)       = map SamplePoints        $ shrink v
     shrink (SearchSize v)         = map SearchSize          $ shrink v
     shrink (Sep v)                = map Sep                 $ shrink v
-    shrink (ShapeFile v)          = map ShapeFile           $ shrinkString v
+    shrink (ShapeFile v)          = map ShapeFile           $ shrink v
     shrink (Shape v)              = map Shape               $ shrink v
     shrink (ShowBoxes v)          = map ShowBoxes           $ shrink v
     shrink (Sides v)              = map Sides               $ shrink v
@@ -425,16 +428,16 @@ instance Arbitrary Attribute where
     shrink (SortV v)              = map SortV               $ shrink v
     shrink (Splines v)            = map Splines             $ shrink v
     shrink (Start v)              = map Start               $ shrink v
-    shrink (StyleSheet v)         = map StyleSheet          $ shrinkString v
+    shrink (StyleSheet v)         = map StyleSheet          $ shrink v
     shrink (Style v)              = map Style               $ nonEmptyShrinks v
-    shrink (TailURL v)            = map TailURL             $ shrinkString v
+    shrink (TailURL v)            = map TailURL             $ shrink v
     shrink (TailClip v)           = map TailClip            $ shrink v
     shrink (TailLabel v)          = map TailLabel           $ shrink v
     shrink (TailPort v)           = map TailPort            $ shrink v
-    shrink (TailTarget v)         = map TailTarget          $ shrinkString v
-    shrink (TailTooltip v)        = map TailTooltip         $ shrinkString v
-    shrink (Target v)             = map Target              $ shrinkString v
-    shrink (Tooltip v)            = map Tooltip             $ shrinkString v
+    shrink (TailTarget v)         = map TailTarget          $ shrink v
+    shrink (TailTooltip v)        = map TailTooltip         $ shrink v
+    shrink (Target v)             = map Target              $ shrink v
+    shrink (Tooltip v)            = map Tooltip             $ shrink v
     shrink (TrueColor v)          = map TrueColor           $ shrink v
     shrink (Vertices v)           = map Vertices            $ nonEmptyShrinks v
     shrink (ViewPort v)           = map ViewPort            $ shrink v
@@ -442,9 +445,9 @@ instance Arbitrary Attribute where
     shrink (Weight v)             = map Weight              $ shrink v
     shrink (Width v)              = map Width               $ shrink v
     shrink (Z v)                  = map Z                   $ shrink v
-    shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrinkString a) (shrinkString v)
+    shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrink a) (shrink v)
 
-validUnknown                      :: String -> Bool
+validUnknown                      :: Text -> Bool
 validUnknown "Damping"            = False
 validUnknown "K"                  = False
 validUnknown "URL"                = False
@@ -672,12 +675,12 @@ instance Arbitrary Model where
   arbitrary = arbBounded
 
 instance Arbitrary Label where
-  arbitrary = oneof [ liftM StrLabel arbString
+  arbitrary = oneof [ liftM StrLabel arbitrary
                     , liftM HtmlLabel arbitrary
                     , liftM RecordLabel $ suchThat arbList notStr
                     ]
 
-  shrink (StrLabel str)   = map StrLabel $ shrinkString str
+  shrink (StrLabel str)   = map StrLabel $ shrink str
   shrink (HtmlLabel html) = map HtmlLabel $ shrink html
   shrink (RecordLabel fs) = map RecordLabel . filter notStr $ shrinkList fs
 
@@ -689,9 +692,9 @@ arbField     :: Bool -> Int -> Gen RecordField
 arbField b s = resize s'
                . oneof
                . bool id ((:) genFlipped) b
-               $ [ liftM2 LabelledTarget arbitrary arbString
+               $ [ liftM2 LabelledTarget arbitrary arbitrary
                  , liftM PortName arbitrary
-                 , liftM FieldLabel arbString
+                 , liftM FieldLabel arbitrary
                  ]
   where
     genFlipped = liftM FlipFields
@@ -703,7 +706,7 @@ instance Arbitrary RecordField where
 
   shrink (LabelledTarget f l) = [PortName f, FieldLabel l]
   shrink (PortName f)         = map PortName $ shrink f
-  shrink (FieldLabel l)       = map FieldLabel $ shrinkString l
+  shrink (FieldLabel l)       = map FieldLabel $ shrink l
   shrink (FlipFields fs)      = map FlipFields $ shrinkList fs
 
 instance Arbitrary Overlap where
@@ -753,9 +756,9 @@ instance Arbitrary LayerID where
   shrink (LRInt i)   = map LRInt $ shrink i
   shrink (LRName nm) = map LRName
                        . filter lrnameCheck
-                       $ shrinkString nm
+                       $ shrink nm
 
-lrnameCheck :: String -> Bool
+lrnameCheck :: Text -> Bool
 lrnameCheck = (/=) "all"
 
 instance Arbitrary OutputMode where
@@ -827,10 +830,10 @@ instance Arbitrary QuadType where
 instance Arbitrary Root where
   arbitrary = oneof [ return IsCentral
                     , return NotCentral
-                    , liftM NodeName arbString
+                    , liftM NodeName arbitrary
                     ]
 
-  shrink (NodeName nm) = map NodeName $ shrinkString nm
+  shrink (NodeName nm) = map NodeName $ shrink nm
   shrink _             = []
 
 instance Arbitrary RankType where
@@ -914,11 +917,11 @@ instance Arbitrary ViewPort where
 
 instance Arbitrary FocusType where
   arbitrary = oneof [ liftM XY arbitrary
-                    , liftM NodeFocus $ suchThat arbString (all ((/=) ','))
+                    , liftM NodeFocus $ suchThat arbitrary (T.all ((/=) ','))
                     ]
 
   shrink (XY p)          = map XY $ shrink p
-  shrink (NodeFocus str) = map NodeFocus $ shrinkString str
+  shrink (NodeFocus str) = map NodeFocus $ shrink str
 
 instance Arbitrary VerticalPlacement where
   arbitrary = arbBounded
@@ -1029,7 +1032,7 @@ simplifyHtmlText = map head . groupBy sameType
 instance Arbitrary HtmlTextItem where
   arbitrary = sized $ arbHtmlText True
 
-  shrink (HtmlStr str) = map HtmlStr $ shrinkString str
+  shrink (HtmlStr str) = map HtmlStr $ shrink str
   shrink (HtmlNewline as) = map HtmlNewline $ shrink as
   shrink hf@(HtmlFont as txt) = do as' <- shrink as
                                    txt' <- shrinkL txt
@@ -1043,7 +1046,7 @@ arbHtmlText font s = frequency options
                  else id
     s' = min 2 s
     arbFont = liftM2 HtmlFont arbitrary . resize s' . sized $ arbHtmlTexts False
-    options = allowFonts [ (10, liftM HtmlStr arbString)
+    options = allowFonts [ (10, liftM HtmlStr arbitrary)
                          , (10, liftM HtmlNewline arbitrary)
                          ]
 
@@ -1082,17 +1085,17 @@ instance Arbitrary HtmlAttribute where
                     , liftM HtmlCellSpacing arbitrary
                     , liftM HtmlColor arbitrary
                     , liftM HtmlColSpan arbitrary
-                    , liftM HtmlFace arbString
+                    , liftM HtmlFace arbitrary
                     , liftM HtmlFixedSize arbitrary
                     , liftM HtmlHeight arbitrary
-                    , liftM HtmlHRef arbString
+                    , liftM HtmlHRef arbitrary
                     , liftM HtmlPointSize arbitrary
                     , liftM HtmlPort arbitrary
                     , liftM HtmlRowSpan arbitrary
                     , liftM HtmlScale arbitrary
                     , liftM HtmlSrc arbString
-                    , liftM HtmlTarget arbString
-                    , liftM HtmlTitle arbString
+                    , liftM HtmlTarget arbitrary
+                    , liftM HtmlTitle arbitrary
                     , liftM HtmlVAlign arbitrary
                     , liftM HtmlWidth arbitrary
                     ]
@@ -1114,7 +1117,7 @@ instance Arbitrary HtmlAttribute where
   shrink (HtmlPort v)        = map HtmlPort        $ shrink v
   shrink (HtmlRowSpan v)     = map HtmlRowSpan     $ shrink v
   shrink (HtmlScale v)       = map HtmlScale       $ shrink v
-  shrink (HtmlSrc v)         = map HtmlSrc         $ shrink v
+  shrink (HtmlSrc v)         = map HtmlSrc         $ shrinkString v
   shrink (HtmlTarget v)      = map HtmlTarget      $ shrink v
   shrink (HtmlTitle v)       = map HtmlTitle       $ shrink v
   shrink (HtmlVAlign v)      = map HtmlVAlign      $ shrink v
@@ -1131,15 +1134,32 @@ instance Arbitrary HtmlVAlign where
 
 instance Arbitrary PortName where
   arbitrary = liftM PN
-              $ suchThat arbString (liftM2 (&&) (notElem ':') notCP)
+              $ suchThat arbitrary (liftM2 (&&) (T.all (/=':')) notCP)
 
-  shrink = map PN . filter notCP . shrinkString . portName
+  shrink = map PN . filter notCP . shrink . portName
 
-notCP :: String -> Bool
+notCP :: Text -> Bool
 notCP = flip Map.notMember compassLookup
 
 -- -----------------------------------------------------------------------------
 -- Helper Functions
+
+instance Arbitrary Text where
+  arbitrary = arbText
+
+  shrink = filter validString
+           . map T.pack . nonEmptyShrinks' . T.unpack
+
+arbText :: Gen Text
+arbText = suchThat genStr notBool
+    where
+      genStr = liftM2 T.cons (elements notDigits)
+                             (liftM T.concat . listOf $ elements strChr)
+      notDigits = ['a'..'z'] ++ ['\'', '"', ' ', '(', ')', ',', ':', '\\']
+      strChr = map T.singleton $ notDigits ++ '.' : ['0'..'9']
+
+arbString :: Gen String
+arbString = liftM T.unpack arbitrary
 
 fromPositive              :: Positive a -> a
 fromPositive (Positive a) = a
@@ -1147,44 +1167,41 @@ fromPositive (Positive a) = a
 posArbitrary :: (Arbitrary a, Num a, Ord a) => Gen a
 posArbitrary = liftM fromPositive arbitrary
 
-arbString :: Gen String
-arbString = suchThat genStr notBool
-  where
-    genStr = liftM2 (:) (elements notDigits) (listOf $ elements strChr)
-    notDigits = ['a'..'z'] ++ ['\'', '"', ' ', '(', ')', ',', ':', '\\']
-    strChr = notDigits ++ '.' : ['0'..'9']
-
-{-# INLINE arbString #-}
-
-arbIDString :: Gen String
+arbIDString :: Gen Text
 arbIDString = suchThat genStr notBool
   where
-    genStr = liftM2 (:) (elements frst) $ listOf (elements rest)
+    genStr = liftM2 T.cons (elements frst)
+                           (liftM T.pack . listOf $ elements rest)
     frst = ['a'..'z'] ++ ['_']
     rest = frst ++ ['0'.. '9']
 
-validString :: String -> Bool
+validString :: Text -> Bool
 validString = liftM2 (&&) notBool notNumStr
 
-notBool         :: String -> Bool
+notBool         :: Text -> Bool
 notBool "true"  = False
 notBool "false" = False
 notBool _       = True
 
-shrinkString :: String -> [String]
-shrinkString = filter validString . nonEmptyShrinks'
+notBool'         :: String -> Bool
+notBool' "true"  = False
+notBool' "false" = False
+notBool' _       = True
 
-notNumStr :: String -> Bool
+shrinkString :: String -> [String]
+shrinkString = map T.unpack . shrink . T.pack
+
+notNumStr :: Text -> Bool
 notNumStr = not . isNumString
 
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]
 
-arbLayerName :: Gen String
-arbLayerName = suchThat arbString (all notLayerSep)
+arbLayerName :: Gen Text
+arbLayerName = suchThat arbitrary (T.all notLayerSep)
 
-arbStyleName :: Gen String
-arbStyleName = suchThat arbString (all notBrackCom)
+arbStyleName :: Gen Text
+arbStyleName = suchThat arbitrary (T.all notBrackCom)
   where
     notBrackCom = flip notElem ['(', ')', ',', ' ']
 

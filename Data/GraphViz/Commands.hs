@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {- |
    Module      : Data.GraphViz.Commands
    Description : Functions to run Graphviz commands.
@@ -42,8 +44,6 @@ module Data.GraphViz.Commands
     , runGraphvizCanvas
     , runGraphvizCanvas'
     , graphvizWithHandle
-      -- * Helper utilities.
-    , hGetContents'
     ) where
 
 -- Want to use the extensible-exception version
@@ -53,8 +53,8 @@ import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
 
-import qualified Data.ByteString as B
-import System.IO( Handle, hClose, hPutStr
+import qualified Data.Text.Lazy.IO as T
+import System.IO( Handle, hClose
                 , hGetContents, hSetBinaryMode)
 import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
@@ -291,7 +291,7 @@ runGraphvizCommand cmd gr t fp
     $ graphvizWithHandle cmd gr t toFile
       where
         addFl = (++) ("Unable to create " ++ fp ++ "\n")
-        toFile h = B.hGetContents h >>= B.writeFile fp
+        toFile h = T.hGetContents h >>= T.writeFile fp
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
 --   the provided 'FilePath' for the output file.
@@ -335,7 +335,7 @@ graphvizWithHandle' cmd gr t f
           hSetBinaryMode outp $ isBinary t -- Depends on output type
 
           -- Make sure we close the input or it will hang!!!!!!!
-          forkIO $ hPutStr inp (printDotGraph gr) >> hClose inp
+          forkIO $ T.hPutStr inp (printDotGraph gr) >> hClose inp
 
           -- Need to make sure both the output and error handles are
           -- really fully consumed.

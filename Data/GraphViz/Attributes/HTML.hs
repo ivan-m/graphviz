@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings, PatternGuards #-}
+
 {- |
    Module      : Data.GraphViz.Attributes.HTML
    Description : Specification of HTML-like types for Graphviz.
@@ -72,10 +74,12 @@ import Data.GraphViz.Util(bool)
 import Numeric(readHex)
 import Data.Char(chr, ord, isSpace)
 import Data.Function(on)
-import Data.List(groupBy, delete)
-import Data.Maybe(maybeToList, listToMaybe)
+import Data.List(delete)
+import Data.Maybe(catMaybes, listToMaybe)
 import Data.Word(Word8, Word16)
 import qualified Data.Map as Map
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy(Text)
 import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
@@ -114,7 +118,7 @@ instance ParseDot HtmlLabel where
 type HtmlText = [HtmlTextItem]
 
 -- | Textual items in HTML-like labels.
-data HtmlTextItem = HtmlStr String
+data HtmlTextItem = HtmlStr Text
                     -- | Only accepts an optional 'HtmlAlign'
                     --   'HtmlAttribute'; defined this way for ease of
                     --   printing/parsing.
@@ -190,7 +194,7 @@ instance PrintDot HtmlRow where
     where
       tr = text "TR"
 
-  unqtListToDot = hcat . map unqtDot
+  unqtListToDot = align . cat . map unqtDot
 
   listToDot = unqtListToDot
 
@@ -269,17 +273,17 @@ data HtmlAttribute = HtmlAlign HtmlAlign   -- ^ Valid for:  'HtmlTable', 'HtmlCe
                    | HtmlCellSpacing Word8 -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @2@; maximum is @127@.
                    | HtmlColor Color       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlColSpan Word16    -- ^ Valid for: 'HtmlCell'.  Default is @1@.
-                   | HtmlFace String       -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
+                   | HtmlFace Text       -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
                    | HtmlFixedSize Bool    -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @'False'@.
                    | HtmlHeight Word16     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlHRef String       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
+                   | HtmlHRef Text       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlPointSize Double  -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
                    | HtmlPort PortName     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlRowSpan Word16    -- ^ Valid for: 'HtmlCell'.
                    | HtmlScale HtmlScale   -- ^ Valid for: 'HtmlImg'.
                    | HtmlSrc FilePath      -- ^ Valid for: 'HtmlImg'.
-                   | HtmlTarget String     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlTitle String      -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Has an alias of @TOOLTIP@.
+                   | HtmlTarget Text     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
+                   | HtmlTitle Text      -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Has an alias of @TOOLTIP@.
                    | HtmlVAlign HtmlVAlign -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlWidth Word16      -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    deriving (Eq, Ord, Show, Read)
@@ -302,7 +306,7 @@ instance PrintDot HtmlAttribute where
   unqtDot (HtmlPort v)        = printHtmlField' "PORT" . escapeAttribute $ portName v
   unqtDot (HtmlRowSpan v)     = printHtmlField  "ROWSPAN" v
   unqtDot (HtmlScale v)       = printHtmlField  "SCALE" v
-  unqtDot (HtmlSrc v)         = printHtmlField' "SRC" $ escapeAttribute v
+  unqtDot (HtmlSrc v)         = printHtmlField' "SRC" . escapeAttribute $ T.pack v
   unqtDot (HtmlTarget v)      = printHtmlField' "TARGET" $ escapeAttribute v
   unqtDot (HtmlTitle v)       = printHtmlField' "TITLE" $ escapeAttribute v
   unqtDot (HtmlVAlign v)      = printHtmlField  "VALIGN" v
@@ -315,11 +319,11 @@ instance PrintDot HtmlAttribute where
 -- | Only to be used when the 'PrintDot' instance of @a@ matches the
 --   HTML syntax (i.e. numbers and @Html*@ values; 'Color' values also
 --   seem to work).
-printHtmlField   :: (PrintDot a) => String -> a -> DotCode
+printHtmlField   :: (PrintDot a) => Text -> a -> DotCode
 printHtmlField f = printHtmlField' f . unqtDot
 
-printHtmlField'     :: String -> DotCode -> DotCode
-printHtmlField' f v = text f <> equals <> doubleQuotes v
+printHtmlField'     :: Text -> DotCode -> DotCode
+printHtmlField' f v = text f <> equals <> dquotes v
 
 instance ParseDot HtmlAttribute where
   parseUnqt = oneOf [ parseHtmlField  HtmlAlign "ALIGN"
@@ -339,7 +343,7 @@ instance ParseDot HtmlAttribute where
                     , parseHtmlField' (HtmlPort . PN) "PORT" unescapeAttribute
                     , parseHtmlField  HtmlRowSpan "ROWSPAN"
                     , parseHtmlField  HtmlScale "SCALE"
-                    , parseHtmlField' HtmlSrc "SRC" unescapeAttribute
+                    , parseHtmlField' HtmlSrc "SRC" $ liftM T.unpack unescapeAttribute
                     , parseHtmlField' HtmlTarget "TARGET" unescapeAttribute
                     , parseHtmlField' HtmlTitle "TITLE" unescapeAttribute
                       `onFail`
@@ -444,16 +448,16 @@ instance ParseDot HtmlScale where
 
 -- -----------------------------------------------------------------------------
 
-escapeAttribute :: String -> DotCode
+escapeAttribute :: Text -> DotCode
 escapeAttribute = escapeHtml False
 
-escapeValue :: String -> DotCode
+escapeValue :: Text -> DotCode
 escapeValue = escapeHtml True
 
-escapeHtml               :: Bool -> String -> DotCode
+escapeHtml               :: Bool -> Text -> DotCode
 escapeHtml quotesAllowed = hcat
-                           . concatMap escapeSegment
-                           . groupBy ((==) `on` isSpace)
+                           . concatMap (escapeSegment . T.unpack)
+                           . T.groupBy ((==) `on` isSpace)
   where
     -- Note: use numeric version of space rather than nbsp, since this
     -- matches what Graphviz does (since Inkscape apparently can't
@@ -472,30 +476,32 @@ escapeHtml quotesAllowed = hcat
     escape' e = char '&' <> e <> char ';'
     escape = escape' . text
 
-unescapeAttribute :: Parse String
+unescapeAttribute :: Parse Text
 unescapeAttribute = unescapeHtml False
 
-unescapeValue :: Parse String
+unescapeValue :: Parse Text
 unescapeValue = unescapeHtml True
 
 -- | Parses an HTML-compatible 'String', de-escaping known characters.
 --   Note: this /will/ fail if an unknown non-numeric HTML-escape is
 --   used.
-unescapeHtml               :: Bool -> Parse String
-unescapeHtml quotesAllowed = liftM concat
+unescapeHtml               :: Bool -> Parse Text
+unescapeHtml quotesAllowed = liftM (T.pack . catMaybes)
                              . many1 . oneOf $ [ parseEscpd
                                                , validChars
                                                ]
   where
+    parseEscpd :: Parse (Maybe Char)
     parseEscpd = do character '&'
-                    esc <- many1 $ satisfy (';' /=)
+                    esc <- many1Satisfy (';' /=)
                     character ';'
-                    let c = case esc of
-                              ('#':'x':hex) -> readMaybe readHex hex
-                              ('#':'X':hex) -> readMaybe readHex hex
-                              ('#':dec)     -> readMaybe readInt dec
-                              _             -> esc `Map.lookup` escMap
-                    return $ maybeToList c
+                    let c = case T.uncons $ T.toLower esc of
+                              Just ('#',dec) | Just ('x',hex) <- T.uncons dec
+                                               -> readMaybe readHex $ T.unpack hex
+                                             | otherwise
+                                               -> readMaybe readInt $ T.unpack dec
+                              _                -> esc `Map.lookup` escMap
+                    return c
 
     readMaybe f str = do (n, []) <- listToMaybe $ f str
                          return $ chr n
@@ -508,12 +514,12 @@ unescapeHtml quotesAllowed = liftM concat
 
     escMap = Map.fromList htmlUnescapes
 
-    validChars = liftM return $ satisfy (`notElem` needEscaping)
+    validChars = liftM Just $ satisfy (`notElem` needEscaping)
     needEscaping = allowQuotes $ map fst htmlEscapes
 
 -- | The characters that need to be escaped and what they need to be
 --   replaced with (sans @'&'@).
-htmlEscapes :: [(Char, String)]
+htmlEscapes :: [(Char, Text)]
 htmlEscapes = [ ('"', "quot")
               , ('<', "lt")
               , ('>', "gt")
@@ -521,12 +527,12 @@ htmlEscapes = [ ('"', "quot")
               ]
               ++ map numEscape ['-', '\'']
   where
-    numEscape c = (c, '#' : show (ord c))
+    numEscape c = (c, T.pack $ '#' : show (ord c))
 
 -- | Flip the order and add extra values that might be escaped.  More
 --   specifically, provide the escape code for spaces (@\"nbsp\"@) and
 --   apostrophes (@\"apos\"@) since they aren't used for escaping.
-htmlUnescapes :: [(String, Char)]
+htmlUnescapes :: [(Text, Char)]
 htmlUnescapes = maybeEscaped
                 ++
                 map (uncurry (flip (,))) htmlEscapes

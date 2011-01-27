@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {- |
    Module      : Data.GraphViz.Printing
    Description : Helper functions for converting to Dot format.
@@ -15,7 +17,7 @@
    You should only be using this module if you are writing custom node
    types for use with "Data.GraphViz.Types".  For actual printing of
    code, use @'Data.GraphViz.Types.printDotGraph'@ (which produces a
-   'String' value).
+   'Text' value).
 
    The Dot language specification specifies that any identifier is in
    one of four forms:
@@ -33,17 +35,19 @@
    all characters @c@ where @ord c >= 128@.)
 
    Due to these restrictions, you should only use 'text' when you are
-   sure that the 'String' in question is static and quotes are
-   definitely needed/unneeded; it is better to use the 'String'
+   sure that the 'Text' in question is static and quotes are
+   definitely needed/unneeded; it is better to use the 'Text'
    instance for 'PrintDot'.  For more information, see the
    specification page:
       <http://graphviz.org/doc/info/lang.html>
 -}
 module Data.GraphViz.Printing
-    ( module Text.PrettyPrint
+    ( module Text.PrettyPrint.Leijen.Text
     , DotCode
     , renderDot -- Exported for Data.GraphViz.Types.printSGID
     , PrintDot(..)
+    , unqtText
+    , dotText
     , printIt
     , addQuotes
     , unqtEscaped
@@ -60,16 +64,19 @@ module Data.GraphViz.Printing
 import Data.GraphViz.Util
 
 -- Only implicitly import and re-export combinators.
-import Text.PrettyPrint hiding ( Style(..)
-                               , Mode(..)
-                               , TextDetails(..)
-                               , render
-                               , style
-                               , renderStyle
-                               , fullRender
-                               )
-
-import qualified Text.PrettyPrint as PP
+import Text.PrettyPrint.Leijen.Text hiding ( SimpleDoc(..)
+                                            , renderPretty
+                                            , renderCompact
+                                            , displayT
+                                            , displayIO
+                                            , putDoc
+                                            , hPutDoc
+                                            , Pretty(..)
+                                            , bool
+                                            , string)
+import qualified Text.PrettyPrint.Leijen.Text as PP
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy(Text)
 
 import Data.Char(toLower)
 import qualified Data.Set as Set
@@ -82,10 +89,8 @@ import Control.Monad(ap)
 type DotCode = Doc
 
 -- | Correctly render Graphviz output.
-renderDot :: DotCode -> String
-renderDot = PP.renderStyle style'
-    where
-      style' = PP.style { PP.mode = PP.LeftMode }
+renderDot :: DotCode -> Text
+renderDot = PP.displayT . PP.renderPretty 0.4 80
 
 -- | A class used to correctly print parts of the Graphviz Dot language.
 --   Minimal implementation is 'unqtDot'.
@@ -95,7 +100,7 @@ class PrintDot a where
     unqtDot :: a -> DotCode
 
     -- | The actual quoted representation; this should be quoted if it
-    --   contains characters not permitted a plain ID String, a number
+    --   contains characters not permitted a plain ID Text, a number
     --   or it is not an HTML string.
     --   Defaults to 'unqtDot'.
     toDot :: a -> DotCode
@@ -105,18 +110,17 @@ class PrintDot a where
     --   printed; not all Dot values require this to be implemented.
     --   Defaults to Haskell-like list representation.
     unqtListToDot :: [a] -> DotCode
-    unqtListToDot = brackets . hsep . punctuate comma
-                    . map unqtDot
+    unqtListToDot = list . map unqtDot
 
     -- | The quoted form of 'unqtListToDot'; defaults to wrapping
     --   double quotes around the result of 'unqtListToDot' (since the
     --   default implementation has characters that must be quoted).
     listToDot :: [a] -> DotCode
-    listToDot = doubleQuotes . unqtListToDot
+    listToDot = dquotes . unqtListToDot
 
 -- | Convert to DotCode; note that this has no indentation, as we can
 --   only have one of indentation and (possibly) infinite line lengths.
-printIt :: (PrintDot a) => a -> String
+printIt :: (PrintDot a) => a -> Text
 printIt = renderDot . toDot
 
 instance PrintDot Int where
@@ -138,7 +142,7 @@ instance PrintDot Double where
           di = round d
 
     toDot d = if any ((==) 'e' . toLower) $ show d
-              then doubleQuotes ud
+              then dquotes ud
               else ud
       where
         ud = unqtDot d
@@ -146,7 +150,7 @@ instance PrintDot Double where
     unqtListToDot = hcat . punctuate colon . map unqtDot
 
     listToDot [d] = toDot d
-    listToDot ds  = doubleQuotes $ unqtListToDot ds
+    listToDot ds  = dquotes $ unqtListToDot ds
 
 instance PrintDot Bool where
     unqtDot True  = text "true"
@@ -157,34 +161,47 @@ instance PrintDot Char where
 
     toDot = qtChar
 
-    unqtListToDot = unqtString
+    unqtListToDot = unqtDot . T.pack
 
-    listToDot = qtString
+    listToDot = toDot . T.pack
+
+instance PrintDot Text where
+    unqtDot = unqtString
+
+    toDot = qtString
+
+-- | For use with @OverloadedStrings@ to avoid ambiguous type variable errors.
+unqtText :: Text -> DotCode
+unqtText = unqtDot
+
+-- | For use with @OverloadedStrings@ to avoid ambiguous type variable errors.
+dotText :: Text -> DotCode
+dotText = toDot
 
 -- | Check to see if this 'Char' needs to be quoted or not.
 qtChar :: Char -> DotCode
 qtChar c
     | restIDString c = char c -- Could be a number as well.
-    | otherwise      = doubleQuotes $ char c
+    | otherwise      = dquotes $ char c
 
-needsQuotes :: String -> Bool
+needsQuotes :: Text -> Bool
 needsQuotes str
-  | null str        = True
+  | T.null str        = True
   | isKeyword str   = True
   | isIDString str  = False
   | isNumString str = False
   | otherwise       = True
 
-addQuotes :: String -> DotCode -> DotCode
-addQuotes = bool id doubleQuotes . needsQuotes
+addQuotes :: Text -> DotCode -> DotCode
+addQuotes = bool id dquotes . needsQuotes
 
 -- | Escape quotes in Strings that need them.
-unqtString     :: String -> DotCode
+unqtString     :: Text -> DotCode
 unqtString ""  = empty
 unqtString str = unqtEscaped [] str -- no quotes? no worries!
 
--- | Escape quotes and quote Strings that need them (including keywords).
-qtString :: String -> DotCode
+-- | Escape quotes and quote Texts that need them (including keywords).
+qtString :: Text -> DotCode
 qtString = printEscaped []
 
 instance (PrintDot a) => PrintDot [a] where
@@ -198,16 +215,16 @@ wrap b a d = b <> d <> a
 commaDel     :: (PrintDot a, PrintDot b) => a -> b -> DotCode
 commaDel a b = unqtDot a <> comma <> unqtDot b
 
-printField     :: (PrintDot a) => String -> a -> DotCode
+printField     :: (PrintDot a) => Text -> a -> DotCode
 printField f v = text f <> equals <> toDot v
 
 -- | Escape the specified chars as well as @\"@.
-unqtEscaped    :: [Char] -> String -> DotCode
+unqtEscaped    :: [Char] -> Text -> DotCode
 unqtEscaped cs = text . addEscapes cs
 
 -- | Escape the specified chars as well as @\"@ and then wrap the
 --   result in quotes.
-printEscaped        :: [Char] -> String -> DotCode
+printEscaped        :: [Char] -> Text -> DotCode
 printEscaped cs str = addQuotes str' $ text str'
   where
     str' = addEscapes cs str
@@ -216,24 +233,25 @@ printEscaped cs str = addQuotes str' $ text str'
 --   cannot convert to 'DotCode' immediately because 'printEscaped'
 --   needs to pass the result from this to 'addQuotes' to determine if
 --   it needs to be quoted or not.
-addEscapes   :: [Char] -> String ->  String
-addEscapes cs = foldr escape "" . withNext
+addEscapes    :: [Char] -> Text -> Text
+addEscapes cs = foldr escape T.empty . withNext
   where
     cs' = Set.fromList $ quote : slash : cs
     slash = '\\'
     quote = '"'
     escape (c,c') str
-      | c == slash && c' `Set.member` escLetters = c : str
-      | c `Set.member` cs'                       = slash : c : str
-      | c == '\n'                                = slash : 'n' : str
-      | otherwise                                = c : str
+      | c == slash && c' `Set.member` escLetters = c `T.cons` str
+      | c `Set.member` cs'                       = slash `T.cons` (c `T.cons` str)
+      | c == '\n'                                = slash `T.cons` ('n' `T.cons` str)
+      | otherwise                                = c `T.cons` str
 
     -- When a slash precedes one of these characters, don't escape the slash.
     escLetters = Set.fromList ['N', 'G', 'E', 'T', 'H', 'L', 'n', 'l', 'r']
 
     -- Need to check subsequent characters when escaping slashes, but
     -- don't want to lose the last character when zipping, so append a space.
-    withNext = zip `ap` ((++" ") . tail)
+    withNext ""  = []
+    withNext str = T.zip `ap` ((`T.snoc` ' ') . T.tail) $ str
 
 angled :: DotCode -> DotCode
 angled = wrap lang rang

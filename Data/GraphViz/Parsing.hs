@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {- |
    Module      : Data.GraphViz.Parsing
    Description : Helper functions for Parsing.
@@ -101,7 +103,7 @@ import Control.Monad(liftM, when)
 type Parse a = Parser a
 
 -- | A variant of 'runParser' where it is assumed that the provided
---   parsing function consumes all of the 'String' input (with the
+--   parsing function consumes all of the 'Text' input (with the
 --   exception of whitespace at the end).
 runParser'   :: Parse a -> Text -> a
 runParser' p = right . fst . runParser p'
@@ -180,16 +182,21 @@ instance ParseDot Char where
             `onFail`
             quotedParse parseUnqt
 
+    parseUnqtList = liftM T.unpack parseUnqt
+
+    parseList = liftM T.unpack parse
+
+instance ParseDot Text where
     -- Too many problems with using this within other parsers where
     -- using numString or stringBlock will cause a parse failure.  As
-    -- such, this will successfully parse all un-quoted Strings.
-    parseUnqtList = quotedString
+    -- such, this will successfully parse all un-quoted Texts.
+    parseUnqt = quotedString
 
-    parseList = quotelessString
-                `onFail`
-                -- This will also take care of quoted versions of
-                -- above.
-                quotedParse quotedString
+    parse = quotelessString
+            `onFail`
+            -- This will also take care of quoted versions of
+            -- above.
+            quotedParse quotedString
 
 instance (ParseDot a) => ParseDot [a] where
     parseUnqt = parseUnqtList
@@ -197,21 +204,24 @@ instance (ParseDot a) => ParseDot [a] where
     parse = parseList
 
 -- | Parse a 'String' that doesn't need to be quoted.
-quotelessString :: Parse String
+quotelessString :: Parse Text
 quotelessString = numString `onFail` stringBlock
 
-numString :: Parse String
-numString = liftM show parseStrictFloat
+numString :: Parse Text
+numString = liftM tShow parseStrictFloat
             `onFail`
-            liftM show parseInt'
+            liftM tShow parseInt'
+  where
+    tShow :: (Show a) => a -> Text
+    tShow = T.pack . show
 
-stringBlock :: Parse String
+stringBlock :: Parse Text
 stringBlock = do frst <- satisfy frstIDString
-                 rest <- many (satisfy restIDString)
-                 return $ frst : rest
+                 rest <- manySatisfy restIDString
+                 return $ frst `T.cons` rest
 
 -- | Used when quotes are explicitly required;
-quotedString :: Parse String
+quotedString :: Parse Text
 quotedString = parseEscaped True [] []
 
 parseSigned :: Real a => Parse a -> Parse a
@@ -282,8 +292,8 @@ bracket open close pa = do open `adjustErr` ("Missing opening bracket:\n\t"++)
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` allWhitespace'
 
-string :: String -> Parse String
-string = mapM character
+string :: String -> Parse ()
+string = mapM_ character
 
 stringRep   :: a -> String -> Parse a
 stringRep v = stringReps v . return
@@ -291,7 +301,7 @@ stringRep v = stringReps v . return
 stringReps      :: a -> [String] -> Parse a
 stringReps v ss = oneOf (map string ss) >> return v
 
-strings :: [String] -> Parse String
+strings :: [String] -> Parse ()
 strings = oneOf . map string
 
 character   :: Char -> Parse Char
@@ -307,23 +317,23 @@ character c = satisfy parseC
 noneOf   :: [Char] -> Parse Char
 noneOf t = satisfy (\x -> all (/= x) t)
 
-whitespace :: Parse String
-whitespace = many1 (satisfy isSpace)
+whitespace :: Parse ()
+whitespace = many1Satisfy isSpace >> return ()
 
-whitespace' :: Parse String
-whitespace' = many (satisfy isSpace)
+whitespace' :: Parse ()
+whitespace' = manySatisfy isSpace >> return ()
 
 allWhitespace :: Parse ()
 allWhitespace = (whitespace `onFail` newline) >> allWhitespace'
 
 allWhitespace' :: Parse ()
-allWhitespace' = newline' `discard` whitespace'
+allWhitespace' = newline' >> whitespace'
 
 -- | Parse and discard optional whitespace.
 wrapWhitespace :: Parse a -> Parse a
 wrapWhitespace = bracket allWhitespace' allWhitespace'
 
-optionalQuotedString :: String -> Parse String
+optionalQuotedString :: String -> Parse ()
 optionalQuotedString = optionalQuoted . string
 
 optionalQuoted   :: Parse a -> Parse a
@@ -350,8 +360,8 @@ quoteChar = '"'
 --   are not permitted.  Note: does not parse surrounding quotes.  The
 --   'Bool' value indicates whether empty 'String's are allowed or
 --   not.
-parseEscaped             :: Bool -> [Char] -> [Char] -> Parse String
-parseEscaped empt cs bnd = lots $ qPrs `onFail` oth
+parseEscaped             :: Bool -> [Char] -> [Char] -> Parse Text
+parseEscaped empt cs bnd = liftM T.pack . lots $ qPrs `onFail` oth
   where
     lots = if empt then many else many1
     cs' = quoteChar : slash : cs
@@ -364,8 +374,8 @@ parseEscaped empt cs bnd = lots $ qPrs `onFail` oth
               return $ fromMaybe slash mE
     oth = satisfy (`Set.notMember` bndSet)
 
-newline :: Parse String
-newline = oneOf $ map string ["\r\n", "\n", "\r"]
+newline :: Parse ()
+newline = strings ["\r\n", "\n", "\r"]
 
 -- | Consume all whitespace and newlines until a line with
 --   non-whitespace is reached.  The whitespace on that line is

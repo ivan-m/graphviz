@@ -29,7 +29,6 @@ import Data.List(nub, sort)
 import Data.Function(on)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
-import qualified Data.Text.Lazy as Text
 import Data.Text.Lazy(Text)
 import Control.Arrow((&&&))
 
@@ -61,7 +60,7 @@ prop_generalisedSameDot dg = printDotGraph dg == printDotGraph gdg
 prop_preProcessingID    :: (DotRepr dg n) => dg n -> Bool
 prop_preProcessingID dg = preProcess dotCode == dotCode
   where
-    dotCode = Text.pack $ printDotGraph dg
+    dotCode = printDotGraph dg
 
 -- | This is a version of 'prop_printParseID' that tries to parse the
 --   pretty-printed output of 'prettyPrint'' rather than just 'printIt'.
@@ -187,9 +186,9 @@ prop_noGraphInfoG g = info == (GraphAttrs [], Map.empty)
 --   using @'parseIt' . 'printIt'@ directly, since it avoids having to
 --   enter and explicit type signature.
 tryParse :: (ParseDot a, PrintDot a) => a -> (a, Text)
-tryParse = parseIt . Text.pack . printIt
+tryParse = parseIt . printIt
 
 -- | Equivalent to 'tryParse' except that it is assumed that the
 --   entire 'String' *is* fully consumed.
 tryParse' :: (ParseDot a, PrintDot a) => a -> a
-tryParse' = parseIt' . Text.pack . printIt
+tryParse' = parseIt' . printIt

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
@@ -26,6 +27,7 @@ import Data.GraphViz.Printing
 import Data.Maybe(isNothing)
 import qualified Data.Map as Map
 import Data.Map(Map)
+import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
@@ -41,7 +43,7 @@ import Control.Monad(liftM, liftM2)
 --   HTML-like labels).  Note that it is not valid for a 'PortName'
 --   value to contain a colon (@:@) character; it is assumed that it
 --   doesn't.
-newtype PortName = PN { portName :: String }
+newtype PortName = PN { portName :: Text }
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot PortName where
@@ -72,7 +74,7 @@ instance PrintDot PortPos where
     unqtDot (CompassPoint cp)   = unqtDot cp
 
     toDot (LabelledPort n Nothing) = toDot n
-    toDot lp@LabelledPort{}        = doubleQuotes $ unqtDot lp
+    toDot lp@LabelledPort{}        = dquotes $ unqtDot lp
     toDot cp                       = unqtDot cp
 
 instance ParseDot PortPos where
@@ -136,7 +138,7 @@ instance ParseDot CompassPoint where
                       , stringRep NoCP "_"
                       ]
 
-compassLookup :: Map String CompassPoint
+compassLookup :: Map Text CompassPoint
 compassLookup = Map.fromList [ ("ne", NorthEast)
                              , ("nw", NorthWest)
                              , ("n", North)

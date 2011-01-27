@@ -19,6 +19,9 @@ import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Parsing(runParser, parse, discard, allWhitespace', eof)
 import Data.GraphViz.PreProcessing(preProcess)
 
+import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.IO as T
+import Data.Text.Lazy(Text)
 import Control.Exception.Extensible(try, ErrorCall(..), IOException)
 import Control.Monad(liftM)
 import System.Environment(getArgs)
@@ -41,7 +44,7 @@ main = tryParsing =<< getArgs
 -- -----------------------------------------------------------------------------
 
 
-withParse :: (DotRepr dg n) => (a -> IO String) -> (dg n -> IO ())
+withParse :: (DotRepr dg n) => (a -> IO Text) -> (dg n -> IO ())
              -> (ErrMsg -> String) -> a -> IO ()
 withParse toStr withDG cmbErr a = do dc <- toStr a
                                      edg <- tryParse dc
@@ -51,8 +54,8 @@ withParse toStr withDG cmbErr a = do dc <- toStr a
                                                         putStrLn $ cmbErr err
                                                         putStrLn  ""
 
-type DG = DotGraph String
-type GDG = GDotGraph String
+type DG = DotGraph Text
+type GDG = GDotGraph Text
 type ErrMsg = String
 
 tryParseFile    :: FilePath -> IO ()
@@ -76,19 +79,23 @@ tryParseCanon fp = withParse prettyPrint
     asDG = flip asTypeOf emptDG
     emptDG = DotGraph False False Nothing $ DotStmts [] [] [] [] :: DG
 
-tryParse    :: (DotRepr dg n) => String -> IO (Either ErrMsg (dg n))
+tryParse    :: (DotRepr dg n) => Text -> IO (Either ErrMsg (dg n))
 tryParse dc = liftM getErrMsg . try
               $ let (dg, rst) = runParser parse $ preProcess dc
-                in length rst `seq` return dg
+                in T.length rst `seq` return (right dg)
+
+right           :: Either a b -> b
+right Left{}    = error "Not a Right value"
+right (Right r) = r
 
 getErrMsg :: Either ErrorCall a -> Either ErrMsg a
 getErrMsg = either getEC Right
   where
     getEC (ErrorCall e) = Left e
 
-readFile'    :: FilePath -> IO (Either ErrMsg String)
+readFile'    :: FilePath -> IO (Either ErrMsg Text)
 readFile' fp = liftM getMsg . try
-               $ openFile fp ReadMode >>= hGetContents'
+               $ openFile fp ReadMode >>= T.hGetContents
   where
-    getMsg :: Either IOException String -> Either ErrMsg String
+    getMsg :: Either IOException Text -> Either ErrMsg Text
     getMsg = either (Left . show) Right

@@ -94,7 +94,7 @@ parseConcatStrings = liftM (wrapQuotes . T.concat)
                      $ sepBy1 parseString parseConcat
   where
     parseString = quotedParse (liftM T.concat $ many parseInner)
-    parseInner = liftM T.pack (string "\\\"")
+    parseInner = (string "\\\"" >> return (T.pack "\\\""))
                  `onFail`
                  parseSplitLine -- in case there's a split mid-quote
                  `onFail`

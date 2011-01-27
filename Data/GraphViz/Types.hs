@@ -175,7 +175,7 @@ graphEdges = edgeInformation True
 --   is expected that @'parseDotGraph' . 'printDotGraph' == 'id'@
 --   (this might not be true the other way around due to un-parseable
 --   components).
-printDotGraph :: (DotRepr dg n) => dg n -> String
+printDotGraph :: (DotRepr dg n) => dg n -> Text
 printDotGraph = printIt
 
 -- | Parse a limited subset of the Dot language to form an instance of

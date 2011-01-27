@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz.Attributes
@@ -190,9 +190,10 @@ import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
-import Data.Char(toLower)
 import Data.Maybe(isJust)
 import Data.Word(Word16)
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
@@ -244,11 +245,11 @@ data Attribute
     | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
     | BgColor Color                    -- ^ /Valid for/: GC; /Default/: X11Color 'Transparent'
     | Center Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-    | Charset String                   -- ^ /Valid for/: G; /Default/: @\"UTF-8\"@
+    | Charset Text                     -- ^ /Valid for/: G; /Default/: @\"UTF-8\"@
     | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
     | ColorScheme ColorScheme          -- ^ /Valid for/: ENCG; /Default/: @'X11'@
     | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @X11Color 'Black'@
-    | Comment String                   -- ^ /Valid for/: ENG; /Default/: @\"\"@
+    | Comment Text                     -- ^ /Valid for/: ENG; /Default/: @\"\"@
     | Compound Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
     | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
     | Constraint Bool                  -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
@@ -268,11 +269,11 @@ data Attribute
     | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @X11Color 'LightGray'@ (nodes), @X11Color 'Black'@ (clusters)
     | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
     | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: @X11Color 'Black'@
-    | FontName String                  -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
-    | FontNames String                 -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
-    | FontPath String                  -- ^ /Valid for/: G; /Default/: system-dependent
+    | FontName Text                    -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
+    | FontNames Text                   -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
+    | FontPath Text                    -- ^ /Valid for/: G; /Default/: system-dependent
     | FontSize Double                  -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
-    | Group String                     -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
+    | Group Text                       -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
     | HeadURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
     | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: @\"\"@
@@ -281,14 +282,14 @@ data Attribute
     | HeadTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Height Double                    -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
     | ID Label                         -- ^ /Valid for/: GNE; /Default/: @\"\"@; /Notes/: svg, postscript, map only
-    | Image String                     -- ^ /Valid for/: N; /Default/: @\"\"@
+    | Image Text                       -- ^ /Valid for/: N; /Default/: @\"\"@
     | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
     | LabelURL EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | LabelAngle Double                -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
     | LabelDistance Double             -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
     | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
     | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: @X11Color 'Black'@
-    | LabelFontName String             -- ^ /Valid for/: E; /Default/: @\"Times-Roman\"@
+    | LabelFontName Text               -- ^ /Valid for/: E; /Default/: @\"Times-Roman\"@
     | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: @14.0@; /Minimum/: @1.0@
     | LabelJust Justification          -- ^ /Valid for/: GC; /Default/: @'JCenter'@
     | LabelLoc VerticalPlacement       -- ^ /Valid for/: GCN; /Default/: @'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)
@@ -296,16 +297,16 @@ data Attribute
     | LabelTooltip EscString           -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Label Label                      -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
     | Landscape Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-    | LayerSep String                  -- ^ /Valid for/: G; /Default/: @\" :\t\"@
+    | LayerSep Text                    -- ^ /Valid for/: G; /Default/: @\" :\t\"@
     | Layers LayerList                 -- ^ /Valid for/: G; /Default/: @\"\"@
     | Layer LayerRange                 -- ^ /Valid for/: EN; /Default/: @\"\"@
-    | Layout String                    -- ^ /Valid for/: G; /Default/: @\"\"@
+    | Layout Text                      -- ^ /Valid for/: G; /Default/: @\"\"@
     | Len Double                       -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
     | LevelsGap Double                 -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
     | Levels Int                       -- ^ /Valid for/: G; /Default/: @MAXINT@; /Minimum/: @0@; /Notes/: sfdp only
-    | LHead String                     -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+    | LHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
     | LPos Point                       -- ^ /Valid for/: EGC; /Notes/: write only
-    | LTail String                     -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+    | LTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
     | Margin DPoint                    -- ^ /Valid for/: NG; /Default/: device-dependent
     | MaxIter Int                      -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp); /Notes/: fdp, neato only
     | MCLimit Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: dot only
@@ -319,7 +320,7 @@ data Attribute
     | Normalize Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: not dot
     | Nslimit1 Double                  -- ^ /Valid for/: G; /Notes/: dot only
     | Nslimit Double                   -- ^ /Valid for/: G; /Notes/: dot only
-    | Ordering String                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: dot only
+    | Ordering Text                    -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: dot only
     | Orientation Double               -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
     | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
     | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
@@ -346,12 +347,12 @@ data Attribute
     | RepulsiveForce Double            -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
     | Root Root                        -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
     | Rotate Int                       -- ^ /Valid for/: G; /Default/: @0@
-    | SameHead String                  -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-    | SameTail String                  -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+    | SameHead Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+    | SameTail Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
     | SamplePoints Int                 -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
     | SearchSize Int                   -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
     | Sep DPoint                       -- ^ /Valid for/: G; /Default/: @+4@; /Notes/: not dot
-    | ShapeFile String                 -- ^ /Valid for/: N; /Default/: @\"\"@
+    | ShapeFile Text                   -- ^ /Valid for/: N; /Default/: @\"\"@
     | Shape Shape                      -- ^ /Valid for/: N; /Default/: @'Ellipse'@
     | ShowBoxes Int                    -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
     | Sides Int                        -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
@@ -361,7 +362,7 @@ data Attribute
     | SortV Word16                     -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
     | Splines EdgeType                 -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
     | Start StartType                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: fdp, neato only
-    | StyleSheet String                -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
+    | StyleSheet Text                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
     | Style [StyleItem]                -- ^ /Valid for/: ENC
     | TailURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | TailClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
@@ -378,7 +379,7 @@ data Attribute
     | Weight Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
     | Width Double                     -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
     | Z Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
-    | UnknownAttribute String String   -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
+    | UnknownAttribute Text Text       -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
       deriving (Eq, Ord, Show, Read)
 
 type Attributes = [Attribute]
@@ -1092,7 +1093,7 @@ sameAttribute _                       _                       = False
    centered, left-justified and right-justified respectively.
 
  -}
-type EscString = String
+type EscString = Text
 
 -- -----------------------------------------------------------------------------
 
@@ -1169,15 +1170,15 @@ data ArrowShape = Box
                   deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot ArrowShape where
-    unqtDot Box      = unqtDot "box"
-    unqtDot Crow     = unqtDot "crow"
-    unqtDot Diamond  = unqtDot "diamond"
-    unqtDot DotArrow = unqtDot "dot"
-    unqtDot Inv      = unqtDot "inv"
-    unqtDot NoArrow  = unqtDot "none"
-    unqtDot Normal   = unqtDot "normal"
-    unqtDot Tee      = unqtDot "tee"
-    unqtDot Vee      = unqtDot "vee"
+    unqtDot Box      = unqtText "box"
+    unqtDot Crow     = unqtText "crow"
+    unqtDot Diamond  = unqtText "diamond"
+    unqtDot DotArrow = unqtText "dot"
+    unqtDot Inv      = unqtText "inv"
+    unqtDot NoArrow  = unqtText "none"
+    unqtDot Normal   = unqtText "normal"
+    unqtDot Tee      = unqtText "tee"
+    unqtDot Vee      = unqtText "vee"
 
 instance ParseDot ArrowShape where
     parseUnqt = oneOf [ stringRep Box "box"
@@ -1261,7 +1262,7 @@ instance PrintDot AspectType where
     unqtDot (RatioPassCount r p) = commaDel r p
 
     toDot at@RatioOnly{}      = unqtDot at
-    toDot at@RatioPassCount{} = doubleQuotes $ unqtDot at
+    toDot at@RatioPassCount{} = dquotes $ unqtDot at
 
 instance ParseDot AspectType where
     parseUnqt = liftM (uncurry RatioPassCount) commaSepUnqt
@@ -1282,7 +1283,7 @@ data Rect = Rect Point Point
 instance PrintDot Rect where
     unqtDot (Rect p1 p2) = commaDel p1 p2
 
-    toDot = doubleQuotes . unqtDot
+    toDot = dquotes . unqtDot
 
 instance ParseDot Rect where
     parseUnqt = liftM (uncurry Rect) $ commaSep' parsePoint2D parsePoint2D
@@ -1297,11 +1298,9 @@ data ClusterMode = Local
                    deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot ClusterMode where
-    unqtDot Local     = unqtDot "local"
-    unqtDot Global    = unqtDot "global"
-    unqtDot NoCluster = unqtDot "none"
-
-
+    unqtDot Local     = unqtText "local"
+    unqtDot Global    = unqtText "global"
+    unqtDot NoCluster = unqtText "none"
 
 instance ParseDot ClusterMode where
     parseUnqt = oneOf [ stringRep Local "local"
@@ -1315,10 +1314,10 @@ data DirType = Forward | Back | Both | NoDir
                deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot DirType where
-    unqtDot Forward = unqtDot "forward"
-    unqtDot Back    = unqtDot "back"
-    unqtDot Both    = unqtDot "both"
-    unqtDot NoDir   = unqtDot "none"
+    unqtDot Forward = unqtText "forward"
+    unqtDot Back    = unqtText "back"
+    unqtDot Both    = unqtText "both"
+    unqtDot NoDir   = unqtText "none"
 
 instance ParseDot DirType where
     parseUnqt = oneOf [ stringRep Forward "forward"
@@ -1453,11 +1452,14 @@ instance ParseDot Label where
 class Labellable a where
   toLabel :: a -> Attribute
 
-instance Labellable EscString where
+instance Labellable Text where
   toLabel = Label . StrLabel
 
 instance Labellable Char where
-  toLabel = toLabel . (:[])
+  toLabel = toLabel . T.singleton
+
+instance Labellable String where
+  toLabel = toLabel . T.pack
 
 instance Labellable Int where
   toLabel = toLabel . show
@@ -1515,13 +1517,13 @@ instance PrintDot RecordField where
   unqtDot (FlipFields rs)      = braces $ unqtDot rs
 
   toDot (FieldLabel s) = printEscaped recordEscChars s
-  toDot rf             = doubleQuotes $ unqtDot rf
+  toDot rf             = dquotes $ unqtDot rf
 
   unqtListToDot [f] = unqtDot f
-  unqtListToDot fs  = hsep . punctuate (char '|') $ map unqtDot fs
+  unqtListToDot fs  = hcat . punctuate (char '|') $ map unqtDot fs
 
   listToDot [f] = toDot f
-  listToDot fs  = doubleQuotes $ unqtListToDot fs
+  listToDot fs  = dquotes $ unqtListToDot fs
 
 instance ParseDot RecordField where
   parseUnqt = do t <- liftM PN $ parseAngled parseRecord
@@ -1545,7 +1547,7 @@ instance ParseDot RecordField where
                    then return rfs
                    else fail "This is a StrLabel, not a RecordLabel"
     where
-      validRFs [FieldLabel str] = any (`elem` recordEscChars) str
+      validRFs [FieldLabel str] = T.any (`elem` recordEscChars) str
       validRFs _                = True
 
 -- | Print a 'PortName' value as expected within a Record data
@@ -1553,10 +1555,10 @@ instance ParseDot RecordField where
 printPortName :: PortName -> DotCode
 printPortName = angled . unqtRecordString . portName
 
-parseRecord :: Parse String
+parseRecord :: Parse Text
 parseRecord = parseEscaped False recordEscChars []
 
-unqtRecordString :: String -> DotCode
+unqtRecordString :: Text -> DotCode
 unqtRecordString = unqtEscaped recordEscChars
 
 recordEscChars :: [Char]
@@ -1586,11 +1588,11 @@ instance PrintDot Point where
                                  . maybe id (\ z -> (<> unqtDot z) . (<> comma)) mz
                                  $ commaDel x y
 
-    toDot = doubleQuotes . unqtDot
+    toDot = dquotes . unqtDot
 
     unqtListToDot = hsep . map unqtDot
 
-    listToDot = doubleQuotes . unqtListToDot
+    listToDot = dquotes . unqtListToDot
 
 instance ParseDot Point where
     parseUnqt = do (x,y) <- commaSepUnqt
@@ -1651,7 +1653,7 @@ instance PrintDot LayerRange where
         s = unqtDot $ head defLayerSep
 
     toDot (LRID lid) = toDot lid
-    toDot lrs        = doubleQuotes $ unqtDot lrs
+    toDot lrs        = dquotes $ unqtDot lrs
 
 instance ParseDot LayerRange where
     parseUnqt = do id1 <- parseUnqt
@@ -1670,18 +1672,18 @@ instance ParseDot LayerRange where
             `onFail`
             liftM LRID parse
 
-parseLayerSep :: Parse String
-parseLayerSep = many1 . oneOf
-                $ map character defLayerSep
+parseLayerSep :: Parse ()
+parseLayerSep = many1Satisfy (`elem` defLayerSep)
+                >> return ()
 
 -- | The default separators for 'LayerSep'.
 defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
 
-parseLayerName :: Parse String
+parseLayerName :: Parse Text
 parseLayerName = parseEscaped False [] defLayerSep
 
-parseLayerName' :: Parse String
+parseLayerName' :: Parse Text
 parseLayerName' = stringBlock
                   `onFail`
                   quotedParse parseLayerName
@@ -1693,7 +1695,7 @@ notLayerSep = flip notElem defLayerSep
 --   'LRName' option, as they won't be parseable.
 data LayerID = AllLayers
              | LRInt Int
-             | LRName String -- ^ Should not be a number of @"all"@.
+             | LRName Text -- ^ Should not be a number of @"all"@.
                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerID where
@@ -1712,7 +1714,7 @@ instance PrintDot LayerID where
     listToDot [l] = toDot l
     -- Might not need quotes, but probably will.  Can't tell either
     -- way since we don't know what the separator character will be.
-    listToDot ll  = doubleQuotes $ unqtDot ll
+    listToDot ll  = dquotes $ unqtDot ll
 
 instance ParseDot LayerID where
     parseUnqt = liftM checkLayerName parseLayerName -- tests for Int and All
@@ -1721,10 +1723,10 @@ instance ParseDot LayerID where
                   , liftM LRInt parse -- Mainly for unquoted case.
                   ]
 
-checkLayerName     :: String -> LayerID
+checkLayerName     :: Text -> LayerID
 checkLayerName str = maybe checkAll LRInt $ stringToInt str
   where
-    checkAll = if map toLower str == "all"
+    checkAll = if T.toLower str == "all"
                then AllLayers
                else LRName str
 
@@ -1867,7 +1869,7 @@ instance PrintDot EdgeType where
     unqtDot PolyLine     = text "polyline"
     unqtDot CompoundEdge = text "compound"
 
-    toDot NoEdges = doubleQuotes empty
+    toDot NoEdges = dquotes empty
     toDot et      = unqtDot et
 
 instance ParseDot EdgeType where
@@ -1927,11 +1929,11 @@ instance PrintDot Spline where
           addS = addP 's' ms
           addE = addP 'e' me
 
-    toDot = doubleQuotes . unqtDot
+    toDot = dquotes . unqtDot
 
     unqtListToDot = hcat . punctuate semi . map unqtDot
 
-    listToDot = doubleQuotes . unqtListToDot
+    listToDot = dquotes . unqtListToDot
 
 instance ParseDot Spline where
     parseUnqt = do ms <- parseP 's'
@@ -1972,9 +1974,9 @@ instance ParseDot QuadType where
 -- -----------------------------------------------------------------------------
 
 -- | Specify the root node either as a Node attribute or a Graph attribute.
-data Root = IsCentral       -- ^ For Nodes only
-          | NotCentral      -- ^ For Nodes only
-          | NodeName String -- ^ For Graphs only
+data Root = IsCentral     -- ^ For Nodes only
+          | NotCentral    -- ^ For Nodes only
+          | NodeName Text -- ^ For Graphs only
             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Root where
@@ -2215,7 +2217,7 @@ instance ParseDot STStyle where
 
 -- | An individual style item.  Except for 'DD', the @['String']@
 --   should be empty.
-data StyleItem = SItem StyleName [String]
+data StyleItem = SItem StyleName [Text]
              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot StyleItem where
@@ -2228,12 +2230,12 @@ instance PrintDot StyleItem where
 
     toDot si@(SItem nm args)
         | null args = toDot nm
-        | otherwise = doubleQuotes $ unqtDot si
+        | otherwise = dquotes $ unqtDot si
 
     unqtListToDot = hcat . punctuate comma . map unqtDot
 
     listToDot [SItem nm []] = toDot nm
-    listToDot sis           = doubleQuotes $ unqtListToDot sis
+    listToDot sis           = dquotes $ unqtListToDot sis
 
 instance ParseDot StyleItem where
     parseUnqt = do nm <- parseUnqt
@@ -2251,7 +2253,7 @@ instance ParseDot StyleItem where
                 -- Might not necessarily need to be quoted if a singleton...
                 liftM return parse
 
-parseArgs :: Parse [String]
+parseArgs :: Parse [Text]
 parseArgs = bracketSep (character '(')
                        parseComma
                        (character ')')
@@ -2265,7 +2267,7 @@ data StyleName = Dashed    -- ^ Nodes and Edges
                | Filled    -- ^ Nodes and Clusters
                | Diagonals -- ^ Nodes only
                | Rounded   -- ^ Nodes and Clusters
-               | DD String -- ^ Device Dependent
+               | DD Text   -- ^ Device Dependent
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot StyleName where
@@ -2289,8 +2291,8 @@ instance ParseDot StyleName where
             `onFail`
             liftM checkDD quotelessString
 
-checkDD     :: String -> StyleName
-checkDD str = case map toLower str of
+checkDD     :: Text -> StyleName
+checkDD str = case T.toLower str of
                 "dashed"    -> Dashed
                 "dotted"    -> Dotted
                 "solid"     -> Solid
@@ -2301,10 +2303,10 @@ checkDD str = case map toLower str of
                 "rounded"   -> Rounded
                 _           -> DD str
 
-parseStyleName :: Parse String
+parseStyleName :: Parse Text
 parseStyleName = do f <- orEscaped . noneOf $ ' ' : disallowedChars
                     r <- parseEscaped True [] disallowedChars
-                    return $ f:r
+                    return $ f `T.cons` r
   where
     disallowedChars = [quoteChar, '(', ')', ',']
     -- Used because the first character has slightly stricter requirements than the rest.
@@ -2327,7 +2329,7 @@ instance PrintDot ViewPort where
           vs = hcat . punctuate comma
                $ map (unqtDot . flip ($) vp) [wVal, hVal, zVal]
 
-    toDot = doubleQuotes . unqtDot
+    toDot = dquotes . unqtDot
 
 instance ParseDot ViewPort where
     parseUnqt = do wv <- parseUnqt
@@ -2342,7 +2344,7 @@ instance ParseDot ViewPort where
 
 -- | For use with 'ViewPort'.
 data FocusType = XY Point
-               | NodeFocus String
+               | NodeFocus Text
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot FocusType where

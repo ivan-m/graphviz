@@ -49,6 +49,7 @@ import Data.Colour.RGBSpace.HSV(hsv)
 import Data.Char(isHexDigit)
 import Numeric(showHex, readHex)
 import Data.Word(Word8)
+import qualified Data.Text.Lazy as T
 import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
@@ -228,25 +229,24 @@ instance PrintDot Color where
 
     toDot (X11Color name) = toDot name
     toDot (BrewerColor n) = toDot n
-    toDot c               = doubleQuotes $ unqtDot c
+    toDot c               = dquotes $ unqtDot c
 
     unqtListToDot = hcat . punctuate colon . map unqtDot
 
     -- These two don't need to be quoted if they're on their own.
     listToDot [X11Color name] = toDot name
     listToDot [BrewerColor n] = toDot n
-    listToDot cs              = doubleQuotes $ unqtListToDot cs
+    listToDot cs              = dquotes $ unqtListToDot cs
 
 hexColor :: [Word8] -> DotCode
 hexColor = (<>) (char '#') . hcat . map word8Doc
 
 word8Doc   :: Word8 -> DotCode
-word8Doc w = text $ padding ++ simple
+word8Doc w = text $ padding `T.append` simple
     where
-      simple = showHex w ""
-      padding = replicate count '0'
+      simple = T.pack $ showHex w ""
+      padding = T.replicate count (T.singleton '0')
       count = 2 - findCols 1 w
-      findCols :: Int -> Word8 -> Int
       findCols c n
           | n < 16 = c
           | otherwise = findCols (c+1) (n `div` 16)

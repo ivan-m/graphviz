@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings, PatternGuards #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
@@ -14,7 +15,6 @@ module Data.GraphViz.Util where
 import Data.Char( isAsciiUpper
                 , isAsciiLower
                 , isDigit
-                , toLower
                 , ord
                 )
 
@@ -23,13 +23,14 @@ import Data.Maybe(isJust)
 import Data.Function(on)
 import qualified Data.Set as Set
 import Data.Set(Set)
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy(Text)
 
 -- -----------------------------------------------------------------------------
 
-isIDString        :: String -> Bool
-isIDString []     = True
-isIDString (f:os) = frstIDString f
-                    && all restIDString os
+isIDString :: Text -> Bool
+isIDString = maybe True (\(f,os) -> frstIDString f && T.all restIDString os)
+             . T.uncons
 
 -- | First character of a non-quoted 'String' must match this.
 frstIDString   :: Char -> Bool
@@ -44,54 +45,61 @@ restIDString   :: Char -> Bool
 restIDString c = frstIDString c || isDigit c
 
 -- | Determine if this String represents a number.
-isNumString     :: String -> Bool
+isNumString     :: Text -> Bool
 isNumString ""  = False
 isNumString "-" = False
-isNumString str = case str of
-                    ('-':str') -> go str'
-                    _          -> go str
+isNumString str = case T.uncons $ T.toLower str of
+                    Just ('-',str') -> go str'
+                    _               -> go str
     where
-      go s = case span isDigit (map toLower s) of
-               (ds,[])       -> not $ null ds
-               ([],'.':[])   -> False
-               ([],'.':d:ds) -> isDigit d && checkEs' ds
-               (_,'.':ds)    -> checkEs $ dropWhile isDigit ds
-               ([],_)        -> False
-               (_,ds)        -> checkEs ds
-      checkEs' s = case break ('e' ==) s of
-                     ([], _) -> False
-                     (ds,es) -> all isDigit ds && checkEs es
-      checkEs []       = True
-      checkEs ('e':ds) = isIntString ds
-      checkEs _        = False
+      go s = uncurry go' $ T.span isDigit s
+      go' ds nds
+        | T.null nds = not $ T.null ds
+        | T.null ds && nds == T.singleton '.' = False
+        | T.null ds
+        , Just ('.',nds') <- T.uncons nds
+        , Just (d,nds'') <- T.uncons nds' = isDigit d && checkEs' nds''
+        | Just ('.',nds') <- T.uncons nds = checkEs $ T.dropWhile isDigit nds'
+        | T.null ds = False
+        | otherwise = checkEs nds
+      checkEs' s = case T.break ('e' ==) s of
+                     ("", _) -> False
+                     (ds,es) -> T.all isDigit ds && checkEs es
+      checkEs str' = case T.uncons str' of
+                       Nothing       -> True
+                       Just ('e',ds) -> isIntString ds
+                       _             -> False
 
 -- | This assumes that 'isNumString' is 'True'.
-toDouble     :: String -> Double
-toDouble str = case str of
-                 ('-':str') -> read $ '-' : adj str'
-                 _          -> read $ adj str
+toDouble     :: Text -> Double
+toDouble str = case T.uncons $ T.toLower str of
+                 Just ('-', str') -> toD $ '-' `T.cons` adj str'
+                 _                -> toD $ adj str
   where
-    adj s = (:) '0'
-            $ case span ('.' ==) (map toLower s) of
-                (ds@(_:_), '.':[])   -> ds ++ '.' : '0' : []
-                (ds, '.':es@('e':_)) -> ds ++ '.' : '0' : es
-                _                    -> s
+    adj s = T.cons '0'
+            $ case T.span ('.' ==) s of
+                (ds, ".") | not $ T.null ds -> s `T.snoc` '0'
+                (ds, ds') | Just ('.',es) <- T.uncons ds'
+                          , Just ('e',_) <- T.uncons es
+                            -> ds `T.snoc` '.' `T.snoc` '0' `T.append` es
+                _              -> s
+    toD = read . T.unpack
 
-isIntString :: String -> Bool
+isIntString :: Text -> Bool
 isIntString = isJust . stringToInt
 
 -- | Determine if this String represents an integer.
-stringToInt     :: String -> Maybe Int
+stringToInt     :: Text -> Maybe Int
 stringToInt str = if isNum
-                  then Just (read str)
+                  then Just (read $ T.unpack str)
                   else Nothing
   where
-    isNum = case str of
-              ""        -> False
-              ['-']     -> False
-              ('-':num) -> isNum' num
-              _         -> isNum' str
-    isNum' = all isDigit
+    isNum = case T.uncons str of
+              Nothing         -> False
+              Just ('-',"")   -> False
+              Just ('-', num) -> isNum' num
+              _               -> isNum' str
+    isNum' = T.all isDigit
 
 -- | Graphviz requires double quotes to be explicitly escaped.
 escapeQuotes           :: String -> String
@@ -105,11 +113,11 @@ descapeQuotes []             = []
 descapeQuotes ('\\':'"':str) = '"' : descapeQuotes str
 descapeQuotes (c:str)        = c : descapeQuotes str
 
-isKeyword :: String -> Bool
-isKeyword = flip Set.member keywords . map toLower
+isKeyword :: Text -> Bool
+isKeyword = flip Set.member keywords . T.toLower
 
 -- | The following are Dot keywords and are not valid as labels, etc. unquoted.
-keywords :: Set String
+keywords :: Set Text
 keywords = Set.fromList [ "node"
                         , "edge"
                         , "graph"

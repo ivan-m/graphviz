@@ -124,7 +124,7 @@ data VType = Dbl
 vtype           :: VType -> Doc
 vtype Dbl       = text "Double"
 vtype Integ     = text "Int"
-vtype Strng     = text "String"
+vtype Strng     = text "Text"
 vtype EStrng    = text "EscString"
 vtype Bl        = text "Bool"
 vtype (Cust t)  = text t
@@ -255,7 +255,7 @@ arbitraryInstance att = vsep [hdr $+$ fns, kFunc]
       kFunc = asRows (kTpSig : kTrs ++ [kOth])
       kFuncNm = text "validUnknown"
       kTpSig = [ kFuncNm
-               , colon <> colon <+> text "String -> Bool"
+               , colon <> colon <+> text "Text -> Bool"
                ]
       kTrs = map kTr . concatMap parseNames $ atts att
       kTr pn = [ kFuncNm <+> doubleQuotes pn
@@ -266,8 +266,6 @@ arbitraryInstance att = vsep [hdr $+$ fns, kFunc]
              ]
 
 arbitraryFor                :: VType -> Doc
-arbitraryFor Strng          = text "arbString"
-arbitraryFor EStrng         = text "arbString"
 arbitraryFor (Cust ('[':_)) = text "arbList"
 arbitraryFor _              = text "arbitrary"
 
@@ -276,8 +274,6 @@ arbitraryFor' = arbitraryFor . valtype
 
 shrinkFor :: VType -> Doc
 shrinkFor (Cust ('[':_)) = text "nonEmptyShrinks"
-shrinkFor Strng          = text "shrinkString"
-shrinkFor EStrng         = text "shrinkString"
 shrinkFor _              = text "shrink"
 
 usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code

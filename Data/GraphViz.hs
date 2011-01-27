@@ -70,7 +70,8 @@ import qualified Data.Set as Set
 import Control.Arrow((&&&))
 import Data.Maybe(mapMaybe, isNothing)
 import qualified Data.Map as Map
-import qualified Data.Text.Lazy as Text
+import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.IO as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM)
 import System.IO.Unsafe(unsafePerformIO)
@@ -370,7 +371,7 @@ dotizeGraph params gr = unsafePerformIO
 -}
 
 -- | Used to augment an edge label with a unique identifier.
-data EdgeID el = EID { eID  :: String
+data EdgeID el = EID { eID  :: Text
                      , eLbl :: el
                      }
                deriving (Eq, Ord, Show)
@@ -386,7 +387,7 @@ addEdgeIDs g = mkGraph ns es'
     ns = labNodes g
     es = labEdges g
     es' = zipWith addID es ([1..] :: [Int])
-    addID (f,t,l) i = (f,t,EID (show i) l)
+    addID (f,t,l) i = (f,t,EID (T.pack $ show i) l)
 
 -- | Add the 'Comment' to the list of attributes containing the value
 --   of the unique edge identifier.
@@ -403,8 +404,8 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr nl (EdgeID el)
                  -> dg Node -> IO (gr (AttributeNode nl) (AttributeEdge el))
 dotAttributes isDir gr dot
-  = liftM (augmentGraph gr . parseDG . Text.pack . fromDotResult)
-    $ graphvizWithHandle command dot DotOutput hGetContents'
+  = liftM (augmentGraph gr . parseDG . fromDotResult)
+    $ graphvizWithHandle command dot DotOutput T.hGetContents
     where
       parseDG = asTypeOf dot . parseDotGraph
       command = if isDir then dirCommand else undirCommand
@@ -453,13 +454,13 @@ augmentGraph g dg = mkGraph lns les
 --   references an image that can't be found from the working
 --   directory.
 prettyPrint    :: (DotRepr dg n) => dg n -> IO Text
-prettyPrint dg = liftM (Text.pack . fromDotResult)
+prettyPrint dg = liftM fromDotResult
                  -- Note that the choice of command here should be
                  -- arbitrary.
                  $ graphvizWithHandle (commandFor dg)
                                       dg
                                       Canon
-                                      hGetContents'
+                                      T.hGetContents
 
 -- | The 'unsafePerformIO'd version of 'prettyPrint'.  Graphviz should
 --   always produce the same pretty-printed output, so this should be
