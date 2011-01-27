@@ -19,7 +19,7 @@ import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Parsing(runParser, parse, discard, allWhitespace', eof)
 import Data.GraphViz.PreProcessing(preProcess)
 
-import Control.Exception(try, ErrorCall(..), IOException)
+import Control.Exception.Extensible(try, ErrorCall(..), IOException)
 import Control.Monad(liftM)
 import System.Environment(getArgs)
 import System.IO(openFile, IOMode(ReadMode))
