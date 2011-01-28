@@ -16,18 +16,16 @@ module Main where
 
 import Data.GraphViz
 import Data.GraphViz.Types.Generalised
-import Data.GraphViz.Parsing(runParser, parse, discard, allWhitespace', eof)
+import Data.GraphViz.Parsing(runParser, parse)
 import Data.GraphViz.PreProcessing(preProcess)
 
 import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Encoding as T
-import qualified Data.Text.Lazy.IO as T
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString.Lazy as B
 import Control.Exception.Extensible(try, ErrorCall(..), IOException)
 import Control.Monad(liftM)
 import System.Environment(getArgs)
-import System.IO(openFile, IOMode(ReadMode))
 
 -- -----------------------------------------------------------------------------
 

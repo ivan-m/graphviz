@@ -26,7 +26,6 @@ import Data.GraphViz.Types(DotRepr, printDotGraph, parseDotGraph)
 import Data.GraphViz.Printing(toDot)
 import Text.PrettyPrint.Leijen.Text(displayT, renderCompact)
 
-import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Encoding as T
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString.Lazy as B
