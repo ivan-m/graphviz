@@ -1,5 +1,7 @@
 #!/usr/bin/runhaskell
 
+{-# LANGUAGE ScopedTypeVariables #-}
+
 {- |
    Module      : TestParsing
    Description : Check if the graphviz parser can parse "real world" Dot code.
@@ -21,9 +23,10 @@ import Data.GraphViz.PreProcessing(preProcess)
 
 import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Encoding as T
+import Data.Text.Encoding.Error(UnicodeException)
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString.Lazy as B
-import Control.Exception.Extensible(try, ErrorCall(..), IOException)
+import Control.Exception.Extensible(try, ErrorCall, IOException, Handler(..), catches, Exception)
 import Control.Monad(liftM)
 import System.Environment(getArgs)
 
@@ -80,7 +83,7 @@ tryParseCanon fp = withParse prettyPrint
     emptDG = DotGraph False False Nothing $ DotStmts [] [] [] [] :: DG
 
 tryParse    :: (DotRepr dg n) => Text -> IO (Either ErrMsg (dg n))
-tryParse dc = liftM getErrMsg . try
+tryParse dc = getErrMsgs
               $ let (dg, rst) = runParser parse $ preProcess dc
                 in T.length rst `seq` return (right dg)
 
@@ -88,13 +91,18 @@ right           :: Either a b -> b
 right Left{}    = error "Not a Right value"
 right (Right r) = r
 
-getErrMsg :: Either ErrorCall a -> Either ErrMsg a
-getErrMsg = either getEC Right
+getErrMsgs   :: IO a -> IO (Either ErrMsg a)
+getErrMsgs a = liftM Right a `catches` hs
   where
-    getEC (ErrorCall e) = Left e
+    h :: (Exception e) => e -> IO (Either ErrMsg a)
+    h = return . Left . show
+    hs = [ Handler $ \ (e :: UnicodeException) -> h e
+         , Handler $ \ (e :: ErrorCall) -> h e
+         ]
 
 readFile' :: FilePath -> IO (Either ErrMsg Text)
-readFile' = liftM getMsg . try . readUTF8File
+readFile' fp = do putStrLn fp
+                  liftM getMsg . try $ readUTF8File fp
   where
     getMsg :: Either IOException Text -> Either ErrMsg Text
     getMsg = either (Left . show) Right
