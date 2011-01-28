@@ -20,8 +20,10 @@ import Data.GraphViz.Parsing(runParser, parse, discard, allWhitespace', eof)
 import Data.GraphViz.PreProcessing(preProcess)
 
 import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.Encoding as T
 import qualified Data.Text.Lazy.IO as T
 import Data.Text.Lazy(Text)
+import qualified Data.ByteString.Lazy as B
 import Control.Exception.Extensible(try, ErrorCall(..), IOException)
 import Control.Monad(liftM)
 import System.Environment(getArgs)
@@ -93,9 +95,11 @@ getErrMsg = either getEC Right
   where
     getEC (ErrorCall e) = Left e
 
-readFile'    :: FilePath -> IO (Either ErrMsg Text)
-readFile' fp = liftM getMsg . try
-               $ openFile fp ReadMode >>= T.hGetContents
+readFile' :: FilePath -> IO (Either ErrMsg Text)
+readFile' = liftM getMsg . try . readUTF8File
   where
     getMsg :: Either IOException Text -> Either ErrMsg Text
     getMsg = either (Left . show) Right
+
+readUTF8File :: FilePath -> IO Text
+readUTF8File = liftM T.decodeUtf8 . B.readFile

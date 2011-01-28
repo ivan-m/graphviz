@@ -64,6 +64,7 @@ import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Util(uniq, uniqBy)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
+import Data.GraphViz.Commands.IO(hGetDot)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
@@ -405,9 +406,9 @@ dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr nl (EdgeID el)
                  -> dg Node -> IO (gr (AttributeNode nl) (AttributeEdge el))
 dotAttributes isDir gr dot
   = liftM (augmentGraph gr . parseDG . fromDotResult)
-    $ graphvizWithHandle command dot DotOutput T.hGetContents
+    $ graphvizWithHandle command dot DotOutput hGetDot
     where
-      parseDG = asTypeOf dot . parseDotGraph
+      parseDG = asTypeOf dot
       command = if isDir then dirCommand else undirCommand
 
 -- | Use the 'Attributes' in the provided 'DotGraph' to augment the

@@ -52,6 +52,7 @@ import Prelude hiding (catch)
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
+import Data.GraphViz.Commands.IO(hPutCompactDot)
 
 import qualified Data.Text.Lazy.IO as T
 import System.IO( Handle, hClose
@@ -335,7 +336,7 @@ graphvizWithHandle' cmd gr t f
           hSetBinaryMode outp $ isBinary t -- Depends on output type
 
           -- Make sure we close the input or it will hang!!!!!!!
-          forkIO $ T.hPutStr inp (printDotGraph gr) >> hClose inp
+          forkIO $ hPutCompactDot inp gr >> hClose inp
 
           -- Need to make sure both the output and error handles are
           -- really fully consumed.
