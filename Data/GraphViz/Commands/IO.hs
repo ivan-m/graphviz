@@ -31,7 +31,7 @@ import Data.Text.Lazy(Text)
 import qualified Data.ByteString.Lazy as B
 import Data.ByteString.Lazy(ByteString)
 import Control.Monad(liftM)
-import System.IO(Handle, IOMode(ReadMode,WriteMode),withFile, stdout, stdin)
+import System.IO(Handle,IOMode(ReadMode,WriteMode),withFile,stdout,stdin,hPutChar)
 
 -- -----------------------------------------------------------------------------
 
@@ -72,10 +72,14 @@ decodeDot = parseDotGraph . T.decodeUtf8
 -- Output
 
 hPutDot   :: (DotRepr dg n) => Handle -> dg n -> IO ()
-hPutDot h = B.hPutStr h . encodeDot
+hPutDot h = toHandle h . encodeDot
 
 hPutCompactDot :: (DotRepr dg n) => Handle -> dg n -> IO ()
-hPutCompactDot h = B.hPutStr h . encodeCompactDot
+hPutCompactDot h = toHandle h . encodeCompactDot
+
+toHandle     :: Handle -> ByteString -> IO ()
+toHandle h b = do B.hPutStr h b
+                  hPutChar h '\n'
 
 hGetDot :: (DotRepr dg n) => Handle -> IO (dg n)
 hGetDot = liftM decodeDot . B.hGetContents
