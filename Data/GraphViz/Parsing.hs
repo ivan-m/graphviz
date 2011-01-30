@@ -133,8 +133,8 @@ class ParseDot a where
 parseIt :: (ParseDot a) => Text -> (a, Text)
 parseIt = first right . runParser parse
 
-right           :: Either a b -> b
-right Left{}    = error "Not a Right value"
+right           :: (Show a) => Either a b -> b
+right (Left l)  = error $ "Not a Right value: " ++ show l
 right (Right r) = r
 
 -- | Parse the required value with the assumption that it will parse
