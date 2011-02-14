@@ -17,6 +17,7 @@ module Data.GraphViz.Commands.IO
        , hPutDot
        , hPutCompactDot
        , hGetDot
+       , hGetStrict
          -- * Special cases for standard input and output
        , putDot
        , readDot
@@ -28,6 +29,7 @@ import Text.PrettyPrint.Leijen.Text(displayT, renderCompact)
 
 import qualified Data.Text.Lazy.Encoding as T
 import Data.Text.Lazy(Text)
+import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as B
 import Data.ByteString.Lazy(ByteString)
 import Control.Monad(liftM)
@@ -52,7 +54,7 @@ renderCompactDot = displayT . renderCompact . toDot
   To simplify matters, graphviz does /not/ work with ISO-8859-1.  If
   you wish to deal with existing Dot code that uses this encoding, you
   will need to manually read that file in to a 'Text' value.
-http://github.com/jgm/illuminate-
+
   If a file uses a non-UTF-8 encoding, then a @UnicodeException@ error
   (see "Data.Text.Encoding.Error") will be thrown.
 -}
@@ -81,8 +83,13 @@ toHandle     :: Handle -> ByteString -> IO ()
 toHandle h b = do B.hPutStr h b
                   hPutChar h '\n'
 
+-- | Strictly read in a 'Text' value using an appropriate encoding.
+hGetStrict :: Handle -> IO Text
+hGetStrict = liftM (T.decodeUtf8 . B.fromChunks . (:[]))
+             . SB.hGetContents
+
 hGetDot :: (DotRepr dg n) => Handle -> IO (dg n)
-hGetDot = liftM decodeDot . B.hGetContents
+hGetDot = liftM parseDotGraph . hGetStrict
 
 writeDotFile   :: (DotRepr dg n) => FilePath -> dg n -> IO ()
 writeDotFile f = withFile f WriteMode . flip hPutDot

@@ -64,7 +64,7 @@ import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Util(uniq, uniqBy)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
-import Data.GraphViz.Commands.IO(hGetDot)
+import Data.GraphViz.Commands.IO(hGetDot, hGetStrict)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
@@ -72,7 +72,6 @@ import Control.Arrow((&&&))
 import Data.Maybe(mapMaybe, isNothing)
 import qualified Data.Map as Map
 import qualified Data.Text.Lazy as T
-import qualified Data.Text.Lazy.IO as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM)
 import System.IO.Unsafe(unsafePerformIO)
@@ -461,7 +460,7 @@ prettyPrint dg = liftM fromDotResult
                  $ graphvizWithHandle (commandFor dg)
                                       dg
                                       Canon
-                                      T.hGetContents
+                                      hGetStrict
 
 -- | The 'unsafePerformIO'd version of 'prettyPrint'.  Graphviz should
 --   always produce the same pretty-printed output, so this should be
