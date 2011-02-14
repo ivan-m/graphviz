@@ -57,7 +57,7 @@ parseOutUnwanted = liftM mconcat (many getNext)
                 `onFail`
                 liftM B.singleton next
       parseOK = liftM B.fromLazyText
-                $ many1Satisfy (`notElem` ['\n', '\r', '\\', '/', '"'])
+                $ many1Satisfy (`notElem` ['\n', '\r', '\\', '/', '"', '<'])
 
 -- | Parses an unwanted part of the Dot code (comments and
 --   pre-processor lines; also un-splits lines).
