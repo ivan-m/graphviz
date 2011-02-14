@@ -1183,11 +1183,6 @@ notBool "true"  = False
 notBool "false" = False
 notBool _       = True
 
-notBool'         :: String -> Bool
-notBool' "true"  = False
-notBool' "false" = False
-notBool' _       = True
-
 shrinkString :: String -> [String]
 shrinkString = map T.unpack . shrink . T.pack
 

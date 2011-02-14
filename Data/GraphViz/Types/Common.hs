@@ -379,7 +379,6 @@ parseBracesBased p = whitespace' >> parseBraced (wrapWhitespace p)
                      `adjustErr`
                      (++ "\nNot a valid value wrapped in braces.")
 
-
 printSubGraphID     :: (a -> (Bool, Maybe GraphID)) -> a -> DotCode
 printSubGraphID f a = sGraph'
                       <+> maybe cl dtID mID
