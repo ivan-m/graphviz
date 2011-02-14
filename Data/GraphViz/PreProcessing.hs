@@ -108,6 +108,11 @@ parseConcatStrings = liftM (wrapQuotes . mconcat)
     parseString = qParse (liftM mconcat $ many parseInner)
     parseInner = (string "\\\"" >> return (B.fromLazyText $ T.pack "\\\""))
                  `onFail`
+                 -- Need to parse an explicit `\', in case it ends the
+                 -- string (and thus the next step would get parsed by the
+                 -- previous option).
+                 (string "\\\\" >> return (B.fromLazyText $ T.pack "\\\\"))
+                 `onFail`
                  parseSplitLine -- in case there's a split mid-quote
                  `onFail`
                  liftM B.singleton (satisfy (quoteChar /=))
