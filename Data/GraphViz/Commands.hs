@@ -54,7 +54,7 @@ import Data.GraphViz.Types
 import Data.GraphViz.Attributes(Attribute(Z))
 import Data.GraphViz.Commands.IO(hPutCompactDot)
 
-import qualified Data.Text.Lazy.IO as T
+import qualified Data.ByteString as SB
 import System.IO( Handle, hClose
                 , hGetContents, hSetBinaryMode)
 import System.Exit(ExitCode(ExitSuccess))
@@ -292,7 +292,7 @@ runGraphvizCommand cmd gr t fp
     $ graphvizWithHandle cmd gr t toFile
       where
         addFl = (++) ("Unable to create " ++ fp ++ "\n")
-        toFile h = T.hGetContents h >>= T.writeFile fp
+        toFile h = SB.hGetContents h >>= SB.writeFile fp
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
 --   the provided 'FilePath' for the output file.
