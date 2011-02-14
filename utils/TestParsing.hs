@@ -75,7 +75,7 @@ tryParseFile fp = readFile' fp >>= maybeParse
 
 tryParseCanon    :: FilePath -> GDG -> IO ()
 tryParseCanon fp = withParse prettyPrint
-                             (const (return ()) . asDG)
+                             ((`seq` return ()) . T.length . printDotGraph . asDG)
                              (\ e -> fp ++ ": Canonical Form not a DotGraph:\n"
                                      ++ e)
   where
