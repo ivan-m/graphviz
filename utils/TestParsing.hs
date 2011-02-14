@@ -72,7 +72,6 @@ tryParseFile fp = readFile' fp >>= maybeParse
                                                ++ e)
                                        fp
 
-
 tryParseCanon    :: FilePath -> GDG -> IO ()
 tryParseCanon fp = withParse prettyPrint
                              ((`seq` return ()) . T.length . printDotGraph . asDG)
@@ -87,8 +86,8 @@ tryParse dc = getErrMsgs
               $ let (dg, rst) = runParser parse $ preProcess dc
                 in T.length rst `seq` return (right dg)
 
-right           :: Either a b -> b
-right Left{}    = error "Not a Right value"
+right           :: (Show a) => Either a b -> b
+right (Left l)  = error $ "Not a Right value: " ++ show l
 right (Right r) = r
 
 getErrMsgs   :: IO a -> IO (Either ErrMsg a)
