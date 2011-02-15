@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 {- |
    Module      : Data.GraphViz.Parsing
    Description : Helper functions for Parsing.
@@ -78,6 +76,8 @@ module Data.GraphViz.Parsing
     ) where
 
 import Data.GraphViz.Util
+-- To avoid orphan instances and cyclic imports
+import Data.GraphViz.Attributes.ColorScheme
 
 import Text.ParserCombinators.Poly.Text hiding (bracket, empty)
 import Data.Char( digitToInt
@@ -94,7 +94,7 @@ import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Data.Word(Word8, Word16)
 import Control.Arrow(first)
-import Control.Monad(liftM, when)
+import Control.Monad(liftM, liftM2, when)
 
 -- -----------------------------------------------------------------------------
 -- Based off code from Text.Parse in the polyparse library
@@ -450,3 +450,55 @@ parseAngled = bracket (character '<') (character '>')
 
 parseBraced :: Parse a -> Parse a
 parseBraced = bracket (character '{') (character '}')
+
+-- -----------------------------------------------------------------------------
+-- These instances are defined here to avoid cyclic imports and orphan instances
+
+
+instance ParseDot ColorScheme where
+    parseUnqt = stringRep X11 "X11"
+                `onFail`
+                liftM Brewer parseUnqt
+
+instance ParseDot BrewerScheme where
+    parseUnqt = liftM2 BScheme parseUnqt parseUnqt
+
+instance ParseDot BrewerName where
+  -- The order is different from above to make sure longer names are
+  -- parsed first.
+  parseUnqt = oneOf [ stringRep Accent "accent"
+                    , stringRep Blues "blues"
+                    , stringRep Brbg "brbg"
+                    , stringRep Bugn "bugn"
+                    , stringRep Bupu "bupu"
+                    , stringRep Dark2 "dark2"
+                    , stringRep Gnbu "gnbu"
+                    , stringRep Greens "greens"
+                    , stringRep Greys "greys"
+                    , stringRep Oranges "oranges"
+                    , stringRep Orrd "orrd"
+                    , stringRep Paired "paired"
+                    , stringRep Pastel1 "pastel1"
+                    , stringRep Pastel2 "pastel2"
+                    , stringRep Piyg "piyg"
+                    , stringRep Prgn "prgn"
+                    , stringRep Pubugn "pubugn"
+                    , stringRep Pubu "pubu"
+                    , stringRep Puor "puor"
+                    , stringRep Purd "purd"
+                    , stringRep Purples "purples"
+                    , stringRep Rdbu "rdbu"
+                    , stringRep Rdgy "rdgy"
+                    , stringRep Rdpu "rdpu"
+                    , stringRep Rdylbu "rdylbu"
+                    , stringRep Rdylgn "rdylgn"
+                    , stringRep Reds "reds"
+                    , stringRep Set1 "set1"
+                    , stringRep Set2 "set2"
+                    , stringRep Set3 "set3"
+                    , stringRep Spectral "spectral"
+                    , stringRep Ylgnbu "ylgnbu"
+                    , stringRep Ylgn "ylgn"
+                    , stringRep Ylorbr "ylorbr"
+                    , stringRep Ylorrd "ylorrd"
+                    ]

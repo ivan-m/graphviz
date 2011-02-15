@@ -81,7 +81,8 @@ Library {
                            Data.GraphViz.Attributes.HTML
                            Data.GraphViz.PreProcessing
 
-        Other-Modules:     Data.GraphViz.Attributes.Internal
+        Other-Modules:     Data.GraphViz.Attributes.ColorScheme
+                           Data.GraphViz.Attributes.Internal
                            Data.GraphViz.Types.Clustering
                            Data.GraphViz.Types.Common
                            Data.GraphViz.Types.State

@@ -62,6 +62,8 @@ module Data.GraphViz.Printing
     ) where
 
 import Data.GraphViz.Util
+-- To avoid orphan instances and cyclic imports
+import Data.GraphViz.Attributes.ColorScheme
 
 -- Only implicitly import and re-export combinators.
 import Text.PrettyPrint.Leijen.Text hiding ( SimpleDoc(..)
@@ -264,3 +266,51 @@ rang = char '>'
 
 fslash :: DotCode
 fslash = char '/'
+
+-- -----------------------------------------------------------------------------
+-- These instances are defined here to avoid cyclic imports and orphan instances
+
+instance PrintDot ColorScheme where
+    unqtDot X11         = unqtText "X11"
+    unqtDot (Brewer bs) = unqtDot bs
+
+instance PrintDot BrewerScheme where
+    unqtDot (BScheme n l) = unqtDot n <> unqtDot l
+
+instance PrintDot BrewerName where
+    unqtDot Accent   = unqtText "accent"
+    unqtDot Blues    = unqtText "blues"
+    unqtDot Brbg     = unqtText "brbg"
+    unqtDot Bugn     = unqtText "bugn"
+    unqtDot Bupu     = unqtText "bupu"
+    unqtDot Dark2    = unqtText "dark2"
+    unqtDot Gnbu     = unqtText "gnbu"
+    unqtDot Greens   = unqtText "greens"
+    unqtDot Greys    = unqtText "greys"
+    unqtDot Oranges  = unqtText "oranges"
+    unqtDot Orrd     = unqtText "orrd"
+    unqtDot Paired   = unqtText "paired"
+    unqtDot Pastel1  = unqtText "pastel1"
+    unqtDot Pastel2  = unqtText "pastel2"
+    unqtDot Piyg     = unqtText "piyg"
+    unqtDot Prgn     = unqtText "prgn"
+    unqtDot Pubu     = unqtText "pubu"
+    unqtDot Pubugn   = unqtText "pubugn"
+    unqtDot Puor     = unqtText "puor"
+    unqtDot Purd     = unqtText "purd"
+    unqtDot Purples  = unqtText "purples"
+    unqtDot Rdbu     = unqtText "rdbu"
+    unqtDot Rdgy     = unqtText "rdgy"
+    unqtDot Rdpu     = unqtText "rdpu"
+    unqtDot Rdylbu   = unqtText "rdylbu"
+    unqtDot Rdylgn   = unqtText "rdylgn"
+    unqtDot Reds     = unqtText "reds"
+    unqtDot Set1     = unqtText "set1"
+    unqtDot Set2     = unqtText "set2"
+    unqtDot Set3     = unqtText "set3"
+    unqtDot Spectral = unqtText "spectral"
+    unqtDot Ylgn     = unqtText "ylgn"
+    unqtDot Ylgnbu   = unqtText "ylgnbu"
+    unqtDot Ylorbr   = unqtText "ylorbr"
+    unqtDot Ylorrd   = unqtText "ylorrd"
+
