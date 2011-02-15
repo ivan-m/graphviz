@@ -26,6 +26,7 @@
 module Data.GraphViz.Attributes.Colors
        ( -- * Color schemes.
          ColorScheme(..)
+       , BrewerScheme(..)
        , BrewerName(..)
          -- * Colors
        , Color(..)
@@ -58,20 +59,28 @@ import Control.Monad(liftM, liftM2)
 --   mentioned above, these are /not/ used for actual parsing or
 --   printing.
 data ColorScheme = X11
-                 | BrewerScheme BrewerName Word8 -- ^ The value of the
-                                                 --   scheme number
-                                                 --   depends on
-                                                 --   the name.
+                 | Brewer BrewerScheme
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot ColorScheme where
-    unqtDot X11 = unqtDot "X11"
-    unqtDot (BrewerScheme n l) = unqtDot n <> unqtDot l
+    unqtDot X11         = unqtDot "X11"
+    unqtDot (Brewer bs) = unqtDot bs
 
 instance ParseDot ColorScheme where
     parseUnqt = stringRep X11 "X11"
                 `onFail`
-                liftM2 BrewerScheme parseUnqt parseUnqt
+                liftM Brewer parseUnqt
+
+data BrewerScheme = BScheme BrewerName Word8 -- ^ The value of the
+                                             --   scheme number
+                                             --   depends on the name.
+                  deriving (Eq, Ord, Show, Read)
+
+instance PrintDot BrewerScheme where
+    unqtDot (BScheme n l) = unqtDot n <> unqtDot l
+
+instance ParseDot BrewerScheme where
+    parseUnqt = liftM2 BScheme parseUnqt parseUnqt
 
 -- | All of these have a minimum level value of @3@, with a maximum
 --   of @9@ unless otherwise specified.
@@ -215,9 +224,11 @@ data Color = RGB { red   :: Word8
                  , value      :: Double
                  }
            | X11Color X11Color
-           | BrewerColor Word8 -- ^ This value should be between @1@
-                               --   and the level of the 'BrewerName'
-                               --   being used.
+           | BrewerColor BrewerScheme Word8 -- ^ This value should be
+                                            --   between @1@ and the
+                                            --   level of the
+                                            --   'BrewerScheme' being
+                                            --   used.
              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Color where
@@ -225,17 +236,17 @@ instance PrintDot Color where
     unqtDot (RGBA r g b a)  = hexColor [r,g,b,a]
     unqtDot (HSV  h s v)    = hcat . punctuate comma $ map unqtDot [h,s,v]
     unqtDot (X11Color name) = unqtDot name
-    unqtDot (BrewerColor n) = unqtDot n
+    unqtDot (BrewerColor _ n) = unqtDot n
 
     toDot (X11Color name) = toDot name
-    toDot (BrewerColor n) = toDot n
+    toDot (BrewerColor _ n) = toDot n
     toDot c               = dquotes $ unqtDot c
 
     unqtListToDot = hcat . punctuate colon . map unqtDot
 
     -- These two don't need to be quoted if they're on their own.
     listToDot [X11Color name] = toDot name
-    listToDot [BrewerColor n] = toDot n
+    listToDot [BrewerColor _ n] = toDot n
     listToDot cs              = dquotes $ unqtListToDot cs
 
 hexColor :: [Word8] -> DotCode
@@ -255,7 +266,7 @@ instance ParseDot Color where
     parseUnqt = oneOf [ parseHexBased
                       , parseHSV
                       , liftM X11Color parseUnqt
-                      , liftM BrewerColor parseUnqt
+                      , liftM (BrewerColor undefined) parseUnqt
                       ]
         where
           parseHexBased
@@ -284,7 +295,7 @@ instance ParseDot Color where
     parse = quotedParse parseUnqt
             `onFail` -- These two can be unquoted
             oneOf [ liftM X11Color parseUnqt
-                  , liftM BrewerColor parseUnqt
+                  , liftM (BrewerColor undefined) parseUnqt
                   ]
 
     parseUnqtList = sepBy1 parseUnqt (character ':')
@@ -292,7 +303,7 @@ instance ParseDot Color where
     parseList = liftM return
                 -- Unquoted single color
                 (oneOf [ liftM X11Color parseUnqt
-                       , liftM BrewerColor parseUnqt
+                       , liftM (BrewerColor undefined) parseUnqt
                        ]
                 )
                 `onFail`
