@@ -74,6 +74,7 @@ Library {
                            Data.GraphViz.Types.Generalised
                            Data.GraphViz.Parsing
                            Data.GraphViz.Printing
+                           Data.GraphViz.State
                            Data.GraphViz.Commands
                            Data.GraphViz.Commands.IO
                            Data.GraphViz.Attributes
