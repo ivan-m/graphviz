@@ -52,7 +52,7 @@ import Data.Char(isHexDigit)
 import Numeric(showHex, readHex)
 import Data.Word(Word8)
 import qualified Data.Text.Lazy as T
-import Control.Monad(liftM, liftM2)
+import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ data Color = RGB { red   :: Word8
 instance PrintDot Color where
     unqtDot (RGB  r g b)    = hexColor [r,g,b]
     unqtDot (RGBA r g b a)  = hexColor [r,g,b,a]
-    unqtDot (HSV  h s v)    = hcat . punctuate comma $ map unqtDot [h,s,v]
+    unqtDot (HSV  h s v)    = hcat . punctuate comma $ mapM unqtDot [h,s,v]
     unqtDot (X11Color name) = unqtDot name
     unqtDot (BrewerColor _ n) = unqtDot n
 
@@ -93,7 +93,7 @@ instance PrintDot Color where
     toDot (BrewerColor _ n) = toDot n
     toDot c               = dquotes $ unqtDot c
 
-    unqtListToDot = hcat . punctuate colon . map unqtDot
+    unqtListToDot = hcat . punctuate colon . mapM unqtDot
 
     -- These two don't need to be quoted if they're on their own.
     listToDot [X11Color name] = toDot name
@@ -101,7 +101,7 @@ instance PrintDot Color where
     listToDot cs              = dquotes $ unqtListToDot cs
 
 hexColor :: [Word8] -> DotCode
-hexColor = (<>) (char '#') . hcat . map word8Doc
+hexColor = (<>) (char '#') . hcat . mapM word8Doc
 
 word8Doc   :: Word8 -> DotCode
 word8Doc w = text $ padding `T.append` simple
@@ -117,7 +117,7 @@ instance ParseDot Color where
     parseUnqt = oneOf [ parseHexBased
                       , parseHSV
                       , liftM X11Color parseUnqt
-                      , liftM (BrewerColor undefined) parseUnqt
+                      , liftM (BrewerColor (BScheme Accent 1)) parseUnqt
                       ]
         where
           parseHexBased
@@ -146,7 +146,7 @@ instance ParseDot Color where
     parse = quotedParse parseUnqt
             `onFail` -- These two can be unquoted
             oneOf [ liftM X11Color parseUnqt
-                  , liftM (BrewerColor undefined) parseUnqt
+                  , liftM (BrewerColor $ BScheme Accent 1) parseUnqt
                   ]
 
     parseUnqtList = sepBy1 parseUnqt (character ':')
@@ -154,7 +154,7 @@ instance ParseDot Color where
     parseList = liftM return
                 -- Unquoted single color
                 (oneOf [ liftM X11Color parseUnqt
-                       , liftM (BrewerColor undefined) parseUnqt
+                       , liftM (BrewerColor $ BScheme Accent 1) parseUnqt
                        ]
                 )
                 `onFail`

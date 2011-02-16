@@ -1138,7 +1138,7 @@ halfOpen = AType [(ArrMod FilledArrow LeftSide, Vee)]
 vee = AType [(noMods, Vee)]
 
 instance PrintDot ArrowType where
-    unqtDot (AType mas) = hcat $ map appMod mas
+    unqtDot (AType mas) = hcat $ mapM appMod mas
         where
           appMod (m, a) = unqtDot m <> unqtDot a
 
@@ -1520,7 +1520,7 @@ instance PrintDot RecordField where
   toDot rf             = dquotes $ unqtDot rf
 
   unqtListToDot [f] = unqtDot f
-  unqtListToDot fs  = hcat . punctuate (char '|') $ map unqtDot fs
+  unqtListToDot fs  = hcat . punctuate (char '|') $ mapM unqtDot fs
 
   listToDot [f] = toDot f
   listToDot fs  = dquotes $ unqtListToDot fs
@@ -1590,7 +1590,7 @@ instance PrintDot Point where
 
     toDot = dquotes . unqtDot
 
-    unqtListToDot = hsep . map unqtDot
+    unqtListToDot = hsep . mapM unqtDot
 
     listToDot = dquotes . unqtListToDot
 
@@ -1707,7 +1707,7 @@ instance PrintDot LayerID where
     -- Other two don't need quotes
     toDot li          = unqtDot li
 
-    unqtListToDot = hcat . punctuate s . map unqtDot
+    unqtListToDot = hcat . punctuate s . mapM unqtDot
       where
         s = unqtDot $ head defLayerSep
 
@@ -1923,7 +1923,7 @@ data Spline = Spline (Maybe Point) (Maybe Point) [Point]
 instance PrintDot Spline where
     unqtDot (Spline ms me ps) = addS . addE
                                . hsep
-                               $ map unqtDot ps
+                               $ mapM unqtDot ps
         where
           addP t = maybe id ((<+>) . commaDel t)
           addS = addP 's' ms
@@ -1931,7 +1931,7 @@ instance PrintDot Spline where
 
     toDot = dquotes . unqtDot
 
-    unqtListToDot = hcat . punctuate semi . map unqtDot
+    unqtListToDot = hcat . punctuate semi . mapM unqtDot
 
     listToDot = dquotes . unqtListToDot
 
@@ -2226,13 +2226,13 @@ instance PrintDot StyleItem where
         | otherwise = dnm <> parens args'
         where
           dnm = unqtDot nm
-          args' = hcat . punctuate comma $ map unqtDot args
+          args' = hcat . punctuate comma $ mapM unqtDot args
 
     toDot si@(SItem nm args)
         | null args = toDot nm
         | otherwise = dquotes $ unqtDot si
 
-    unqtListToDot = hcat . punctuate comma . map unqtDot
+    unqtListToDot = hcat . punctuate comma . mapM unqtDot
 
     listToDot [SItem nm []] = toDot nm
     listToDot sis           = dquotes $ unqtListToDot sis
@@ -2327,7 +2327,7 @@ instance PrintDot ViewPort where
                  $ focus vp
         where
           vs = hcat . punctuate comma
-               $ map (unqtDot . flip ($) vp) [wVal, hVal, zVal]
+               $ mapM (unqtDot . flip ($) vp) [wVal, hVal, zVal]
 
     toDot = dquotes . unqtDot
 

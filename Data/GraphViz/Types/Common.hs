@@ -358,7 +358,7 @@ printStmtBased f r dr a = printBracesBased (f a) (dr $ r a)
 
 printStmtBasedList        :: (a -> DotCode) -> (a -> b) -> (b -> DotCode)
                              -> [a] -> DotCode
-printStmtBasedList f r dr = vcat . map (printStmtBased f r dr)
+printStmtBasedList f r dr = vcat . mapM (printStmtBased f r dr)
 
 parseStmtBased :: Parse stmt -> Parse (stmt -> a) -> Parse a
 parseStmtBased = flip apply . parseBracesBased
@@ -367,10 +367,10 @@ parseStmtBased = flip apply . parseBracesBased
 -- brace lined up with the h value, which due to indentation might not
 -- be the case with braces.
 printBracesBased     :: DotCode -> DotCode -> DotCode
-printBracesBased h i = vcat [ h <+> lbrace
-                            , ind i
-                            , rbrace
-                            ]
+printBracesBased h i = vcat $ sequence [ h <+> lbrace
+                                       , ind i
+                                       , rbrace
+                                       ]
   where
     ind = nest 4
 
@@ -455,7 +455,7 @@ printAttrBased ff fas a = dc <> semi
 
 printAttrBasedList        :: (a -> DotCode) -> (a -> Attributes)
                              -> [a] -> DotCode
-printAttrBasedList ff fas = vcat . map (printAttrBased ff fas)
+printAttrBasedList ff fas = vcat . mapM (printAttrBased ff fas)
 
 parseAttrBased   :: Parse (Attributes -> a) -> Parse a
 parseAttrBased p = do f <- p

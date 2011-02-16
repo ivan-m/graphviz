@@ -23,6 +23,7 @@ module Data.GraphViz.Commands.IO
        , readDot
        ) where
 
+import Data.GraphViz.State(initialState)
 import Data.GraphViz.Types(DotRepr, printDotGraph, parseDotGraph)
 import Data.GraphViz.Printing(toDot)
 import Text.PrettyPrint.Leijen.Text(displayT, renderCompact)
@@ -32,6 +33,7 @@ import Data.Text.Lazy(Text)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as B
 import Control.Monad(liftM)
+import Control.Monad.Trans.State
 import System.IO(Handle,IOMode(ReadMode,WriteMode),withFile,stdout,stdin,hPutChar)
 
 -- -----------------------------------------------------------------------------
@@ -39,7 +41,9 @@ import System.IO(Handle,IOMode(ReadMode,WriteMode),withFile,stdout,stdin,hPutCha
 -- | Correctly render Graphviz output in a more machine-oriented form
 --   (i.e. more compact than the output of 'renderDot').
 renderCompactDot :: (DotRepr dg n) => dg n -> Text
-renderCompactDot = displayT . renderCompact . toDot
+renderCompactDot = displayT . renderCompact
+                   . flip evalState initialState
+                   . toDot
 
 -- -----------------------------------------------------------------------------
 -- Encoding

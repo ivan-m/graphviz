@@ -80,7 +80,7 @@ import Data.Word(Word8, Word16)
 import qualified Data.Map as Map
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
-import Control.Monad(liftM)
+import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ instance PrintDot HtmlTextItem where
   unqtDot (HtmlNewline as)  = printHtmlEmptyTag (text "BR") as
   unqtDot (HtmlFont as txt) = printHtmlFontTag as $ unqtDot txt
 
-  unqtListToDot = hcat . map unqtDot
+  unqtListToDot = hcat . mapM unqtDot
 
   listToDot = unqtListToDot
 
@@ -194,7 +194,7 @@ instance PrintDot HtmlRow where
     where
       tr = text "TR"
 
-  unqtListToDot = align . cat . map unqtDot
+  unqtListToDot = align . cat . mapM unqtDot
 
   listToDot = unqtListToDot
 
@@ -221,7 +221,7 @@ instance PrintDot HtmlCell where
   unqtDot (HtmlLabelCell as l) = printCell as $ unqtDot l
   unqtDot (HtmlImgCell as img) = printCell as $ unqtDot img
 
-  unqtListToDot = hsep . map unqtDot
+  unqtListToDot = hsep . mapM unqtDot
 
   listToDot = unqtListToDot
 
@@ -312,7 +312,7 @@ instance PrintDot HtmlAttribute where
   unqtDot (HtmlVAlign v)      = printHtmlField  "VALIGN" v
   unqtDot (HtmlWidth v)       = printHtmlField  "WIDTH" v
 
-  unqtListToDot = hsep . map unqtDot
+  unqtListToDot = hsep . mapM unqtDot
 
   listToDot = unqtListToDot
 
@@ -455,15 +455,15 @@ escapeValue :: Text -> DotCode
 escapeValue = escapeHtml True
 
 escapeHtml               :: Bool -> Text -> DotCode
-escapeHtml quotesAllowed = hcat
-                           . concatMap (escapeSegment . T.unpack)
+escapeHtml quotesAllowed = hcat . liftM concat
+                           . mapM (escapeSegment . T.unpack)
                            . T.groupBy ((==) `on` isSpace)
   where
     -- Note: use numeric version of space rather than nbsp, since this
     -- matches what Graphviz does (since Inkscape apparently can't
     -- cope with nbsp).
-    escapeSegment (s:sps) | isSpace s = char s : map numEscape sps
-    escapeSegment txt                 = map xmlChar txt
+    escapeSegment (s:sps) | isSpace s = liftM2 (:) (char s) $ mapM numEscape sps
+    escapeSegment txt                 = mapM xmlChar txt
 
     allowQuotes = if quotesAllowed
                   then Map.delete '"'

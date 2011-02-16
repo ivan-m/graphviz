@@ -146,7 +146,7 @@ instance (PrintDot a) => PrintDot (GDotStatement a) where
   unqtDot (DN dn) = unqtDot dn
   unqtDot (DE de) = unqtDot de
 
-  unqtListToDot = vcat . map unqtDot
+  unqtListToDot = vcat . mapM unqtDot
 
   listToDot = unqtListToDot
 

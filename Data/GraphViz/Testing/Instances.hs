@@ -949,11 +949,16 @@ instance Arbitrary Ratios where
 
 instance Arbitrary ColorScheme where
   arbitrary = oneof [ return X11
-                    , liftM2 BrewerScheme arbitrary arbitrary
+                    , liftM Brewer arbitrary
                     ]
 
-  shrink (BrewerScheme nm v) = map (BrewerScheme nm) $ shrink v
-  shrink _                   = []
+  shrink (Brewer bs) = map Brewer $ shrink bs
+  shrink _           = []
+
+instance Arbitrary BrewerScheme where
+  arbitrary = liftM2 BScheme arbitrary arbitrary -- Not /quite/ right, but close enough
+
+  shrink (BScheme nm l) = map (BScheme nm) $ shrink l
 
 instance Arbitrary BrewerName where
   arbitrary = arbBounded
@@ -966,23 +971,23 @@ instance Arbitrary Color where
                       -- Not quite right as the values can get too
                       -- high/low, but should suffice for
                       -- printing/parsing purposes.
-                    , liftM BrewerColor arbitrary
+                    , liftM2 BrewerColor (return $ BScheme Accent 1) arbitrary
                     ]
     where
       zeroOne = choose (0,1)
 
-  shrink (RGB r g b)     = do rs <- shrink r
-                              gs <- shrink g
-                              bs <- shrink b
-                              return $ RGB rs gs bs
-  shrink (RGBA r g b a)  = RGB r g b
-                           : do rs <- shrink r
+  shrink (RGB r g b)       = do rs <- shrink r
                                 gs <- shrink g
                                 bs <- shrink b
-                                as <- shrink a
-                                return $ RGBA rs gs bs as
-  shrink (BrewerColor c) = map BrewerColor $ shrink c
-  shrink _               = [] -- Shrinking 0<=h,s,v<=1 does nothing
+                                return $ RGB rs gs bs
+  shrink (RGBA r g b a)    = RGB r g b
+                             : do rs <- shrink r
+                                  gs <- shrink g
+                                  bs <- shrink b
+                                  as <- shrink a
+                                  return $ RGBA rs gs bs as
+  shrink (BrewerColor s c) = map (BrewerColor s) $ shrink c
+  shrink _                 = [] -- Shrinking 0<=h,s,v<=1 does nothing
 
 instance Arbitrary X11Color where
   arbitrary = arbBounded

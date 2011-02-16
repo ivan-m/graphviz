@@ -42,7 +42,7 @@
       <http://graphviz.org/doc/info/lang.html>
 -}
 module Data.GraphViz.Printing
-    ( module Text.PrettyPrint.Leijen.Text
+    ( module Text.PrettyPrint.Leijen.Text.Monadic
     , DotCode
     , renderDot -- Exported for Data.GraphViz.Types.printSGID
     , PrintDot(..)
@@ -62,21 +62,22 @@ module Data.GraphViz.Printing
     ) where
 
 import Data.GraphViz.Util
+import Data.GraphViz.State
 -- To avoid orphan instances and cyclic imports
 import Data.GraphViz.Attributes.ColorScheme
 
 -- Only implicitly import and re-export combinators.
-import Text.PrettyPrint.Leijen.Text hiding ( SimpleDoc(..)
-                                            , renderPretty
-                                            , renderCompact
-                                            , displayT
-                                            , displayIO
-                                            , putDoc
-                                            , hPutDoc
-                                            , Pretty(..)
-                                            , bool
-                                            , string)
-import qualified Text.PrettyPrint.Leijen.Text as PP
+import Text.PrettyPrint.Leijen.Text.Monadic hiding ( SimpleDoc(..)
+                                                   , renderPretty
+                                                   , renderCompact
+                                                   , displayT
+                                                   , displayIO
+                                                   , putDoc
+                                                   , hPutDoc
+                                                   , Pretty(..)
+                                                   , bool
+                                                   , string)
+import qualified Text.PrettyPrint.Leijen.Text.Monadic as PP
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 
@@ -84,15 +85,17 @@ import Data.Char(toLower)
 import qualified Data.Set as Set
 import Data.Word(Word8, Word16)
 import Control.Monad(ap)
+import Control.Monad.Trans.State
 
 -- -----------------------------------------------------------------------------
 
 -- | A type alias to indicate what is being produced.
-type DotCode = Doc
+type DotCode = State GraphvizState Doc
 
 -- | Correctly render Graphviz output.
 renderDot :: DotCode -> Text
 renderDot = PP.displayT . PP.renderPretty 0.4 80
+            . flip evalState initialState
 
 -- | A class used to correctly print parts of the Graphviz Dot language.
 --   Minimal implementation is 'unqtDot'.
@@ -112,7 +115,7 @@ class PrintDot a where
     --   printed; not all Dot values require this to be implemented.
     --   Defaults to Haskell-like list representation.
     unqtListToDot :: [a] -> DotCode
-    unqtListToDot = list . map unqtDot
+    unqtListToDot = list . mapM unqtDot
 
     -- | The quoted form of 'unqtListToDot'; defaults to wrapping
     --   double quotes around the result of 'unqtListToDot' (since the
@@ -149,7 +152,7 @@ instance PrintDot Double where
       where
         ud = unqtDot d
 
-    unqtListToDot = hcat . punctuate colon . map unqtDot
+    unqtListToDot = hcat . punctuate colon . mapM unqtDot
 
     listToDot [d] = toDot d
     listToDot ds  = dquotes $ unqtListToDot ds
