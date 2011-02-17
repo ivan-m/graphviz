@@ -20,12 +20,13 @@
 -}
 module Data.GraphViz.Parsing
     ( -- * Re-exporting pertinent parts of Polyparse.
-      module Text.ParserCombinators.Poly.Text
+      module Text.ParserCombinators.Poly.StateText
       -- * The ParseDot class.
     , Parse
     , ParseDot(..)
     , parseIt
     , parseIt'
+    , runParser
     , runParser'
       -- * Convenience parsing combinators.
     , bracket
@@ -76,10 +77,12 @@ module Data.GraphViz.Parsing
     ) where
 
 import Data.GraphViz.Util
+import Data.GraphViz.State
 -- To avoid orphan instances and cyclic imports
 import Data.GraphViz.Attributes.ColorScheme
 
-import Text.ParserCombinators.Poly.Text hiding (bracket, empty)
+import Text.ParserCombinators.Poly.StateText hiding (bracket, empty, runParser)
+import qualified Text.ParserCombinators.Poly.StateText as P
 import Data.Char( digitToInt
                 , isDigit
                 , isSpace
@@ -100,7 +103,11 @@ import Control.Monad(liftM, liftM2, when)
 -- Based off code from Text.Parse in the polyparse library
 
 -- | A @ReadS@-like type alias.
-type Parse a = Parser a
+type Parse a = Parser GraphvizState a
+
+runParser     :: Parse a -> Text -> (Either String a, Text)
+runParser p t = let (r,_,t') = P.runParser p initialState t
+                in (r,t')
 
 -- | A variant of 'runParser' where it is assumed that the provided
 --   parsing function consumes all of the 'Text' input (with the
