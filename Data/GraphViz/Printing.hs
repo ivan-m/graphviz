@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
 
 {- |
    Module      : Data.GraphViz.Printing
@@ -84,14 +84,16 @@ import qualified Data.Set as Set
 import Data.Word(Word8, Word16)
 import Control.Monad(ap)
 import Control.Monad.Trans.State
-import Data.Functor.Identity(Identity)
 
 -- -----------------------------------------------------------------------------
 
 -- | A type alias to indicate what is being produced.
 type DotCode = State GraphvizState Doc
 
-instance GraphvizStateM (StateT GraphvizState Identity) where
+instance Show DotCode where
+    showsPrec d = showsPrec d . renderDot
+
+instance GraphvizStateM (State GraphvizState) where
     modifyGS = modify
 
     getsGS = gets
