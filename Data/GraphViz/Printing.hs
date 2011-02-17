@@ -56,8 +56,6 @@ module Data.GraphViz.Printing
     , commaDel
     , printField
     , angled
-    , rang
-    , lang
     , fslash
     ) where
 
@@ -265,13 +263,7 @@ addEscapes cs = foldr escape T.empty . withNext
     withNext str = T.zip `ap` ((`T.snoc` ' ') . T.tail) $ str
 
 angled :: DotCode -> DotCode
-angled = wrap lang rang
-
-lang :: DotCode
-lang = char '<'
-
-rang :: DotCode
-rang = char '>'
+angled = wrap langle rangle
 
 fslash :: DotCode
 fslash = char '/'
