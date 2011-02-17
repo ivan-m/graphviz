@@ -20,13 +20,12 @@ import Data.GraphViz.Attributes( Attributes, Attribute(HeadPort, TailPort)
                                , usedByGraphs, usedByClusters
                                , usedByNodes, usedByEdges)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
-import Data.GraphViz.State(directedEdges, setUndirected)
+import Data.GraphViz.State(setDirectedness, getDirectedness)
 
 import Data.Maybe(isJust)
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2, when)
-import Control.Monad.Trans.State(gets, modify)
 
 -- -----------------------------------------------------------------------------
 -- This is re-exported by Data.GraphViz.Types
@@ -208,7 +207,7 @@ instance (PrintDot a) => PrintDot (DotEdge a) where
     listToDot = unqtListToDot
 
 printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
-printEdgeID e = do isDir <- gets directedEdges
+printEdgeID e = do isDir <- getDirectedness
                    toDot (edgeFromNodeID e)
                      <+> bool undirEdge' dirEdge' isDir
                      <+> toDot (edgeToNodeID e)
@@ -337,7 +336,7 @@ clust' = text $ T.pack clust
 printGraphID                 :: (a -> Bool) -> (a -> Bool)
                                 -> (a -> Maybe GraphID)
                                 -> a -> DotCode
-printGraphID str isDir mID g = do when (not isDir') $ modify setUndirected
+printGraphID str isDir mID g = do setDirectedness isDir'
                                   bool empty strGraph' (str g)
                                     <+> bool undirGraph' dirGraph' isDir'
                                     <+> maybe empty toDot (mID g)
@@ -352,7 +351,7 @@ parseGraphID f = do allWhitespace'
                                            `onFail`
                                            stringRep False undirGraph
                                          )
-                    when (not dir) $ stUpdate setUndirected
+                    setDirectedness dir
                     gID <- optional $ parseAndSpace parse
                     return $ f str dir gID
 

@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 {- |
    Module      : Data.GraphViz.Parsing
    Description : Helper functions for Parsing.
@@ -104,6 +106,11 @@ import Control.Monad(liftM, liftM2, when)
 
 -- | A @ReadS@-like type alias.
 type Parse a = Parser GraphvizState a
+
+instance GraphvizStateM (Parser GraphvizState) where
+    modifyGS = stUpdate
+
+    getsGS = stQuery
 
 runParser     :: Parse a -> Text -> (Either String a, Text)
 runParser p t = let (r,_,t') = P.runParser p initialState t
@@ -461,11 +468,12 @@ parseBraced = bracket (character '{') (character '}')
 -- -----------------------------------------------------------------------------
 -- These instances are defined here to avoid cyclic imports and orphan instances
 
-
 instance ParseDot ColorScheme where
-    parseUnqt = stringRep X11 "X11"
-                `onFail`
-                liftM Brewer parseUnqt
+    parseUnqt = do cs <- stringRep X11 "X11"
+                          `onFail`
+                          liftM Brewer parseUnqt
+                   setColorScheme cs
+                   return cs
 
 instance ParseDot BrewerScheme where
     parseUnqt = liftM2 BScheme parseUnqt parseUnqt

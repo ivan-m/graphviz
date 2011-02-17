@@ -9,16 +9,27 @@
    that are set earlier.
 -}
 module Data.GraphViz.State
-       ( GraphvizState(..)
+       ( GraphvizStateM(..)
+       , GraphvizState(..)
        , initialState
-       , setUndirected
+       , setDirectedness
+       , getDirectedness
        , setLayerSep
+       , getLayerSep
        , setColorScheme
+       , getColorScheme
        ) where
 
 import Data.GraphViz.Attributes.ColorScheme
 
+import Control.Monad(liftM)
+
 -- -----------------------------------------------------------------------------
+
+class (Monad m) => GraphvizStateM m where
+  modifyGS :: (GraphvizState -> GraphvizState) -> m ()
+
+  getsGS :: (GraphvizState -> a) -> m a
 
 -- | Several aspects of Dot code are either global or mutable state.
 data GraphvizState = GS { directedEdges :: Bool
@@ -33,14 +44,23 @@ initialState = GS { directedEdges = True
                   , colorScheme   = X11
                   }
 
-setUndirected    :: GraphvizState -> GraphvizState
-setUndirected gs = gs { directedEdges = False }
+setDirectedness   :: (GraphvizStateM m) => Bool -> m ()
+setDirectedness d = modifyGS (\ gs -> gs { directedEdges = d } )
 
-setLayerSep        :: [Char] -> GraphvizState -> GraphvizState
-setLayerSep sep gs = gs { layerSep = sep }
+getDirectedness :: (GraphvizStateM m) => m Bool
+getDirectedness = getsGS directedEdges
 
-setColorScheme       :: ColorScheme -> GraphvizState -> GraphvizState
-setColorScheme cs gs = gs { colorScheme = cs }
+setLayerSep     :: (GraphvizStateM m) => [Char] -> m ()
+setLayerSep sep = modifyGS (\ gs -> gs { layerSep = sep } )
+
+getLayerSep :: (GraphvizStateM m) => m [Char]
+getLayerSep = getsGS layerSep
+
+setColorScheme    :: (GraphvizStateM m) => ColorScheme -> m ()
+setColorScheme cs = modifyGS (\ gs -> gs { colorScheme = cs } )
+
+getColorScheme :: (GraphvizStateM m) => m ColorScheme
+getColorScheme = getsGS colorScheme
 
 -- | The default separators for 'LayerSep'.
 defLayerSep :: [Char]

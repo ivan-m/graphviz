@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, FlexibleInstances #-}
 
 {- |
    Module      : Data.GraphViz.Printing
@@ -86,11 +86,17 @@ import qualified Data.Set as Set
 import Data.Word(Word8, Word16)
 import Control.Monad(ap)
 import Control.Monad.Trans.State
+import Data.Functor.Identity(Identity)
 
 -- -----------------------------------------------------------------------------
 
 -- | A type alias to indicate what is being produced.
 type DotCode = State GraphvizState Doc
+
+instance GraphvizStateM (StateT GraphvizState Identity) where
+    modifyGS = modify
+
+    getsGS = gets
 
 -- | Correctly render Graphviz output.
 renderDot :: DotCode -> Text
@@ -274,8 +280,10 @@ fslash = char '/'
 -- These instances are defined here to avoid cyclic imports and orphan instances
 
 instance PrintDot ColorScheme where
-    unqtDot X11         = unqtText "X11"
-    unqtDot (Brewer bs) = unqtDot bs
+    unqtDot cs = do setColorScheme cs
+                    case cs of
+                      X11       -> unqtText "X11"
+                      Brewer bs -> unqtDot bs
 
 instance PrintDot BrewerScheme where
     unqtDot (BScheme n l) = unqtDot n <> unqtDot l

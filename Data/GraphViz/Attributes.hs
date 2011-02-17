@@ -185,14 +185,13 @@ import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
-import Data.GraphViz.State(layerSep, setLayerSep)
+import Data.GraphViz.State(getLayerSep, setLayerSep)
 
 import Data.Maybe(isJust)
 import Data.Word(Word16)
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2)
-import Control.Monad.Trans.State(gets, modify)
 
 -- -----------------------------------------------------------------------------
 
@@ -1644,19 +1643,19 @@ newtype LayerSep = LSep Text
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerSep where
-    unqtDot (LSep ls) = do modify (setLayerSep $ T.unpack ls)
+    unqtDot (LSep ls) = do setLayerSep $ T.unpack ls
                            unqtDot ls
 
-    toDot (LSep ls) = do modify (setLayerSep $ T.unpack ls)
+    toDot (LSep ls) = do setLayerSep $ T.unpack ls
                          toDot ls
 
 instance ParseDot LayerSep where
     parseUnqt = do ls <- parseUnqt
-                   stUpdate (setLayerSep $ T.unpack ls)
+                   setLayerSep $ T.unpack ls
                    return $ LSep ls
 
     parse = do ls <- parse
-               stUpdate (setLayerSep $ T.unpack ls)
+               setLayerSep $ T.unpack ls
                return $ LSep ls
 
 data LayerRange = LRID LayerID
@@ -1665,7 +1664,7 @@ data LayerRange = LRID LayerID
 
 instance PrintDot LayerRange where
     unqtDot (LRID lid)    = unqtDot lid
-    unqtDot (LRS id1 id2) = do ls <- gets layerSep
+    unqtDot (LRS id1 id2) = do ls <- getLayerSep
                                let s = unqtDot $ head ls
                                unqtDot id1 <> s <> unqtDot id2
 
@@ -1690,12 +1689,12 @@ instance ParseDot LayerRange where
             liftM LRID parse
 
 parseLayerSep :: Parse ()
-parseLayerSep = do ls <- stQuery layerSep
+parseLayerSep = do ls <- getLayerSep
                    many1Satisfy (`elem` ls)
                    return ()
 
 parseLayerName :: Parse Text
-parseLayerName = parseEscaped False [] =<< stQuery layerSep
+parseLayerName = parseEscaped False [] =<< getLayerSep
 
 parseLayerName' :: Parse Text
 parseLayerName' = stringBlock
@@ -1718,7 +1717,7 @@ instance PrintDot LayerID where
     -- Other two don't need quotes
     toDot li          = unqtDot li
 
-    unqtListToDot ll = do ls <- gets layerSep
+    unqtListToDot ll = do ls <- getLayerSep
                           let s = unqtDot $ head ls
                           hcat . punctuate s $ mapM unqtDot ll
 
