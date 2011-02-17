@@ -26,7 +26,7 @@ import Data.Maybe(isJust)
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2, when)
-import Control.Monad.Trans.State(gets)
+import Control.Monad.Trans.State(gets, modify)
 
 -- -----------------------------------------------------------------------------
 -- This is re-exported by Data.GraphViz.Types
@@ -337,9 +337,12 @@ clust' = text $ T.pack clust
 printGraphID                 :: (a -> Bool) -> (a -> Bool)
                                 -> (a -> Maybe GraphID)
                                 -> a -> DotCode
-printGraphID str isDir mID g = bool empty strGraph' (str g)
-                               <+> bool undirGraph' dirGraph' (isDir g)
-                               <+> maybe empty toDot (mID g)
+printGraphID str isDir mID g = do when (not isDir') $ modify setUndirected
+                                  bool empty strGraph' (str g)
+                                    <+> bool undirGraph' dirGraph' isDir'
+                                    <+> maybe empty toDot (mID g)
+  where
+    isDir' = isDir g
 
 parseGraphID   :: (Bool -> Bool -> Maybe GraphID -> a) -> Parse a
 parseGraphID f = do allWhitespace'

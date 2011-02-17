@@ -446,7 +446,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "LabelTooltip" ["labeltooltip"] "E" EStrng Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
              , makeAttr "Label" ["label"] "ENGC" (Cust "Label") Nothing (Just "@'StrLabel' \\\"\\N\\\"@ (nodes), @'StrLabel' \\\"\\\"@ (otherwise)") Nothing Nothing
              , makeAttr "Landscape" ["landscape"] "G" Bl (Just "True") (Just "@'False'@") Nothing Nothing
-             , makeAttr "LayerSep" ["layersep"] "G" Strng Nothing (Just "@\\\" :\\t\\\"@") Nothing Nothing
+             , makeAttr "LayerSep" ["layersep"] "G" (Cust "LayerSep") Nothing (Just "@\\\" :\\t\\\"@") Nothing Nothing
              , makeAttr "Layers" ["layers"] "G" (Cust "LayerList") Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "Layer" ["layer"] "EN" (Cust "LayerRange") Nothing (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "Layout" ["layout"] "G" Strng Nothing (Just "@\\\"\\\"@") Nothing Nothing

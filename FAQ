@@ -121,10 +121,6 @@ _aren't_ covered:
 
 * Only polygon-based `shape`s are available.
 
-* The default `layersep` is used when printing and parsing
-  `layerRange` and `layerList` values; this will be fixed in a future
-  release (when state-based printing and parsing is implemented).
-
 * The `/ssss/yyyy` and `//yyyy` forms of printing and parsing `color`s
   are not yet available.
 

@@ -25,6 +25,7 @@ import Data.GraphViz.Attributes.Internal(compassLookup)
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Util(bool)
+import Data.GraphViz.State(initialState, layerSep)
 
 import Test.QuickCheck
 
@@ -728,6 +729,11 @@ instance Arbitrary Overlap where
   shrink (PrismOverlap mi) = map PrismOverlap $ shrink mi
   shrink _                 = []
 
+instance Arbitrary LayerSep where
+  -- Since Arbitrary isn't stateful, we can't generate an arbitrary
+  -- one because of arbLayerName
+  arbitrary = return . LSep . T.pack $ layerSep initialState
+
 instance Arbitrary LayerList where
   arbitrary = liftM LL $ listOf1 arbName
     where
@@ -1199,6 +1205,9 @@ arbBounded = elements [minBound .. maxBound]
 
 arbLayerName :: Gen Text
 arbLayerName = suchThat arbitrary (T.all notLayerSep)
+  where
+    defLayerSep = layerSep initialState
+    notLayerSep = (`notElem` defLayerSep)
 
 arbStyleName :: Gen Text
 arbStyleName = suchThat arbitrary (T.all notBrackCom)

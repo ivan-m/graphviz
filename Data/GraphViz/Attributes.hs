@@ -52,9 +52,6 @@
 
    * The two 'LabelLoc' attributes have been combined.
 
-   * The defined 'LayerSep' is not used to parse 'LayerRange' or
-     'LayerList'; the default (@[' ', ':', '\t']@) is instead used.
-
    * @SplineType@ has been replaced with @['Spline']@.
 
    * Only polygon-based 'Shape's are available.
@@ -170,11 +167,10 @@ module Data.GraphViz.Attributes
     , DEConstraints(..)
 
       -- ** Layers
+    , LayerSep(..)
     , LayerRange(..)
     , LayerID(..)
     , LayerList(..)
-    , defLayerSep
-    , notLayerSep
 
       -- ** Stylistic
     , SmoothType(..)
@@ -189,12 +185,14 @@ import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
+import Data.GraphViz.State(layerSep, setLayerSep)
 
 import Data.Maybe(isJust)
 import Data.Word(Word16)
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2)
+import Control.Monad.Trans.State(gets, modify)
 
 -- -----------------------------------------------------------------------------
 
@@ -297,7 +295,7 @@ data Attribute
     | LabelTooltip EscString           -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Label Label                      -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
     | Landscape Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-    | LayerSep Text                    -- ^ /Valid for/: G; /Default/: @\" :\t\"@
+    | LayerSep LayerSep                -- ^ /Valid for/: G; /Default/: @\" :\t\"@
     | Layers LayerList                 -- ^ /Valid for/: G; /Default/: @\"\"@
     | Layer LayerRange                 -- ^ /Valid for/: EN; /Default/: @\"\"@
     | Layout Text                      -- ^ /Valid for/: G; /Default/: @\"\"@
@@ -1642,15 +1640,34 @@ instance ParseDot Overlap where
 
 -- -----------------------------------------------------------------------------
 
+newtype LayerSep = LSep Text
+                 deriving (Eq, Ord, Show, Read)
+
+instance PrintDot LayerSep where
+    unqtDot (LSep ls) = do modify (setLayerSep $ T.unpack ls)
+                           unqtDot ls
+
+    toDot (LSep ls) = do modify (setLayerSep $ T.unpack ls)
+                         toDot ls
+
+instance ParseDot LayerSep where
+    parseUnqt = do ls <- parseUnqt
+                   stUpdate (setLayerSep $ T.unpack ls)
+                   return $ LSep ls
+
+    parse = do ls <- parse
+               stUpdate (setLayerSep $ T.unpack ls)
+               return $ LSep ls
+
 data LayerRange = LRID LayerID
                 | LRS LayerID LayerID
                   deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerRange where
     unqtDot (LRID lid)    = unqtDot lid
-    unqtDot (LRS id1 id2) = unqtDot id1 <> s <> unqtDot id2
-      where
-        s = unqtDot $ head defLayerSep
+    unqtDot (LRS id1 id2) = do ls <- gets layerSep
+                               let s = unqtDot $ head ls
+                               unqtDot id1 <> s <> unqtDot id2
 
     toDot (LRID lid) = toDot lid
     toDot lrs        = dquotes $ unqtDot lrs
@@ -1673,23 +1690,17 @@ instance ParseDot LayerRange where
             liftM LRID parse
 
 parseLayerSep :: Parse ()
-parseLayerSep = many1Satisfy (`elem` defLayerSep)
-                >> return ()
-
--- | The default separators for 'LayerSep'.
-defLayerSep :: [Char]
-defLayerSep = [' ', ':', '\t']
+parseLayerSep = do ls <- stQuery layerSep
+                   many1Satisfy (`elem` ls)
+                   return ()
 
 parseLayerName :: Parse Text
-parseLayerName = parseEscaped False [] defLayerSep
+parseLayerName = parseEscaped False [] =<< stQuery layerSep
 
 parseLayerName' :: Parse Text
 parseLayerName' = stringBlock
                   `onFail`
                   quotedParse parseLayerName
-
-notLayerSep :: Char -> Bool
-notLayerSep = flip notElem defLayerSep
 
 -- | You should not have any layer separator characters for the
 --   'LRName' option, as they won't be parseable.
@@ -1707,9 +1718,9 @@ instance PrintDot LayerID where
     -- Other two don't need quotes
     toDot li          = unqtDot li
 
-    unqtListToDot = hcat . punctuate s . mapM unqtDot
-      where
-        s = unqtDot $ head defLayerSep
+    unqtListToDot ll = do ls <- gets layerSep
+                          let s = unqtDot $ head ls
+                          hcat . punctuate s $ mapM unqtDot ll
 
     listToDot [l] = toDot l
     -- Might not need quotes, but probably will.  Can't tell either
