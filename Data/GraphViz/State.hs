@@ -11,6 +11,9 @@
 module Data.GraphViz.State
        ( GraphvizState(..)
        , initialState
+       , setUndirected
+       , setLayerSep
+       , setColorScheme
        ) where
 
 import Data.GraphViz.Attributes.ColorScheme
@@ -26,9 +29,18 @@ data GraphvizState = GS { directedEdges :: Bool
 
 initialState :: GraphvizState
 initialState = GS { directedEdges = True
-                  , layerSep = defLayerSep
-                  , colorScheme = X11
+                  , layerSep      = defLayerSep
+                  , colorScheme   = X11
                   }
+
+setUndirected    :: GraphvizState -> GraphvizState
+setUndirected gs = gs { directedEdges = False }
+
+setLayerSep        :: [Char] -> GraphvizState -> GraphvizState
+setLayerSep sep gs = gs { layerSep = sep }
+
+setColorScheme       :: ColorScheme -> GraphvizState -> GraphvizState
+setColorScheme cs gs = gs { colorScheme = cs }
 
 -- | The default separators for 'LayerSep'.
 defLayerSep :: [Char]
