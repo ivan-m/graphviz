@@ -58,10 +58,6 @@
    * It is not yet possible to create or parse edges with
      subgraphs\/clusters as one of the end points.
 
-   * When either creating a 'DotGraph' by hand or parsing one, it is
-     possible to specify that @'directedGraph' = d@, but 'DotEdge'
-     values with @'directedEdge' = 'not' d@.
-
    * Cannot place items in an arbitrary order: in particular, this
      means that it is not possible to use the normal Graphviz hack of
      having graph attributes that do not apply to subgraphs\/clusters by

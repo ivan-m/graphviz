@@ -492,10 +492,6 @@ A few other things of note that you should know about:
 * You should specify an ID for the overall graph when outputting to a
   format such as SVG as it becomes the title of that image.
 
-* It is possible to specify a graph as being directed/undirected but
-  having individual edges being the opposite; care should be taken to
-  avoid this (this possible issue may be resolved in future).
-
 * Graphviz allows a node to be "defined" twice with different
   attributes; in practice they are combined into one node.  Running
   Dot code through `dot -Tcanon` before parsing removes this problem.

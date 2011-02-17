@@ -94,9 +94,9 @@ instance (Arbitrary a) => Arbitrary (DotNode a) where
   shrink (DotNode n as) = map (DotNode n) $ shrinkList as
 
 instance (Arbitrary a) => Arbitrary (DotEdge a) where
-  arbitrary = liftM4 DotEdge arbitrary arbitrary arbitrary arbitrary
+  arbitrary = liftM3 DotEdge arbitrary arbitrary arbitrary
 
-  shrink (DotEdge f t isDir as) = map (DotEdge f t isDir) $ shrinkList as
+  shrink (DotEdge f t as) = map (DotEdge f t) $ shrinkList as
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the generalised types

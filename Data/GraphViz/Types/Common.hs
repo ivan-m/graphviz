@@ -20,11 +20,13 @@ import Data.GraphViz.Attributes( Attributes, Attribute(HeadPort, TailPort)
                                , usedByGraphs, usedByClusters
                                , usedByNodes, usedByEdges)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
+import Data.GraphViz.State(directedEdges, setUndirected)
 
 import Data.Maybe(isJust)
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2, when)
+import Control.Monad.Trans.State(gets)
 
 -- -----------------------------------------------------------------------------
 -- This is re-exported by Data.GraphViz.Types
@@ -194,7 +196,6 @@ invalidNode n = map (NodeError (Just $ nodeID n))
 -- | An edge in 'DotGraph'.
 data DotEdge a = DotEdge { edgeFromNodeID :: a
                          , edgeToNodeID   :: a
-                         , directedEdge   :: Bool
                          , edgeAttributes :: Attributes
                          }
              deriving (Eq, Ord, Show, Read)
@@ -207,9 +208,10 @@ instance (PrintDot a) => PrintDot (DotEdge a) where
     listToDot = unqtListToDot
 
 printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
-printEdgeID e = toDot (edgeFromNodeID e)
-                <+> bool undirEdge' dirEdge' (directedEdge e)
-                <+> toDot (edgeToNodeID e)
+printEdgeID e = do isDir <- gets directedEdges
+                   toDot (edgeFromNodeID e)
+                     <+> bool undirEdge' dirEdge' isDir
+                     <+> toDot (edgeToNodeID e)
 
 
 instance (ParseDot a) => ParseDot (DotEdge a) where
@@ -225,9 +227,10 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
 
 parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
 parseEdgeID = do eFrom <- parseEdgeNode
-                 eType <- parseEdgeType
+                 -- Parse both edge types just to be more liberal
+                 parseEdgeType
                  eTo <- parseEdgeNode
-                 return $ mkEdge eFrom eType eTo
+                 return $ mkEdge eFrom eTo
 
 type EdgeNode a = (a, Maybe PortPos)
 
@@ -245,15 +248,15 @@ parseEdgeNode :: (ParseDot a) => Parse (EdgeNode a)
 parseEdgeNode = liftM2 (,) parse
                            (optional $ character ':' >> parseEdgeBasedPP)
 
-mkEdge :: EdgeNode a -> Bool -> EdgeNode a
+mkEdge :: EdgeNode a -> EdgeNode a
           -> Attributes -> DotEdge a
-mkEdge (eFrom, mFP) eDir (eTo, mTP) = DotEdge eFrom eTo eDir
-                                      . addPortPos TailPort mFP
-                                      . addPortPos HeadPort mTP
+mkEdge (eFrom, mFP) (eTo, mTP) = DotEdge eFrom eTo
+                                 . addPortPos TailPort mFP
+                                 . addPortPos HeadPort mTP
 
-mkEdges :: [EdgeNode a] -> Bool -> [EdgeNode a]
+mkEdges :: [EdgeNode a] -> [EdgeNode a]
            -> Attributes -> [DotEdge a]
-mkEdges fs eDir ts as = liftM2 (\f t -> mkEdge f eDir t as) fs ts
+mkEdges fs ts as = liftM2 (\f t -> mkEdge f t as) fs ts
 
 addPortPos   :: (PortPos -> Attribute) -> Maybe PortPos
                 -> Attributes -> Attributes
@@ -266,15 +269,12 @@ parseEdgeType = wrapWhitespace $ stringRep True dirEdge
 
 parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
 parseEdgeLine = do n1 <- parseEdgeNodes
-                   ens <- many1 $ do eType <- parseEdgeType
-                                     n <- parseEdgeNodes
-                                     return (eType, n)
-                   let ens' = (True, n1) : ens
-                       efs = zipWith mkEdg ens' (tail ens')
+                   ens <- many1 $ do parseEdgeType
+                                     parseEdgeNodes
+                   let ens' = n1 : ens
+                       efs = zipWith mkEdges ens' (tail ens')
                        ef = return $ \ as -> concatMap ($as) efs
                    parseAttrBased ef
-    where
-      mkEdg (_, hn) (et, tn) = mkEdges hn et tn
 
 instance Functor DotEdge where
     fmap f e = e { edgeFromNodeID = f $ edgeFromNodeID e
@@ -349,6 +349,7 @@ parseGraphID f = do allWhitespace'
                                            `onFail`
                                            stringRep False undirGraph
                                          )
+                    when (not dir) $ stUpdate setUndirected
                     gID <- optional $ parseAndSpace parse
                     return $ f str dir gID
 

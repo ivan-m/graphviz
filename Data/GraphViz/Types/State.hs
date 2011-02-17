@@ -236,10 +236,10 @@ addNode (DotNode n as) = do gas <- getGlobals
                             mergeNode n as gas p
 
 addEdgeNodes :: (Ord n) => DotEdge n -> NodeState n ()
-addEdgeNodes (DotEdge f t _ _) = do gas <- getGlobals
-                                    p <- getPath
-                                    addEN f gas p
-                                    addEN t gas p
+addEdgeNodes (DotEdge f t _) = do gas <- getGlobals
+                                  p <- getPath
+                                  addEN f gas p
+                                  addEN t gas p
   where
     addEN n = mergeNode n []
 

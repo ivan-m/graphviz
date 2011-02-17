@@ -252,7 +252,6 @@ graphToDot params graph
                                    DotEdge { edgeFromNodeID = f
                                            , edgeToNodeID   = t
                                            , edgeAttributes = fmtEdge params e
-                                           , directedEdge   = dirGraph
                                            }
                               else Nothing
 
@@ -263,6 +262,7 @@ dotToGraph    :: (DotRepr dg Node, Graph gr) => dg Node
                  -> gr Attributes Attributes
 dotToGraph dg = mkGraph ns' es
   where
+    d = graphIsDirected dg
     -- Applying uniqBy just in case...
     ns = uniqBy fst . map toLN $ graphNodes dg
     es = concatMap toLE $ graphEdges dg
@@ -276,7 +276,7 @@ dotToGraph dg = mkGraph ns' es
     ns' = ns ++ nEs
     -- Conversion functions
     toLN (DotNode n as) = (n,as)
-    toLE (DotEdge f t d as) = (if d then id else (:) (t,f,as)) [(f,t,as)]
+    toLE (DotEdge f t as) = (if d then id else (:) (t,f,as)) [(f,t,as)]
 
 -- -----------------------------------------------------------------------------
 
