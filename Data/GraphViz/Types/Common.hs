@@ -20,7 +20,7 @@ import Data.GraphViz.Attributes( Attributes, Attribute(HeadPort, TailPort)
                                , usedByGraphs, usedByClusters
                                , usedByNodes, usedByEdges)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
-import Data.GraphViz.State(setDirectedness, getDirectedness)
+import Data.GraphViz.State(setDirectedness, getDirectedness, getsGS, modifyGS)
 
 import Data.Maybe(isJust)
 import qualified Data.Text.Lazy as T
@@ -357,7 +357,10 @@ parseGraphID f = do allWhitespace'
 
 printStmtBased          :: (a -> DotCode) -> (a -> b) -> (b -> DotCode)
                            -> a -> DotCode
-printStmtBased f r dr a = printBracesBased (f a) (dr $ r a)
+printStmtBased f r dr a = do gs <- getsGS id
+                             dc <- printBracesBased (f a) (dr $ r a)
+                             modifyGS (const gs)
+                             return dc
 
 printStmtBasedList        :: (a -> DotCode) -> (a -> b) -> (b -> DotCode)
                              -> [a] -> DotCode
@@ -377,8 +380,12 @@ printBracesBased h i = vcat $ sequence [ h <+> lbrace
   where
     ind = nest 4
 
+-- | This /must/ only be used for sub-graphs, etc.
 parseBracesBased   :: Parse a -> Parse a
-parseBracesBased p = whitespace' >> parseBraced (wrapWhitespace p)
+parseBracesBased p = do gs <- getsGS id
+                        a <- whitespace' >> parseBraced (wrapWhitespace p)
+                        modifyGS (const gs)
+                        return a
                      `adjustErr`
                      (++ "\nNot a valid value wrapped in braces.")
 
