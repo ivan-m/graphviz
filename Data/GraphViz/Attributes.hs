@@ -16,14 +16,6 @@
 
    A summary of known current constraints\/limitations\/differences:
 
-   * There might still be a few cases where quotes are still not
-     escaped/parsed correctly; if you find such a situation, please
-     let me know; however, you should be able to use 'String' values
-     directly without having to worry about when quotes are required
-     or extra escaping of quote characters as 'PrintDot' and
-     'ParseDot' instances for 'String' should take care of that
-     for you.
-
    * Note that for an edge, in /Dot/ parlance if the edge goes from
      /A/ to /B/, then /A/ is the tail node and /B/ is the head node
      (since /A/ is at the tail end of the arrow).
