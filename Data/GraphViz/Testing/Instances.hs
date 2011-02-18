@@ -977,7 +977,7 @@ instance Arbitrary Color where
                       -- Not quite right as the values can get too
                       -- high/low, but should suffice for
                       -- printing/parsing purposes.
-                    , liftM2 BrewerColor (return $ BScheme Accent 1) arbitrary
+                    , liftM2 BrewerColor arbitrary arbitrary
                     ]
     where
       zeroOne = choose (0,1)

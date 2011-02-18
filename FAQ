@@ -121,9 +121,6 @@ _aren't_ covered:
 
 * Only polygon-based `shape`s are available.
 
-* The `/ssss/yyyy` and `//yyyy` forms of printing and parsing `color`s
-  are not yet available.
-
 #### Available items of note ####
 
 There are a few items of note that are available that are worthy of

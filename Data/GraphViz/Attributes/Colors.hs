@@ -16,12 +16,6 @@
    following license (also available in the LICENSE file of this
    library):
      <http://graphviz.org/doc/info/colors.html#brewer_license>
-
-   When parsing and printing 'Color' values (more specifically, the
-   Brewer color values), the actual 'ColorScheme' being used isn't
-   taken into account.  Also, the \"@\/foo\/bar@\" style of overriding
-   the 'ColorScheme' being used isn't supported for parsing purposes
-   (and will result in a parsing failure).
 -}
 module Data.GraphViz.Attributes.Colors
        ( -- * Color schemes.
@@ -40,7 +34,9 @@ module Data.GraphViz.Attributes.Colors
 
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
+import Data.GraphViz.State
 import Data.GraphViz.Attributes.ColorScheme
+import Data.GraphViz.Util(bool)
 
 import Data.Colour( AlphaColour, opaque, transparent, withOpacity
                   , over, black, alphaChannel, darken)
@@ -83,22 +79,22 @@ data Color = RGB { red   :: Word8
              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Color where
-    unqtDot (RGB  r g b)    = hexColor [r,g,b]
-    unqtDot (RGBA r g b a)  = hexColor [r,g,b,a]
-    unqtDot (HSV  h s v)    = hcat . punctuate comma $ mapM unqtDot [h,s,v]
-    unqtDot (X11Color name) = unqtDot name
-    unqtDot (BrewerColor _ n) = unqtDot n
+    unqtDot (RGB  r g b)       = hexColor [r,g,b]
+    unqtDot (RGBA r g b a)     = hexColor [r,g,b,a]
+    unqtDot (HSV  h s v)       = hcat . punctuate comma $ mapM unqtDot [h,s,v]
+    unqtDot (X11Color name)    = unqtDot name
+    unqtDot (BrewerColor bs n) = printBrewerColor False bs n
 
-    toDot (X11Color name) = toDot name
-    toDot (BrewerColor _ n) = toDot n
-    toDot c               = dquotes $ unqtDot c
+    toDot (X11Color name)    = toDot name
+    toDot (BrewerColor bs n) = printBrewerColor True bs n
+    toDot c                  = dquotes $ unqtDot c
 
     unqtListToDot = hcat . punctuate colon . mapM unqtDot
 
     -- These two don't need to be quoted if they're on their own.
-    listToDot [X11Color name] = toDot name
-    listToDot [BrewerColor _ n] = toDot n
-    listToDot cs              = dquotes $ unqtListToDot cs
+    listToDot [X11Color name]    = toDot name
+    listToDot [BrewerColor bs n] = printBrewerColor True bs n
+    listToDot cs                 = dquotes $ unqtListToDot cs
 
 hexColor :: [Word8] -> DotCode
 hexColor = (<>) (char '#') . hcat . mapM word8Doc
@@ -116,8 +112,9 @@ word8Doc w = text $ padding `T.append` simple
 instance ParseDot Color where
     parseUnqt = oneOf [ parseHexBased
                       , parseHSV
-                      , liftM X11Color parseUnqt
-                      , liftM (BrewerColor (BScheme Accent 1)) parseUnqt
+                        -- Have to parse BrewerColor first, as some of them may appear to be X11 colors
+                      , liftM (uncurry BrewerColor) $ parseBrewerColor False
+                      , liftM X11Color $ parseX11Color False
                       ]
         where
           parseHexBased
@@ -144,23 +141,65 @@ instance ParseDot Color where
 
 
     parse = quotedParse parseUnqt
-            `onFail` -- These two can be unquoted
+            `onFail` -- These two might not need to be quoted
             oneOf [ liftM X11Color parseUnqt
-                  , liftM (BrewerColor $ BScheme Accent 1) parseUnqt
+                  , do Brewer bc <- getColorScheme
+                       liftM (BrewerColor bc) parseUnqt
                   ]
 
     parseUnqtList = sepBy1 parseUnqt (character ':')
 
-    parseList = liftM return
+    parseList = liftM (:[])
                 -- Unquoted single color
                 (oneOf [ liftM X11Color parseUnqt
-                       , liftM (BrewerColor $ BScheme Accent 1) parseUnqt
+                       , do Brewer bc <- getColorScheme
+                            liftM (BrewerColor bc) parseUnqt
                        ]
                 )
                 `onFail`
                 quotedParse parseUnqtList
 
+printBrewerColor        :: Bool -> BrewerScheme -> Word8 -> DotCode
+printBrewerColor q bs l = do cs <- getColorScheme
+                             case cs of
+                               Brewer bs'
+                                 | bs == bs' -> unqtDot l
+                               _             -> addQ $ fslash <> unqtDot bs
+                                                       <> fslash <> unqtDot l
+  where
+    addQ = bool id dquotes q
+
+parseBrewerColor   :: Bool -> Parse (BrewerScheme, Word8)
+parseBrewerColor q = do Brewer bs <- getColorScheme
+                        optional $ stringRep () "//"
+                        liftM ((,) bs) $ bool parseUnqt parse q
+                     `onFail`
+                     bool id quotedParse q ( do character '/'
+                                                bs <- parseUnqt
+                                                character '/'
+                                                l <- parseUnqt
+                                                return (bs,l)
+                                           )
+
 -- -----------------------------------------------------------------------------
+
+-- | Covers the four cases:
+--
+--   * yyyy
+--   * /yyyy
+--   * /X11/yyyy
+--   * //yyyy
+--
+parseX11Color   :: Bool -> Parse X11Color
+parseX11Color q = bool parseUnqt parse q
+                  `onFail`
+                  bool id quotedParse q
+                    ( do character '/'
+                         optional $ do optional $ do X11 <- parseUnqt
+                                                     return ()
+                                       character '/'
+                         parseUnqt
+                    )
 
 -- | The X11 colors that Graphviz uses.  Note that these are slightly
 --   different from the \"normal\" X11 colors used (e.g. the inclusion
