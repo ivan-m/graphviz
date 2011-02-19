@@ -74,6 +74,8 @@ module Data.GraphViz.Parsing
     , commaSep'
     , stringRep
     , stringReps
+    , stringParse
+    , stringValue
     , parseAngled
     , parseBraced
     ) where
@@ -92,13 +94,15 @@ import Data.Char( digitToInt
                 , toLower
                 , toUpper
                 )
-import Data.Maybe(fromMaybe, isNothing)
+import Data.List(groupBy, sortBy)
+import Data.Function(on)
+import Data.Maybe(fromMaybe, isNothing, listToMaybe)
 import Data.Ratio((%))
 import qualified Data.Set as Set
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Data.Word(Word8, Word16)
-import Control.Arrow(first)
+import Control.Arrow(first, second)
 import Control.Monad(liftM, liftM2, when)
 
 -- -----------------------------------------------------------------------------
@@ -315,6 +319,18 @@ stringRep v = stringReps v . return
 stringReps      :: a -> [String] -> Parse a
 stringReps v ss = oneOf (map string ss) >> return v
 
+stringParse :: [(String, Parse a)] -> Parse a
+stringParse = toPM . sortBy (flip compare `on` fst)
+  where
+    toPM = oneOf . map mkPM . groupBy ((==) `on` (listToMaybe . fst))
+
+    mkPM [("",p)] = p
+    mkPM [(str,p)] = string str >> p
+    mkPM kv = character (head . fst $ head kv) >> toPM (map (first tail) kv)
+
+stringValue :: [(String, a)] -> Parse a
+stringValue = stringParse . map (second return)
+
 strings :: [String] -> Parse ()
 strings = oneOf . map string
 
@@ -405,36 +421,34 @@ consumeLine = manySatisfy (`notElem` ['\n','\r'])
 parseEq :: Parse ()
 parseEq = wrapWhitespace (character '=') >> return ()
 
-parseField       :: (ParseDot a) => (a -> b) -> String -> Parse b
-parseField c fld = do string fld
-                      parseEq
-                      liftM c parse
+parseField       :: (ParseDot a) => (a -> b) -> String -> [(String, Parse b)]
+parseField c fld = [(fld, parseEq >> liftM c parse)]
 
-parseFields   :: (ParseDot a) => (a -> b) -> [String] -> Parse b
-parseFields c = oneOf . map (parseField c)
+parseFields   :: (ParseDot a) => (a -> b) -> [String] -> [(String, Parse b)]
+parseFields c = concatMap (parseField c)
 
-parseFieldBool :: (Bool -> b) -> String -> Parse b
+parseFieldBool :: (Bool -> b) -> String -> [(String, Parse b)]
 parseFieldBool = flip parseFieldDef True
 
-parseFieldsBool   :: (Bool -> b) -> [String] -> Parse b
-parseFieldsBool c = oneOf . map (parseFieldBool c)
+parseFieldsBool   :: (Bool -> b) -> [String] -> [(String, Parse b)]
+parseFieldsBool c = concatMap (parseFieldBool c)
 
 -- | For 'Bool'-like data structures where the presence of the field
 --   name without a value implies a default value.
-parseFieldDef         :: (ParseDot a) => (a -> b) -> a -> String -> Parse b
+parseFieldDef         :: (ParseDot a) => (a -> b) -> a -> String -> [(String, Parse b)]
 parseFieldDef c d fld = parseField c fld
-                        `onFail`
+                        ++
                         -- Have to make sure it isn't too greedy
                         -- guessing something is a global attribute
                         -- when its actually a node/edge/etc.
-                        do string fld
-                           nxt <- optional $ satisfy restIDString
-                           bool (fail "Not actually the field you were after")
-                                (return $ c d)
-                                (isNothing nxt)
+                        [(fld, do nxt <- optional $ satisfy restIDString
+                                  bool (fail "Not actually the field you were after")
+                                       (return $ c d)
+                                       (isNothing nxt)
+                         )]
 
-parseFieldsDef     :: (ParseDot a) => (a -> b) -> a -> [String] -> Parse b
-parseFieldsDef c d = oneOf . map (parseFieldDef c d)
+parseFieldsDef     :: (ParseDot a) => (a -> b) -> a -> [String] -> [(String, Parse b)]
+parseFieldsDef c d = concatMap (parseFieldDef c d)
 
 commaSep :: (ParseDot a, ParseDot b) => Parse (a, b)
 commaSep = commaSep' parse parse

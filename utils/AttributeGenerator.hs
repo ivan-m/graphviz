@@ -192,7 +192,8 @@ parseInstance     :: Atts -> Code
 parseInstance att = hdr $+$ nest tab fns
     where
       hdr = text "instance" <+> text "ParseDot" <+> tpNm att <+> text "where"
-      fn = pFunc <+> equals <+> text "oneOf" <+> ops
+      fn = pFunc <+> equals <+> (text "stringParse" <+> parens (text "concat" <+> ops)
+                                 $$ text "`onFail`" $$ pUnknown)
       fns = vsep [ fn
                  , text "parse" <+> equals <+> pFunc
                  , text "parseList" <+> equals <+> text "parseUnqtList"
@@ -201,7 +202,6 @@ parseInstance att = hdr $+$ nest tab fns
             . asRows
             . firstOthers lbrack comma
             . map return
-            . (++ [pUnknown])
             . map parseAttr
             $ atts att
       pFunc = text "parseUnqt"

@@ -1304,554 +1304,670 @@ instance PrintDot X11Color where
   unqtDot YellowGreen          = unqtDot "yellowgreen"
 
 instance ParseDot X11Color where
-  parseUnqt = oneOf
-              $ reverse [ stringRep  AliceBlue "aliceblue"
-                        , stringRep  AntiqueWhite "antiquewhite"
-                        , stringRep  AntiqueWhite1 "antiquewhite1"
-                        , stringRep  AntiqueWhite2 "antiquewhite2"
-                        , stringRep  AntiqueWhite3 "antiquewhite3"
-                        , stringRep  AntiqueWhite4 "antiquewhite4"
-                        , stringRep  Aquamarine "aquamarine"
-                        , stringRep  Aquamarine1 "aquamarine1"
-                        , stringRep  Aquamarine2 "aquamarine2"
-                        , stringRep  Aquamarine3 "aquamarine3"
-                        , stringRep  Aquamarine4 "aquamarine4"
-                        , stringRep  Azure "azure"
-                        , stringRep  Azure1 "azure1"
-                        , stringRep  Azure2 "azure2"
-                        , stringRep  Azure3 "azure3"
-                        , stringRep  Azure4 "azure4"
-                        , stringRep  Beige "beige"
-                        , stringRep  Bisque "bisque"
-                        , stringRep  Bisque1 "bisque1"
-                        , stringRep  Bisque2 "bisque2"
-                        , stringRep  Bisque3 "bisque3"
-                        , stringRep  Bisque4 "bisque4"
-                        , stringRep  Black "black"
-                        , stringRep  BlanchedAlmond "blanchedalmond"
-                        , stringRep  Blue "blue"
-                        , stringRep  Blue1 "blue1"
-                        , stringRep  Blue2 "blue2"
-                        , stringRep  Blue3 "blue3"
-                        , stringRep  Blue4 "blue4"
-                        , stringRep  BlueViolet "blueviolet"
-                        , stringRep  Brown "brown"
-                        , stringRep  Brown1 "brown1"
-                        , stringRep  Brown2 "brown2"
-                        , stringRep  Brown3 "brown3"
-                        , stringRep  Brown4 "brown4"
-                        , stringRep  Burlywood "burlywood"
-                        , stringRep  Burlywood1 "burlywood1"
-                        , stringRep  Burlywood2 "burlywood2"
-                        , stringRep  Burlywood3 "burlywood3"
-                        , stringRep  Burlywood4 "burlywood4"
-                        , stringRep  CadetBlue "cadetblue"
-                        , stringRep  CadetBlue1 "cadetblue1"
-                        , stringRep  CadetBlue2 "cadetblue2"
-                        , stringRep  CadetBlue3 "cadetblue3"
-                        , stringRep  CadetBlue4 "cadetblue4"
-                        , stringRep  Chartreuse "chartreuse"
-                        , stringRep  Chartreuse1 "chartreuse1"
-                        , stringRep  Chartreuse2 "chartreuse2"
-                        , stringRep  Chartreuse3 "chartreuse3"
-                        , stringRep  Chartreuse4 "chartreuse4"
-                        , stringRep  Chocolate "chocolate"
-                        , stringRep  Chocolate1 "chocolate1"
-                        , stringRep  Chocolate2 "chocolate2"
-                        , stringRep  Chocolate3 "chocolate3"
-                        , stringRep  Chocolate4 "chocolate4"
-                        , stringRep  Coral "coral"
-                        , stringRep  Coral1 "coral1"
-                        , stringRep  Coral2 "coral2"
-                        , stringRep  Coral3 "coral3"
-                        , stringRep  Coral4 "coral4"
-                        , stringRep  CornFlowerBlue "cornflowerblue"
-                        , stringRep  CornSilk "cornsilk"
-                        , stringRep  CornSilk1 "cornsilk1"
-                        , stringRep  CornSilk2 "cornsilk2"
-                        , stringRep  CornSilk3 "cornsilk3"
-                        , stringRep  CornSilk4 "cornsilk4"
-                        , stringRep  Crimson "crimson"
-                        , stringRep  Cyan "cyan"
-                        , stringRep  Cyan1 "cyan1"
-                        , stringRep  Cyan2 "cyan2"
-                        , stringRep  Cyan3 "cyan3"
-                        , stringRep  Cyan4 "cyan4"
-                        , stringRep  DarkGoldenrod "darkgoldenrod"
-                        , stringRep  DarkGoldenrod1 "darkgoldenrod1"
-                        , stringRep  DarkGoldenrod2 "darkgoldenrod2"
-                        , stringRep  DarkGoldenrod3 "darkgoldenrod3"
-                        , stringRep  DarkGoldenrod4 "darkgoldenrod4"
-                        , stringRep  DarkGreen "darkgreen"
-                        , stringRep  Darkkhaki "darkkhaki"
-                        , stringRep  DarkOliveGreen "darkolivegreen"
-                        , stringRep  DarkOliveGreen1 "darkolivegreen1"
-                        , stringRep  DarkOliveGreen2 "darkolivegreen2"
-                        , stringRep  DarkOliveGreen3 "darkolivegreen3"
-                        , stringRep  DarkOliveGreen4 "darkolivegreen4"
-                        , stringRep  DarkOrange "darkorange"
-                        , stringRep  DarkOrange1 "darkorange1"
-                        , stringRep  DarkOrange2 "darkorange2"
-                        , stringRep  DarkOrange3 "darkorange3"
-                        , stringRep  DarkOrange4 "darkorange4"
-                        , stringRep  DarkOrchid "darkorchid"
-                        , stringRep  DarkOrchid1 "darkorchid1"
-                        , stringRep  DarkOrchid2 "darkorchid2"
-                        , stringRep  DarkOrchid3 "darkorchid3"
-                        , stringRep  DarkOrchid4 "darkorchid4"
-                        , stringRep  DarkSalmon "darksalmon"
-                        , stringRep  DarkSeaGreen "darkseagreen"
-                        , stringRep  DarkSeaGreen1 "darkseagreen1"
-                        , stringRep  DarkSeaGreen2 "darkseagreen2"
-                        , stringRep  DarkSeaGreen3 "darkseagreen3"
-                        , stringRep  DarkSeaGreen4 "darkseagreen4"
-                        , stringRep  DarkSlateBlue "darkslateblue"
-                        , stringReps DarkSlateGray ["darkslategray", "darkslategrey"]
-                        , stringReps DarkSlateGray1 ["darkslategray1", "darkslategrey1"]
-                        , stringReps DarkSlateGray2 ["darkslategray2", "darkslategrey2"]
-                        , stringReps DarkSlateGray3 ["darkslategray3", "darkslategrey3"]
-                        , stringReps DarkSlateGray4 ["darkslategray4", "darkslategrey4"]
-                        , stringRep  DarkTurquoise "darkturquoise"
-                        , stringRep  DarkViolet "darkviolet"
-                        , stringRep  DeepPink "deeppink"
-                        , stringRep  DeepPink1 "deeppink1"
-                        , stringRep  DeepPink2 "deeppink2"
-                        , stringRep  DeepPink3 "deeppink3"
-                        , stringRep  DeepPink4 "deeppink4"
-                        , stringRep  DeepSkyBlue "deepskyblue"
-                        , stringRep  DeepSkyBlue1 "deepskyblue1"
-                        , stringRep  DeepSkyBlue2 "deepskyblue2"
-                        , stringRep  DeepSkyBlue3 "deepskyblue3"
-                        , stringRep  DeepSkyBlue4 "deepskyblue4"
-                        , stringReps DimGray ["dimgray", "dimgrey"]
-                        , stringRep  DodgerBlue "dodgerblue"
-                        , stringRep  DodgerBlue1 "dodgerblue1"
-                        , stringRep  DodgerBlue2 "dodgerblue2"
-                        , stringRep  DodgerBlue3 "dodgerblue3"
-                        , stringRep  DodgerBlue4 "dodgerblue4"
-                        , stringRep  Firebrick "firebrick"
-                        , stringRep  Firebrick1 "firebrick1"
-                        , stringRep  Firebrick2 "firebrick2"
-                        , stringRep  Firebrick3 "firebrick3"
-                        , stringRep  Firebrick4 "firebrick4"
-                        , stringRep  FloralWhite "floralwhite"
-                        , stringRep  ForestGreen "forestgreen"
-                        , stringRep  Gainsboro "gainsboro"
-                        , stringRep  GhostWhite "ghostwhite"
-                        , stringRep  Gold "gold"
-                        , stringRep  Gold1 "gold1"
-                        , stringRep  Gold2 "gold2"
-                        , stringRep  Gold3 "gold3"
-                        , stringRep  Gold4 "gold4"
-                        , stringRep  Goldenrod "goldenrod"
-                        , stringRep  Goldenrod1 "goldenrod1"
-                        , stringRep  Goldenrod2 "goldenrod2"
-                        , stringRep  Goldenrod3 "goldenrod3"
-                        , stringRep  Goldenrod4 "goldenrod4"
-                        , stringReps Gray ["gray", "grey"]
-                        , stringReps Gray0 ["gray0", "grey0"]
-                        , stringReps Gray1 ["gray1", "grey1"]
-                        , stringReps Gray2 ["gray2", "grey2"]
-                        , stringReps Gray3 ["gray3", "grey3"]
-                        , stringReps Gray4 ["gray4", "grey4"]
-                        , stringReps Gray5 ["gray5", "grey5"]
-                        , stringReps Gray6 ["gray6", "grey6"]
-                        , stringReps Gray7 ["gray7", "grey7"]
-                        , stringReps Gray8 ["gray8", "grey8"]
-                        , stringReps Gray9 ["gray9", "grey9"]
-                        , stringReps Gray10 ["gray10", "grey10"]
-                        , stringReps Gray11 ["gray11", "grey11"]
-                        , stringReps Gray12 ["gray12", "grey12"]
-                        , stringReps Gray13 ["gray13", "grey13"]
-                        , stringReps Gray14 ["gray14", "grey14"]
-                        , stringReps Gray15 ["gray15", "grey15"]
-                        , stringReps Gray16 ["gray16", "grey16"]
-                        , stringReps Gray17 ["gray17", "grey17"]
-                        , stringReps Gray18 ["gray18", "grey18"]
-                        , stringReps Gray19 ["gray19", "grey19"]
-                        , stringReps Gray20 ["gray20", "grey20"]
-                        , stringReps Gray21 ["gray21", "grey21"]
-                        , stringReps Gray22 ["gray22", "grey22"]
-                        , stringReps Gray23 ["gray23", "grey23"]
-                        , stringReps Gray24 ["gray24", "grey24"]
-                        , stringReps Gray25 ["gray25", "grey25"]
-                        , stringReps Gray26 ["gray26", "grey26"]
-                        , stringReps Gray27 ["gray27", "grey27"]
-                        , stringReps Gray28 ["gray28", "grey28"]
-                        , stringReps Gray29 ["gray29", "grey29"]
-                        , stringReps Gray30 ["gray30", "grey30"]
-                        , stringReps Gray31 ["gray31", "grey31"]
-                        , stringReps Gray32 ["gray32", "grey32"]
-                        , stringReps Gray33 ["gray33", "grey33"]
-                        , stringReps Gray34 ["gray34", "grey34"]
-                        , stringReps Gray35 ["gray35", "grey35"]
-                        , stringReps Gray36 ["gray36", "grey36"]
-                        , stringReps Gray37 ["gray37", "grey37"]
-                        , stringReps Gray38 ["gray38", "grey38"]
-                        , stringReps Gray39 ["gray39", "grey39"]
-                        , stringReps Gray40 ["gray40", "grey40"]
-                        , stringReps Gray41 ["gray41", "grey41"]
-                        , stringReps Gray42 ["gray42", "grey42"]
-                        , stringReps Gray43 ["gray43", "grey43"]
-                        , stringReps Gray44 ["gray44", "grey44"]
-                        , stringReps Gray45 ["gray45", "grey45"]
-                        , stringReps Gray46 ["gray46", "grey46"]
-                        , stringReps Gray47 ["gray47", "grey47"]
-                        , stringReps Gray48 ["gray48", "grey48"]
-                        , stringReps Gray49 ["gray49", "grey49"]
-                        , stringReps Gray50 ["gray50", "grey50"]
-                        , stringReps Gray51 ["gray51", "grey51"]
-                        , stringReps Gray52 ["gray52", "grey52"]
-                        , stringReps Gray53 ["gray53", "grey53"]
-                        , stringReps Gray54 ["gray54", "grey54"]
-                        , stringReps Gray55 ["gray55", "grey55"]
-                        , stringReps Gray56 ["gray56", "grey56"]
-                        , stringReps Gray57 ["gray57", "grey57"]
-                        , stringReps Gray58 ["gray58", "grey58"]
-                        , stringReps Gray59 ["gray59", "grey59"]
-                        , stringReps Gray60 ["gray60", "grey60"]
-                        , stringReps Gray61 ["gray61", "grey61"]
-                        , stringReps Gray62 ["gray62", "grey62"]
-                        , stringReps Gray63 ["gray63", "grey63"]
-                        , stringReps Gray64 ["gray64", "grey64"]
-                        , stringReps Gray65 ["gray65", "grey65"]
-                        , stringReps Gray66 ["gray66", "grey66"]
-                        , stringReps Gray67 ["gray67", "grey67"]
-                        , stringReps Gray68 ["gray68", "grey68"]
-                        , stringReps Gray69 ["gray69", "grey69"]
-                        , stringReps Gray70 ["gray70", "grey70"]
-                        , stringReps Gray71 ["gray71", "grey71"]
-                        , stringReps Gray72 ["gray72", "grey72"]
-                        , stringReps Gray73 ["gray73", "grey73"]
-                        , stringReps Gray74 ["gray74", "grey74"]
-                        , stringReps Gray75 ["gray75", "grey75"]
-                        , stringReps Gray76 ["gray76", "grey76"]
-                        , stringReps Gray77 ["gray77", "grey77"]
-                        , stringReps Gray78 ["gray78", "grey78"]
-                        , stringReps Gray79 ["gray79", "grey79"]
-                        , stringReps Gray80 ["gray80", "grey80"]
-                        , stringReps Gray81 ["gray81", "grey81"]
-                        , stringReps Gray82 ["gray82", "grey82"]
-                        , stringReps Gray83 ["gray83", "grey83"]
-                        , stringReps Gray84 ["gray84", "grey84"]
-                        , stringReps Gray85 ["gray85", "grey85"]
-                        , stringReps Gray86 ["gray86", "grey86"]
-                        , stringReps Gray87 ["gray87", "grey87"]
-                        , stringReps Gray88 ["gray88", "grey88"]
-                        , stringReps Gray89 ["gray89", "grey89"]
-                        , stringReps Gray90 ["gray90", "grey90"]
-                        , stringReps Gray91 ["gray91", "grey91"]
-                        , stringReps Gray92 ["gray92", "grey92"]
-                        , stringReps Gray93 ["gray93", "grey93"]
-                        , stringReps Gray94 ["gray94", "grey94"]
-                        , stringReps Gray95 ["gray95", "grey95"]
-                        , stringReps Gray96 ["gray96", "grey96"]
-                        , stringReps Gray97 ["gray97", "grey97"]
-                        , stringReps Gray98 ["gray98", "grey98"]
-                        , stringReps Gray99 ["gray99", "grey99"]
-                        , stringReps Gray100 ["gray100", "grey100"]
-                        , stringRep  Green "green"
-                        , stringRep  Green1 "green1"
-                        , stringRep  Green2 "green2"
-                        , stringRep  Green3 "green3"
-                        , stringRep  Green4 "green4"
-                        , stringRep  GreenYellow "greenyellow"
-                        , stringRep  HoneyDew "honeydew"
-                        , stringRep  HoneyDew1 "honeydew1"
-                        , stringRep  HoneyDew2 "honeydew2"
-                        , stringRep  HoneyDew3 "honeydew3"
-                        , stringRep  HoneyDew4 "honeydew4"
-                        , stringRep  HotPink "hotpink"
-                        , stringRep  HotPink1 "hotpink1"
-                        , stringRep  HotPink2 "hotpink2"
-                        , stringRep  HotPink3 "hotpink3"
-                        , stringRep  HotPink4 "hotpink4"
-                        , stringRep  IndianRed "indianred"
-                        , stringRep  IndianRed1 "indianred1"
-                        , stringRep  IndianRed2 "indianred2"
-                        , stringRep  IndianRed3 "indianred3"
-                        , stringRep  IndianRed4 "indianred4"
-                        , stringRep  Indigo "indigo"
-                        , stringRep  Ivory "ivory"
-                        , stringRep  Ivory1 "ivory1"
-                        , stringRep  Ivory2 "ivory2"
-                        , stringRep  Ivory3 "ivory3"
-                        , stringRep  Ivory4 "ivory4"
-                        , stringRep  Khaki "khaki"
-                        , stringRep  Khaki1 "khaki1"
-                        , stringRep  Khaki2 "khaki2"
-                        , stringRep  Khaki3 "khaki3"
-                        , stringRep  Khaki4 "khaki4"
-                        , stringRep  Lavender "lavender"
-                        , stringRep  LavenderBlush "lavenderblush"
-                        , stringRep  LavenderBlush1 "lavenderblush1"
-                        , stringRep  LavenderBlush2 "lavenderblush2"
-                        , stringRep  LavenderBlush3 "lavenderblush3"
-                        , stringRep  LavenderBlush4 "lavenderblush4"
-                        , stringRep  LawnGreen "lawngreen"
-                        , stringRep  LemonChiffon "lemonchiffon"
-                        , stringRep  LemonChiffon1 "lemonchiffon1"
-                        , stringRep  LemonChiffon2 "lemonchiffon2"
-                        , stringRep  LemonChiffon3 "lemonchiffon3"
-                        , stringRep  LemonChiffon4 "lemonchiffon4"
-                        , stringRep  LightBlue "lightblue"
-                        , stringRep  LightBlue1 "lightblue1"
-                        , stringRep  LightBlue2 "lightblue2"
-                        , stringRep  LightBlue3 "lightblue3"
-                        , stringRep  LightBlue4 "lightblue4"
-                        , stringRep  LightCoral "lightcoral"
-                        , stringRep  LightCyan "lightcyan"
-                        , stringRep  LightCyan1 "lightcyan1"
-                        , stringRep  LightCyan2 "lightcyan2"
-                        , stringRep  LightCyan3 "lightcyan3"
-                        , stringRep  LightCyan4 "lightcyan4"
-                        , stringRep  LightGoldenrod "lightgoldenrod"
-                        , stringRep  LightGoldenrod1 "lightgoldenrod1"
-                        , stringRep  LightGoldenrod2 "lightgoldenrod2"
-                        , stringRep  LightGoldenrod3 "lightgoldenrod3"
-                        , stringRep  LightGoldenrod4 "lightgoldenrod4"
-                        , stringRep  LightGoldenrodYellow "lightgoldenrodyellow"
-                        , stringReps LightGray ["lightgray", "lightgrey"]
-                        , stringRep  LightPink "lightpink"
-                        , stringRep  LightPink1 "lightpink1"
-                        , stringRep  LightPink2 "lightpink2"
-                        , stringRep  LightPink3 "lightpink3"
-                        , stringRep  LightPink4 "lightpink4"
-                        , stringRep  LightSalmon "lightsalmon"
-                        , stringRep  LightSalmon1 "lightsalmon1"
-                        , stringRep  LightSalmon2 "lightsalmon2"
-                        , stringRep  LightSalmon3 "lightsalmon3"
-                        , stringRep  LightSalmon4 "lightsalmon4"
-                        , stringRep  LightSeaGreen "lightseagreen"
-                        , stringRep  LightSkyBlue "lightskyblue"
-                        , stringRep  LightSkyBlue1 "lightskyblue1"
-                        , stringRep  LightSkyBlue2 "lightskyblue2"
-                        , stringRep  LightSkyBlue3 "lightskyblue3"
-                        , stringRep  LightSkyBlue4 "lightskyblue4"
-                        , stringRep  LightSlateBlue "lightslateblue"
-                        , stringReps LightSlateGray ["lightslategray", "lightslategrey"]
-                        , stringRep  LightSteelBlue "lightsteelblue"
-                        , stringRep  LightSteelBlue1 "lightsteelblue1"
-                        , stringRep  LightSteelBlue2 "lightsteelblue2"
-                        , stringRep  LightSteelBlue3 "lightsteelblue3"
-                        , stringRep  LightSteelBlue4 "lightsteelblue4"
-                        , stringRep  LightYellow "lightyellow"
-                        , stringRep  LightYellow1 "lightyellow1"
-                        , stringRep  LightYellow2 "lightyellow2"
-                        , stringRep  LightYellow3 "lightyellow3"
-                        , stringRep  LightYellow4 "lightyellow4"
-                        , stringRep  LimeGreen "limegreen"
-                        , stringRep  Linen "linen"
-                        , stringRep  Magenta "magenta"
-                        , stringRep  Magenta1 "magenta1"
-                        , stringRep  Magenta2 "magenta2"
-                        , stringRep  Magenta3 "magenta3"
-                        , stringRep  Magenta4 "magenta4"
-                        , stringRep  Maroon "maroon"
-                        , stringRep  Maroon1 "maroon1"
-                        , stringRep  Maroon2 "maroon2"
-                        , stringRep  Maroon3 "maroon3"
-                        , stringRep  Maroon4 "maroon4"
-                        , stringRep  MediumAquamarine "mediumaquamarine"
-                        , stringRep  MediumBlue "mediumblue"
-                        , stringRep  MediumOrchid "mediumorchid"
-                        , stringRep  MediumOrchid1 "mediumorchid1"
-                        , stringRep  MediumOrchid2 "mediumorchid2"
-                        , stringRep  MediumOrchid3 "mediumorchid3"
-                        , stringRep  MediumOrchid4 "mediumorchid4"
-                        , stringRep  MediumPurple "mediumpurple"
-                        , stringRep  MediumPurple1 "mediumpurple1"
-                        , stringRep  MediumPurple2 "mediumpurple2"
-                        , stringRep  MediumPurple3 "mediumpurple3"
-                        , stringRep  MediumPurple4 "mediumpurple4"
-                        , stringRep  MediumSeaGreen "mediumseagreen"
-                        , stringRep  MediumSlateBlue "mediumslateblue"
-                        , stringRep  MediumSpringGreen "mediumspringgreen"
-                        , stringRep  MediumTurquoise "mediumturquoise"
-                        , stringRep  MediumVioletRed "mediumvioletred"
-                        , stringRep  MidnightBlue "midnightblue"
-                        , stringRep  MintCream "mintcream"
-                        , stringRep  MistyRose "mistyrose"
-                        , stringRep  MistyRose1 "mistyrose1"
-                        , stringRep  MistyRose2 "mistyrose2"
-                        , stringRep  MistyRose3 "mistyrose3"
-                        , stringRep  MistyRose4 "mistyrose4"
-                        , stringRep  Moccasin "moccasin"
-                        , stringRep  NavajoWhite "navajowhite"
-                        , stringRep  NavajoWhite1 "navajowhite1"
-                        , stringRep  NavajoWhite2 "navajowhite2"
-                        , stringRep  NavajoWhite3 "navajowhite3"
-                        , stringRep  NavajoWhite4 "navajowhite4"
-                        , stringRep  Navy "navy"
-                        , stringRep  NavyBlue "navyblue"
-                        , stringRep  OldLace "oldlace"
-                        , stringRep  OliveDrab "olivedrab"
-                        , stringRep  OliveDrab1 "olivedrab1"
-                        , stringRep  OliveDrab2 "olivedrab2"
-                        , stringRep  OliveDrab3 "olivedrab3"
-                        , stringRep  OliveDrab4 "olivedrab4"
-                        , stringRep  Orange "orange"
-                        , stringRep  Orange1 "orange1"
-                        , stringRep  Orange2 "orange2"
-                        , stringRep  Orange3 "orange3"
-                        , stringRep  Orange4 "orange4"
-                        , stringRep  OrangeRed "orangered"
-                        , stringRep  OrangeRed1 "orangered1"
-                        , stringRep  OrangeRed2 "orangered2"
-                        , stringRep  OrangeRed3 "orangered3"
-                        , stringRep  OrangeRed4 "orangered4"
-                        , stringRep  Orchid "orchid"
-                        , stringRep  Orchid1 "orchid1"
-                        , stringRep  Orchid2 "orchid2"
-                        , stringRep  Orchid3 "orchid3"
-                        , stringRep  Orchid4 "orchid4"
-                        , stringRep  PaleGoldenrod "palegoldenrod"
-                        , stringRep  PaleGreen "palegreen"
-                        , stringRep  PaleGreen1 "palegreen1"
-                        , stringRep  PaleGreen2 "palegreen2"
-                        , stringRep  PaleGreen3 "palegreen3"
-                        , stringRep  PaleGreen4 "palegreen4"
-                        , stringRep  PaleTurquoise "paleturquoise"
-                        , stringRep  PaleTurquoise1 "paleturquoise1"
-                        , stringRep  PaleTurquoise2 "paleturquoise2"
-                        , stringRep  PaleTurquoise3 "paleturquoise3"
-                        , stringRep  PaleTurquoise4 "paleturquoise4"
-                        , stringRep  PaleVioletRed "palevioletred"
-                        , stringRep  PaleVioletRed1 "palevioletred1"
-                        , stringRep  PaleVioletRed2 "palevioletred2"
-                        , stringRep  PaleVioletRed3 "palevioletred3"
-                        , stringRep  PaleVioletRed4 "palevioletred4"
-                        , stringRep  PapayaWhip "papayawhip"
-                        , stringRep  PeachPuff "peachpuff"
-                        , stringRep  PeachPuff1 "peachpuff1"
-                        , stringRep  PeachPuff2 "peachpuff2"
-                        , stringRep  PeachPuff3 "peachpuff3"
-                        , stringRep  PeachPuff4 "peachpuff4"
-                        , stringRep  Peru "peru"
-                        , stringRep  Pink "pink"
-                        , stringRep  Pink1 "pink1"
-                        , stringRep  Pink2 "pink2"
-                        , stringRep  Pink3 "pink3"
-                        , stringRep  Pink4 "pink4"
-                        , stringRep  Plum "plum"
-                        , stringRep  Plum1 "plum1"
-                        , stringRep  Plum2 "plum2"
-                        , stringRep  Plum3 "plum3"
-                        , stringRep  Plum4 "plum4"
-                        , stringRep  PowderBlue "powderblue"
-                        , stringRep  Purple "purple"
-                        , stringRep  Purple1 "purple1"
-                        , stringRep  Purple2 "purple2"
-                        , stringRep  Purple3 "purple3"
-                        , stringRep  Purple4 "purple4"
-                        , stringRep  Red "red"
-                        , stringRep  Red1 "red1"
-                        , stringRep  Red2 "red2"
-                        , stringRep  Red3 "red3"
-                        , stringRep  Red4 "red4"
-                        , stringRep  RosyBrown "rosybrown"
-                        , stringRep  RosyBrown1 "rosybrown1"
-                        , stringRep  RosyBrown2 "rosybrown2"
-                        , stringRep  RosyBrown3 "rosybrown3"
-                        , stringRep  RosyBrown4 "rosybrown4"
-                        , stringRep  RoyalBlue "royalblue"
-                        , stringRep  RoyalBlue1 "royalblue1"
-                        , stringRep  RoyalBlue2 "royalblue2"
-                        , stringRep  RoyalBlue3 "royalblue3"
-                        , stringRep  RoyalBlue4 "royalblue4"
-                        , stringRep  SaddleBrown "saddlebrown"
-                        , stringRep  Salmon "salmon"
-                        , stringRep  Salmon1 "salmon1"
-                        , stringRep  Salmon2 "salmon2"
-                        , stringRep  Salmon3 "salmon3"
-                        , stringRep  Salmon4 "salmon4"
-                        , stringRep  SandyBrown "sandybrown"
-                        , stringRep  SeaGreen "seagreen"
-                        , stringRep  SeaGreen1 "seagreen1"
-                        , stringRep  SeaGreen2 "seagreen2"
-                        , stringRep  SeaGreen3 "seagreen3"
-                        , stringRep  SeaGreen4 "seagreen4"
-                        , stringRep  SeaShell "seashell"
-                        , stringRep  SeaShell1 "seashell1"
-                        , stringRep  SeaShell2 "seashell2"
-                        , stringRep  SeaShell3 "seashell3"
-                        , stringRep  SeaShell4 "seashell4"
-                        , stringRep  Sienna "sienna"
-                        , stringRep  Sienna1 "sienna1"
-                        , stringRep  Sienna2 "sienna2"
-                        , stringRep  Sienna3 "sienna3"
-                        , stringRep  Sienna4 "sienna4"
-                        , stringRep  SkyBlue "skyblue"
-                        , stringRep  SkyBlue1 "skyblue1"
-                        , stringRep  SkyBlue2 "skyblue2"
-                        , stringRep  SkyBlue3 "skyblue3"
-                        , stringRep  SkyBlue4 "skyblue4"
-                        , stringRep  SlateBlue "slateblue"
-                        , stringRep  SlateBlue1 "slateblue1"
-                        , stringRep  SlateBlue2 "slateblue2"
-                        , stringRep  SlateBlue3 "slateblue3"
-                        , stringRep  SlateBlue4 "slateblue4"
-                        , stringReps SlateGray ["slategray", "slategrey"]
-                        , stringReps SlateGray1 ["slategray1", "slategrey1"]
-                        , stringReps SlateGray2 ["slategray2", "slategrey2"]
-                        , stringReps SlateGray3 ["slategray3", "slategrey3"]
-                        , stringReps SlateGray4 ["slategray4", "slategrey4"]
-                        , stringRep  Snow "snow"
-                        , stringRep  Snow1 "snow1"
-                        , stringRep  Snow2 "snow2"
-                        , stringRep  Snow3 "snow3"
-                        , stringRep  Snow4 "snow4"
-                        , stringRep  SpringGreen "springgreen"
-                        , stringRep  SpringGreen1 "springgreen1"
-                        , stringRep  SpringGreen2 "springgreen2"
-                        , stringRep  SpringGreen3 "springgreen3"
-                        , stringRep  SpringGreen4 "springgreen4"
-                        , stringRep  SteelBlue "steelblue"
-                        , stringRep  SteelBlue1 "steelblue1"
-                        , stringRep  SteelBlue2 "steelblue2"
-                        , stringRep  SteelBlue3 "steelblue3"
-                        , stringRep  SteelBlue4 "steelblue4"
-                        , stringRep  Tan "tan"
-                        , stringRep  Tan1 "tan1"
-                        , stringRep  Tan2 "tan2"
-                        , stringRep  Tan3 "tan3"
-                        , stringRep  Tan4 "tan4"
-                        , stringRep  Thistle "thistle"
-                        , stringRep  Thistle1 "thistle1"
-                        , stringRep  Thistle2 "thistle2"
-                        , stringRep  Thistle3 "thistle3"
-                        , stringRep  Thistle4 "thistle4"
-                        , stringRep  Tomato "tomato"
-                        , stringRep  Tomato1 "tomato1"
-                        , stringRep  Tomato2 "tomato2"
-                        , stringRep  Tomato3 "tomato3"
-                        , stringRep  Tomato4 "tomato4"
-                        , stringReps Transparent ["transparent", "invis", "none"]
-                        , stringRep  Turquoise "turquoise"
-                        , stringRep  Turquoise1 "turquoise1"
-                        , stringRep  Turquoise2 "turquoise2"
-                        , stringRep  Turquoise3 "turquoise3"
-                        , stringRep  Turquoise4 "turquoise4"
-                        , stringRep  Violet "violet"
-                        , stringRep  VioletRed "violetred"
-                        , stringRep  VioletRed1 "violetred1"
-                        , stringRep  VioletRed2 "violetred2"
-                        , stringRep  VioletRed3 "violetred3"
-                        , stringRep  VioletRed4 "violetred4"
-                        , stringRep  Wheat "wheat"
-                        , stringRep  Wheat1 "wheat1"
-                        , stringRep  Wheat2 "wheat2"
-                        , stringRep  Wheat3 "wheat3"
-                        , stringRep  Wheat4 "wheat4"
-                        , stringRep  White "white"
-                        , stringRep  WhiteSmoke "whitesmoke"
-                        , stringRep  Yellow "yellow"
-                        , stringRep  Yellow1 "yellow1"
-                        , stringRep  Yellow2 "yellow2"
-                        , stringRep  Yellow3 "yellow3"
-                        , stringRep  Yellow4 "yellow4"
-                        , stringRep  YellowGreen "yellowgreen"
-                        ]
+  parseUnqt = stringValue [ ("aliceblue", AliceBlue)
+                          , ("antiquewhite", AntiqueWhite)
+                          , ("antiquewhite1", AntiqueWhite1)
+                          , ("antiquewhite2", AntiqueWhite2)
+                          , ("antiquewhite3", AntiqueWhite3)
+                          , ("antiquewhite4", AntiqueWhite4)
+                          , ("aquamarine", Aquamarine)
+                          , ("aquamarine1", Aquamarine1)
+                          , ("aquamarine2", Aquamarine2)
+                          , ("aquamarine3", Aquamarine3)
+                          , ("aquamarine4", Aquamarine4)
+                          , ("azure", Azure)
+                          , ("azure1", Azure1)
+                          , ("azure2", Azure2)
+                          , ("azure3", Azure3)
+                          , ("azure4", Azure4)
+                          , ("beige", Beige)
+                          , ("bisque", Bisque)
+                          , ("bisque1", Bisque1)
+                          , ("bisque2", Bisque2)
+                          , ("bisque3", Bisque3)
+                          , ("bisque4", Bisque4)
+                          , ("black", Black)
+                          , ("blanchedalmond", BlanchedAlmond)
+                          , ("blue", Blue)
+                          , ("blue1", Blue1)
+                          , ("blue2", Blue2)
+                          , ("blue3", Blue3)
+                          , ("blue4", Blue4)
+                          , ("blueviolet", BlueViolet)
+                          , ("brown", Brown)
+                          , ("brown1", Brown1)
+                          , ("brown2", Brown2)
+                          , ("brown3", Brown3)
+                          , ("brown4", Brown4)
+                          , ("burlywood", Burlywood)
+                          , ("burlywood1", Burlywood1)
+                          , ("burlywood2", Burlywood2)
+                          , ("burlywood3", Burlywood3)
+                          , ("burlywood4", Burlywood4)
+                          , ("cadetblue", CadetBlue)
+                          , ("cadetblue1", CadetBlue1)
+                          , ("cadetblue2", CadetBlue2)
+                          , ("cadetblue3", CadetBlue3)
+                          , ("cadetblue4", CadetBlue4)
+                          , ("chartreuse", Chartreuse)
+                          , ("chartreuse1", Chartreuse1)
+                          , ("chartreuse2", Chartreuse2)
+                          , ("chartreuse3", Chartreuse3)
+                          , ("chartreuse4", Chartreuse4)
+                          , ("chocolate", Chocolate)
+                          , ("chocolate1", Chocolate1)
+                          , ("chocolate2", Chocolate2)
+                          , ("chocolate3", Chocolate3)
+                          , ("chocolate4", Chocolate4)
+                          , ("coral", Coral)
+                          , ("coral1", Coral1)
+                          , ("coral2", Coral2)
+                          , ("coral3", Coral3)
+                          , ("coral4", Coral4)
+                          , ("cornflowerblue", CornFlowerBlue)
+                          , ("cornsilk", CornSilk)
+                          , ("cornsilk1", CornSilk1)
+                          , ("cornsilk2", CornSilk2)
+                          , ("cornsilk3", CornSilk3)
+                          , ("cornsilk4", CornSilk4)
+                          , ("crimson", Crimson)
+                          , ("cyan", Cyan)
+                          , ("cyan1", Cyan1)
+                          , ("cyan2", Cyan2)
+                          , ("cyan3", Cyan3)
+                          , ("cyan4", Cyan4)
+                          , ("darkgoldenrod", DarkGoldenrod)
+                          , ("darkgoldenrod1", DarkGoldenrod1)
+                          , ("darkgoldenrod2", DarkGoldenrod2)
+                          , ("darkgoldenrod3", DarkGoldenrod3)
+                          , ("darkgoldenrod4", DarkGoldenrod4)
+                          , ("darkgreen", DarkGreen)
+                          , ("darkkhaki", Darkkhaki)
+                          , ("darkolivegreen", DarkOliveGreen)
+                          , ("darkolivegreen1", DarkOliveGreen1)
+                          , ("darkolivegreen2", DarkOliveGreen2)
+                          , ("darkolivegreen3", DarkOliveGreen3)
+                          , ("darkolivegreen4", DarkOliveGreen4)
+                          , ("darkorange", DarkOrange)
+                          , ("darkorange1", DarkOrange1)
+                          , ("darkorange2", DarkOrange2)
+                          , ("darkorange3", DarkOrange3)
+                          , ("darkorange4", DarkOrange4)
+                          , ("darkorchid", DarkOrchid)
+                          , ("darkorchid1", DarkOrchid1)
+                          , ("darkorchid2", DarkOrchid2)
+                          , ("darkorchid3", DarkOrchid3)
+                          , ("darkorchid4", DarkOrchid4)
+                          , ("darksalmon", DarkSalmon)
+                          , ("darkseagreen", DarkSeaGreen)
+                          , ("darkseagreen1", DarkSeaGreen1)
+                          , ("darkseagreen2", DarkSeaGreen2)
+                          , ("darkseagreen3", DarkSeaGreen3)
+                          , ("darkseagreen4", DarkSeaGreen4)
+                          , ("darkslateblue", DarkSlateBlue)
+                          , ("darkslategray", DarkSlateGray)
+                          , ("darkslategrey", DarkSlateGray)
+                          , ("darkslategray1", DarkSlateGray1)
+                          , ("darkslategrey1", DarkSlateGray1)
+                          , ("darkslategray2", DarkSlateGray2)
+                          , ("darkslategrey2", DarkSlateGray2)
+                          , ("darkslategray3", DarkSlateGray3)
+                          , ("darkslategrey3", DarkSlateGray3)
+                          , ("darkslategray4", DarkSlateGray4)
+                          , ("darkslategrey4", DarkSlateGray4)
+                          , ("darkturquoise", DarkTurquoise)
+                          , ("darkviolet", DarkViolet)
+                          , ("deeppink", DeepPink)
+                          , ("deeppink1", DeepPink1)
+                          , ("deeppink2", DeepPink2)
+                          , ("deeppink3", DeepPink3)
+                          , ("deeppink4", DeepPink4)
+                          , ("deepskyblue", DeepSkyBlue)
+                          , ("deepskyblue1", DeepSkyBlue1)
+                          , ("deepskyblue2", DeepSkyBlue2)
+                          , ("deepskyblue3", DeepSkyBlue3)
+                          , ("deepskyblue4", DeepSkyBlue4)
+                          , ("dimgray", DimGray)
+                          , ("dimgrey", DimGray)
+                          , ("dodgerblue", DodgerBlue)
+                          , ("dodgerblue1", DodgerBlue1)
+                          , ("dodgerblue2", DodgerBlue2)
+                          , ("dodgerblue3", DodgerBlue3)
+                          , ("dodgerblue4", DodgerBlue4)
+                          , ("firebrick", Firebrick)
+                          , ("firebrick1", Firebrick1)
+                          , ("firebrick2", Firebrick2)
+                          , ("firebrick3", Firebrick3)
+                          , ("firebrick4", Firebrick4)
+                          , ("floralwhite", FloralWhite)
+                          , ("forestgreen", ForestGreen)
+                          , ("gainsboro", Gainsboro)
+                          , ("ghostwhite", GhostWhite)
+                          , ("gold", Gold)
+                          , ("gold1", Gold1)
+                          , ("gold2", Gold2)
+                          , ("gold3", Gold3)
+                          , ("gold4", Gold4)
+                          , ("goldenrod", Goldenrod)
+                          , ("goldenrod1", Goldenrod1)
+                          , ("goldenrod2", Goldenrod2)
+                          , ("goldenrod3", Goldenrod3)
+                          , ("goldenrod4", Goldenrod4)
+                          , ("gray", Gray)
+                          , ("grey", Gray)
+                          , ("gray0", Gray0)
+                          , ("grey0", Gray0)
+                          , ("gray1", Gray1)
+                          , ("grey1", Gray1)
+                          , ("gray2", Gray2)
+                          , ("grey2", Gray2)
+                          , ("gray3", Gray3)
+                          , ("grey3", Gray3)
+                          , ("gray4", Gray4)
+                          , ("grey4", Gray4)
+                          , ("gray5", Gray5)
+                          , ("grey5", Gray5)
+                          , ("gray6", Gray6)
+                          , ("grey6", Gray6)
+                          , ("gray7", Gray7)
+                          , ("grey7", Gray7)
+                          , ("gray8", Gray8)
+                          , ("grey8", Gray8)
+                          , ("gray9", Gray9)
+                          , ("grey9", Gray9)
+                          , ("gray10", Gray10)
+                          , ("grey10", Gray10)
+                          , ("gray11", Gray11)
+                          , ("grey11", Gray11)
+                          , ("gray12", Gray12)
+                          , ("grey12", Gray12)
+                          , ("gray13", Gray13)
+                          , ("grey13", Gray13)
+                          , ("gray14", Gray14)
+                          , ("grey14", Gray14)
+                          , ("gray15", Gray15)
+                          , ("grey15", Gray15)
+                          , ("gray16", Gray16)
+                          , ("grey16", Gray16)
+                          , ("gray17", Gray17)
+                          , ("grey17", Gray17)
+                          , ("gray18", Gray18)
+                          , ("grey18", Gray18)
+                          , ("gray19", Gray19)
+                          , ("grey19", Gray19)
+                          , ("gray20", Gray20)
+                          , ("grey20", Gray20)
+                          , ("gray21", Gray21)
+                          , ("grey21", Gray21)
+                          , ("gray22", Gray22)
+                          , ("grey22", Gray22)
+                          , ("gray23", Gray23)
+                          , ("grey23", Gray23)
+                          , ("gray24", Gray24)
+                          , ("grey24", Gray24)
+                          , ("gray25", Gray25)
+                          , ("grey25", Gray25)
+                          , ("gray26", Gray26)
+                          , ("grey26", Gray26)
+                          , ("gray27", Gray27)
+                          , ("grey27", Gray27)
+                          , ("gray28", Gray28)
+                          , ("grey28", Gray28)
+                          , ("gray29", Gray29)
+                          , ("grey29", Gray29)
+                          , ("gray30", Gray30)
+                          , ("grey30", Gray30)
+                          , ("gray31", Gray31)
+                          , ("grey31", Gray31)
+                          , ("gray32", Gray32)
+                          , ("grey32", Gray32)
+                          , ("gray33", Gray33)
+                          , ("grey33", Gray33)
+                          , ("gray34", Gray34)
+                          , ("grey34", Gray34)
+                          , ("gray35", Gray35)
+                          , ("grey35", Gray35)
+                          , ("gray36", Gray36)
+                          , ("grey36", Gray36)
+                          , ("gray37", Gray37)
+                          , ("grey37", Gray37)
+                          , ("gray38", Gray38)
+                          , ("grey38", Gray38)
+                          , ("gray39", Gray39)
+                          , ("grey39", Gray39)
+                          , ("gray40", Gray40)
+                          , ("grey40", Gray40)
+                          , ("gray41", Gray41)
+                          , ("grey41", Gray41)
+                          , ("gray42", Gray42)
+                          , ("grey42", Gray42)
+                          , ("gray43", Gray43)
+                          , ("grey43", Gray43)
+                          , ("gray44", Gray44)
+                          , ("grey44", Gray44)
+                          , ("gray45", Gray45)
+                          , ("grey45", Gray45)
+                          , ("gray46", Gray46)
+                          , ("grey46", Gray46)
+                          , ("gray47", Gray47)
+                          , ("grey47", Gray47)
+                          , ("gray48", Gray48)
+                          , ("grey48", Gray48)
+                          , ("gray49", Gray49)
+                          , ("grey49", Gray49)
+                          , ("gray50", Gray50)
+                          , ("grey50", Gray50)
+                          , ("gray51", Gray51)
+                          , ("grey51", Gray51)
+                          , ("gray52", Gray52)
+                          , ("grey52", Gray52)
+                          , ("gray53", Gray53)
+                          , ("grey53", Gray53)
+                          , ("gray54", Gray54)
+                          , ("grey54", Gray54)
+                          , ("gray55", Gray55)
+                          , ("grey55", Gray55)
+                          , ("gray56", Gray56)
+                          , ("grey56", Gray56)
+                          , ("gray57", Gray57)
+                          , ("grey57", Gray57)
+                          , ("gray58", Gray58)
+                          , ("grey58", Gray58)
+                          , ("gray59", Gray59)
+                          , ("grey59", Gray59)
+                          , ("gray60", Gray60)
+                          , ("grey60", Gray60)
+                          , ("gray61", Gray61)
+                          , ("grey61", Gray61)
+                          , ("gray62", Gray62)
+                          , ("grey62", Gray62)
+                          , ("gray63", Gray63)
+                          , ("grey63", Gray63)
+                          , ("gray64", Gray64)
+                          , ("grey64", Gray64)
+                          , ("gray65", Gray65)
+                          , ("grey65", Gray65)
+                          , ("gray66", Gray66)
+                          , ("grey66", Gray66)
+                          , ("gray67", Gray67)
+                          , ("grey67", Gray67)
+                          , ("gray68", Gray68)
+                          , ("grey68", Gray68)
+                          , ("gray69", Gray69)
+                          , ("grey69", Gray69)
+                          , ("gray70", Gray70)
+                          , ("grey70", Gray70)
+                          , ("gray71", Gray71)
+                          , ("grey71", Gray71)
+                          , ("gray72", Gray72)
+                          , ("grey72", Gray72)
+                          , ("gray73", Gray73)
+                          , ("grey73", Gray73)
+                          , ("gray74", Gray74)
+                          , ("grey74", Gray74)
+                          , ("gray75", Gray75)
+                          , ("grey75", Gray75)
+                          , ("gray76", Gray76)
+                          , ("grey76", Gray76)
+                          , ("gray77", Gray77)
+                          , ("grey77", Gray77)
+                          , ("gray78", Gray78)
+                          , ("grey78", Gray78)
+                          , ("gray79", Gray79)
+                          , ("grey79", Gray79)
+                          , ("gray80", Gray80)
+                          , ("grey80", Gray80)
+                          , ("gray81", Gray81)
+                          , ("grey81", Gray81)
+                          , ("gray82", Gray82)
+                          , ("grey82", Gray82)
+                          , ("gray83", Gray83)
+                          , ("grey83", Gray83)
+                          , ("gray84", Gray84)
+                          , ("grey84", Gray84)
+                          , ("gray85", Gray85)
+                          , ("grey85", Gray85)
+                          , ("gray86", Gray86)
+                          , ("grey86", Gray86)
+                          , ("gray87", Gray87)
+                          , ("grey87", Gray87)
+                          , ("gray88", Gray88)
+                          , ("grey88", Gray88)
+                          , ("gray89", Gray89)
+                          , ("grey89", Gray89)
+                          , ("gray90", Gray90)
+                          , ("grey90", Gray90)
+                          , ("gray91", Gray91)
+                          , ("grey91", Gray91)
+                          , ("gray92", Gray92)
+                          , ("grey92", Gray92)
+                          , ("gray93", Gray93)
+                          , ("grey93", Gray93)
+                          , ("gray94", Gray94)
+                          , ("grey94", Gray94)
+                          , ("gray95", Gray95)
+                          , ("grey95", Gray95)
+                          , ("gray96", Gray96)
+                          , ("grey96", Gray96)
+                          , ("gray97", Gray97)
+                          , ("grey97", Gray97)
+                          , ("gray98", Gray98)
+                          , ("grey98", Gray98)
+                          , ("gray99", Gray99)
+                          , ("grey99", Gray99)
+                          , ("gray100", Gray100)
+                          , ("grey100", Gray100)
+                          , ("green", Green)
+                          , ("green1", Green1)
+                          , ("green2", Green2)
+                          , ("green3", Green3)
+                          , ("green4", Green4)
+                          , ("greenyellow", GreenYellow)
+                          , ("honeydew", HoneyDew)
+                          , ("honeydew1", HoneyDew1)
+                          , ("honeydew2", HoneyDew2)
+                          , ("honeydew3", HoneyDew3)
+                          , ("honeydew4", HoneyDew4)
+                          , ("hotpink", HotPink)
+                          , ("hotpink1", HotPink1)
+                          , ("hotpink2", HotPink2)
+                          , ("hotpink3", HotPink3)
+                          , ("hotpink4", HotPink4)
+                          , ("indianred", IndianRed)
+                          , ("indianred1", IndianRed1)
+                          , ("indianred2", IndianRed2)
+                          , ("indianred3", IndianRed3)
+                          , ("indianred4", IndianRed4)
+                          , ("indigo", Indigo)
+                          , ("ivory", Ivory)
+                          , ("ivory1", Ivory1)
+                          , ("ivory2", Ivory2)
+                          , ("ivory3", Ivory3)
+                          , ("ivory4", Ivory4)
+                          , ("khaki", Khaki)
+                          , ("khaki1", Khaki1)
+                          , ("khaki2", Khaki2)
+                          , ("khaki3", Khaki3)
+                          , ("khaki4", Khaki4)
+                          , ("lavender", Lavender)
+                          , ("lavenderblush", LavenderBlush)
+                          , ("lavenderblush1", LavenderBlush1)
+                          , ("lavenderblush2", LavenderBlush2)
+                          , ("lavenderblush3", LavenderBlush3)
+                          , ("lavenderblush4", LavenderBlush4)
+                          , ("lawngreen", LawnGreen)
+                          , ("lemonchiffon", LemonChiffon)
+                          , ("lemonchiffon1", LemonChiffon1)
+                          , ("lemonchiffon2", LemonChiffon2)
+                          , ("lemonchiffon3", LemonChiffon3)
+                          , ("lemonchiffon4", LemonChiffon4)
+                          , ("lightblue", LightBlue)
+                          , ("lightblue1", LightBlue1)
+                          , ("lightblue2", LightBlue2)
+                          , ("lightblue3", LightBlue3)
+                          , ("lightblue4", LightBlue4)
+                          , ("lightcoral", LightCoral)
+                          , ("lightcyan", LightCyan)
+                          , ("lightcyan1", LightCyan1)
+                          , ("lightcyan2", LightCyan2)
+                          , ("lightcyan3", LightCyan3)
+                          , ("lightcyan4", LightCyan4)
+                          , ("lightgoldenrod", LightGoldenrod)
+                          , ("lightgoldenrod1", LightGoldenrod1)
+                          , ("lightgoldenrod2", LightGoldenrod2)
+                          , ("lightgoldenrod3", LightGoldenrod3)
+                          , ("lightgoldenrod4", LightGoldenrod4)
+                          , ("lightgoldenrodyellow", LightGoldenrodYellow)
+                          , ("lightgray", LightGray)
+                          , ("lightgrey", LightGray)
+                          , ("lightpink", LightPink)
+                          , ("lightpink1", LightPink1)
+                          , ("lightpink2", LightPink2)
+                          , ("lightpink3", LightPink3)
+                          , ("lightpink4", LightPink4)
+                          , ("lightsalmon", LightSalmon)
+                          , ("lightsalmon1", LightSalmon1)
+                          , ("lightsalmon2", LightSalmon2)
+                          , ("lightsalmon3", LightSalmon3)
+                          , ("lightsalmon4", LightSalmon4)
+                          , ("lightseagreen", LightSeaGreen)
+                          , ("lightskyblue", LightSkyBlue)
+                          , ("lightskyblue1", LightSkyBlue1)
+                          , ("lightskyblue2", LightSkyBlue2)
+                          , ("lightskyblue3", LightSkyBlue3)
+                          , ("lightskyblue4", LightSkyBlue4)
+                          , ("lightslateblue", LightSlateBlue)
+                          , ("lightslategray", LightSlateGray)
+                          , ("lightslategrey", LightSlateGray)
+                          , ("lightsteelblue", LightSteelBlue)
+                          , ("lightsteelblue1", LightSteelBlue1)
+                          , ("lightsteelblue2", LightSteelBlue2)
+                          , ("lightsteelblue3", LightSteelBlue3)
+                          , ("lightsteelblue4", LightSteelBlue4)
+                          , ("lightyellow", LightYellow)
+                          , ("lightyellow1", LightYellow1)
+                          , ("lightyellow2", LightYellow2)
+                          , ("lightyellow3", LightYellow3)
+                          , ("lightyellow4", LightYellow4)
+                          , ("limegreen", LimeGreen)
+                          , ("linen", Linen)
+                          , ("magenta", Magenta)
+                          , ("magenta1", Magenta1)
+                          , ("magenta2", Magenta2)
+                          , ("magenta3", Magenta3)
+                          , ("magenta4", Magenta4)
+                          , ("maroon", Maroon)
+                          , ("maroon1", Maroon1)
+                          , ("maroon2", Maroon2)
+                          , ("maroon3", Maroon3)
+                          , ("maroon4", Maroon4)
+                          , ("mediumaquamarine", MediumAquamarine)
+                          , ("mediumblue", MediumBlue)
+                          , ("mediumorchid", MediumOrchid)
+                          , ("mediumorchid1", MediumOrchid1)
+                          , ("mediumorchid2", MediumOrchid2)
+                          , ("mediumorchid3", MediumOrchid3)
+                          , ("mediumorchid4", MediumOrchid4)
+                          , ("mediumpurple", MediumPurple)
+                          , ("mediumpurple1", MediumPurple1)
+                          , ("mediumpurple2", MediumPurple2)
+                          , ("mediumpurple3", MediumPurple3)
+                          , ("mediumpurple4", MediumPurple4)
+                          , ("mediumseagreen", MediumSeaGreen)
+                          , ("mediumslateblue", MediumSlateBlue)
+                          , ("mediumspringgreen", MediumSpringGreen)
+                          , ("mediumturquoise", MediumTurquoise)
+                          , ("mediumvioletred", MediumVioletRed)
+                          , ("midnightblue", MidnightBlue)
+                          , ("mintcream", MintCream)
+                          , ("mistyrose", MistyRose)
+                          , ("mistyrose1", MistyRose1)
+                          , ("mistyrose2", MistyRose2)
+                          , ("mistyrose3", MistyRose3)
+                          , ("mistyrose4", MistyRose4)
+                          , ("moccasin", Moccasin)
+                          , ("navajowhite", NavajoWhite)
+                          , ("navajowhite1", NavajoWhite1)
+                          , ("navajowhite2", NavajoWhite2)
+                          , ("navajowhite3", NavajoWhite3)
+                          , ("navajowhite4", NavajoWhite4)
+                          , ("navy", Navy)
+                          , ("navyblue", NavyBlue)
+                          , ("oldlace", OldLace)
+                          , ("olivedrab", OliveDrab)
+                          , ("olivedrab1", OliveDrab1)
+                          , ("olivedrab2", OliveDrab2)
+                          , ("olivedrab3", OliveDrab3)
+                          , ("olivedrab4", OliveDrab4)
+                          , ("orange", Orange)
+                          , ("orange1", Orange1)
+                          , ("orange2", Orange2)
+                          , ("orange3", Orange3)
+                          , ("orange4", Orange4)
+                          , ("orangered", OrangeRed)
+                          , ("orangered1", OrangeRed1)
+                          , ("orangered2", OrangeRed2)
+                          , ("orangered3", OrangeRed3)
+                          , ("orangered4", OrangeRed4)
+                          , ("orchid", Orchid)
+                          , ("orchid1", Orchid1)
+                          , ("orchid2", Orchid2)
+                          , ("orchid3", Orchid3)
+                          , ("orchid4", Orchid4)
+                          , ("palegoldenrod", PaleGoldenrod)
+                          , ("palegreen", PaleGreen)
+                          , ("palegreen1", PaleGreen1)
+                          , ("palegreen2", PaleGreen2)
+                          , ("palegreen3", PaleGreen3)
+                          , ("palegreen4", PaleGreen4)
+                          , ("paleturquoise", PaleTurquoise)
+                          , ("paleturquoise1", PaleTurquoise1)
+                          , ("paleturquoise2", PaleTurquoise2)
+                          , ("paleturquoise3", PaleTurquoise3)
+                          , ("paleturquoise4", PaleTurquoise4)
+                          , ("palevioletred", PaleVioletRed)
+                          , ("palevioletred1", PaleVioletRed1)
+                          , ("palevioletred2", PaleVioletRed2)
+                          , ("palevioletred3", PaleVioletRed3)
+                          , ("palevioletred4", PaleVioletRed4)
+                          , ("papayawhip", PapayaWhip)
+                          , ("peachpuff", PeachPuff)
+                          , ("peachpuff1", PeachPuff1)
+                          , ("peachpuff2", PeachPuff2)
+                          , ("peachpuff3", PeachPuff3)
+                          , ("peachpuff4", PeachPuff4)
+                          , ("peru", Peru)
+                          , ("pink", Pink)
+                          , ("pink1", Pink1)
+                          , ("pink2", Pink2)
+                          , ("pink3", Pink3)
+                          , ("pink4", Pink4)
+                          , ("plum", Plum)
+                          , ("plum1", Plum1)
+                          , ("plum2", Plum2)
+                          , ("plum3", Plum3)
+                          , ("plum4", Plum4)
+                          , ("powderblue", PowderBlue)
+                          , ("purple", Purple)
+                          , ("purple1", Purple1)
+                          , ("purple2", Purple2)
+                          , ("purple3", Purple3)
+                          , ("purple4", Purple4)
+                          , ("red", Red)
+                          , ("red1", Red1)
+                          , ("red2", Red2)
+                          , ("red3", Red3)
+                          , ("red4", Red4)
+                          , ("rosybrown", RosyBrown)
+                          , ("rosybrown1", RosyBrown1)
+                          , ("rosybrown2", RosyBrown2)
+                          , ("rosybrown3", RosyBrown3)
+                          , ("rosybrown4", RosyBrown4)
+                          , ("royalblue", RoyalBlue)
+                          , ("royalblue1", RoyalBlue1)
+                          , ("royalblue2", RoyalBlue2)
+                          , ("royalblue3", RoyalBlue3)
+                          , ("royalblue4", RoyalBlue4)
+                          , ("saddlebrown", SaddleBrown)
+                          , ("salmon", Salmon)
+                          , ("salmon1", Salmon1)
+                          , ("salmon2", Salmon2)
+                          , ("salmon3", Salmon3)
+                          , ("salmon4", Salmon4)
+                          , ("sandybrown", SandyBrown)
+                          , ("seagreen", SeaGreen)
+                          , ("seagreen1", SeaGreen1)
+                          , ("seagreen2", SeaGreen2)
+                          , ("seagreen3", SeaGreen3)
+                          , ("seagreen4", SeaGreen4)
+                          , ("seashell", SeaShell)
+                          , ("seashell1", SeaShell1)
+                          , ("seashell2", SeaShell2)
+                          , ("seashell3", SeaShell3)
+                          , ("seashell4", SeaShell4)
+                          , ("sienna", Sienna)
+                          , ("sienna1", Sienna1)
+                          , ("sienna2", Sienna2)
+                          , ("sienna3", Sienna3)
+                          , ("sienna4", Sienna4)
+                          , ("skyblue", SkyBlue)
+                          , ("skyblue1", SkyBlue1)
+                          , ("skyblue2", SkyBlue2)
+                          , ("skyblue3", SkyBlue3)
+                          , ("skyblue4", SkyBlue4)
+                          , ("slateblue", SlateBlue)
+                          , ("slateblue1", SlateBlue1)
+                          , ("slateblue2", SlateBlue2)
+                          , ("slateblue3", SlateBlue3)
+                          , ("slateblue4", SlateBlue4)
+                          , ("slategray", SlateGray)
+                          , ("slategrey", SlateGray)
+                          , ("slategray1", SlateGray1)
+                          , ("slategrey1", SlateGray1)
+                          , ("slategray2", SlateGray2)
+                          , ("slategrey2", SlateGray2)
+                          , ("slategray3", SlateGray3)
+                          , ("slategrey3", SlateGray3)
+                          , ("slategray4", SlateGray4)
+                          , ("slategrey4", SlateGray4)
+                          , ("snow", Snow)
+                          , ("snow1", Snow1)
+                          , ("snow2", Snow2)
+                          , ("snow3", Snow3)
+                          , ("snow4", Snow4)
+                          , ("springgreen", SpringGreen)
+                          , ("springgreen1", SpringGreen1)
+                          , ("springgreen2", SpringGreen2)
+                          , ("springgreen3", SpringGreen3)
+                          , ("springgreen4", SpringGreen4)
+                          , ("steelblue", SteelBlue)
+                          , ("steelblue1", SteelBlue1)
+                          , ("steelblue2", SteelBlue2)
+                          , ("steelblue3", SteelBlue3)
+                          , ("steelblue4", SteelBlue4)
+                          , ("tan", Tan)
+                          , ("tan1", Tan1)
+                          , ("tan2", Tan2)
+                          , ("tan3", Tan3)
+                          , ("tan4", Tan4)
+                          , ("thistle", Thistle)
+                          , ("thistle1", Thistle1)
+                          , ("thistle2", Thistle2)
+                          , ("thistle3", Thistle3)
+                          , ("thistle4", Thistle4)
+                          , ("tomato", Tomato)
+                          , ("tomato1", Tomato1)
+                          , ("tomato2", Tomato2)
+                          , ("tomato3", Tomato3)
+                          , ("tomato4", Tomato4)
+                          , ("transparent", Transparent)
+                          , ("invis", Transparent)
+                          , ("none", Transparent)
+                          , ("turquoise", Turquoise)
+                          , ("turquoise1", Turquoise1)
+                          , ("turquoise2", Turquoise2)
+                          , ("turquoise3", Turquoise3)
+                          , ("turquoise4", Turquoise4)
+                          , ("violet", Violet)
+                          , ("violetred", VioletRed)
+                          , ("violetred1", VioletRed1)
+                          , ("violetred2", VioletRed2)
+                          , ("violetred3", VioletRed3)
+                          , ("violetred4", VioletRed4)
+                          , ("wheat", Wheat)
+                          , ("wheat1", Wheat1)
+                          , ("wheat2", Wheat2)
+                          , ("wheat3", Wheat3)
+                          , ("wheat4", Wheat4)
+                          , ("white", White)
+                          , ("whitesmoke", WhiteSmoke)
+                          , ("yellow", Yellow)
+                          , ("yellow1", Yellow1)
+                          , ("yellow2", Yellow2)
+                          , ("yellow3", Yellow3)
+                          , ("yellow4", Yellow4)
+                          , ("yellowgreen", YellowGreen)
+                          ]
 
 -- | Attempt to convert a 'Color' into a 'Colour' value with an alpha
 --   channel.  The use of 'Maybe' is because 'BrewerColor' values

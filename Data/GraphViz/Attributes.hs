@@ -523,152 +523,153 @@ instance PrintDot Attribute where
     listToDot = unqtListToDot
 
 instance ParseDot Attribute where
-    parseUnqt = oneOf [ parseField Damping "Damping"
-                      , parseField K "K"
-                      , parseFields URL ["URL", "href"]
-                      , parseField ArrowHead "arrowhead"
-                      , parseField ArrowSize "arrowsize"
-                      , parseField ArrowTail "arrowtail"
-                      , parseField Aspect "aspect"
-                      , parseField Bb "bb"
-                      , parseField BgColor "bgcolor"
-                      , parseFieldBool Center "center"
-                      , parseField Charset "charset"
-                      , parseField ClusterRank "clusterrank"
-                      , parseField ColorScheme "colorscheme"
-                      , parseField Color "color"
-                      , parseField Comment "comment"
-                      , parseFieldBool Compound "compound"
-                      , parseFieldBool Concentrate "concentrate"
-                      , parseFieldBool Constraint "constraint"
-                      , parseFieldBool Decorate "decorate"
-                      , parseField DefaultDist "defaultdist"
-                      , parseField Dimen "dimen"
-                      , parseField Dim "dim"
-                      , parseField Dir "dir"
-                      , parseFieldDef DirEdgeConstraints EdgeConstraints "diredgeconstraints"
-                      , parseField Distortion "distortion"
-                      , parseFields DPI ["dpi", "resolution"]
-                      , parseFields EdgeURL ["edgeURL", "edgehref"]
-                      , parseField EdgeTarget "edgetarget"
-                      , parseField EdgeTooltip "edgetooltip"
-                      , parseField Epsilon "epsilon"
-                      , parseField ESep "esep"
-                      , parseField FillColor "fillcolor"
-                      , parseFieldBool FixedSize "fixedsize"
-                      , parseField FontColor "fontcolor"
-                      , parseField FontName "fontname"
-                      , parseField FontNames "fontnames"
-                      , parseField FontPath "fontpath"
-                      , parseField FontSize "fontsize"
-                      , parseField Group "group"
-                      , parseFields HeadURL ["headURL", "headhref"]
-                      , parseFieldBool HeadClip "headclip"
-                      , parseField HeadLabel "headlabel"
-                      , parseField HeadPort "headport"
-                      , parseField HeadTarget "headtarget"
-                      , parseField HeadTooltip "headtooltip"
-                      , parseField Height "height"
-                      , parseField ID "id"
-                      , parseField Image "image"
-                      , parseFieldDef ImageScale UniformScale "imagescale"
-                      , parseFields LabelURL ["labelURL", "labelhref"]
-                      , parseField LabelAngle "labelangle"
-                      , parseField LabelDistance "labeldistance"
-                      , parseFieldBool LabelFloat "labelfloat"
-                      , parseField LabelFontColor "labelfontcolor"
-                      , parseField LabelFontName "labelfontname"
-                      , parseField LabelFontSize "labelfontsize"
-                      , parseField LabelJust "labeljust"
-                      , parseField LabelLoc "labelloc"
-                      , parseField LabelTarget "labeltarget"
-                      , parseField LabelTooltip "labeltooltip"
-                      , parseField Label "label"
-                      , parseFieldBool Landscape "landscape"
-                      , parseField LayerSep "layersep"
-                      , parseField Layers "layers"
-                      , parseField Layer "layer"
-                      , parseField Layout "layout"
-                      , parseField Len "len"
-                      , parseField LevelsGap "levelsgap"
-                      , parseField Levels "levels"
-                      , parseField LHead "lhead"
-                      , parseField LPos "lp"
-                      , parseField LTail "ltail"
-                      , parseField Margin "margin"
-                      , parseField MaxIter "maxiter"
-                      , parseField MCLimit "mclimit"
-                      , parseField MinDist "mindist"
-                      , parseField MinLen "minlen"
-                      , parseField Model "model"
-                      , parseField Mode "mode"
-                      , parseFieldBool Mosek "mosek"
-                      , parseField NodeSep "nodesep"
-                      , parseFieldBool NoJustify "nojustify"
-                      , parseFieldBool Normalize "normalize"
-                      , parseField Nslimit1 "nslimit1"
-                      , parseField Nslimit "nslimit"
-                      , parseField Ordering "ordering"
-                      , parseField Orientation "orientation"
-                      , parseField OutputOrder "outputorder"
-                      , parseField OverlapScaling "overlap_scaling"
-                      , parseFieldDef Overlap KeepOverlaps "overlap"
-                      , parseField PackMode "packmode"
-                      , parseFieldDef Pack DoPack "pack"
-                      , parseField Pad "pad"
-                      , parseField PageDir "pagedir"
-                      , parseField Page "page"
-                      , parseField PenColor "pencolor"
-                      , parseField PenWidth "penwidth"
-                      , parseField Peripheries "peripheries"
-                      , parseFieldBool Pin "pin"
-                      , parseField Pos "pos"
-                      , parseFieldDef QuadTree NormalQT "quadtree"
-                      , parseField Quantum "quantum"
-                      , parseField RankDir "rankdir"
-                      , parseField RankSep "ranksep"
-                      , parseField Rank "rank"
-                      , parseField Ratio "ratio"
-                      , parseField Rects "rects"
-                      , parseFieldBool Regular "regular"
-                      , parseFieldBool ReMinCross "remincross"
-                      , parseField RepulsiveForce "repulsiveforce"
-                      , parseFieldDef Root IsCentral "root"
-                      , parseField Rotate "rotate"
-                      , parseField SameHead "samehead"
-                      , parseField SameTail "sametail"
-                      , parseField SamplePoints "samplepoints"
-                      , parseField SearchSize "searchsize"
-                      , parseField Sep "sep"
-                      , parseField ShapeFile "shapefile"
-                      , parseField Shape "shape"
-                      , parseField ShowBoxes "showboxes"
-                      , parseField Sides "sides"
-                      , parseField Size "size"
-                      , parseField Skew "skew"
-                      , parseField Smoothing "smoothing"
-                      , parseField SortV "sortv"
-                      , parseFieldDef Splines SplineEdges "splines"
-                      , parseField Start "start"
-                      , parseField StyleSheet "stylesheet"
-                      , parseField Style "style"
-                      , parseFields TailURL ["tailURL", "tailhref"]
-                      , parseFieldBool TailClip "tailclip"
-                      , parseField TailLabel "taillabel"
-                      , parseField TailPort "tailport"
-                      , parseField TailTarget "tailtarget"
-                      , parseField TailTooltip "tailtooltip"
-                      , parseField Target "target"
-                      , parseField Tooltip "tooltip"
-                      , parseFieldBool TrueColor "truecolor"
-                      , parseField Vertices "vertices"
-                      , parseField ViewPort "viewport"
-                      , parseField VoroMargin "voro_margin"
-                      , parseField Weight "weight"
-                      , parseField Width "width"
-                      , parseField Z "z"
-                      , liftM2 UnknownAttribute stringBlock (parseEq >> parse)
-                      ]
+    parseUnqt = stringParse (concat [ parseField Damping "Damping"
+                                    , parseField K "K"
+                                    , parseFields URL ["URL", "href"]
+                                    , parseField ArrowHead "arrowhead"
+                                    , parseField ArrowSize "arrowsize"
+                                    , parseField ArrowTail "arrowtail"
+                                    , parseField Aspect "aspect"
+                                    , parseField Bb "bb"
+                                    , parseField BgColor "bgcolor"
+                                    , parseFieldBool Center "center"
+                                    , parseField Charset "charset"
+                                    , parseField ClusterRank "clusterrank"
+                                    , parseField ColorScheme "colorscheme"
+                                    , parseField Color "color"
+                                    , parseField Comment "comment"
+                                    , parseFieldBool Compound "compound"
+                                    , parseFieldBool Concentrate "concentrate"
+                                    , parseFieldBool Constraint "constraint"
+                                    , parseFieldBool Decorate "decorate"
+                                    , parseField DefaultDist "defaultdist"
+                                    , parseField Dimen "dimen"
+                                    , parseField Dim "dim"
+                                    , parseField Dir "dir"
+                                    , parseFieldDef DirEdgeConstraints EdgeConstraints "diredgeconstraints"
+                                    , parseField Distortion "distortion"
+                                    , parseFields DPI ["dpi", "resolution"]
+                                    , parseFields EdgeURL ["edgeURL", "edgehref"]
+                                    , parseField EdgeTarget "edgetarget"
+                                    , parseField EdgeTooltip "edgetooltip"
+                                    , parseField Epsilon "epsilon"
+                                    , parseField ESep "esep"
+                                    , parseField FillColor "fillcolor"
+                                    , parseFieldBool FixedSize "fixedsize"
+                                    , parseField FontColor "fontcolor"
+                                    , parseField FontName "fontname"
+                                    , parseField FontNames "fontnames"
+                                    , parseField FontPath "fontpath"
+                                    , parseField FontSize "fontsize"
+                                    , parseField Group "group"
+                                    , parseFields HeadURL ["headURL", "headhref"]
+                                    , parseFieldBool HeadClip "headclip"
+                                    , parseField HeadLabel "headlabel"
+                                    , parseField HeadPort "headport"
+                                    , parseField HeadTarget "headtarget"
+                                    , parseField HeadTooltip "headtooltip"
+                                    , parseField Height "height"
+                                    , parseField ID "id"
+                                    , parseField Image "image"
+                                    , parseFieldDef ImageScale UniformScale "imagescale"
+                                    , parseFields LabelURL ["labelURL", "labelhref"]
+                                    , parseField LabelAngle "labelangle"
+                                    , parseField LabelDistance "labeldistance"
+                                    , parseFieldBool LabelFloat "labelfloat"
+                                    , parseField LabelFontColor "labelfontcolor"
+                                    , parseField LabelFontName "labelfontname"
+                                    , parseField LabelFontSize "labelfontsize"
+                                    , parseField LabelJust "labeljust"
+                                    , parseField LabelLoc "labelloc"
+                                    , parseField LabelTarget "labeltarget"
+                                    , parseField LabelTooltip "labeltooltip"
+                                    , parseField Label "label"
+                                    , parseFieldBool Landscape "landscape"
+                                    , parseField LayerSep "layersep"
+                                    , parseField Layers "layers"
+                                    , parseField Layer "layer"
+                                    , parseField Layout "layout"
+                                    , parseField Len "len"
+                                    , parseField LevelsGap "levelsgap"
+                                    , parseField Levels "levels"
+                                    , parseField LHead "lhead"
+                                    , parseField LPos "lp"
+                                    , parseField LTail "ltail"
+                                    , parseField Margin "margin"
+                                    , parseField MaxIter "maxiter"
+                                    , parseField MCLimit "mclimit"
+                                    , parseField MinDist "mindist"
+                                    , parseField MinLen "minlen"
+                                    , parseField Model "model"
+                                    , parseField Mode "mode"
+                                    , parseFieldBool Mosek "mosek"
+                                    , parseField NodeSep "nodesep"
+                                    , parseFieldBool NoJustify "nojustify"
+                                    , parseFieldBool Normalize "normalize"
+                                    , parseField Nslimit1 "nslimit1"
+                                    , parseField Nslimit "nslimit"
+                                    , parseField Ordering "ordering"
+                                    , parseField Orientation "orientation"
+                                    , parseField OutputOrder "outputorder"
+                                    , parseField OverlapScaling "overlap_scaling"
+                                    , parseFieldDef Overlap KeepOverlaps "overlap"
+                                    , parseField PackMode "packmode"
+                                    , parseFieldDef Pack DoPack "pack"
+                                    , parseField Pad "pad"
+                                    , parseField PageDir "pagedir"
+                                    , parseField Page "page"
+                                    , parseField PenColor "pencolor"
+                                    , parseField PenWidth "penwidth"
+                                    , parseField Peripheries "peripheries"
+                                    , parseFieldBool Pin "pin"
+                                    , parseField Pos "pos"
+                                    , parseFieldDef QuadTree NormalQT "quadtree"
+                                    , parseField Quantum "quantum"
+                                    , parseField RankDir "rankdir"
+                                    , parseField RankSep "ranksep"
+                                    , parseField Rank "rank"
+                                    , parseField Ratio "ratio"
+                                    , parseField Rects "rects"
+                                    , parseFieldBool Regular "regular"
+                                    , parseFieldBool ReMinCross "remincross"
+                                    , parseField RepulsiveForce "repulsiveforce"
+                                    , parseFieldDef Root IsCentral "root"
+                                    , parseField Rotate "rotate"
+                                    , parseField SameHead "samehead"
+                                    , parseField SameTail "sametail"
+                                    , parseField SamplePoints "samplepoints"
+                                    , parseField SearchSize "searchsize"
+                                    , parseField Sep "sep"
+                                    , parseField ShapeFile "shapefile"
+                                    , parseField Shape "shape"
+                                    , parseField ShowBoxes "showboxes"
+                                    , parseField Sides "sides"
+                                    , parseField Size "size"
+                                    , parseField Skew "skew"
+                                    , parseField Smoothing "smoothing"
+                                    , parseField SortV "sortv"
+                                    , parseFieldDef Splines SplineEdges "splines"
+                                    , parseField Start "start"
+                                    , parseField StyleSheet "stylesheet"
+                                    , parseField Style "style"
+                                    , parseFields TailURL ["tailURL", "tailhref"]
+                                    , parseFieldBool TailClip "tailclip"
+                                    , parseField TailLabel "taillabel"
+                                    , parseField TailPort "tailport"
+                                    , parseField TailTarget "tailtarget"
+                                    , parseField TailTooltip "tailtooltip"
+                                    , parseField Target "target"
+                                    , parseField Tooltip "tooltip"
+                                    , parseFieldBool TrueColor "truecolor"
+                                    , parseField Vertices "vertices"
+                                    , parseField ViewPort "viewport"
+                                    , parseField VoroMargin "voro_margin"
+                                    , parseField Weight "weight"
+                                    , parseField Width "width"
+                                    , parseField Z "z"
+                                    ])
+                `onFail`
+                liftM2 UnknownAttribute stringBlock (parseEq >> parse)
 
     parse = parseUnqt
 
@@ -1140,12 +1141,12 @@ instance ParseDot ArrowType where
                    return $ AType mas
 
 specialArrowParse :: Parse ArrowType
-specialArrowParse = oneOf [ stringRep eDiamond "ediamond"
-                          , stringRep openArr "open"
-                          , stringRep halfOpen "halfopen"
-                          , stringRep emptyArr "empty"
-                          , stringRep invEmpty "invempty"
-                          ]
+specialArrowParse = stringValue [ ("ediamond", eDiamond)
+                                , ("open", openArr)
+                                , ("halfopen", halfOpen)
+                                , ("empty", emptyArr)
+                                , ("invempty", invEmpty)
+                                ]
 
 data ArrowShape = Box
                 | Crow
@@ -1170,16 +1171,16 @@ instance PrintDot ArrowShape where
     unqtDot Vee      = unqtText "vee"
 
 instance ParseDot ArrowShape where
-    parseUnqt = oneOf [ stringRep Box "box"
-                      , stringRep Crow "crow"
-                      , stringRep Diamond "diamond"
-                      , stringRep DotArrow "dot"
-                      , stringRep Inv "inv"
-                      , stringRep NoArrow "none"
-                      , stringRep Normal "normal"
-                      , stringRep Tee "tee"
-                      , stringRep Vee "vee"
-                      ]
+    parseUnqt = stringValue [ ("box", Box)
+                            , ("crow", Crow)
+                            , ("diamond", Diamond)
+                            , ("dot", DotArrow)
+                            , ("inv", Inv)
+                            , ("none", NoArrow)
+                            , ("normal", Normal)
+                            , ("tee", Tee)
+                            , ("vee", Vee)
+                            ]
 
 -- | What modifications to apply to an 'ArrowShape'.
 data ArrowModifier = ArrMod { arrowFill :: ArrowFill
@@ -1905,15 +1906,15 @@ instance PrintDot PageDir where
     unqtDot Lt = text "LT"
 
 instance ParseDot PageDir where
-    parseUnqt = oneOf [ stringRep Bl "BL"
-                      , stringRep Br "BR"
-                      , stringRep Tl "TL"
-                      , stringRep Tr "TR"
-                      , stringRep Rb "RB"
-                      , stringRep Rt "RT"
-                      , stringRep Lb "LB"
-                      , stringRep Lt "LT"
-                      ]
+    parseUnqt = stringValue [ ("BL", Bl)
+                            , ("BR", Br)
+                            , ("TL", Tl)
+                            , ("TR", Tr)
+                            , ("RB", Rb)
+                            , ("RT", Rt)
+                            , ("LB", Lb)
+                            , ("LT", Lt)
+                            ]
 
 -- -----------------------------------------------------------------------------
 
@@ -2015,12 +2016,12 @@ instance PrintDot RankType where
     unqtDot SinkRank   = text "sink"
 
 instance ParseDot RankType where
-    parseUnqt = oneOf [ stringRep SameRank "same"
-                      , stringRep MinRank "min"
-                      , stringRep SourceRank "source"
-                      , stringRep MaxRank "max"
-                      , stringRep SinkRank "sink"
-                      ]
+    parseUnqt = stringValue [ ("same", SameRank)
+                            , ("min", MinRank)
+                            , ("source", SourceRank)
+                            , ("max", MaxRank)
+                            , ("sink", SinkRank)
+                            ]
 
 -- -----------------------------------------------------------------------------
 
@@ -2115,39 +2116,42 @@ instance PrintDot Shape where
     unqtDot MRecord       = text "Mrecord"
 
 instance ParseDot Shape where
-    parseUnqt = oneOf [ stringRep Box3D "box3d" -- Parse this before "box"
-                      , stringReps BoxShape ["box","rectangle","rect"]
-                      , stringRep Polygon "polygon"
-                      , stringRep Ellipse "ellipse"
-                      , stringRep Circle "circle"
-                      , stringRep PointShape "point"
-                      , stringRep Egg "egg"
-                      , stringRep Triangle "triangle"
-                      , stringReps PlainText ["plaintext","none"]
-                      , stringRep DiamondShape "diamond"
-                      , stringRep Trapezium "trapezium"
-                      , stringRep Parallelogram "parallelogram"
-                      , stringRep House "house"
-                      , stringRep Pentagon "pentagon"
-                      , stringRep Hexagon "hexagon"
-                      , stringRep Septagon "septagon"
-                      , stringRep Octagon "octagon"
-                      , stringRep DoubleCircle "doublecircle"
-                      , stringRep DoubleOctagon "doubleoctagon"
-                      , stringRep TripleOctagon "tripleoctagon"
-                      , stringRep InvTriangle "invtriangle"
-                      , stringRep InvTrapezium "invtrapezium"
-                      , stringRep InvHouse "invhouse"
-                      , stringRep MDiamond "Mdiamond"
-                      , stringRep MSquare "Msquare"
-                      , stringRep MCircle "Mcircle"
-                      , stringRep Note "note"
-                      , stringRep Tab "tab"
-                      , stringRep Folder "folder"
-                      , stringRep Component "component"
-                      , stringRep Record "record"
-                      , stringRep MRecord "Mrecord"
-                      ]
+    parseUnqt = stringValue [ ("box3d", Box3D)
+                            , ("box", BoxShape)
+                            , ("rectangle", BoxShape)
+                            , ("rect", BoxShape)
+                            , ("polygon", Polygon)
+                            , ("ellipse", Ellipse)
+                            , ("circle", Circle)
+                            , ("point", PointShape)
+                            , ("egg", Egg)
+                            , ("triangle", Triangle)
+                            , ("plaintext", PlainText)
+                            , ("none", PlainText)
+                            , ("diamond", DiamondShape)
+                            , ("trapezium", Trapezium)
+                            , ("parallelogram", Parallelogram)
+                            , ("house", House)
+                            , ("pentagon", Pentagon)
+                            , ("hexagon", Hexagon)
+                            , ("septagon", Septagon)
+                            , ("octagon", Octagon)
+                            , ("doublecircle", DoubleCircle)
+                            , ("doubleoctagon", DoubleOctagon)
+                            , ("tripleoctagon", TripleOctagon)
+                            , ("invtriangle", InvTriangle)
+                            , ("invtrapezium", InvTrapezium)
+                            , ("invhouse", InvHouse)
+                            , ("Mdiamond", MDiamond)
+                            , ("Msquare", MSquare)
+                            , ("Mcircle", MCircle)
+                            , ("note", Note)
+                            , ("tab", Tab)
+                            , ("folder", Folder)
+                            , ("component", Component)
+                            , ("record", Record)
+                            , ("Mrecord", MRecord)
+                            ]
 
 -- -----------------------------------------------------------------------------
 
