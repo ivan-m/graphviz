@@ -11,18 +11,6 @@ time scales are in relation to releases, not actual time).
 Short term
 ----------
 
-* Make the parsers and printers state-based, which means they will be
-  better able to cope with `ColorScheme` and layers better.
-
-* Improve the printer and parser performance (to be done whilst making
-  them state-based).
-
-* Fix encoding problems: Graphviz uses UTF-8 by default, Latin1 when
-  set; to resolve ambiguities force usage of UTF-8 and remove the
-  option of Latin-1.  To do so, will probably use the
-  [text](http://hackage.haskell.org/package/text) library (which will
-  hopefully also improve performance for the previous point).
-
 * Quickstart-style documentation to help users get going with graphviz
   quickly.
 
