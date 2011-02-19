@@ -55,7 +55,7 @@ isNumString str = case T.uncons $ T.toLower str of
       go s = uncurry go' $ T.span isDigit s
       go' ds nds
         | T.null nds = True
-        | T.null ds && nds == T.singleton '.' = False
+        | T.null ds && nds == "." = False
         | T.null ds
         , Just ('.',nds') <- T.uncons nds
         , Just (d,nds'') <- T.uncons nds' = isDigit d && checkEs' nds''
