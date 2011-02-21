@@ -38,6 +38,8 @@ import Data.GraphViz.Types.Common
 import Data.GraphViz.Attributes(Attributes, Attribute, sameAttribute)
 
 import Data.Function(on)
+import qualified Data.DList as DList
+import Data.DList(DList)
 import qualified Data.Map as Map
 import Data.Map(Map)
 import qualified Data.Set as Set
@@ -143,20 +145,20 @@ getGraphInfo :: GraphState a -> (GlobalAttributes, ClusterLookup)
 getGraphInfo = ((toGlobal . globalAttrs) &&& (convert . value))
                . flip execState initState
   where
-    convert = Map.map ((uniq . toList) *** toGlobal)
+    convert = Map.map ((uniq . DList.toList) *** toGlobal)
     toGlobal = GraphAttrs . unSame
     initState = SV Set.empty True Seq.empty Map.empty
     uniq = Set.toList . Set.fromList
 
 mergeCInfos          :: ClusterInfo -> ClusterInfo -> ClusterInfo
-mergeCInfos (p1,as1) = append p1 *** Set.union as1
+mergeCInfos (p1,as1) = DList.append p1 *** Set.union as1
 
 addCluster                 :: Maybe (Maybe GraphID) -> Path -> SAttrs
                               -> GraphState ()
 addCluster Nothing    _ _  = return ()
 addCluster (Just gid) p as = modifyValue $ Map.insertWith mergeCInfos gid ci
   where
-    ci = (singleton p, as)
+    ci = (DList.singleton p, as)
 
 -- Use this instead of recursiveCall
 addSubGraph           :: Maybe (Maybe GraphID) -> GraphState a -> GraphState ()
@@ -249,9 +251,9 @@ addEdgeNodes (DotEdge f t _) = do gas <- getGlobals
 type EdgeState n a = GVState (DList (DotEdge n)) a
 
 getDotEdges       :: Bool -> EdgeState n a -> [DotEdge n]
-getDotEdges addGs = toList . value . flip execState initState
+getDotEdges addGs = DList.toList . value . flip execState initState
   where
-    initState = SV Set.empty addGs Seq.empty empty
+    initState = SV Set.empty addGs Seq.empty DList.empty
 
 addEdgeGlobals                :: GlobalAttributes -> EdgeState n ()
 addEdgeGlobals (EdgeAttrs as) = addGlobals as
@@ -261,23 +263,4 @@ addEdge :: DotEdge n -> EdgeState n ()
 addEdge de@DotEdge{edgeAttributes = as}
   = do gas <- getGlobals
        let de' = de { edgeAttributes = unSame $ unionWith gas as }
-       modifyValue $ snoc de'
-
--- -----------------------------------------------------------------------------
-
-type DList a = [a] -> [a]
-
-snoc :: a -> DList a -> DList a
-snoc a da = da . (a:)
-
-empty :: DList a
-empty = id
-
-toList :: DList a -> [a]
-toList = ($[])
-
-append       :: DList a -> DList a -> DList a
-append xs ys = xs . ys
-
-singleton :: a -> DList a
-singleton = (:)
+       modifyValue $ flip DList.snoc de'
