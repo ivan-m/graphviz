@@ -130,17 +130,20 @@ class (PrintDot (dg n), ParseDot (dg n)) => DotRepr dg n where
   -- | Return the ID of the graph.
   getID :: dg n -> Maybe GraphID
 
+  -- | Set the ID of the graph.
+  setID :: GraphID -> dg n -> dg n
+
   -- | Is this graph directed?
   graphIsDirected :: dg n -> Bool
+
+  -- | Set whether a graph is directed or not.
+  setIsDirected :: Bool -> dg n -> dg n
 
   -- | Is this graph strict?
   graphIsStrict :: dg n -> Bool
 
   -- | A strict graph disallows multiple edges.
-  makeStrict :: dg n -> dg n
-
-  -- | Set the ID of the graph.
-  setID :: GraphID -> dg n -> dg n
+  setStrictness :: Bool -> dg n -> dg n
 
   -- | Return information on all the clusters contained within this
   --   'DotRepr', as well as the top-level 'GraphAttrs' for the
@@ -195,13 +198,15 @@ data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multipl
 instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
   getID = graphID
 
+  setID i g = g { graphID = Just i }
+
   graphIsDirected = directedGraph
+
+  setIsDirected d g = g { directedGraph = d }
 
   graphIsStrict = strictGraph
 
-  makeStrict g = g { strictGraph = True }
-
-  setID i g = g { graphID = Just i }
+  setStrictness s g = g { strictGraph = s }
 
   graphStructureInformation = getGraphInfo
                               . statementStructure . graphStatements

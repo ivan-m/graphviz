@@ -64,13 +64,15 @@ data GDotGraph a = GDotGraph { gStrictGraph     :: Bool  -- ^ If 'True', no mult
 instance (Ord n, PrintDot n, ParseDot n) => DotRepr GDotGraph n where
   getID = gGraphID
 
+  setID i g = g { gGraphID = Just i }
+
   graphIsDirected = gDirectedGraph
+
+  setIsDirected d g = g { gDirectedGraph = d }
 
   graphIsStrict = gStrictGraph
 
-  makeStrict g = g { gStrictGraph = True }
-
-  setID i g = g { gGraphID = Just i }
+  setStrictness s g = g { gStrictGraph = s }
 
   graphStructureInformation = getGraphInfo
                               . statementStructure . gGraphStatements
