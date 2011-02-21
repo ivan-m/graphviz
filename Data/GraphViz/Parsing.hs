@@ -85,7 +85,7 @@ import Data.GraphViz.State
 -- To avoid orphan instances and cyclic imports
 import Data.GraphViz.Attributes.ColorScheme
 
-import Text.ParserCombinators.Poly.StateText hiding (bracket, empty, runParser)
+import Text.ParserCombinators.Poly.StateText hiding (bracket, empty, indent, runParser)
 import qualified Text.ParserCombinators.Poly.StateText as P
 import Data.Char( digitToInt
                 , isDigit

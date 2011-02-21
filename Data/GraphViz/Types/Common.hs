@@ -378,7 +378,7 @@ printBracesBased h i = vcat $ sequence [ h <+> lbrace
                                        , rbrace
                                        ]
   where
-    ind = nest 4
+    ind = indent 4
 
 -- | This /must/ only be used for sub-graphs, etc.
 parseBracesBased   :: Parse a -> Parse a
