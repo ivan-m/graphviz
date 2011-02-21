@@ -495,39 +495,39 @@ instance ParseDot BrewerScheme where
 instance ParseDot BrewerName where
   -- The order is different from above to make sure longer names are
   -- parsed first.
-  parseUnqt = oneOf [ stringRep Accent "accent"
-                    , stringRep Blues "blues"
-                    , stringRep Brbg "brbg"
-                    , stringRep Bugn "bugn"
-                    , stringRep Bupu "bupu"
-                    , stringRep Dark2 "dark2"
-                    , stringRep Gnbu "gnbu"
-                    , stringRep Greens "greens"
-                    , stringRep Greys "greys"
-                    , stringRep Oranges "oranges"
-                    , stringRep Orrd "orrd"
-                    , stringRep Paired "paired"
-                    , stringRep Pastel1 "pastel1"
-                    , stringRep Pastel2 "pastel2"
-                    , stringRep Piyg "piyg"
-                    , stringRep Prgn "prgn"
-                    , stringRep Pubugn "pubugn"
-                    , stringRep Pubu "pubu"
-                    , stringRep Puor "puor"
-                    , stringRep Purd "purd"
-                    , stringRep Purples "purples"
-                    , stringRep Rdbu "rdbu"
-                    , stringRep Rdgy "rdgy"
-                    , stringRep Rdpu "rdpu"
-                    , stringRep Rdylbu "rdylbu"
-                    , stringRep Rdylgn "rdylgn"
-                    , stringRep Reds "reds"
-                    , stringRep Set1 "set1"
-                    , stringRep Set2 "set2"
-                    , stringRep Set3 "set3"
-                    , stringRep Spectral "spectral"
-                    , stringRep Ylgnbu "ylgnbu"
-                    , stringRep Ylgn "ylgn"
-                    , stringRep Ylorbr "ylorbr"
-                    , stringRep Ylorrd "ylorrd"
-                    ]
+  parseUnqt = stringValue [ ("accent", Accent)
+                          , ("blues", Blues)
+                          , ("brbg", Brbg)
+                          , ("bugn", Bugn)
+                          , ("bupu", Bupu)
+                          , ("dark2", Dark2)
+                          , ("gnbu", Gnbu)
+                          , ("greens", Greens)
+                          , ("greys", Greys)
+                          , ("oranges", Oranges)
+                          , ("orrd", Orrd)
+                          , ("paired", Paired)
+                          , ("pastel1", Pastel1)
+                          , ("pastel2", Pastel2)
+                          , ("piyg", Piyg)
+                          , ("prgn", Prgn)
+                          , ("pubugn", Pubugn)
+                          , ("pubu", Pubu)
+                          , ("puor", Puor)
+                          , ("purd", Purd)
+                          , ("purples", Purples)
+                          , ("rdbu", Rdbu)
+                          , ("rdgy", Rdgy)
+                          , ("rdpu", Rdpu)
+                          , ("rdylbu", Rdylbu)
+                          , ("rdylgn", Rdylgn)
+                          , ("reds", Reds)
+                          , ("set1", Set1)
+                          , ("set2", Set2)
+                          , ("set3", Set3)
+                          , ("spectral", Spectral)
+                          , ("ylgnbu", Ylgnbu)
+                          , ("ylgn", Ylgn)
+                          , ("ylorbr", Ylorbr)
+                          , ("ylorrd", Ylorrd)
+                          ]
