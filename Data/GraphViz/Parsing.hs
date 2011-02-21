@@ -436,16 +436,14 @@ parseFieldsBool c = concatMap (parseFieldBool c)
 -- | For 'Bool'-like data structures where the presence of the field
 --   name without a value implies a default value.
 parseFieldDef         :: (ParseDot a) => (a -> b) -> a -> String -> [(String, Parse b)]
-parseFieldDef c d fld = parseField c fld
-                        ++
-                        -- Have to make sure it isn't too greedy
-                        -- guessing something is a global attribute
-                        -- when its actually a node/edge/etc.
-                        [(fld, do nxt <- optional $ satisfy restIDString
-                                  bool (fail "Not actually the field you were after")
-                                       (return $ c d)
-                                       (isNothing nxt)
-                         )]
+parseFieldDef c d fld = [(fld, p)]
+  where
+    p = (parseEq >> liftM c parse)
+        `onFail`
+        do nxt <- optional $ satisfy restIDString
+           bool (fail "Not actually the field you were after")
+                (return $ c d)
+                (isNothing nxt)
 
 parseFieldsDef     :: (ParseDot a) => (a -> b) -> a -> [String] -> [(String, Parse b)]
 parseFieldsDef c d = concatMap (parseFieldDef c d)
