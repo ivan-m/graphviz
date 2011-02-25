@@ -10,7 +10,7 @@
 module Data.GraphViz.Testing.Properties where
 
 import Data.GraphViz( dotizeGraph, graphToDot
-                    , setDirectedness, nonClusteredParams, prettyPrint')
+                    , setDirectedness, nonClusteredParams)
 import Data.GraphViz.Types( DotRepr, DotGraph(..), DotStatements(..)
                           , DotNode(..), DotEdge(..), GlobalAttributes(..)
                           , printDotGraph, graphNodes, graphEdges
@@ -62,12 +62,6 @@ prop_preProcessingID    :: (DotRepr dg n) => dg n -> Bool
 prop_preProcessingID dg = preProcess dotCode == dotCode
   where
     dotCode = printDotGraph dg
-
--- | This is a version of 'prop_printParseID' that tries to parse the
---   pretty-printed output of 'prettyPrint'' rather than just 'printIt'.
-prop_parsePrettyID    :: (DotRepr dg n, Eq (dg n), ParseDot (dg n))
-                         => dg n -> Bool
-prop_parsePrettyID dg = (parseIt' . prettyPrint') dg == dg
 
 -- | This property verifies that 'dotizeGraph', etc. only /augment/ the
 --   original graph; that is, the actual nodes, edges and labels for

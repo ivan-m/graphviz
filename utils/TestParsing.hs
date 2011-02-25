@@ -20,6 +20,7 @@ import Data.GraphViz
 import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Parsing(runParser, parse)
 import Data.GraphViz.PreProcessing(preProcess)
+import Data.GraphViz.Commands.IO(hGetStrict)
 
 import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Encoding as T
@@ -80,6 +81,7 @@ tryParseCanon fp = withParse prettyPrint
   where
     asDG = flip asTypeOf emptDG
     emptDG = DotGraph False False Nothing $ DotStmts [] [] [] [] :: DG
+    prettyPrint dg = liftM right $ graphvizWithHandle (commandFor dg) dg Canon hGetStrict
 
 tryParse    :: (DotRepr dg n) => Text -> IO (Either ErrMsg (dg n))
 tryParse dc = getErrMsgs

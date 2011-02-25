@@ -28,9 +28,7 @@
      ways of capitalising that String isn't generated as a random
      'LRName'.
 
-   * The generated 'DotGraph's are not guaranteed to be valid; as
-     such, the 'prop_parsePrettyID' property is not able to be tested
-     as dot, etc. choke on invalid Dot code.
+   * The generated 'DotGraph's are not guaranteed to be valid.
 
    * To avoid needless endless recursion, 'DotSubGraph's do not have
      sub-'DotSubGraph's (same with 'GDotSubGraph's).
@@ -50,7 +48,6 @@ module Data.GraphViz.Testing
        , test_generalisedSameDot
        , test_printParseID
        , test_preProcessingID
-       , test_parsePrettyID
        , test_dotizeAugment
        , test_dotizeAugmentUniq
        , test_canonicalise
@@ -163,9 +160,6 @@ defaultTests = [ test_printParseID_Attributes
                , test_printParseID
                , test_printParseGID
                , test_preProcessingID
-                 -- Can't run this test, since we don't generate valid
-                 -- DotGraphs to pass to Graphviz!
-                 -- , test_parsePrettyID
                , test_dotizeAugment
                , test_dotizeAugmentUniq
                , test_findAllNodes
@@ -261,24 +255,6 @@ test_preProcessingID
              \Dot code by running the pre-processor on generated Dot code.\n\n\
              \This test is not run on generalised Dot graphs as if it works for\n\
              \normal dot graphs then it should also work for generalised ones."
-
--- | This test is not valid for use until valid DotGraphs can be generated.
-test_parsePrettyID :: Test
-test_parsePrettyID
-  = Test { name       = "Parsing pretty-printed code"
-         , lookupName = "parsepretty"
-         , desc       = dsc
-         , test       = quickCheckResult prop
-         }
-    where
-      prop :: DotGraph Int -> Bool
-      prop = prop_parsePrettyID
-
-      dsc = "By default, the graphviz library doesn't produce readable Dot\n\
-             \code to ensure that lines aren't truncated, etc.  This test\n\
-             \ensures that the pretty-printing functions produce Dot code\n\
-             \that is still parseable (which should also help ensure that\n\
-             \ \"Real-World\" Dot code is also parseable)."
 
 test_dotizeAugment :: Test
 test_dotizeAugment

@@ -49,9 +49,6 @@ module Data.GraphViz
     , dotAttributes
     , augmentGraph
       -- * Utility functions
-    , prettyPrint
-    , prettyPrint'
-    , canonicalise
     , preview
       -- * Re-exporting other modules.
     , module Data.GraphViz.Types
@@ -440,41 +437,6 @@ augmentGraph g dg = mkGraph lns les
 
 -- -----------------------------------------------------------------------------
 -- Utility Functions
-
--- | Pretty-print the 'DotGraph' by passing it through the 'Canon'
---   output type (which produces \"canonical\" output).  This is
---   required because the 'printDotGraph' function (and all printing
---   functions in "Data.GraphViz.Types.Printing") no longer uses
---   indentation (this is to ensure the Dot code is printed correctly
---   due to the limitations of the Pretty Printer used).
---
---   This will call 'error' if an error occurs when calling the
---   relevant 'GraphvizCommand': likely causes are that Graphviz suite
---   isn't installed, or it has an 'Image' or 'HtmlImg' Attribute that
---   references an image that can't be found from the working
---   directory.
-prettyPrint    :: (DotRepr dg n) => dg n -> IO Text
-prettyPrint dg = liftM fromDotResult
-                 -- Note that the choice of command here should be
-                 -- arbitrary.
-                 $ graphvizWithHandle (commandFor dg)
-                                      dg
-                                      Canon
-                                      hGetStrict
-
--- | The 'unsafePerformIO'd version of 'prettyPrint'.  Graphviz should
---   always produce the same pretty-printed output, so this should be
---   safe.  However, it is not recommended to use it in production
---   code, just for testing purposes.
-prettyPrint' :: (DotRepr dg n) => dg n -> Text
-prettyPrint' = unsafePerformIO . prettyPrint
-
--- | Convert the 'DotRepr' into its canonical form.  This /should/
---   work as it appears that the 'prettyPrint'ed form is always in the
---   format of a 'DotGraph', but the Graphviz code hasn't been
---   examined to verify this.
-canonicalise :: (DotRepr dg n, DotRepr DotGraph n) => dg n -> IO (DotGraph n)
-canonicalise = liftM parseDotGraph . prettyPrint
 
 -- | Quickly visualise a graph using the 'Xlib' 'GraphvizCanvas'.  If
 --   your label types are not (and cannot) be instances of 'Labellable',
