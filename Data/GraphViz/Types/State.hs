@@ -35,7 +35,7 @@ module Data.GraphViz.Types.State
        ) where
 
 import Data.GraphViz.Types.Common
-import Data.GraphViz.Attributes(Attributes, Attribute)
+import Data.GraphViz.Attributes(Attributes, Attribute, usedByClusters)
 import Data.GraphViz.Attributes.Same
 
 import Data.Function(on)
@@ -123,7 +123,7 @@ getGraphInfo = ((toGlobal . globalAttrs) &&& (convert . value))
                . flip execState initState
   where
     convert = Map.map ((uniq . DList.toList) *** toGlobal)
-    toGlobal = GraphAttrs . unSame
+    toGlobal = GraphAttrs . filter usedByClusters . unSame
     initState = SV Set.empty True Seq.empty Map.empty
     uniq = Set.toList . Set.fromList
 
