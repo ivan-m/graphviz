@@ -22,8 +22,6 @@ module Data.GraphViz.State
 
 import Data.GraphViz.Attributes.ColorScheme
 
-import Control.Monad(liftM)
-
 -- -----------------------------------------------------------------------------
 
 class (Monad m) => GraphvizStateM m where

@@ -64,7 +64,7 @@ import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Util(uniq, uniqBy)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Commands
-import Data.GraphViz.Commands.IO(hGetDot, hGetStrict)
+import Data.GraphViz.Commands.IO(hGetDot)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
