@@ -252,7 +252,7 @@ arbitraryInstance att = vsep [hdr $+$ fns, kFunc]
                    <+> parens (shrinkFor Strng <+> var)
                  ]
 
-      kFunc = asRows (kTpSig : kTrs ++ [kOth])
+      kFunc = asRows (kTpSig : kTrs ++ kOths)
       kFuncNm = text "validUnknown"
       kTpSig = [ kFuncNm
                , colon <> colon <+> text "Text -> Bool"
@@ -261,9 +261,15 @@ arbitraryInstance att = vsep [hdr $+$ fns, kFunc]
       kTr pn = [ kFuncNm <+> doubleQuotes pn
                , equals <+> text "False"
                ]
-      kOth = [ kFuncNm <+> char '_'
-             , equals <+> text "True"
-             ]
+               -- charset isn't recognised as an attribute, but don't
+               -- generate it for Arbitrary instances.
+      kOths = [ [ kFuncNm <+> text "charset"
+                , equals <+> text "False"
+                ]
+              , [ kFuncNm <+> char '_'
+                , equals <+> text "True"
+                ]
+              ]
 
 arbitraryFor                :: VType -> Doc
 arbitraryFor (Cust ('[':_)) = text "arbList"
@@ -394,7 +400,6 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "@0.99@") (J
              , makeAttr "Bb" ["bb"] "G" (Cust "Rect") Nothing Nothing Nothing (Just "write only")
              , makeAttr "BgColor" ["bgcolor"] "GC" (Cust "Color") Nothing (Just "X11Color 'Transparent'") Nothing Nothing
              , makeAttr "Center" ["center"] "G" Bl (Just "True") (Just "@'False'@") Nothing Nothing
-             , makeAttr "Charset" ["charset"] "G" Strng Nothing (Just "@\\\"UTF-8\\\"@") Nothing Nothing
              , makeAttr "ClusterRank" ["clusterrank"] "G" (Cust "ClusterMode") Nothing (Just "@'Local'@") Nothing (Just "dot only")
              , makeAttr "ColorScheme" ["colorscheme"] "ENCG" (Cust "ColorScheme") Nothing (Just "@'X11'@") Nothing Nothing
              , makeAttr "Color" ["color"] "ENC" (Cust "[Color]") Nothing (Just "@X11Color 'Black'@") Nothing Nothing

@@ -121,6 +121,12 @@ _aren't_ covered:
 
 * Only polygon-based `shape`s are available.
 
+* The `charset` attribute is not available as _graphviz_ assumes that
+  all Dot graphs will be in UTF-8 for simplicity; if Latin1-encoded
+  graphs need to be parsed then you shall need to do all I/O for them
+  by hand.
+
+
 #### Available items of note ####
 
 There are a few items of note that are available that are worthy of
@@ -350,10 +356,6 @@ The following attributes are easy to use and recommended:
   should **not** use a `DD` (device-dependent) value.
 
 The following attributes are **not** recommended for use:
-
-* `Charset`: the only accepted options are `"UTF-8"` and `"Latin-1"`,
-  but in future _graphviz_ will not contain this attribute and will
-  only allow UTF-8 usage.
 
 * `Color` for anything except edge colours (and if you must, the
   border colour for a node).

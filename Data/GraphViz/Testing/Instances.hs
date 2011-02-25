@@ -165,7 +165,6 @@ instance Arbitrary Attribute where
                       , liftM Bb arbitrary
                       , liftM BgColor arbitrary
                       , liftM Center arbitrary
-                      , liftM Charset arbitrary
                       , liftM ClusterRank arbitrary
                       , liftM ColorScheme arbitrary
                       , liftM Color arbList
@@ -312,7 +311,6 @@ instance Arbitrary Attribute where
     shrink (Bb v)                 = map Bb                  $ shrink v
     shrink (BgColor v)            = map BgColor             $ shrink v
     shrink (Center v)             = map Center              $ shrink v
-    shrink (Charset v)            = map Charset             $ shrink v
     shrink (ClusterRank v)        = map ClusterRank         $ shrink v
     shrink (ColorScheme v)        = map ColorScheme         $ shrink v
     shrink (Color v)              = map Color               $ nonEmptyShrinks v
@@ -460,7 +458,6 @@ validUnknown "aspect"             = False
 validUnknown "bb"                 = False
 validUnknown "bgcolor"            = False
 validUnknown "center"             = False
-validUnknown "charset"            = False
 validUnknown "clusterrank"        = False
 validUnknown "colorscheme"        = False
 validUnknown "color"              = False
@@ -599,6 +596,7 @@ validUnknown "voro_margin"        = False
 validUnknown "weight"             = False
 validUnknown "width"              = False
 validUnknown "z"                  = False
+validUnknown "charset"            = False
 validUnknown _                    = True
 {- delete to here -}
 

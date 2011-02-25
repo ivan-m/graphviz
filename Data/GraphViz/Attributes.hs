@@ -57,6 +57,10 @@
      difficult to distinguish from the node-based 'Orientation'
      'Attribute'; also, its behaviour is duplicated by 'Rotate'.
 
+   * The @charset@ attribute is not available, as graphviz only
+     supports UTF-8 encoding (as it is not currently feasible nor needed to
+     also support Latin1 encoding).
+
  -}
 module Data.GraphViz.Attributes
     ( -- * The actual /Dot/ attributes.
@@ -234,7 +238,6 @@ data Attribute
     | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
     | BgColor Color                    -- ^ /Valid for/: GC; /Default/: X11Color 'Transparent'
     | Center Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-    | Charset Text                     -- ^ /Valid for/: G; /Default/: @\"UTF-8\"@
     | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
     | ColorScheme ColorScheme          -- ^ /Valid for/: ENCG; /Default/: @'X11'@
     | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @X11Color 'Black'@
@@ -384,7 +387,6 @@ instance PrintDot Attribute where
     unqtDot (Bb v)                 = printField "bb" v
     unqtDot (BgColor v)            = printField "bgcolor" v
     unqtDot (Center v)             = printField "center" v
-    unqtDot (Charset v)            = printField "charset" v
     unqtDot (ClusterRank v)        = printField "clusterrank" v
     unqtDot (ColorScheme v)        = printField "colorscheme" v
     unqtDot (Color v)              = printField "color" v
@@ -533,7 +535,6 @@ instance ParseDot Attribute where
                                     , parseField Bb "bb"
                                     , parseField BgColor "bgcolor"
                                     , parseFieldBool Center "center"
-                                    , parseField Charset "charset"
                                     , parseField ClusterRank "clusterrank"
                                     , parseField ColorScheme "colorscheme"
                                     , parseField Color "color"
@@ -684,7 +685,6 @@ usedByGraphs Aspect{}             = True
 usedByGraphs Bb{}                 = True
 usedByGraphs BgColor{}            = True
 usedByGraphs Center{}             = True
-usedByGraphs Charset{}            = True
 usedByGraphs ClusterRank{}        = True
 usedByGraphs ColorScheme{}        = True
 usedByGraphs Comment{}            = True
@@ -910,7 +910,6 @@ sameAttribute Aspect{}                Aspect{}                = True
 sameAttribute Bb{}                    Bb{}                    = True
 sameAttribute BgColor{}               BgColor{}               = True
 sameAttribute Center{}                Center{}                = True
-sameAttribute Charset{}               Charset{}               = True
 sameAttribute ClusterRank{}           ClusterRank{}           = True
 sameAttribute ColorScheme{}           ColorScheme{}           = True
 sameAttribute Color{}                 Color{}                 = True
