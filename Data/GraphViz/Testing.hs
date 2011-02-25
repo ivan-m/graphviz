@@ -53,6 +53,7 @@ module Data.GraphViz.Testing
        , test_parsePrettyID
        , test_dotizeAugment
        , test_dotizeAugmentUniq
+       , test_canonicalise
         -- * Re-exporting modules for manual testing.
        , module Data.GraphViz
        , module Data.GraphViz.Types.Generalised
@@ -175,6 +176,7 @@ defaultTests = [ test_printParseID_Attributes
                , test_findAllEdgesG
                , test_noGraphInfo
                , test_noGraphInfoG
+               , test_canonicalise
                ]
 
 -- | Test that 'Attributes' can be printed and then parsed back.
@@ -429,3 +431,16 @@ test_noGraphInfoG
 
       dsc = "When converting a Graph to a GDotGraph, there should be no\n\
              \clusters or global attributes."
+
+test_canonicalise :: Test
+test_canonicalise
+  = Test { name = "Canonicalisation should be idempotent"
+         , lookupName = "canonicalise"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+    where
+      prop :: GDotGraph Int -> Bool
+      prop = prop_canonicalise
+
+      dsc = "Repeated application of canonicalise shouldn't have any further affect."

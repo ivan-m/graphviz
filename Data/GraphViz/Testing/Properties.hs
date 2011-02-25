@@ -20,6 +20,7 @@ import Data.GraphViz.Printing(PrintDot(..), printIt)
 import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt')
 import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Util(groupSortBy, isSingle)
+import Data.GraphViz.Algorithms
 
 import Test.QuickCheck
 
@@ -177,6 +178,12 @@ prop_noGraphInfoG g = info == (GraphAttrs [], Map.empty)
   where
     dg = generaliseDotGraph $ setDirectedness graphToDot nonClusteredParams g
     info = graphStructureInformation dg
+
+-- | Canonicalisation should be idempotent.
+prop_canonicalise   :: (Ord n, PrintDot n, ParseDot n, DotRepr dg n) => dg n -> Bool
+prop_canonicalise g = cdg == canonicalise cdg
+  where
+    cdg = canonicalise g
 
 -- -----------------------------------------------------------------------------
 -- Helper utility functions
