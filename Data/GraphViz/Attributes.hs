@@ -67,6 +67,7 @@ module Data.GraphViz.Attributes
       Attribute(..)
     , Attributes
     , sameAttribute
+    , defaultAttributeValue
       -- ** Validity functions on @Attribute@ values.
     , usedByGraphs
     , usedBySubGraphs
@@ -236,11 +237,11 @@ data Attribute
     | ArrowTail ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
     | Aspect AspectType                -- ^ /Valid for/: G; /Notes/: dot only
     | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
-    | BgColor Color                    -- ^ /Valid for/: GC; /Default/: X11Color 'Transparent'
+    | BgColor Color                    -- ^ /Valid for/: GC; /Default/: @'X11Color' 'Transparent'@
     | Center Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
     | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
     | ColorScheme ColorScheme          -- ^ /Valid for/: ENCG; /Default/: @'X11'@
-    | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @X11Color 'Black'@
+    | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
     | Comment Text                     -- ^ /Valid for/: ENG; /Default/: @\"\"@
     | Compound Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
     | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -257,30 +258,30 @@ data Attribute
     | EdgeTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
     | EdgeTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Epsilon Double                   -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
-    | ESep DPoint                      -- ^ /Valid for/: G; /Default/: @+3@; /Notes/: not dot
-    | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @X11Color 'LightGray'@ (nodes), @X11Color 'Black'@ (clusters)
+    | ESep DPoint                      -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not dot
+    | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @'X11Color' 'LightGray'@ (nodes), @'X11Color' 'Black'@ (clusters)
     | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
-    | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: @X11Color 'Black'@
+    | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
     | FontName Text                    -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
     | FontNames Text                   -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
-    | FontPath Text                    -- ^ /Valid for/: G; /Default/: system-dependent
+    | FontPath Text                    -- ^ /Valid for/: G; /Default/: system dependent
     | FontSize Double                  -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
     | Group Text                       -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
     | HeadURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
-    | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: @\"\"@
-    | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: @'PP' 'CenterPoint'@
+    | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: 'StrLabel' @\"\"@
+    | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
     | HeadTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
     | HeadTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Height Double                    -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
-    | ID Label                         -- ^ /Valid for/: GNE; /Default/: @\"\"@; /Notes/: svg, postscript, map only
+    | ID Label                         -- ^ /Valid for/: GNE; /Default/: @'StrLabel' \"\"@; /Notes/: svg, postscript, map only
     | Image Text                       -- ^ /Valid for/: N; /Default/: @\"\"@
     | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
     | LabelURL EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | LabelAngle Double                -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
     | LabelDistance Double             -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
     | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-    | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: @X11Color 'Black'@
+    | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: @'X11Color' 'Black'@
     | LabelFontName Text               -- ^ /Valid for/: E; /Default/: @\"Times-Roman\"@
     | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: @14.0@; /Minimum/: @1.0@
     | LabelJust Justification          -- ^ /Valid for/: GC; /Default/: @'JCenter'@
@@ -289,17 +290,17 @@ data Attribute
     | LabelTooltip EscString           -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Label Label                      -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
     | Landscape Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-    | LayerSep LayerSep                -- ^ /Valid for/: G; /Default/: @\" :\t\"@
-    | Layers LayerList                 -- ^ /Valid for/: G; /Default/: @\"\"@
-    | Layer LayerRange                 -- ^ /Valid for/: EN; /Default/: @\"\"@
+    | LayerSep LayerSep                -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
+    | Layers LayerList                 -- ^ /Valid for/: G; /Default/: @'LL' []@
+    | Layer LayerRange                 -- ^ /Valid for/: EN
     | Layout Text                      -- ^ /Valid for/: G; /Default/: @\"\"@
     | Len Double                       -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
     | LevelsGap Double                 -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
-    | Levels Int                       -- ^ /Valid for/: G; /Default/: @MAXINT@; /Minimum/: @0@; /Notes/: sfdp only
+    | Levels Int                       -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
     | LHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
     | LPos Point                       -- ^ /Valid for/: EGC; /Notes/: write only
     | LTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-    | Margin DPoint                    -- ^ /Valid for/: NG; /Default/: device-dependent
+    | Margin DPoint                    -- ^ /Valid for/: NG; /Default/: device dependent
     | MaxIter Int                      -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp); /Notes/: fdp, neato only
     | MCLimit Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: dot only
     | MinDist Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: circo only
@@ -320,17 +321,17 @@ data Attribute
     | PackMode PackMode                -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
     | Pack Pack                        -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
     | Pad DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
-    | PageDir PageDir                  -- ^ /Valid for/: G; /Default/: @'BL'@
+    | PageDir PageDir                  -- ^ /Valid for/: G; /Default/: @'Bl'@
     | Page Point                       -- ^ /Valid for/: G
-    | PenColor Color                   -- ^ /Valid for/: C; /Default/: @X11Color 'Black'@
+    | PenColor Color                   -- ^ /Valid for/: C; /Default/: @'X11Color' 'Black'@
     | PenWidth Double                  -- ^ /Valid for/: CNE; /Default/: @1.0@; /Minimum/: @0.0@
     | Peripheries Int                  -- ^ /Valid for/: NC; /Default/: shape default (nodes), @1@ (clusters); /Minimum/: 0
     | Pin Bool                         -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: fdp, neato only
     | Pos Pos                          -- ^ /Valid for/: EN
     | QuadTree QuadType                -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
     | Quantum Double                   -- ^ /Valid for/: G; /Default/: @0.0@; /Minimum/: @0.0@
-    | RankDir RankDir                  -- ^ /Valid for/: G; /Default/: @'TB'@; /Notes/: dot only
-    | RankSep [Double]                 -- ^ /Valid for/: G; /Default/: @0.5@ (dot), @1.0@ (twopi); /Minimum/: 0.02; /Notes/: twopi, dot only
+    | RankDir RankDir                  -- ^ /Valid for/: G; /Default/: @'FromTop'@; /Notes/: dot only
+    | RankSep [Double]                 -- ^ /Valid for/: G; /Default/: @[0.5]@ (dot), @[1.0]@ (twopi); /Minimum/: [0.02]; /Notes/: twopi, dot only
     | Rank RankType                    -- ^ /Valid for/: S; /Notes/: dot only
     | Ratio Ratios                     -- ^ /Valid for/: G
     | Rects Rect                       -- ^ /Valid for/: N; /Notes/: write only
@@ -343,7 +344,7 @@ data Attribute
     | SameTail Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
     | SamplePoints Int                 -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
     | SearchSize Int                   -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
-    | Sep DPoint                       -- ^ /Valid for/: G; /Default/: @+4@; /Notes/: not dot
+    | Sep DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
     | ShapeFile Text                   -- ^ /Valid for/: N; /Default/: @\"\"@
     | Shape Shape                      -- ^ /Valid for/: N; /Default/: @'Ellipse'@
     | ShowBoxes Int                    -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
@@ -353,13 +354,13 @@ data Attribute
     | Smoothing SmoothType             -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
     | SortV Word16                     -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
     | Splines EdgeType                 -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
-    | Start StartType                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: fdp, neato only
+    | Start StartType                  -- ^ /Valid for/: G; /Notes/: fdp, neato only
     | StyleSheet Text                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
     | Style [StyleItem]                -- ^ /Valid for/: ENC
     | TailURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
     | TailClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
-    | TailLabel Label                  -- ^ /Valid for/: E; /Default/: @\"\"@
-    | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: center
+    | TailLabel Label                  -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
+    | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
     | TailTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
     | TailTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
     | Target EscString                 -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, map only
@@ -1045,6 +1046,123 @@ sameAttribute Width{}                 Width{}                 = True
 sameAttribute Z{}                     Z{}                     = True
 sameAttribute (UnknownAttribute a1 _) (UnknownAttribute a2 _) = a1 == a2
 sameAttribute _                       _                       = False
+
+-- | Return the default value for a specific 'Attribute' if possible; graph/cluster values are preferred over node/edge values.
+defaultAttributeValue                      :: Attribute -> Maybe Attribute
+defaultAttributeValue Damping{}            = Just $ Damping 0.99
+defaultAttributeValue K{}                  = Just $ K 0.3
+defaultAttributeValue URL{}                = Just $ URL ""
+defaultAttributeValue ArrowHead{}          = Just $ ArrowHead normal
+defaultAttributeValue ArrowSize{}          = Just $ ArrowSize 1
+defaultAttributeValue ArrowTail{}          = Just $ ArrowTail normal
+defaultAttributeValue BgColor{}            = Just $ BgColor (X11Color Transparent)
+defaultAttributeValue Center{}             = Just $ Center False
+defaultAttributeValue ClusterRank{}        = Just $ ClusterRank Local
+defaultAttributeValue ColorScheme{}        = Just $ ColorScheme X11
+defaultAttributeValue Color{}              = Just $ Color [X11Color Black]
+defaultAttributeValue Comment{}            = Just $ Comment ""
+defaultAttributeValue Compound{}           = Just $ Compound False
+defaultAttributeValue Concentrate{}        = Just $ Concentrate False
+defaultAttributeValue Constraint{}         = Just $ Constraint True
+defaultAttributeValue Decorate{}           = Just $ Decorate False
+defaultAttributeValue Dimen{}              = Just $ Dimen 2
+defaultAttributeValue Dim{}                = Just $ Dim 2
+defaultAttributeValue DirEdgeConstraints{} = Just $ DirEdgeConstraints NoConstraints
+defaultAttributeValue Distortion{}         = Just $ Distortion 0
+defaultAttributeValue EdgeURL{}            = Just $ EdgeURL ""
+defaultAttributeValue ESep{}               = Just $ ESep (DVal 3)
+defaultAttributeValue FillColor{}          = Just $ FillColor (X11Color Black)
+defaultAttributeValue FixedSize{}          = Just $ FixedSize False
+defaultAttributeValue FontColor{}          = Just $ FontColor (X11Color Black)
+defaultAttributeValue FontName{}           = Just $ FontName "Times-Roman"
+defaultAttributeValue FontNames{}          = Just $ FontNames ""
+defaultAttributeValue FontSize{}           = Just $ FontSize 14
+defaultAttributeValue Group{}              = Just $ Group ""
+defaultAttributeValue HeadURL{}            = Just $ HeadURL ""
+defaultAttributeValue HeadClip{}           = Just $ HeadClip True
+defaultAttributeValue HeadLabel{}          = Just $ HeadLabel (StrLabel "")
+defaultAttributeValue HeadPort{}           = Just $ HeadPort (CompassPoint CenterPoint)
+defaultAttributeValue HeadTarget{}         = Just $ HeadTarget ""
+defaultAttributeValue HeadTooltip{}        = Just $ HeadTooltip ""
+defaultAttributeValue Height{}             = Just $ Height 0.5
+defaultAttributeValue ID{}                 = Just $ ID (StrLabel "")
+defaultAttributeValue Image{}              = Just $ Image ""
+defaultAttributeValue ImageScale{}         = Just $ ImageScale NoScale
+defaultAttributeValue LabelURL{}           = Just $ LabelURL ""
+defaultAttributeValue LabelAngle{}         = Just $ LabelAngle (-25)
+defaultAttributeValue LabelDistance{}      = Just $ LabelDistance 1
+defaultAttributeValue LabelFloat{}         = Just $ LabelFloat False
+defaultAttributeValue LabelFontColor{}     = Just $ LabelFontColor (X11Color Black)
+defaultAttributeValue LabelFontName{}      = Just $ LabelFontName "Times-Roman"
+defaultAttributeValue LabelFontSize{}      = Just $ LabelFontSize 14
+defaultAttributeValue LabelJust{}          = Just $ LabelJust JCenter
+defaultAttributeValue LabelLoc{}           = Just $ LabelLoc VTop
+defaultAttributeValue LabelTarget{}        = Just $ LabelTarget ""
+defaultAttributeValue LabelTooltip{}       = Just $ LabelTooltip ""
+defaultAttributeValue Label{}              = Just $ Label (StrLabel "")
+defaultAttributeValue Landscape{}          = Just $ Landscape False
+defaultAttributeValue LayerSep{}           = Just $ LayerSep (LSep " :\t")
+defaultAttributeValue Layers{}             = Just $ Layers (LL [])
+defaultAttributeValue Layout{}             = Just $ Layout ""
+defaultAttributeValue LevelsGap{}          = Just $ LevelsGap 0
+defaultAttributeValue Levels{}             = Just $ Levels maxBound
+defaultAttributeValue LHead{}              = Just $ LHead ""
+defaultAttributeValue LTail{}              = Just $ LTail ""
+defaultAttributeValue MCLimit{}            = Just $ MCLimit 1
+defaultAttributeValue MinDist{}            = Just $ MinDist 1
+defaultAttributeValue MinLen{}             = Just $ MinLen 1
+defaultAttributeValue Model{}              = Just $ Model ShortPath
+defaultAttributeValue Mode{}               = Just $ Mode Major
+defaultAttributeValue Mosek{}              = Just $ Mosek False
+defaultAttributeValue NodeSep{}            = Just $ NodeSep 0.25
+defaultAttributeValue NoJustify{}          = Just $ NoJustify False
+defaultAttributeValue Normalize{}          = Just $ Normalize False
+defaultAttributeValue Ordering{}           = Just $ Ordering ""
+defaultAttributeValue Orientation{}        = Just $ Orientation 0
+defaultAttributeValue OutputOrder{}        = Just $ OutputOrder BreadthFirst
+defaultAttributeValue OverlapScaling{}     = Just $ OverlapScaling (-4)
+defaultAttributeValue Overlap{}            = Just $ Overlap KeepOverlaps
+defaultAttributeValue PackMode{}           = Just $ PackMode PackNode
+defaultAttributeValue Pack{}               = Just $ Pack DontPack
+defaultAttributeValue Pad{}                = Just $ Pad (DVal 0.0555)
+defaultAttributeValue PageDir{}            = Just $ PageDir Bl
+defaultAttributeValue PenColor{}           = Just $ PenColor (X11Color Black)
+defaultAttributeValue PenWidth{}           = Just $ PenWidth 1
+defaultAttributeValue Peripheries{}        = Just $ Peripheries 1
+defaultAttributeValue Pin{}                = Just $ Pin False
+defaultAttributeValue QuadTree{}           = Just $ QuadTree NormalQT
+defaultAttributeValue Quantum{}            = Just $ Quantum 0
+defaultAttributeValue RankDir{}            = Just $ RankDir FromTop
+defaultAttributeValue Regular{}            = Just $ Regular False
+defaultAttributeValue ReMinCross{}         = Just $ ReMinCross False
+defaultAttributeValue RepulsiveForce{}     = Just $ RepulsiveForce 1
+defaultAttributeValue Root{}               = Just $ Root (NodeName "")
+defaultAttributeValue Rotate{}             = Just $ Rotate 0
+defaultAttributeValue SameHead{}           = Just $ SameHead ""
+defaultAttributeValue SameTail{}           = Just $ SameTail ""
+defaultAttributeValue SearchSize{}         = Just $ SearchSize 30
+defaultAttributeValue Sep{}                = Just $ Sep (DVal 4)
+defaultAttributeValue ShapeFile{}          = Just $ ShapeFile ""
+defaultAttributeValue Shape{}              = Just $ Shape Ellipse
+defaultAttributeValue ShowBoxes{}          = Just $ ShowBoxes 0
+defaultAttributeValue Sides{}              = Just $ Sides 4
+defaultAttributeValue Skew{}               = Just $ Skew 0
+defaultAttributeValue Smoothing{}          = Just $ Smoothing NoSmooth
+defaultAttributeValue SortV{}              = Just $ SortV 0
+defaultAttributeValue Splines{}            = Just $ Splines SplineEdges
+defaultAttributeValue StyleSheet{}         = Just $ StyleSheet ""
+defaultAttributeValue TailURL{}            = Just $ TailURL ""
+defaultAttributeValue TailClip{}           = Just $ TailClip True
+defaultAttributeValue TailLabel{}          = Just $ TailLabel (StrLabel "")
+defaultAttributeValue TailPort{}           = Just $ TailPort (CompassPoint CenterPoint)
+defaultAttributeValue TailTarget{}         = Just $ TailTarget ""
+defaultAttributeValue TailTooltip{}        = Just $ TailTooltip ""
+defaultAttributeValue Target{}             = Just $ Target ""
+defaultAttributeValue Tooltip{}            = Just $ Tooltip ""
+defaultAttributeValue VoroMargin{}         = Just $ VoroMargin 0.05
+defaultAttributeValue Width{}              = Just $ Width 0.75
+defaultAttributeValue Z{}                  = Just $ Z 0
+defaultAttributeValue _                    = Nothing
 {- Delete to here -}
 
 -- -----------------------------------------------------------------------------
@@ -1732,9 +1850,9 @@ checkLayerName str = maybe checkAll LRInt $ stringToInt str
                then AllLayers
                else LRName str
 
--- | A non-empty list of layer names.  The names should all be
---   'LRName' values, and when printed will use an arbitrary character
---   from 'defLayerSep'.
+-- | A list of layer names.  The names should all be 'LRName' values,
+--   and when printed will use an arbitrary character from
+--   'defLayerSep'.
 newtype LayerList = LL [LayerID]
                   deriving (Eq, Ord, Show, Read)
 
@@ -1749,6 +1867,8 @@ instance ParseDot LayerList where
   parse = quotedParse parseUnqt
           `onFail`
           liftM (LL . (:[]) . LRName) stringBlock
+          `onFail`
+          quotedParse (stringRep (LL []) "")
 
 -- -----------------------------------------------------------------------------
 
