@@ -35,7 +35,8 @@ module Data.GraphViz.Types.State
        ) where
 
 import Data.GraphViz.Types.Common
-import Data.GraphViz.Attributes(Attributes, Attribute, sameAttribute)
+import Data.GraphViz.Attributes(Attributes, Attribute)
+import Data.GraphViz.Attributes.Same
 
 import Data.Function(on)
 import qualified Data.DList as DList
@@ -43,7 +44,6 @@ import Data.DList(DList)
 import qualified Data.Map as Map
 import Data.Map(Map)
 import qualified Data.Set as Set
-import Data.Set(Set)
 import qualified Data.Sequence as Seq
 import Data.Sequence(Seq, (|>), ViewL(..))
 import Control.Arrow((&&&), (***))
@@ -101,31 +101,8 @@ recursiveCall mc s = do gas <- getGlobals
                         modifyGlobal (const gas)
                         modifyPath (const p)
 
--- -----------------------------------------------------------------------------
-
--- | Defined as a wrapper around 'Attribute' where equality is based
---   solely upon the constructor, not the contents.
-newtype SameAttr = SA { getAttr :: Attribute }
-                 deriving (Show, Read)
-
-instance Eq SameAttr where
-  (==) = sameAttribute `on` getAttr
-
-instance Ord SameAttr where
-  compare sa1 sa2
-    | sa1 == sa2 = EQ
-    | otherwise  = (compare `on` getAttr) sa1 sa2
-
-type SAttrs = Set SameAttr
-
-toSAttr :: Attributes -> SAttrs
-toSAttr = Set.fromList . map SA
-
 unionWith        :: SAttrs -> Attributes -> SAttrs
-unionWith sas as = Set.fromList (map SA as) `Set.union` sas
-
-unSame :: SAttrs -> Attributes
-unSame = map getAttr . Set.toList
+unionWith sas as = toSAttr as `Set.union` sas
 
 -- -----------------------------------------------------------------------------
 -- Dealing with sub-graphs
