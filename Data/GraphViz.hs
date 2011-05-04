@@ -401,7 +401,7 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr nl (EdgeID el)
                  -> dg Node -> IO (gr (AttributeNode nl) (AttributeEdge el))
 dotAttributes isDir gr dot
-  = liftM (augmentGraph gr . parseDG . fromDotResult)
+  = liftM (augmentGraph gr . parseDG)
     $ graphvizWithHandle command dot DotOutput hGetDot
     where
       parseDG = asTypeOf dot
@@ -450,11 +450,3 @@ preview g = ign $ forkIO (ign $ runGraphvizCanvas' dg Xlib)
                                 , fmtEdge = \ (_, _, l) -> [toLabel l]
                                 }
     ign = (>> return ())
-
--- | Used for obtaining results from 'graphvizWithHandle', etc. when
---   errors should only occur when Graphviz isn't installed.  If the
---   value is @'Left' _@, then 'error' is used.
-fromDotResult            :: Either String r -> r
-fromDotResult (Right r)  = r
-fromDotResult (Left err) = error $ "Error when running the relevant Graphviz\
-                                   \ command:\n" ++ err

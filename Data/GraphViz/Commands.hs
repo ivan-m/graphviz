@@ -36,8 +36,6 @@ module Data.GraphViz.Commands
     , GraphvizOutput(..)
     , GraphvizCanvas(..)
       -- * Running Graphviz.
-    , RunResult(..)
-    , maybeErr
     , runGraphviz
     , runGraphvizCommand
     , addExtension
@@ -53,6 +51,7 @@ import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
 import Data.GraphViz.Commands.IO(hPutCompactDot)
+import Data.GraphViz.Exception
 
 import qualified Data.ByteString as SB
 import System.IO( Handle, hClose
@@ -60,8 +59,7 @@ import System.IO( Handle, hClose
 import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
 import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
-import Control.Exception.Extensible( IOException, catch
-                                   , bracket, evaluate, handle)
+import Control.Exception.Extensible(IOException, bracket, evaluate)
 import Control.Monad(liftM)
 import System.FilePath((<.>))
 
@@ -267,28 +265,20 @@ instance GraphvizResult GraphvizCanvas where
 
 -- -----------------------------------------------------------------------------
 
--- | Represents the result of running a command.
-data RunResult = Error String
-               | Success
-               deriving (Eq, Ord, Read, Show)
-
--- | Return the error if there is one, otherwise return Success.
-maybeErr :: Either String a -> RunResult
-maybeErr = either Error (const Success)
-
 -- | Run the recommended Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
 runGraphviz    :: (DotRepr dg n) => dg n -> GraphvizOutput -> FilePath
-                  -> IO (Either String FilePath)
+                  -> IO FilePath
 runGraphviz gr = runGraphvizCommand (commandFor gr) gr
 
 -- | Run the chosen Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
 runGraphvizCommand :: (DotRepr dg n) => GraphvizCommand -> dg n
                       -> GraphvizOutput -> FilePath
-                      -> IO (Either String FilePath)
+                      -> IO FilePath
 runGraphvizCommand cmd gr t fp
-  = liftM (either (Left . addFl) (const $ Right fp))
+  = mapException (\(GVProgramExc e) -> GVProgramExc $ addFl e)
+    . liftM (const fp)
     $ graphvizWithHandle cmd gr t toFile
       where
         addFl = (++) ("Unable to create " ++ fp ++ "\n")
@@ -309,22 +299,23 @@ addExtension cmd t fp = cmd t fp'
 --   the input from the 'Handle'; 'hGetContents'' is a version of
 --   'hGetContents' that will ensure this happens.
 --
---   If the command was unsuccessful, then @'Left' error@ is returned.
+--   If the command was unsuccessful, then a 'GraphvizException' is
+--   thrown.
 graphvizWithHandle :: (DotRepr dg n)
-                      => GraphvizCommand      -- ^ Which command to run
-                      -> dg n                 -- ^ The 'DotRepr' to use
-                      -> GraphvizOutput       -- ^ The 'GraphvizOutput' type
-                      -> (Handle -> IO a)     -- ^ Extract the output
-                      -> IO (Either String a) -- ^ The error or the result.
+                      => GraphvizCommand  -- ^ Which command to run
+                      -> dg n             -- ^ The 'DotRepr' to use
+                      -> GraphvizOutput   -- ^ The 'GraphvizOutput' type
+                      -> (Handle -> IO a) -- ^ Extract the output
+                      -> IO a             -- ^ The error or the result.
 graphvizWithHandle = graphvizWithHandle'
 
 -- This version is not exported as we don't want to let arbitrary
 -- @Handle -> IO a@ functions to be used for GraphvizCanvas outputs.
 graphvizWithHandle' :: (DotRepr dg n, GraphvizResult o)
                        => GraphvizCommand -> dg n -> o
-                       -> (Handle -> IO a) -> IO (Either String a)
+                       -> (Handle -> IO a) -> IO a
 graphvizWithHandle' cmd gr t f
-  = handle notRunnable
+  = mapException notRunnable
     $ bracket
         (runInteractiveProcess cmd' args Nothing Nothing)
         (\(inh,outh,errh,_) -> hClose inh >> hClose outh >> hClose errh)
@@ -354,10 +345,10 @@ graphvizWithHandle' cmd gr t f
 
           case exitCode of
             ExitSuccess -> return output
-            _           -> return $ Left $ othErr ++ err
+            _           -> throw . GVProgramExc $ othErr ++ err
     where
-      notRunnable :: IOException -> IO (Either String a)
-      notRunnable e = return . Left $ unwords
+      notRunnable :: IOException -> GraphvizException
+      notRunnable e = GVProgramExc $ unwords
                       [ "Unable to call the Graphviz command "
                       , cmd'
                       , " with the arguments: "
@@ -369,11 +360,9 @@ graphvizWithHandle' cmd gr t f
       args = ["-T" ++ outputCall t]
 
       -- Augmenting the f function to let it work within the forkIO:
-      f' h = liftM Right (f h)
-             `catch`
-             fErr
-      fErr :: IOException -> IO (Either String a)
-      fErr e = return . Left $ "Error re-directing the output from "
+      f' = mapException fErr . f
+      fErr :: IOException -> GraphvizException
+      fErr e = GVProgramExc $ "Error re-directing the output from "
                ++ cmd' ++ ": " ++ show e
 
       othErr = "Error messages from " ++ cmd' ++ ":\n"
@@ -385,17 +374,15 @@ signalWhenDone f h mv = f h >>= putMVar mv >> return ()
 -- | Run the chosen Graphviz command on this graph and render it using
 --   the given canvas type.
 runGraphvizCanvas          :: (DotRepr dg n) => GraphvizCommand -> dg n
-                              -> GraphvizCanvas -> IO RunResult
-runGraphvizCanvas cmd gr c = liftM maybeErr
-                             $ graphvizWithHandle' cmd gr c nullHandle
+                              -> GraphvizCanvas -> IO ()
+runGraphvizCanvas cmd gr c = graphvizWithHandle' cmd gr c nullHandle
     where
       nullHandle :: Handle -> IO ()
       nullHandle = liftM (const ()) . hGetContents'
 
 -- | Run the recommended Graphviz command on this graph and render it
 --   using the given canvas type.
-runGraphvizCanvas'   :: (DotRepr dg n) => dg n -> GraphvizCanvas
-                        -> IO RunResult
+runGraphvizCanvas'   :: (DotRepr dg n) => dg n -> GraphvizCanvas -> IO ()
 runGraphvizCanvas' d = runGraphvizCanvas (commandFor d) d
 
 -- -----------------------------------------------------------------------------

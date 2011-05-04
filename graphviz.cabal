@@ -82,6 +82,7 @@ Library {
                            Data.GraphViz.Attributes.Colors
                            Data.GraphViz.Attributes.HTML
                            Data.GraphViz.PreProcessing
+                           Data.GraphViz.Exception
                            Data.GraphViz.Algorithms
 
         Other-Modules:     Data.GraphViz.Attributes.ColorScheme

@@ -74,7 +74,7 @@ import Data.GraphViz.Testing.Instances()
 import Data.GraphViz.Testing.Instances.FGL()
 import Data.GraphViz.Testing.Properties
 
-import Data.GraphViz hiding (RunResult(..))
+import Data.GraphViz
 import Data.GraphViz.Parsing(ParseDot(..), parseIt, runParser)
 import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Printing(PrintDot(..), printIt, renderDot)

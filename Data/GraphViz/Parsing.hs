@@ -30,6 +30,7 @@ module Data.GraphViz.Parsing
     , parseIt'
     , runParser
     , runParser'
+    , checkValidParse
       -- * Convenience parsing combinators.
     , bracket
     , onlyBool
@@ -84,6 +85,7 @@ import Data.GraphViz.Util
 import Data.GraphViz.State
 -- To avoid orphan instances and cyclic imports
 import Data.GraphViz.Attributes.ColorScheme
+import Data.GraphViz.Exception
 
 import Text.ParserCombinators.Poly.StateText hiding (bracket, empty, indent, runParser)
 import qualified Text.ParserCombinators.Poly.StateText as P
@@ -124,7 +126,7 @@ runParser p t = let (r,_,t') = P.runParser p initialState t
 --   parsing function consumes all of the 'Text' input (with the
 --   exception of whitespace at the end).
 runParser'   :: Parse a -> Text -> a
-runParser' p = right . fst . runParser p'
+runParser' p = checkValidParse . fst . runParser p'
   where
     p' = p `discard` (allWhitespace' >> eof)
 
@@ -149,11 +151,13 @@ class ParseDot a where
 -- | Parse the required value, returning also the rest of the input
 --   'String' that hasn't been parsed (for debugging purposes).
 parseIt :: (ParseDot a) => Text -> (a, Text)
-parseIt = first right . runParser parse
+parseIt = first checkValidParse . runParser parse
 
-right           :: (Show a) => Either a b -> b
-right (Left l)  = error $ "Not a Right value: " ++ show l
-right (Right r) = r
+-- | If unable to parse /Dot/ code properly, 'throw' a
+--   'GraphvizException'.
+checkValidParse :: Either String a -> a
+checkValidParse (Left err) = throw (NotDotCode err)
+checkValidParse (Right a)  = a
 
 -- | Parse the required value with the assumption that it will parse
 --   all of the input 'String'.

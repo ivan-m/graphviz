@@ -10,8 +10,9 @@
 module Data.GraphViz.Commands.IO
        ( -- * Encoding
          -- $encoding
+         toUTF8
          -- * Operations on files
-         writeDotFile
+       , writeDotFile
        , readDotFile
          -- * Operations on handles
        , hPutDot
@@ -26,12 +27,15 @@ module Data.GraphViz.Commands.IO
 import Data.GraphViz.State(initialState)
 import Data.GraphViz.Types(DotRepr, printDotGraph, parseDotGraph)
 import Data.GraphViz.Printing(toDot)
+import Data.GraphViz.Exception
 import Text.PrettyPrint.Leijen.Text(displayT, renderCompact)
 
 import qualified Data.Text.Lazy.Encoding as T
+import Data.Text.Encoding.Error(UnicodeException(DecodeError))
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as B
+import Data.ByteString.Lazy(ByteString)
 import Control.Monad(liftM)
 import Control.Monad.Trans.State
 import System.IO(Handle,IOMode(ReadMode,WriteMode),withFile,stdout,stdin,hPutChar)
@@ -58,9 +62,15 @@ renderCompactDot = displayT . renderCompact
   you wish to deal with existing Dot code that uses this encoding, you
   will need to manually read that file in to a 'Text' value.
 
-  If a file uses a non-UTF-8 encoding, then a @UnicodeException@ error
-  (see "Data.Text.Encoding.Error") will be thrown.
+  If a file uses a non-UTF-8 encoding, then a 'GraphvizException' will
+  be thrown.
 -}
+
+-- | Read a UTF-8 encoded (lazy) 'ByteString', throwing a
+--   'GraphvizException' if there is a decoding error.
+toUTF8 :: ByteString -> Text
+toUTF8 = mapException (\e@DecodeError{} -> NotUTF8Dot $ show e)
+         . T.decodeUtf8
 
 -- -----------------------------------------------------------------------------
 -- Output
@@ -78,7 +88,7 @@ toHandle f h dg = do B.hPutStr h . T.encodeUtf8 $ f dg
 
 -- | Strictly read in a 'Text' value using an appropriate encoding.
 hGetStrict :: Handle -> IO Text
-hGetStrict = liftM (T.decodeUtf8 . B.fromChunks . (:[]))
+hGetStrict = liftM (toUTF8 . B.fromChunks . (:[]))
              . SB.hGetContents
 
 hGetDot :: (DotRepr dg n) => Handle -> IO (dg n)

@@ -37,6 +37,7 @@ import Data.GraphViz.Printing
 import Data.GraphViz.State
 import Data.GraphViz.Attributes.ColorScheme
 import Data.GraphViz.Util(bool)
+import Data.GraphViz.Exception
 
 import Data.Colour( AlphaColour, opaque, transparent, withOpacity
                   , over, black, alphaChannel, darken)
@@ -123,8 +124,9 @@ instance ParseDot Color where
                    return $ case cs of
                               [r,g,b] -> RGB r g b
                               [r,g,b,a] -> RGBA r g b a
-                              _ -> error $ "Not a valid hex Color specification: "
-                                            ++ show cs
+                              _ -> throw . NotDotCode
+                                   $ "Not a valid hex Color specification: "
+                                      ++ show cs
           parseHSV = do h <- parse
                         parseSep
                         s <- parse

@@ -22,6 +22,7 @@
 module Data.GraphViz.PreProcessing(preProcess) where
 
 import Data.GraphViz.Parsing
+import Data.GraphViz.Exception
 
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
@@ -38,7 +39,7 @@ import Control.Monad(liftM)
 preProcess :: Text -> Text
 preProcess t = case fst $ runParser parseOutUnwanted t of
                  (Right r) -> B.toLazyText r
-                 (Left l)  -> error $ show l
+                 (Left l)  -> throw (NotDotCode l)
              -- snd should be null
 
 -- | Parse out comments and make quoted strings spread over multiple

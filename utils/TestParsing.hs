@@ -20,7 +20,8 @@ import Data.GraphViz
 import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Parsing(runParser, parse)
 import Data.GraphViz.PreProcessing(preProcess)
-import Data.GraphViz.Commands.IO(hGetStrict)
+import Data.GraphViz.Commands.IO(hGetStrict, toUTF8)
+import Data.GraphViz.Exception
 
 import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Encoding as T
@@ -69,8 +70,7 @@ tryParseFile fp = readFile' fp >>= maybeParse
                                         ++ err ++ "\n"
     maybeParse (Right dot) = withParse (const $ return dot)
                                        (tryParseCanon fp)
-                                       (\ e -> fp ++ ": Cannot parse as a GDotGraph:\n"
-                                               ++ e)
+                                       ("Cannot parse as a GDotGraph: "++)
                                        fp
 
 tryParseCanon    :: FilePath -> GDG -> IO ()
@@ -81,25 +81,15 @@ tryParseCanon fp = withParse prettyPrint
   where
     asDG = flip asTypeOf emptDG
     emptDG = DotGraph False False Nothing $ DotStmts [] [] [] [] :: DG
-    prettyPrint dg = liftM right $ graphvizWithHandle (commandFor dg) dg Canon hGetStrict
+    prettyPrint dg = graphvizWithHandle (commandFor dg) dg Canon hGetStrict
 
 tryParse    :: (DotRepr dg n) => Text -> IO (Either ErrMsg (dg n))
-tryParse dc = getErrMsgs
+tryParse dc = handle getErr
               $ let (dg, rst) = runParser parse $ preProcess dc
-                in T.length rst `seq` return (right dg)
-
-right           :: (Show a) => Either a b -> b
-right (Left l)  = error $ "Not a Right value: " ++ show l
-right (Right r) = r
-
-getErrMsgs   :: IO a -> IO (Either ErrMsg a)
-getErrMsgs a = liftM Right a `catches` hs
+                in T.length rst `seq` return dg
   where
-    h :: (Exception e) => e -> IO (Either ErrMsg a)
-    h = return . Left . show
-    hs = [ Handler $ \ (e :: UnicodeException) -> h e
-         , Handler $ \ (e :: ErrorCall) -> h e
-         ]
+    getErr :: GraphvizException -> IO (Either ErrMsg a)
+    getErr = return . Left . show
 
 readFile' :: FilePath -> IO (Either ErrMsg Text)
 readFile' fp = do putStrLn fp
@@ -109,4 +99,4 @@ readFile' fp = do putStrLn fp
     getMsg = either (Left . show) Right
 
 readUTF8File :: FilePath -> IO Text
-readUTF8File = liftM T.decodeUtf8 . B.readFile
+readUTF8File = liftM toUTF8 . B.readFile
