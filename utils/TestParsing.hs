@@ -24,11 +24,9 @@ import Data.GraphViz.Commands.IO(hGetStrict, toUTF8)
 import Data.GraphViz.Exception
 
 import qualified Data.Text.Lazy as T
-import qualified Data.Text.Lazy.Encoding as T
-import Data.Text.Encoding.Error(UnicodeException)
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString.Lazy as B
-import Control.Exception.Extensible(try, ErrorCall, IOException, Handler(..), catches, Exception)
+import Control.Exception.Extensible(try, IOException)
 import Control.Monad(liftM)
 import System.Environment(getArgs)
 
