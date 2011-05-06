@@ -117,7 +117,6 @@ commandFor dg = if graphIsDirected dg
 --   Graphviz tools to use with the @-T@ argument.
 class GraphvizResult o where
     outputCall :: o -> String
-    isBinary :: o -> Bool
 
 -- | The possible Graphviz output formats (that is, those that
 --   actually produce a file).
@@ -197,24 +196,6 @@ instance GraphvizResult GraphvizOutput where
     outputCall Vrml      = "vrml"
     outputCall WBmp      = "wbmp"
 
-    -- These are the known text-based outputs.
-    isBinary Canon     = False
-    isBinary DotOutput = False
-    isBinary XDot      = False
-    isBinary Eps       = False
-    isBinary Fig       = False
-    isBinary Imap      = False
-    isBinary Cmapx     = False
-    isBinary ImapNP    = False
-    isBinary CmapxNP   = False
-    isBinary Plain     = False
-    isBinary PlainExt  = False
-    isBinary Ps        = False
-    isBinary Svg       = False
-    isBinary Vml       = False
-    isBinary Vrml      = False
-    isBinary _         = True
-
 -- | A default file extension for each 'GraphvizOutput'.
 defaultExtension           :: GraphvizOutput -> String
 defaultExtension Bmp       = "bmp"
@@ -255,9 +236,6 @@ data GraphvizCanvas = Gtk | Xlib
 instance GraphvizResult GraphvizCanvas where
     outputCall Gtk       = "gtk"
     outputCall Xlib      = "xlib"
-
-    -- Since there's no output, we arbitrarily choose binary mode.
-    isBinary _ = True
 
 -- -----------------------------------------------------------------------------
 
@@ -314,7 +292,7 @@ graphvizWithHandle' cmd dg t f = runCommand (showCmd cmd)
                                             f'
                                             dg
   where
-    f' h = hSetBinaryMode h (isBinary t) >> f h
+    f' h = hSetBinaryMode h True >> f h
 
 -- | Run the chosen Graphviz command on this graph and render it using
 --   the given canvas type.
