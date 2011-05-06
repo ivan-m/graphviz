@@ -22,6 +22,8 @@ module Data.GraphViz.Commands.IO
          -- * Special cases for standard input and output
        , putDot
        , readDot
+         -- * Running external commands
+       , runCommand
        ) where
 
 import Data.GraphViz.State(initialState)
@@ -38,7 +40,13 @@ import qualified Data.ByteString.Lazy as B
 import Data.ByteString.Lazy(ByteString)
 import Control.Monad(liftM)
 import Control.Monad.Trans.State
-import System.IO(Handle,IOMode(ReadMode,WriteMode),withFile,stdout,stdin,hPutChar)
+import System.IO(Handle, IOMode(ReadMode,WriteMode)
+                , withFile, stdout, stdin, hPutChar
+                , hClose, hGetContents, hSetBinaryMode)
+import System.Exit(ExitCode(ExitSuccess))
+import System.Process(runInteractiveProcess, waitForProcess)
+import Control.Exception.Extensible(IOException, evaluate)
+import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
 
 -- -----------------------------------------------------------------------------
 
@@ -105,3 +113,80 @@ putDot = hPutDot stdout
 
 readDot :: (DotRepr dg n) => IO (dg n)
 readDot = hGetDot stdin
+
+-- -----------------------------------------------------------------------------
+
+-- | Run an external command on the specified 'DotRepr'.
+--
+--   If the command was unsuccessful, then a 'GraphvizException' is
+--   thrown.
+runCommand :: (DotRepr dg n)
+              => String           -- ^ Command to run
+              -> [String]         -- ^ Command-line arguments
+              -> (Handle -> IO a) -- ^ Obtaining the output
+              -> dg n
+              -> IO a
+runCommand cmd args hf dg
+  = mapException notRunnable
+    $ bracket
+        (runInteractiveProcess cmd args Nothing Nothing)
+        (\(inh,outh,errh,_) -> hClose inh >> hClose outh >> hClose errh)
+        $ \(inp,outp,errp,prc) -> do
+
+          -- The input and error are text, not binary
+          hSetBinaryMode inp True
+          hSetBinaryMode errp False
+
+          -- Make sure we close the input or it will hang!!!!!!!
+          forkIO $ hPutCompactDot inp dg >> hClose inp
+
+          -- Need to make sure both the output and error handles are
+          -- really fully consumed.
+          mvOutput <- newEmptyMVar
+          mvErr    <- newEmptyMVar
+
+          forkIO $ signalWhenDone hGetContents' errp mvErr
+          forkIO $ signalWhenDone hf' outp mvOutput
+
+          -- When these are both able to be taken, then the forks are finished
+          err <- takeMVar mvErr
+          output <- takeMVar mvOutput
+
+          exitCode <- waitForProcess prc
+
+          case exitCode of
+            ExitSuccess -> return output
+            _           -> throw . GVProgramExc $ othErr ++ err
+    where
+      notRunnable :: IOException -> GraphvizException
+      notRunnable e = GVProgramExc $ unwords
+                      [ "Unable to call the Graphviz command "
+                      , cmd
+                      , " with the arguments: "
+                      , unwords args
+                      , " because of: "
+                      , show e
+                      ]
+
+      -- Augmenting the hf function to let it work within the forkIO:
+      hf' = mapException fErr . hf
+      fErr :: IOException -> GraphvizException
+      fErr e = GVProgramExc $ "Error re-directing the output from "
+               ++ cmd ++ ": " ++ show e
+
+      othErr = "Error messages from " ++ cmd ++ ":\n"
+
+-- -----------------------------------------------------------------------------
+-- Utility functions
+
+-- | A version of 'hGetContents' that fully evaluates the contents of
+--   the 'Handle' (that is, until EOF is reached).  The 'Handle' is
+--   not closed.
+hGetContents'   :: Handle -> IO String
+hGetContents' h = do r <- hGetContents h
+                     evaluate $ length r
+                     return r
+
+-- | Store the result of the 'Handle' consumption into the 'MVar'.
+signalWhenDone        :: (Handle -> IO a) -> Handle -> MVar a -> IO ()
+signalWhenDone f h mv = f h >>= putMVar mv >> return ()

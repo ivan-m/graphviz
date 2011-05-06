@@ -50,16 +50,12 @@ import Prelude hiding (catch)
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
-import Data.GraphViz.Commands.IO(hPutCompactDot)
+import Data.GraphViz.Commands.IO(hPutCompactDot, runCommand)
 import Data.GraphViz.Exception
 
 import qualified Data.ByteString as SB
 import System.IO( Handle, hClose
                 , hGetContents, hSetBinaryMode)
-import System.Exit(ExitCode(ExitSuccess))
-import System.Process(runInteractiveProcess, waitForProcess)
-import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
-import Control.Exception.Extensible(IOException, bracket, evaluate)
 import Control.Monad(liftM)
 import System.FilePath((<.>))
 
@@ -278,11 +274,10 @@ runGraphvizCommand :: (DotRepr dg n) => GraphvizCommand -> dg n
                       -> IO FilePath
 runGraphvizCommand cmd gr t fp
   = mapException (\(GVProgramExc e) -> GVProgramExc $ addFl e)
-    . liftM (const fp)
     $ graphvizWithHandle cmd gr t toFile
       where
         addFl = (++) ("Unable to create " ++ fp ++ "\n")
-        toFile h = SB.hGetContents h >>= SB.writeFile fp
+        toFile h = SB.hGetContents h >>= SB.writeFile fp >> return fp
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
 --   the provided 'FilePath' for the output file.
@@ -296,8 +291,8 @@ addExtension cmd t fp = cmd t fp'
 --   result to the given handle rather than to a file.
 --
 --   Note that the @'Handle' -> 'IO' a@ function /must/ fully consume
---   the input from the 'Handle'; 'hGetContents'' is a version of
---   'hGetContents' that will ensure this happens.
+--   the input from the 'Handle'; e.g. use strict @ByteStrings@ rather
+--   than lazy ones.
 --
 --   If the command was unsuccessful, then a 'GraphvizException' is
 --   thrown.
@@ -314,62 +309,12 @@ graphvizWithHandle = graphvizWithHandle'
 graphvizWithHandle' :: (DotRepr dg n, GraphvizResult o)
                        => GraphvizCommand -> dg n -> o
                        -> (Handle -> IO a) -> IO a
-graphvizWithHandle' cmd gr t f
-  = mapException notRunnable
-    $ bracket
-        (runInteractiveProcess cmd' args Nothing Nothing)
-        (\(inh,outh,errh,_) -> hClose inh >> hClose outh >> hClose errh)
-        $ \(inp,outp,errp,prc) -> do
-
-          -- The input and error are text, not binary
-          hSetBinaryMode inp False
-          hSetBinaryMode errp False
-          hSetBinaryMode outp $ isBinary t -- Depends on output type
-
-          -- Make sure we close the input or it will hang!!!!!!!
-          forkIO $ hPutCompactDot inp gr >> hClose inp
-
-          -- Need to make sure both the output and error handles are
-          -- really fully consumed.
-          mvOutput <- newEmptyMVar
-          mvErr    <- newEmptyMVar
-
-          forkIO $ signalWhenDone hGetContents' errp mvErr
-          forkIO $ signalWhenDone f' outp mvOutput
-
-          -- When these are both able to be taken, then the forks are finished
-          err <- takeMVar mvErr
-          output <- takeMVar mvOutput
-
-          exitCode <- waitForProcess prc
-
-          case exitCode of
-            ExitSuccess -> return output
-            _           -> throw . GVProgramExc $ othErr ++ err
-    where
-      notRunnable :: IOException -> GraphvizException
-      notRunnable e = GVProgramExc $ unwords
-                      [ "Unable to call the Graphviz command "
-                      , cmd'
-                      , " with the arguments: "
-                      , unwords args
-                      , " because of: "
-                      , show e
-                      ]
-      cmd' = showCmd cmd
-      args = ["-T" ++ outputCall t]
-
-      -- Augmenting the f function to let it work within the forkIO:
-      f' = mapException fErr . f
-      fErr :: IOException -> GraphvizException
-      fErr e = GVProgramExc $ "Error re-directing the output from "
-               ++ cmd' ++ ": " ++ show e
-
-      othErr = "Error messages from " ++ cmd' ++ ":\n"
-
--- | Store the result of the 'Handle' consumption into the 'MVar'.
-signalWhenDone        :: (Handle -> IO a) -> Handle -> MVar a -> IO ()
-signalWhenDone f h mv = f h >>= putMVar mv >> return ()
+graphvizWithHandle' cmd dg t f = runCommand (showCmd cmd)
+                                            ["-T" ++ outputCall t]
+                                            f'
+                                            dg
+  where
+    f' h = hSetBinaryMode h (isBinary t) >> f h
 
 -- | Run the chosen Graphviz command on this graph and render it using
 --   the given canvas type.
@@ -378,20 +323,9 @@ runGraphvizCanvas          :: (DotRepr dg n) => GraphvizCommand -> dg n
 runGraphvizCanvas cmd gr c = graphvizWithHandle' cmd gr c nullHandle
     where
       nullHandle :: Handle -> IO ()
-      nullHandle = liftM (const ()) . hGetContents'
+      nullHandle = liftM (const ()) . SB.hGetContents
 
 -- | Run the recommended Graphviz command on this graph and render it
 --   using the given canvas type.
 runGraphvizCanvas'   :: (DotRepr dg n) => dg n -> GraphvizCanvas -> IO ()
 runGraphvizCanvas' d = runGraphvizCanvas (commandFor d) d
-
--- -----------------------------------------------------------------------------
--- Utility functions
-
--- | A version of 'hGetContents' that fully evaluates the contents of
---   the 'Handle' (that is, until EOF is reached).  The 'Handle' is
---   not closed.
-hGetContents'   :: Handle -> IO String
-hGetContents' h = do r <- hGetContents h
-                     evaluate $ length r
-                     return r
