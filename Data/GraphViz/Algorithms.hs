@@ -107,7 +107,7 @@ edgeClusters nl = (toM *** map snd) . partition (not . null . fst)
                                    $ zip (nl' Map.! n1) (nl' Map.! n2)
     toM = Map.map DList.toList
           . Map.fromListWith (flip DList.append)
-          . map (head *** DList.singleton)
+          . map (last *** DList.singleton)
     setE e as = e { edgeAttributes = as }
 
 commonAttrs        :: (a -> Attributes) -> [a] -> Set Attribute
