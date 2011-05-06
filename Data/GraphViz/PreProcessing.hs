@@ -22,7 +22,7 @@
 module Data.GraphViz.PreProcessing(preProcess) where
 
 import Data.GraphViz.Parsing
-import Data.GraphViz.Exception
+import Data.GraphViz.Exception(GraphvizException(NotDotCode), throw)
 
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)

@@ -85,7 +85,7 @@ import Data.GraphViz.Util
 import Data.GraphViz.State
 -- To avoid orphan instances and cyclic imports
 import Data.GraphViz.Attributes.ColorScheme
-import Data.GraphViz.Exception
+import Data.GraphViz.Exception(GraphvizException(NotDotCode), throw)
 
 import Text.ParserCombinators.Poly.StateText hiding (bracket, empty, indent, runParser)
 import qualified Text.ParserCombinators.Poly.StateText as P

@@ -12,6 +12,7 @@ module Data.GraphViz.Exception
        , mapException
        , throw
        , handle
+       , bracket
        ) where
 
 import Control.Exception.Extensible
