@@ -59,7 +59,7 @@ createCanonical gas cl nl es
              , graphStatements = gStmts
              }
   where
-    gStmts = DotStmts { attrStmts = [gas]
+    gStmts = DotStmts { attrStmts = if null $ attrs gas then [] else [gas]
                       , subGraphs = clusts topClustAs topClustAs' clustNs
                       , nodeStmts = topNs
                       , edgeStmts = topEs
@@ -82,7 +82,7 @@ createCanonical gas cl nl es
       where
         cID = head . fst $ head cns
         (nested, here) = thisLevel $ map (first tail) cns
-        stmts = DotStmts { attrStmts = [GraphAttrs as']
+        stmts = DotStmts { attrStmts = if null as' then [] else [GraphAttrs as']
                          , subGraphs = clusts as asS nested
                          , nodeStmts = here
                          , edgeStmts = edges
