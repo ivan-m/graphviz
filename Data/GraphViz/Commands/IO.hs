@@ -70,22 +70,26 @@ renderCompactDot = displayT . renderCompact
   you wish to deal with existing Dot code that uses this encoding, you
   will need to manually read that file in to a 'Text' value.
 
-  If a file uses a non-UTF-8 encoding, then a 'GraphvizException' will
+  If a non-UTF-8 encoding is used, then a 'GraphvizException' will
   be thrown.
 -}
 
--- | Read a UTF-8 encoded (lazy) 'ByteString', throwing a
---   'GraphvizException' if there is a decoding error.
+-- | Explicitly convert a (lazy) 'ByteString' to a 'Text' value using
+--   UTF-8 encoding, throwing a 'GraphvizException' if there is a
+--   decoding error.
 toUTF8 :: ByteString -> Text
 toUTF8 = mapException (\e@DecodeError{} -> NotUTF8Dot $ show e)
          . T.decodeUtf8
 
 -- -----------------------------------------------------------------------------
--- Output
+-- Low-level Input/Output
 
+-- | Output the 'DotRepr' to the specified 'Handle'.
 hPutDot :: (DotRepr dg n) => Handle -> dg n -> IO ()
 hPutDot = toHandle printDotGraph
 
+-- | Output the 'DotRepr' to the spcified 'Handle' in a more compact,
+--   machine-oriented form.
 hPutCompactDot :: (DotRepr dg n) => Handle -> dg n -> IO ()
 hPutCompactDot = toHandle renderCompactDot
 
@@ -99,24 +103,31 @@ hGetStrict :: Handle -> IO Text
 hGetStrict = liftM (toUTF8 . B.fromChunks . (:[]))
              . SB.hGetContents
 
+-- | Read in and parse a 'DotRepr' value from the specified 'Handle'.
 hGetDot :: (DotRepr dg n) => Handle -> IO (dg n)
 hGetDot = liftM parseDotGraph . hGetStrict
 
+-- | Write the specified 'DotRepr' to file.
 writeDotFile   :: (DotRepr dg n) => FilePath -> dg n -> IO ()
 writeDotFile f = withFile f WriteMode . flip hPutDot
 
+-- | Read in and parse a 'DotRepr' value from a file.
 readDotFile   :: (DotRepr dg n) => FilePath -> IO (dg n)
 readDotFile f = withFile f ReadMode hGetDot
 
+-- | Print the specified 'DotRepr' to 'stdout'.
 putDot :: (DotRepr dg n) => dg n -> IO ()
 putDot = hPutDot stdout
 
+-- | Read in and parse a 'DotRepr' value from 'stdin'.
 readDot :: (DotRepr dg n) => IO (dg n)
 readDot = hGetDot stdin
 
 -- -----------------------------------------------------------------------------
 
--- | Run an external command on the specified 'DotRepr'.
+-- | Run an external command on the specified 'DotRepr'.  Remember to
+--   use 'hSetBinaryMode' on the 'Handle' for the output function if
+--   necessary.
 --
 --   If the command was unsuccessful, then a 'GraphvizException' is
 --   thrown.
@@ -133,7 +144,6 @@ runCommand cmd args hf dg
         (\(inh,outh,errh,_) -> hClose inh >> hClose outh >> hClose errh)
         $ \(inp,outp,errp,prc) -> do
 
-          -- The input and error are text, not binary
           hSetBinaryMode inp True
           hSetBinaryMode errp False
 
