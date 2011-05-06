@@ -11,12 +11,13 @@
 -}
 module Data.GraphViz.Algorithms
        ( -- * Canonicalisation Options
+         -- $options
          CanonicaliseOptions(..)
        , defaultCanonOptions
+       , dotLikeOptions
          -- * Canonicalisation
        , canonicalise
        , canonicaliseOptions
-
        ) where
 
 import Data.GraphViz.Attributes( Attribute, Attributes
@@ -37,29 +38,11 @@ import Control.Arrow(first, second, (***))
 
 -- -----------------------------------------------------------------------------
 
--- | Implements similar functionality to @dot -Tcanon@.  However, this
---   method requires no IO and doesn't care about image locations, etc.
---
---   This function will create a single explicit definition for every
---   node in the original graph and place it in the appropriate
---   position in the cluster hierarchy.  All edges are found in the
---   deepest cluster that contains both nodes.  Currently node and
---   edge attributes are not grouped into global ones.
-canonicalise :: (Ord n, DotRepr dg n) => dg n -> DotGraph n
-canonicalise = canonicaliseOptions defaultCanonOptions
-
-canonicaliseOptions :: (Ord n, DotRepr dg n) => CanonicaliseOptions
-                       -> dg n -> DotGraph n
-canonicaliseOptions opts dg = cdg { strictGraph   = graphIsStrict dg
-                                  , directedGraph = graphIsDirected dg
-                                  , graphID       = getID dg
-                                  }
-  where
-    cdg = createCanonical opts gas cl nl es
-
-    (gas, cl) = graphStructureInformation dg
-    nl = nodeInformation True dg
-    es = edgeInformation True dg
+{- $options
+   For simplicity, many algorithms end up using the canonicalisation
+   functions to create the new 'DotGraph'.  'CanonicaliseOptions' allows
+   you to configure how the output is generated.
+-}
 
 data CanonicaliseOptions = COpts { -- | Place edges in the clusters
                                    --   where their nodes are rather
@@ -75,6 +58,39 @@ defaultCanonOptions :: CanonicaliseOptions
 defaultCanonOptions = COpts { edgesInClusters = True
                             , groupAttributes = True
                             }
+
+-- | Options that are more like how @dot -Tcanon@ works.
+dotLikeOptions :: CanonicaliseOptions
+dotLikeOptions = COpts { edgesInClusters = True
+                       , groupAttributes = False
+                       }
+
+-- -----------------------------------------------------------------------------
+
+-- | Implements similar functionality to @dot -Tcanon@.  However, this
+--   method requires no IO and doesn't care about image locations, etc.
+--
+--   This function will create a single explicit definition for every
+--   node in the original graph and place it in the appropriate
+--   position in the cluster hierarchy.  All edges are found in the
+--   deepest cluster that contains both nodes.  Currently node and
+--   edge attributes are not grouped into global ones.
+canonicalise :: (Ord n, DotRepr dg n) => dg n -> DotGraph n
+canonicalise = canonicaliseOptions defaultCanonOptions
+
+-- | As with 'canonicalise', but allow custom 'CanonicaliseOptions'.
+canonicaliseOptions :: (Ord n, DotRepr dg n) => CanonicaliseOptions
+                       -> dg n -> DotGraph n
+canonicaliseOptions opts dg = cdg { strictGraph   = graphIsStrict dg
+                                  , directedGraph = graphIsDirected dg
+                                  , graphID       = getID dg
+                                  }
+  where
+    cdg = createCanonical opts gas cl nl es
+
+    (gas, cl) = graphStructureInformation dg
+    nl = nodeInformation True dg
+    es = edgeInformation True dg
 
 createCanonical :: (Ord n) => CanonicaliseOptions -> GlobalAttributes
                    -> ClusterLookup -> NodeLookup n -> [DotEdge n] -> DotGraph n
