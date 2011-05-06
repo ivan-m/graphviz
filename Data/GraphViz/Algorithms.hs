@@ -10,7 +10,13 @@
    tools but without the I/O requirement.
 -}
 module Data.GraphViz.Algorithms
-       ( canonicalise
+       ( -- * Canonicalisation Options
+         CanonicaliseOptions(..)
+       , defaultCanonOptions
+         -- * Canonicalisation
+       , canonicalise
+       , canonicaliseOptions
+
        ) where
 
 import Data.GraphViz.Attributes( Attribute, Attributes
@@ -40,61 +46,128 @@ import Control.Arrow(first, second, (***))
 --   deepest cluster that contains both nodes.  Currently node and
 --   edge attributes are not grouped into global ones.
 canonicalise :: (Ord n, DotRepr dg n) => dg n -> DotGraph n
-canonicalise dg = cdg { strictGraph   = graphIsStrict dg
-                      , directedGraph = graphIsDirected dg
-                      , graphID       = getID dg
-                      }
+canonicalise = canonicaliseOptions defaultCanonOptions
+
+canonicaliseOptions :: (Ord n, DotRepr dg n) => CanonicaliseOptions
+                       -> dg n -> DotGraph n
+canonicaliseOptions opts dg = cdg { strictGraph   = graphIsStrict dg
+                                  , directedGraph = graphIsDirected dg
+                                  , graphID       = getID dg
+                                  }
   where
-    cdg = createCanonical gas cl nl es
+    cdg = createCanonical opts gas cl nl es
 
     (gas, cl) = graphStructureInformation dg
     nl = nodeInformation True dg
     es = edgeInformation True dg
 
-createCanonical :: (Ord n) => GlobalAttributes -> ClusterLookup -> NodeLookup n -> [DotEdge n] -> DotGraph n
-createCanonical gas cl nl es
+data CanonicaliseOptions = COpts { -- | Place edges in the clusters
+                                   --   where their nodes are rather
+                                   --   than in the top-level graph.
+                                   edgesInClusters :: Bool
+                                   -- | Put common 'Attributes' as
+                                   --   top-level 'GlobalAttributes'.
+                                 , groupAttributes :: Bool
+                                 }
+                         deriving (Eq, Ord, Show, Read)
+
+defaultCanonOptions :: CanonicaliseOptions
+defaultCanonOptions = COpts { edgesInClusters = True
+                            , groupAttributes = True
+                            }
+
+createCanonical :: (Ord n) => CanonicaliseOptions -> GlobalAttributes
+                   -> ClusterLookup -> NodeLookup n -> [DotEdge n] -> DotGraph n
+createCanonical opts gas cl nl es
   = DotGraph { strictGraph     = undefined
              , directedGraph   = undefined
              , graphID         = undefined
              , graphStatements = gStmts
              }
   where
-    gStmts = DotStmts { attrStmts = if null $ attrs gas then [] else [gas]
-                      , subGraphs = clusts topClustAs topClustAs' clustNs
-                      , nodeStmts = topNs
-                      , edgeStmts = topEs
+    gStmts = DotStmts { attrStmts = gas'
+                      , subGraphs = sgs
+                      , nodeStmts = topNs'
+                      , edgeStmts = topEs'
                       }
 
+    gas' = nonEmptyGAs [ gas
+                       , NodeAttrs topNAs
+                       , EdgeAttrs topEAs
+                       ]
     nUnlook (n,(p,as)) = (F.toList p, DotNode n as)
     ns = sortBy (flip compare `on` fst) . map nUnlook $ Map.toList nl
     (clustNs, topNs) = thisLevel ns
-    (clustEL, topEs) = edgeClusters nl es
+    (clustEL, topEs) = if edgesInClusters opts
+                       then edgeClusters nl es
+                       else (Map.empty, es)
     topClustAs = filter usedByClusters $ attrs gas
     topClustAs' = toSAttr topClustAs
 
-    clusts oAs oAsS = map (toClust oAs oAsS)
-                      . groupBy ((==) `on` (listToMaybe . fst))
+    topNAs = mCommon nodeAttributes topNs
+    topNAs' = toSAttr topNAs
+    topNs' = map (\dn -> dn {nodeAttributes = nodeAttributes dn \\ topNAs}) topNs
 
-    toClust oAs oAsS cns = DotSG { isCluster     = True
-                                 , subGraphID    = cID
-                                 , subGraphStmts = stmts
-                                 }
+    topEAs = mCommon edgeAttributes topEs
+    topEAs' = toSAttr topEAs
+    topEs' = map (\de -> de {edgeAttributes = edgeAttributes de \\ topEAs}) topEs
+
+    sgs = clusts topClustAs topClustAs' topNAs topNAs' topEAs topEAs' clustNs
+
+    clusts oAs oAsS nAs nAsS eAs eAsS = map (toClust oAs oAsS nAs nAsS eAs eAsS)
+                                        . groupBy ((==) `on` (listToMaybe . fst))
+
+    toClust oAs oAsS nAs nAsS eAs eAsS cns
+      = DotSG { isCluster     = True
+              , subGraphID    = cID
+              , subGraphStmts = stmts
+              }
       where
         cID = head . fst $ head cns
         (nested, here) = thisLevel $ map (first tail) cns
-        stmts = DotStmts { attrStmts = if null as' then [] else [GraphAttrs as']
-                         , subGraphs = clusts as asS nested
-                         , nodeStmts = here
-                         , edgeStmts = edges
+        stmts = DotStmts { attrStmts = sgAs
+                         , subGraphs = subSGs
+                         , nodeStmts = here'
+                         , edgeStmts = edges'
                          }
+
+        sgAs = nonEmptyGAs [ GraphAttrs as'
+                           , NodeAttrs nas'
+                           , EdgeAttrs eas'
+                           ]
+
+        subSGs = clusts as asS nas nasS eas easS nested
+
         as = attrs . snd $ cl Map.! cID
         asS = toSAttr as
+        as' = innerAttributes oAs oAsS as
 
-        as' = subClusterAttributes oAs oAsS as
+        nas = mCommon nodeAttributes here
+        nasS = toSAttr nas
+        nas' = innerAttributes nAs nAsS nas
+        here' = map (\dn -> dn {nodeAttributes = nodeAttributes dn \\ nas}) here
+
+        eas = mCommon edgeAttributes edges
+        easS = toSAttr eas
+        eas' = innerAttributes eAs eAsS eas
+        edges' = map (\de -> de {edgeAttributes = edgeAttributes de \\ eas}) edges
 
         edges = fromMaybe [] $ cID `Map.lookup` clustEL
 
     thisLevel = second (map snd) . span (not . null . fst)
+
+    mCommon f = if groupAttributes opts
+                then commonAttrs f
+                else const []
+
+nonEmptyGAs :: [GlobalAttributes] -> [GlobalAttributes]
+nonEmptyGAs = filter (not . null . attrs)
+
+commonAttrs         :: (a -> Attributes) -> [a] -> Attributes
+commonAttrs _ []  = []
+commonAttrs _ [_] = []
+commonAttrs f xs  = Set.toList . foldr1 Set.intersection
+                    $ map (Set.fromList . f) xs
 
 edgeClusters    :: (Ord n) => NodeLookup n -> [DotEdge n]
                    -> (Map (Maybe GraphID) [DotEdge n], [DotEdge n])
@@ -110,14 +183,9 @@ edgeClusters nl = (toM *** map snd) . partition (not . null . fst)
           . map (last *** DList.singleton)
     setE e as = e { edgeAttributes = as }
 
-commonAttrs        :: (a -> Attributes) -> [a] -> Set Attribute
-commonAttrs _ [] = Set.empty
-commonAttrs f xs = foldr1 Set.intersection
-                   $ map (Set.fromList . f) xs
-
-subClusterAttributes                    :: Attributes -> SAttrs
-                                           -> Attributes -> Attributes
-subClusterAttributes outer outerS inner = sort $ inner' ++ override
+innerAttributes                    :: Attributes -> SAttrs
+                                      -> Attributes -> Attributes
+innerAttributes outer outerS inner = sort $ inner' ++ override
   where
     -- Remove all Attributes that are also defined in the outer cluster
     inner' = inner \\ outer
