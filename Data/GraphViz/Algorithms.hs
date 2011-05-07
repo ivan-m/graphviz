@@ -20,7 +20,7 @@ module Data.GraphViz.Algorithms
        , canonicaliseOptions
        ) where
 
-import Data.GraphViz.Attributes( Attribute, Attributes
+import Data.GraphViz.Attributes( Attributes
                                , usedByClusters, defaultAttributeValue)
 import Data.GraphViz.Attributes.Same
 import Data.GraphViz.Types
@@ -32,7 +32,6 @@ import qualified Data.DList as DList
 import qualified Data.Map as Map
 import Data.Map(Map)
 import qualified Data.Set as Set
-import Data.Set(Set)
 import qualified Data.Foldable as F
 import Control.Arrow(first, second, (***))
 
@@ -197,7 +196,6 @@ edgeClusters nl = (toM *** map snd) . partition (not . null . fst)
     toM = Map.map DList.toList
           . Map.fromListWith (flip DList.append)
           . map (last *** DList.singleton)
-    setE e as = e { edgeAttributes = as }
 
 innerAttributes                    :: Attributes -> SAttrs
                                       -> Attributes -> Attributes

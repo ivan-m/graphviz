@@ -50,12 +50,11 @@ import Prelude hiding (catch)
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes(Attribute(Z))
-import Data.GraphViz.Commands.IO(hPutCompactDot, runCommand)
+import Data.GraphViz.Commands.IO(runCommand)
 import Data.GraphViz.Exception
 
 import qualified Data.ByteString as SB
-import System.IO( Handle, hClose
-                , hGetContents, hSetBinaryMode)
+import System.IO(Handle, hSetBinaryMode)
 import Control.Monad(liftM)
 import System.FilePath((<.>))
 
