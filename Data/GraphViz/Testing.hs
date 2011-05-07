@@ -186,7 +186,7 @@ test_printParseID_Attributes
       prop = prop_printParseListID
 
       args = stdArgs { maxSuccess = numGen }
-      numGen = 10000
+      numGen = 1000
       defGen = maxSuccess stdArgs
 
       dsc = "The most common source of errors in printing and parsing are for\n\
