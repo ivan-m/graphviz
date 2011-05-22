@@ -82,6 +82,7 @@ module Data.GraphViz.Attributes
     , EscString
     , Label(..)
     , Labellable(..)
+    , toLabel
     , VerticalPlacement(..)
     , module Data.GraphViz.Attributes.HTML
       -- *** Types representing the Dot grammar for records.
@@ -1555,50 +1556,57 @@ instance ParseDot Label where
 -- | A convenience class to make it easier to create labels.  It is
 --   highly recommended that you make any other types that you wish to
 --   create labels from an instance of this class, preferably via the
---   @String@ instance.
+--   @String@ or @Text@ instances.
 class Labellable a where
-  toLabel :: a -> Attribute
+  -- | This function only creates a 'Label' value to enable you to use
+  --   it for 'Attributes' such as 'HeadLabel', etc.
+  toLabelValue :: a -> Label
+
+-- | Equivalent to @'Label' . 'toLabelValue'@; the most common label
+--   'Attribute'.
+toLabel :: (Labellable a) => a -> Attribute
+toLabel = Label . toLabelValue
 
 instance Labellable Text where
-  toLabel = Label . StrLabel
+  toLabelValue = StrLabel
 
 instance Labellable Char where
-  toLabel = toLabel . T.singleton
+  toLabelValue = toLabelValue . T.singleton
 
 instance Labellable String where
-  toLabel = toLabel . T.pack
+  toLabelValue = toLabelValue . T.pack
 
 instance Labellable Int where
-  toLabel = toLabel . show
+  toLabelValue = toLabelValue . show
 
 instance Labellable Double where
-  toLabel = toLabel . show
+  toLabelValue = toLabelValue . show
 
 instance Labellable Bool where
-  toLabel = toLabel . show
+  toLabelValue = toLabelValue . show
 
 instance Labellable HtmlLabel where
-  toLabel = Label . HtmlLabel
+  toLabelValue = HtmlLabel
 
 instance Labellable HtmlText where
-  toLabel = toLabel . HtmlText
+  toLabelValue = toLabelValue . HtmlText
 
 instance Labellable HtmlTable where
-  toLabel = toLabel . HtmlTable
+  toLabelValue = toLabelValue . HtmlTable
 
 instance Labellable RecordFields where
-  toLabel = Label . RecordLabel
+  toLabelValue = RecordLabel
 
 instance Labellable RecordField where
-  toLabel = toLabel . (:[])
+  toLabelValue = toLabelValue . (:[])
 
 -- | A shorter variant than using @PortName@ from 'RecordField'.
 instance Labellable PortName where
-  toLabel = toLabel . PortName
+  toLabelValue = toLabelValue . PortName
 
 -- | A shorter variant than using 'LabelledTarget'.
 instance Labellable (PortName, EscString) where
-  toLabel = toLabel . uncurry LabelledTarget
+  toLabelValue = toLabelValue . uncurry LabelledTarget
 
 -- -----------------------------------------------------------------------------
 
