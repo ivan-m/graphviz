@@ -117,7 +117,7 @@ createCanonical opts gas cl nl es
                        , EdgeAttrs topEAs
                        ]
     nUnlook (n,(p,as)) = (F.toList p, DotNode n as)
-    ns = sortBy (flip compare `on` fst) . map nUnlook $ Map.toList nl
+    ns = sortBy (compLists `on` fst) . map nUnlook $ Map.toList nl
     (clustNs, topNs) = thisLevel ns
     (clustEL, topEs) = if edgesInClusters opts
                        then edgeClusters nl es
@@ -180,6 +180,16 @@ createCanonical opts gas cl nl es
     mCommon f = if groupAttributes opts
                 then commonAttrs f
                 else const []
+
+
+-- Same as compare for lists, except shorter lists are GT
+compLists :: (Ord a) => [a] -> [a] -> Ordering
+compLists []     []     = EQ
+compLists []     _      = GT
+compLists _      []     = LT
+compLists (x:xs) (y:ys) = case compare x y of
+                            EQ  -> compare xs ys
+                            oth -> oth
 
 nonEmptyGAs :: [GlobalAttributes] -> [GlobalAttributes]
 nonEmptyGAs = filter (not . null . attrs)
