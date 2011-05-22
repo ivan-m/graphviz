@@ -18,6 +18,9 @@ module Data.GraphViz.Algorithms
          -- * Canonicalisation
        , canonicalise
        , canonicaliseOptions
+         -- * Dealing with transitive edges
+       , transitiveReduction
+       , transitiveReductionOptions
        ) where
 
 import Data.GraphViz.Attributes( Attributes
@@ -26,14 +29,17 @@ import Data.GraphViz.Attributes.Same
 import Data.GraphViz.Types
 
 import Data.Function(on)
-import Data.List(groupBy, sortBy, partition, (\\), sort)
+import Data.List(groupBy, sortBy, partition, (\\), sort, deleteBy)
 import Data.Maybe(listToMaybe, mapMaybe, fromMaybe)
 import qualified Data.DList as DList
 import qualified Data.Map as Map
 import Data.Map(Map)
 import qualified Data.Set as Set
+import Data.Set(Set)
 import qualified Data.Foldable as F
 import Control.Arrow(first, second, (***))
+import Control.Monad(unless)
+import Control.Monad.Trans.State
 
 -- -----------------------------------------------------------------------------
 
@@ -213,3 +219,160 @@ innerAttributes outer outerS inner = sort $ inner' ++ override
     defAttr a = case defaultAttributeValue a of
                   Just a' | a == a' -> Nothing
                   ma'               -> ma'
+
+-- -----------------------------------------------------------------------------
+
+{- $transitive
+
+   In large, cluttered graphs, it can often be difficult to see what
+   is happening due to the number of edges being drawn.  As such, it is
+   often useful to remove transitive edges from the graph before
+   visualising it.
+
+   For example, consider the following Dot graph:
+
+   > digraph {
+   >     a -> b;
+   >     a -> c;
+   >     b -> c;
+   > }
+
+   This graph has the transitive edge @a -> c@ (as we can reach @c@ from @a@ via @b@).
+
+   Graphviz comes with the @tred@ program to perform these transitive
+   reductions.  'transitiveReduction' and 'transitiveReductionOptions'
+   are pure Haskell re-implementations of @tred@ with the following differences:
+
+   * @tred@ prints a message to stderr if a cycle is detected; these
+     functions do not.
+
+   * @tred@ preserves the original structure of the graph; these
+     functions use the canonicalisation functions above to create the new
+     graph (rather than re-implement creation functions for each one).
+
+   When a graph contains cycles, an arbitrary edge from that cycle is
+   ignored whilst calculating the transitive reduction.  Multiple edges
+   are also reduced (such that only the first edge between two nodes is
+   kept).
+
+   Note that transitive reduction only makes sense for directed graphs;
+   for undirected graphs these functions are identical to the
+   canonicalisation functions above.
+ -}
+
+transitiveReduction :: (DotRepr dg n, Ord n) => dg n -> DotGraph n
+transitiveReduction = transitiveReductionOptions defaultCanonOptions
+
+transitiveReductionOptions         :: (DotRepr dg n, Ord n) => CanonicaliseOptions
+                                      -> dg n -> DotGraph n
+transitiveReductionOptions opts dg = cdg { strictGraph = graphIsStrict dg
+                                         , directedGraph = graphIsDirected dg
+                                         , graphID = getID dg
+                                         }
+  where
+    cdg = createCanonical opts gas cl nl es'
+    (gas, cl) = graphStructureInformation dg
+    nl = nodeInformation True dg
+    es = rmTransEdges $ edgeInformation True dg
+    es' | graphIsDirected dg = rmTransEdges es
+        | otherwise          = es
+
+rmTransEdges    :: (Ord n) => [DotEdge n] -> [DotEdge n]
+rmTransEdges [] = []
+rmTransEdges es = concatMap (map snd . outgoing) $ Map.elems esM
+  where
+    tes = tagEdges es
+
+    esMS = do edgeGraph tes
+              ns <- getsMap Map.keys
+              mapM_ (traverse zeroTag) ns
+
+    esM = fst $ execState esMS (Map.empty, Set.empty)
+
+type Tag = Int
+type TagSet = Set Int
+type TaggedEdge n = (Tag, DotEdge n)
+
+-- A "nonsense" tag to use as an initial value
+zeroTag :: Tag
+zeroTag = 0
+
+tagEdges :: [DotEdge n] -> [TaggedEdge n]
+tagEdges = zip [(succ zeroTag)..]
+
+data TaggedValues n = TV { marked   :: Bool
+                         , incoming :: [TaggedEdge n]
+                         , outgoing :: [TaggedEdge n]
+                         }
+                    deriving (Eq, Ord, Show, Read)
+
+defTV :: TaggedValues n
+defTV = TV False [] []
+
+type TagMap n = Map n (TaggedValues n)
+
+type TagState n a = State (TagMap n, TagSet) a
+
+getMap :: TagState n (TagMap n)
+getMap = gets fst
+
+getsMap   :: (TagMap n -> a) -> TagState n a
+getsMap f = gets (f . fst)
+
+modifyMap   :: (TagMap n -> TagMap n) -> TagState n ()
+modifyMap f = modify (first f)
+
+getSet :: TagState n TagSet
+getSet = gets snd
+
+modifySet   :: (TagSet -> TagSet) -> TagState n ()
+modifySet f = modify (second f)
+
+-- Create the Map representing the graph from the edges.
+edgeGraph :: (Ord n) => [TaggedEdge n] -> TagState n ()
+edgeGraph = mapM_ addEdge
+  where
+    addEdge te = addVal f tvOut >> addVal t tvIn
+      where
+        e = snd te
+        f = edgeFromNodeID e
+        t = edgeToNodeID e
+        addVal n tv = modifyMap (Map.insertWith mergeTV n tv)
+        tvIn  = defTV { incoming = [te] }
+        tvOut = defTV { outgoing = [te] }
+        mergeTV tvNew tv  = tv { incoming = incoming tvNew ++ incoming tv
+                               , outgoing = outgoing tvNew ++ outgoing tv
+                               }
+
+-- Perform a DFS to determine whether or not to keep each edge.
+traverse     :: (Ord n) => Tag -> n -> TagState n ()
+traverse t n = do setMark True
+                  checkIncoming
+                  outEs <- getsMap (maybe [] outgoing . Map.lookup n)
+                  mapM_ maybeRecurse outEs
+                  setMark False
+
+  where
+    setMark mrk = modifyMap (Map.adjust (\tv -> tv { marked = mrk }) n)
+
+    isMarked m n' = maybe False marked $ n' `Map.lookup` m
+
+    checkIncoming = do m <- gets fst
+                       let es = incoming $ m Map.! n
+                           (keepEs, delEs) = partition (keepEdge m) es
+                       modifyMap (Map.adjust (\tv -> tv {incoming = keepEs}) n)
+                       modifySet (Set.union $ Set.fromList (map fst delEs))
+                       mapM_ delOtherEdge delEs
+      where
+        keepEdge m (t',e) = t == t' || not (isMarked m $ edgeFromNodeID e)
+
+        delOtherEdge te = modifyMap (Map.adjust delE . edgeFromNodeID $ snd te)
+          where
+            delE tv = tv {outgoing = deleteBy ((==) `on` fst) te $ outgoing tv}
+
+    maybeRecurse (t',e) = do m <- getMap
+                             delSet <- getSet
+                             let n' = edgeToNodeID e
+                             unless (isMarked m n' || t' `Set.member` delSet)
+                               $ traverse t' n'
+
