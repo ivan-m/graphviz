@@ -8,7 +8,7 @@
    Defines various algorithms for use on 'DotRepr' graphs.  These are
    typically re-implementations of behaviour found in existing Graphviz
    tools but without the I/O requirement.
--}
+ -}
 module Data.GraphViz.Algorithms
        ( -- * Canonicalisation Options
          -- $options
@@ -47,7 +47,7 @@ import Control.Monad.Trans.State
    For simplicity, many algorithms end up using the canonicalisation
    functions to create the new 'DotGraph'.  'CanonicaliseOptions' allows
    you to configure how the output is generated.
--}
+ -}
 
 data CanonicaliseOptions = COpts { -- | Place edges in the clusters
                                    --   where their nodes are rather
@@ -138,6 +138,7 @@ createCanonical opts gas cl nl es
     clusts oAs oAsS nAs nAsS eAs eAsS = map (toClust oAs oAsS nAs nAsS eAs eAsS)
                                         . groupBy ((==) `on` (listToMaybe . fst))
 
+    -- Create a new cluster.
     toClust oAs oAsS nAs nAsS eAs eAsS cns
       = DotSG { isCluster     = True
               , subGraphID    = cID
@@ -194,12 +195,14 @@ compLists (x:xs) (y:ys) = case compare x y of
 nonEmptyGAs :: [GlobalAttributes] -> [GlobalAttributes]
 nonEmptyGAs = filter (not . null . attrs)
 
+-- Return all attributes found in every value.
 commonAttrs         :: (a -> Attributes) -> [a] -> Attributes
 commonAttrs _ []  = []
 commonAttrs _ [_] = []
 commonAttrs f xs  = Set.toList . foldr1 Set.intersection
                     $ map (Set.fromList . f) xs
 
+-- Assign each edge into the cluster it belongs in.
 edgeClusters    :: (Ord n) => NodeLookup n -> [DotEdge n]
                    -> (Map (Maybe GraphID) [DotEdge n], [DotEdge n])
 edgeClusters nl = (toM *** map snd) . partition (not . null . fst)
@@ -213,6 +216,8 @@ edgeClusters nl = (toM *** map snd) . partition (not . null . fst)
           . Map.fromListWith (flip DList.append)
           . map (last *** DList.singleton)
 
+-- Return only those attributes that are required within the inner
+-- sub-graph.
 innerAttributes                    :: Attributes -> SAttrs
                                       -> Attributes -> Attributes
 innerAttributes outer outerS inner = sort $ inner' ++ override
@@ -220,7 +225,7 @@ innerAttributes outer outerS inner = sort $ inner' ++ override
     -- Remove all Attributes that are also defined in the outer cluster
     inner' = inner \\ outer
 
-    -- Need to consider those Attributes that were defined /after/ this sub-cluster
+    -- Need to consider those Attributes that were defined /after/ this value
     override = mapMaybe defAttr . unSame
                $ outerS `Set.difference` toSAttr inner
 
