@@ -77,6 +77,10 @@ module Data.GraphViz.Attributes
 
       -- * Value types for @Attribute@s.
     , module Data.GraphViz.Attributes.Colors
+    , bgColor
+    , fillColor
+    , fontColor
+    , color
 
       -- ** Labels
     , EscString
@@ -1202,6 +1206,28 @@ defaultAttributeValue _                    = Nothing
 
  -}
 type EscString = Text
+
+-- -----------------------------------------------------------------------------
+
+-- | A convenience function to make it easier to use 'X11Color'
+--   values; equivalent to @BgColor . X11Color@.
+bgColor :: X11Color -> Attribute
+bgColor = BgColor . X11Color
+
+-- | A convenience function to make it easier to use 'X11Color'
+--   values; equivalent to @FillColor . X11Color@.
+fillColor :: X11Color -> Attribute
+fillColor = FillColor . X11Color
+
+-- | A convenience function to make it easier to use 'X11Color'
+--   values; equivalent to @FontColor . X11Color@.
+fontColor :: X11Color -> Attribute
+fontColor = FontColor . X11Color
+
+-- | A convenience function to make it easier to use 'X11Color'
+--   values; equivalent to @Color . map X11Color@.
+color :: [X11Color] -> Attribute
+color = Color . map X11Color
 
 -- -----------------------------------------------------------------------------
 
