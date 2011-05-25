@@ -260,7 +260,7 @@ instance Arbitrary Attribute where
                       , liftM RankSep arbList
                       , liftM Rank arbitrary
                       , liftM Ratio arbitrary
-                      , liftM Rects arbitrary
+                      , liftM Rects arbList
                       , liftM Regular arbitrary
                       , liftM ReMinCross arbitrary
                       , liftM RepulsiveForce arbitrary
@@ -406,7 +406,7 @@ instance Arbitrary Attribute where
     shrink (RankSep v)            = map RankSep             $ nonEmptyShrinks v
     shrink (Rank v)               = map Rank                $ shrink v
     shrink (Ratio v)              = map Ratio               $ shrink v
-    shrink (Rects v)              = map Rects               $ shrink v
+    shrink (Rects v)              = map Rects               $ nonEmptyShrinks v
     shrink (Regular v)            = map Regular             $ shrink v
     shrink (ReMinCross v)         = map ReMinCross          $ shrink v
     shrink (RepulsiveForce v)     = map RepulsiveForce      $ shrink v

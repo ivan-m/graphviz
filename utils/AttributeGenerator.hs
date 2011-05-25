@@ -519,7 +519,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "RankSep" ["ranksep"] "G" (Cust "[Double]") Nothing Nothing (Just "@[0.5]@ (dot), @[1.0]@ (twopi)") (Just "[0.02]") (Just "twopi, dot only")
              , makeAttr "Rank" ["rank"] "S" (Cust "RankType") Nothing Nothing Nothing Nothing (Just "dot only")
              , makeAttr "Ratio" ["ratio"] "G" (Cust "Ratios") Nothing Nothing Nothing Nothing Nothing
-             , makeAttr "Rects" ["rects"] "N" (Cust "Rect") Nothing Nothing Nothing Nothing (Just "write only")
+             , makeAttr "Rects" ["rects"] "N" (Cust "[Rect]") Nothing Nothing Nothing Nothing (Just "write only")
              , makeAttr "Regular" ["regular"] "N" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "ReMinCross" ["remincross"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "dot only")
              , makeAttr "RepulsiveForce" ["repulsiveforce"] "G" Dbl Nothing (Just "1") (Just "@1.0@") (Just "@0.0@") (Just "sfdp only")

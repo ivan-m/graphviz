@@ -339,7 +339,7 @@ data Attribute
     | RankSep [Double]                 -- ^ /Valid for/: G; /Default/: @[0.5]@ (dot), @[1.0]@ (twopi); /Minimum/: [0.02]; /Notes/: twopi, dot only
     | Rank RankType                    -- ^ /Valid for/: S; /Notes/: dot only
     | Ratio Ratios                     -- ^ /Valid for/: G
-    | Rects Rect                       -- ^ /Valid for/: N; /Notes/: write only
+    | Rects [Rect]                     -- ^ /Valid for/: N; /Notes/: write only
     | Regular Bool                     -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
     | ReMinCross Bool                  -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
     | RepulsiveForce Double            -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
@@ -1419,10 +1419,14 @@ instance PrintDot Rect where
 
     toDot = dquotes . unqtDot
 
+    unqtListToDot = hsep . mapM unqtDot
+
 instance ParseDot Rect where
     parseUnqt = liftM (uncurry Rect) $ commaSep' parsePoint2D parsePoint2D
 
     parse = quotedParse parseUnqt
+
+    parseUnqtList = sepBy1 parseUnqt whitespace
 
 -- -----------------------------------------------------------------------------
 
