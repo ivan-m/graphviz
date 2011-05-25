@@ -61,7 +61,7 @@ Library {
                            process,
                            fgl == 5.4.*,
                            filepath,
-                           polyparse == 1.5.*,
+                           polyparse == 1.6.*,
                            pretty,
                            bytestring == 0.9.*,
                            colour == 2.3.*,
