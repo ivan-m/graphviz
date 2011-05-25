@@ -267,7 +267,7 @@ arbitraryInstance att = vsep [hdr $+$ fns, kFunc]
                ]
                -- charset isn't recognised as an attribute, but don't
                -- generate it for Arbitrary instances.
-      kOths = [ [ kFuncNm <+> text "charset"
+      kOths = [ [ kFuncNm <+> doubleQuotes (text "charset")
                 , equals <+> text "False"
                 ]
               , [ kFuncNm <+> char '_'
