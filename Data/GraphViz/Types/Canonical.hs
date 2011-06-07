@@ -22,10 +22,6 @@
  -}
 module Data.GraphViz.Types.Canonical
     ( DotGraph(..)
-      -- ** Reporting of errors in a @DotGraph@.
-    , DotError(..)
-    , isValidGraph
-    , graphErrors
       -- * Sub-components of a @DotGraph@.
     , GraphID(..) -- Re-exported from Data.GraphViz.Types.Common
     , DotStatements(..)
@@ -54,14 +50,6 @@ data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multipl
                            , graphStatements :: DotStatements a
                            }
                 deriving (Eq, Ord, Show, Read)
-
--- | Check if all the 'Attribute's are being used correctly.
-isValidGraph :: DotGraph a -> Bool
-isValidGraph = null . graphErrors
-
--- | Return detectable errors in the 'DotGraph'.
-graphErrors :: DotGraph a -> [DotError a]
-graphErrors = invalidStmts usedByGraphs . graphStatements
 
 instance (PrintDot a) => PrintDot (DotGraph a) where
   unqtDot = printStmtBased printGraphID' graphStatements toDot
@@ -114,14 +102,6 @@ instance Functor DotStatements where
                        , edgeStmts = map (fmap f) $ edgeStmts stmts
                        }
 
--- | The function represents which function to use to check the
---   'GraphAttrs' values.
-invalidStmts         :: (Attribute -> Bool) -> DotStatements a -> [DotError a]
-invalidStmts f stmts = concatMap (invalidGlobal f) (attrStmts stmts)
-                       ++ concatMap invalidSubGraph (subGraphs stmts)
-                       ++ concatMap invalidNode (nodeStmts stmts)
-                       ++ concatMap invalidEdge (edgeStmts stmts)
-
 -- -----------------------------------------------------------------------------
 
 data DotSubGraph a = DotSG { isCluster     :: Bool
@@ -156,8 +136,3 @@ instance (ParseDot a) => ParseDot (DotSubGraph a) where
 
 instance Functor DotSubGraph where
   fmap f sg = sg { subGraphStmts = fmap f $ subGraphStmts sg }
-
-invalidSubGraph    :: DotSubGraph a -> [DotError a]
-invalidSubGraph sg = invalidStmts valFunc (subGraphStmts sg)
-  where
-    valFunc = bool usedBySubGraphs usedByClusters (isCluster sg)
