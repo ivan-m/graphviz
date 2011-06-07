@@ -73,22 +73,28 @@
 
 -}
 module Data.GraphViz.Types
-    ( -- * Abstraction from the representation type
-      DotRepr(..)
-      -- ** Helper types for looking up information within a @DotRepr@.
-    , ClusterLookup
-    , NodeLookup
-    , Path
-      -- ** Obtaining the @DotNode@s and @DotEdges@.
-    , graphNodes
-    , graphEdges
-      -- ** Printing and parsing a @DotRepr@.
-    , printDotGraph
-    , parseDotGraph
-    ) where
+       ( DotRepr(..)
+         -- * Common sub-types
+       , GraphID(..)
+       , GlobalAttributes(..)
+       , DotNode(..)
+       , DotEdge(..)
+         -- * Helper types for looking up information within a @DotRepr@.
+       , ClusterLookup
+       , NodeLookup
+       , Path
+         -- * Obtaining the @DotNode@s and @DotEdges@.
+       , graphNodes
+       , graphEdges
+         -- * Printing and parsing a @DotRepr@.
+       , printDotGraph
+       , parseDotGraph
+       ) where
 
-import Data.GraphViz.Types.Canonical
-import Data.GraphViz.Types.Common(GraphID, GlobalAttributes, DotNode, DotEdge)
+import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
+                                    , DotSubGraph(..))
+import Data.GraphViz.Types.Common( GraphID(..), GlobalAttributes(..)
+                                 , DotNode(..), DotEdge(..))
 import Data.GraphViz.Types.State
 import Data.GraphViz.Util(bool)
 import Data.GraphViz.Parsing(ParseDot, parseIt)

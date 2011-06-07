@@ -63,7 +63,7 @@ stringNum str = maybe checkDbl Int $ stringToInt str
 
 -- -----------------------------------------------------------------------------
 
--- Re-exported by Data.GraphViz.Types and Data.GraphViz.Types.Generalised
+-- Re-exported by Data.GraphViz.Types.*
 
 -- | Represents a list of top-level list of 'Attribute's for the
 --   entire graph/sub-graph.  Note that 'GraphAttrs' also applies to

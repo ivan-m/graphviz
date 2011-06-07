@@ -21,15 +21,16 @@
 
  -}
 module Data.GraphViz.Types.Canonical
-    ( DotGraph(..)
-      -- * Sub-components of a @DotGraph@.
-    , GraphID(..) -- Re-exported from Data.GraphViz.Types.Common
-    , DotStatements(..)
-    , GlobalAttributes(..) -- Re-exported from Data.GraphViz.Types.Common
-    , DotSubGraph(..)
-    , DotNode(..) -- Re-exported from Data.GraphViz.Types.Common
-    , DotEdge(..) -- Re-exported from Data.GraphViz.Types.Common
-    ) where
+       ( DotGraph(..)
+         -- * Sub-components of a @DotGraph@.
+       , DotStatements(..)
+       , DotSubGraph(..)
+         -- * Re-exported from @Data.GraphViz.Types@
+       , GraphID(..)
+       , GlobalAttributes(..)
+       , DotNode(..)
+       , DotEdge(..)
+       ) where
 
 import Data.GraphViz.Types.Common
 import Data.GraphViz.Attributes( Attribute
