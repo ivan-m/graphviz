@@ -271,8 +271,10 @@ validUnknownFunc att = cmnt $$ asRows [tpSig, def] $$ whClause
               , colon <> colon <+> text "Text -> Bool"
               ]
       def = [ validUnknownName <+> var
-            , equals <+> text "T.toLower" <+> var
-              <+> text "`S.notMember`" <+> setVar
+            , equals <+>
+              (text "T.toLower" <+> var
+               <+> text "`S.notMember`" <+> setVar
+               $$ text "&&" <+> text "isIDString" <+> var)
             ]
       whClause = nest tab
                  $ text "where"

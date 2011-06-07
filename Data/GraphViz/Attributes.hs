@@ -1174,6 +1174,7 @@ defaultAttributeValue _                    = Nothing
 -- | Determine if the provided 'Text' value is a valid name for an 'UnknownAttribute'.
 validUnknown     :: Text -> Bool
 validUnknown txt = T.toLower txt `S.notMember` names
+                   && isIDString txt
   where
     names = (S.fromList . map T.toLower
              $ [ "Damping"
