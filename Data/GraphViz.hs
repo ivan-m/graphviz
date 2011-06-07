@@ -392,7 +392,7 @@ setEdgeIDAttribute f = \ e@(_,_,eid) -> identifierAttribute (eID eid)
                                         : (f . stripID) e
 
 identifierAttrName :: AttributeName
-identifierAttrName = "graphviz_distinguish_unique_attrs"
+identifierAttrName = "graphviz_distinguish_multiple_edges"
 
 identifierAttribute :: Text -> CustomAttribute
 identifierAttribute = customAttribute identifierAttrName
