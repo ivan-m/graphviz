@@ -278,9 +278,11 @@ validUnknownFunc att = cmnt $$ asRows [tpSig, def] $$ whClause
                  $ text "where"
                  $$ nest tab setDef
       setDef = setVar <+> equals <+> mkSet
-      mkSet = text "S.fromList . map T.toLower"
-              $$ dollar
-              <+> setList
+      mkSet = parens (text "S.fromList . map T.toLower"
+                      $$ dollar
+                      <+> setList)
+              $$ text "`S.union`"
+              $$ text "keywords"
       setList = flip ($$) rbrack
                 . asRows
                 . firstOthers lbrack comma
