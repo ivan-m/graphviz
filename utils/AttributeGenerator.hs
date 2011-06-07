@@ -372,7 +372,7 @@ defValueFunc att = cmnt $$ asRows (tpSig : stmts ++ [unknownAtr])
 
 -- Size of a tab character
 tab :: Int
-tab = 4
+tab = 2
 
 firstOthers            :: Doc -> Doc -> [[Doc]] -> [[Doc]]
 firstOthers _ _ []     = []
