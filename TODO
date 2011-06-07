@@ -19,8 +19,9 @@ Medium term
 
 * Improve the test suite such that the generated `DotGraph` and
   `GDotGraph` values are valid (and thus can be passed to Graphviz
-  proper).  This will require the state-based printer and parser from
-  above to be implemented.
+  proper).  This may not in fact be possible as guaranteeing an
+  arbitrary `Attribute` is valid is rather tricky (as the value itself
+  needs to be verified, especially stateful ones).
 
 * Add support for non-visualisation Graphviz tools (e.g. dijkstra and
   tred).
