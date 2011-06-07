@@ -168,13 +168,13 @@ runCommand cmd args hf dg
             ExitSuccess -> return output
             _           -> throw . GVProgramExc $ othErr ++ err
     where
-      notRunnable :: IOException -> GraphvizException
+      notRunnable   :: IOException -> GraphvizException
       notRunnable e = GVProgramExc $ unwords
-                      [ "Unable to call the Graphviz command "
+                      [ "Unable to call the command "
                       , cmd
-                      , " with the arguments: "
+                      , " with the arguments: \""
                       , unwords args
-                      , " because of: "
+                      , "\" because of: "
                       , show e
                       ]
 
