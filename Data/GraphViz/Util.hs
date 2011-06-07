@@ -29,7 +29,7 @@ import Data.Text.Lazy(Text)
 -- -----------------------------------------------------------------------------
 
 isIDString :: Text -> Bool
-isIDString = maybe True (\(f,os) -> frstIDString f && T.all restIDString os)
+isIDString = maybe False (\(f,os) -> frstIDString f && T.all restIDString os)
              . T.uncons
 
 -- | First character of a non-quoted 'String' must match this.
