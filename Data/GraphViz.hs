@@ -79,11 +79,11 @@ import Control.Concurrent(forkIO)
 -- | Determine if the given graph is undirected.
 isUndirected   :: (Ord b, Graph g) => g a b -> Bool
 isUndirected g = all hasFlip es
-    where
-      es = labEdges g
-      eSet = Set.fromList es
-      hasFlip e = Set.member (flippedEdge e) eSet
-      flippedEdge (f,t,l) = (t,f,l)
+  where
+    es = labEdges g
+    eSet = Set.fromList es
+    hasFlip e = Set.member (flippedEdge e) eSet
+    flippedEdge (f,t,l) = (t,f,l)
 
 -- -----------------------------------------------------------------------------
 
@@ -141,7 +141,7 @@ isUndirected g = all hasFlip es
 
    For more examples, see the source of 'dotizeGraph' and 'preview'.
 
--}
+ -}
 
 -- | Defines the parameters used to convert a 'Graph' into a 'DotRepr'.
 --
@@ -228,29 +228,29 @@ setDirectedness f params gr = f params' gr
 graphToDot :: (Ord cl, Graph gr) => GraphvizParams nl el cl l
               -> gr nl el -> DotGraph Node
 graphToDot params graph
-    = DotGraph { strictGraph     = False
-               , directedGraph   = dirGraph
-               , graphID         = Nothing
-               , graphStatements = stmts
-               }
-      where
-        dirGraph = isDirected params
-        stmts = DotStmts { attrStmts = globalAttributes params
-                         , subGraphs = cs
-                         , nodeStmts = ns
-                         , edgeStmts = es
-                         }
-        (cs, ns) = clustersToNodes (clusterBy params) (clusterID params)
-                                   (fmtCluster params) (fmtNode params)
-                                   graph
-        es = mapMaybe mkDotEdge . labEdges $ graph
-        mkDotEdge e@(f,t,_) = if dirGraph || f <= t
-                              then Just
-                                   DotEdge { edgeFromNodeID = f
-                                           , edgeToNodeID   = t
-                                           , edgeAttributes = fmtEdge params e
-                                           }
-                              else Nothing
+  = DotGraph { strictGraph     = False
+             , directedGraph   = dirGraph
+             , graphID         = Nothing
+             , graphStatements = stmts
+             }
+  where
+    dirGraph = isDirected params
+    stmts = DotStmts { attrStmts = globalAttributes params
+                     , subGraphs = cs
+                     , nodeStmts = ns
+                     , edgeStmts = es
+                     }
+    (cs, ns) = clustersToNodes (clusterBy params) (clusterID params)
+                               (fmtCluster params) (fmtNode params)
+                               graph
+    es = mapMaybe mkDotEdge . labEdges $ graph
+    mkDotEdge e@(f,t,_) = if dirGraph || f <= t
+                          then Just
+                               DotEdge { edgeFromNodeID = f
+                                       , edgeToNodeID   = t
+                                       , edgeAttributes = fmtEdge params e
+                                       }
+                          else Nothing
 
 -- | A pseudo-inverse to 'graphToDot'; \"pseudo\" in the sense that
 --   the original node and edge labels aren't able to be
@@ -316,10 +316,10 @@ type AttributeEdge el = (Attributes, el)
 graphToGraph :: (Ord cl, Graph gr) => GraphvizParams nl el cl l -> gr nl el
                 -> IO (gr (AttributeNode nl) (AttributeEdge el))
 graphToGraph params gr = dotAttributes (isDirected params) gr' dot
-    where
-      dot = graphToDot params' gr'
-      params' = params { fmtEdge = setEdgeComment $ fmtEdge params }
-      gr' = addEdgeIDs gr
+  where
+    dot = graphToDot params' gr'
+    params' = params { fmtEdge = setEdgeComment $ fmtEdge params }
+    gr' = addEdgeIDs gr
 
 -- -----------------------------------------------------------------------------
 
@@ -333,11 +333,11 @@ dotizeGraph           :: (Ord cl, Graph gr) => GraphvizParams nl el cl l
                          -> gr nl el -> gr (AttributeNode nl) (AttributeEdge el)
 dotizeGraph params gr = unsafePerformIO
                         $ graphToGraph params' gr
-    where
-      params' = params { fmtCluster = const []
-                       , fmtNode    = const []
-                       , fmtEdge    = const []
-                       }
+  where
+    params' = params { fmtCluster = const []
+                     , fmtNode    = const []
+                     , fmtEdge    = const []
+                     }
 
 -- -----------------------------------------------------------------------------
 
@@ -403,9 +403,9 @@ dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr nl (EdgeID el)
 dotAttributes isDir gr dot
   = liftM (augmentGraph gr . parseDG)
     $ graphvizWithHandle command dot DotOutput hGetDot
-    where
-      parseDG = asTypeOf dot
-      command = if isDir then dirCommand else undirCommand
+  where
+    parseDG = asTypeOf dot
+    command = if isDir then dirCommand else undirCommand
 
 -- | Use the 'Attributes' in the provided 'DotGraph' to augment the
 --   node and edge labels in the provided 'Graph'.  The unique

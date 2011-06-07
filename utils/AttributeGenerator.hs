@@ -149,7 +149,7 @@ createDefn att = hdr $+$ constructors $+$ derivs
                      . (++ [defUnknown])
                      . map createDefn
                      $ atts att
-      derivs = nest (tab + 2) $ text "deriving (Eq, Ord, Show, Read)"
+      derivs = nest tab $ text "deriving (Eq, Ord, Show, Read)"
       createDefn a = [cnst a <+> vtypeCode a
                      , if isEmpty cm
                        then empty

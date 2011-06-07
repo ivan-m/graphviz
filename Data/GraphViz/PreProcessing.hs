@@ -40,25 +40,25 @@ preProcess :: Text -> Text
 preProcess t = case fst $ runParser parseOutUnwanted t of
                  (Right r) -> B.toLazyText r
                  (Left l)  -> throw (NotDotCode l)
-             -- snd should be null
+               -- snd should be null
 
 -- | Parse out comments and make quoted strings spread over multiple
 --   lines only over a single line.  Should parse the /entire/ input
 --   'Text'.
 parseOutUnwanted :: Parse Builder
 parseOutUnwanted = liftM mconcat (many getNext)
-    where
-      getNext = parseOK
-                `onFail`
-                parseConcatStrings
-                `onFail`
-                parseHTML
-                `onFail`
-                parseUnwanted
-                `onFail`
-                liftM B.singleton next
-      parseOK = liftM B.fromLazyText
-                $ many1Satisfy (`notElem` ['\n', '\r', '\\', '/', '"', '<'])
+  where
+    getNext = parseOK
+              `onFail`
+              parseConcatStrings
+              `onFail`
+              parseHTML
+              `onFail`
+              parseUnwanted
+              `onFail`
+              liftM B.singleton next
+    parseOK = liftM B.fromLazyText
+              $ many1Satisfy (`notElem` ['\n', '\r', '\\', '/', '"', '<'])
 
 -- | Parses an unwanted part of the Dot code (comments and
 --   pre-processor lines; also un-splits lines).
@@ -92,14 +92,14 @@ parseLineComment = do string "//"
 parseMultiLineComment :: (Monoid m) => Parse m
 parseMultiLineComment = bracket start end (many inner)
                         >> return mempty
-    where
-      start = string "/*"
-      end = string "*/"
-      inner = (many1 (satisfy ('*' /=)) >> return ())
-              `onFail`
-              do character '*'
-                 satisfy ('/' /=)
-                 inner
+  where
+    start = string "/*"
+    end = string "*/"
+    inner = (many1 (satisfy ('*' /=)) >> return ())
+            `onFail`
+            do character '*'
+               satisfy ('/' /=)
+               inner
 
 parseConcatStrings :: Parse Builder
 parseConcatStrings = liftM (wrapQuotes . mconcat)

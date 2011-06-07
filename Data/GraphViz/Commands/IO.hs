@@ -167,24 +167,24 @@ runCommand cmd args hf dg
           case exitCode of
             ExitSuccess -> return output
             _           -> throw . GVProgramExc $ othErr ++ err
-    where
-      notRunnable   :: IOException -> GraphvizException
-      notRunnable e = GVProgramExc $ unwords
-                      [ "Unable to call the command "
-                      , cmd
-                      , " with the arguments: \""
-                      , unwords args
-                      , "\" because of: "
-                      , show e
-                      ]
+  where
+    notRunnable   :: IOException -> GraphvizException
+    notRunnable e = GVProgramExc $ unwords
+                    [ "Unable to call the command "
+                    , cmd
+                    , " with the arguments: \""
+                    , unwords args
+                    , "\" because of: "
+                    , show e
+                    ]
 
-      -- Augmenting the hf function to let it work within the forkIO:
-      hf' = mapException fErr . hf
-      fErr :: IOException -> GraphvizException
-      fErr e = GVProgramExc $ "Error re-directing the output from "
-               ++ cmd ++ ": " ++ show e
+    -- Augmenting the hf function to let it work within the forkIO:
+    hf' = mapException fErr . hf
+    fErr :: IOException -> GraphvizException
+    fErr e = GVProgramExc $ "Error re-directing the output from "
+             ++ cmd ++ ": " ++ show e
 
-      othErr = "Error messages from " ++ cmd ++ ":\n"
+    othErr = "Error messages from " ++ cmd ++ ":\n"
 
 -- -----------------------------------------------------------------------------
 -- Utility functions

@@ -91,12 +91,12 @@ import Control.Monad.Trans.State
 type DotCode = State GraphvizState Doc
 
 instance Show DotCode where
-    showsPrec d = showsPrec d . renderDot
+  showsPrec d = showsPrec d . renderDot
 
 instance GraphvizStateM (State GraphvizState) where
-    modifyGS = modify
+  modifyGS = modify
 
-    getsGS = gets
+  getsGS = gets
 
 -- | Correctly render Graphviz output.
 renderDot :: DotCode -> Text
@@ -106,28 +106,27 @@ renderDot = PP.displayT . PP.renderPretty 0.4 80
 -- | A class used to correctly print parts of the Graphviz Dot language.
 --   Minimal implementation is 'unqtDot'.
 class PrintDot a where
-    -- | The unquoted representation, for use when composing values to
-    --   produce a larger printing value.
-    unqtDot :: a -> DotCode
+  -- | The unquoted representation, for use when composing values to
+  --   produce a larger printing value.
+  unqtDot :: a -> DotCode
 
-    -- | The actual quoted representation; this should be quoted if it
-    --   contains characters not permitted a plain ID Text, a number
-    --   or it is not an HTML string.
-    --   Defaults to 'unqtDot'.
-    toDot :: a -> DotCode
-    toDot = unqtDot
+  -- | The actual quoted representation; this should be quoted if it
+  --   contains characters not permitted a plain ID String, a number
+  --   or it is not an HTML string.  Defaults to 'unqtDot'.
+  toDot :: a -> DotCode
+  toDot = unqtDot
 
-    -- | The correct way of representing a list of this value when
-    --   printed; not all Dot values require this to be implemented.
-    --   Defaults to Haskell-like list representation.
-    unqtListToDot :: [a] -> DotCode
-    unqtListToDot = list . mapM unqtDot
+  -- | The correct way of representing a list of this value when
+  --   printed; not all Dot values require this to be implemented.
+  --   Defaults to Haskell-like list representation.
+  unqtListToDot :: [a] -> DotCode
+  unqtListToDot = list . mapM unqtDot
 
-    -- | The quoted form of 'unqtListToDot'; defaults to wrapping
-    --   double quotes around the result of 'unqtListToDot' (since the
-    --   default implementation has characters that must be quoted).
-    listToDot :: [a] -> DotCode
-    listToDot = dquotes . unqtListToDot
+  -- | The quoted form of 'unqtListToDot'; defaults to wrapping double
+  --   quotes around the result of 'unqtListToDot' (since the default
+  --   implementation has characters that must be quoted).
+  listToDot :: [a] -> DotCode
+  listToDot = dquotes . unqtListToDot
 
 -- | Convert to DotCode; note that this has no indentation, as we can
 --   only have one of indentation and (possibly) infinite line lengths.
@@ -135,51 +134,51 @@ printIt :: (PrintDot a) => a -> Text
 printIt = renderDot . toDot
 
 instance PrintDot Int where
-    unqtDot = int
+  unqtDot = int
 
 instance PrintDot Word8 where
-    unqtDot = int . fromIntegral
+  unqtDot = int . fromIntegral
 
 instance PrintDot Word16 where
-    unqtDot = int . fromIntegral
+  unqtDot = int . fromIntegral
 
 instance PrintDot Double where
-    -- If it's an "integral" double, then print as an integer.
-    -- This seems to match how Graphviz apps use Dot.
-    unqtDot d = if d == fromIntegral di
-                then int di
-                else double d
-        where
-          di = round d
-
-    toDot d = if any ((==) 'e' . toLower) $ show d
-              then dquotes ud
-              else ud
+  -- If it's an "integral" double, then print as an integer.  This
+  -- seems to match how Graphviz apps use Dot.
+  unqtDot d = if d == fromIntegral di
+              then int di
+              else double d
       where
-        ud = unqtDot d
+        di = round d
 
-    unqtListToDot = hcat . punctuate colon . mapM unqtDot
+  toDot d = if any ((==) 'e' . toLower) $ show d
+            then dquotes ud
+            else ud
+    where
+      ud = unqtDot d
 
-    listToDot [d] = toDot d
-    listToDot ds  = dquotes $ unqtListToDot ds
+  unqtListToDot = hcat . punctuate colon . mapM unqtDot
+
+  listToDot [d] = toDot d
+  listToDot ds  = dquotes $ unqtListToDot ds
 
 instance PrintDot Bool where
-    unqtDot True  = text "true"
-    unqtDot False = text "false"
+  unqtDot True  = text "true"
+  unqtDot False = text "false"
 
 instance PrintDot Char where
-    unqtDot = char
+  unqtDot = char
 
-    toDot = qtChar
+  toDot = qtChar
 
-    unqtListToDot = unqtDot . T.pack
+  unqtListToDot = unqtDot . T.pack
 
-    listToDot = toDot . T.pack
+  listToDot = toDot . T.pack
 
 instance PrintDot Text where
-    unqtDot = unqtString
+  unqtDot = unqtString
 
-    toDot = qtString
+  toDot = qtString
 
 -- | For use with @OverloadedStrings@ to avoid ambiguous type variable errors.
 unqtText :: Text -> DotCode
@@ -192,12 +191,12 @@ dotText = toDot
 -- | Check to see if this 'Char' needs to be quoted or not.
 qtChar :: Char -> DotCode
 qtChar c
-    | restIDString c = char c -- Could be a number as well.
-    | otherwise      = dquotes $ char c
+  | restIDString c = char c -- Could be a number as well.
+  | otherwise      = dquotes $ char c
 
 needsQuotes :: Text -> Bool
 needsQuotes str
-  | T.null str        = True
+  | T.null str      = True
   | isKeyword str   = True
   | isIDString str  = False
   | isNumString str = False
@@ -216,9 +215,9 @@ qtString :: Text -> DotCode
 qtString = printEscaped []
 
 instance (PrintDot a) => PrintDot [a] where
-    unqtDot = unqtListToDot
+  unqtDot = unqtListToDot
 
-    toDot = listToDot
+  toDot = listToDot
 
 wrap       :: DotCode -> DotCode -> DotCode -> DotCode
 wrap b a d = b <> d <> a
@@ -274,48 +273,48 @@ fslash = char '/'
 -- These instances are defined here to avoid cyclic imports and orphan instances
 
 instance PrintDot ColorScheme where
-    unqtDot cs = do setColorScheme cs
-                    case cs of
-                      X11       -> unqtText "X11"
-                      Brewer bs -> unqtDot bs
+  unqtDot cs = do setColorScheme cs
+                  case cs of
+                    X11       -> unqtText "X11"
+                    Brewer bs -> unqtDot bs
 
 instance PrintDot BrewerScheme where
-    unqtDot (BScheme n l) = unqtDot n <> unqtDot l
+  unqtDot (BScheme n l) = unqtDot n <> unqtDot l
 
 instance PrintDot BrewerName where
-    unqtDot Accent   = unqtText "accent"
-    unqtDot Blues    = unqtText "blues"
-    unqtDot Brbg     = unqtText "brbg"
-    unqtDot Bugn     = unqtText "bugn"
-    unqtDot Bupu     = unqtText "bupu"
-    unqtDot Dark2    = unqtText "dark2"
-    unqtDot Gnbu     = unqtText "gnbu"
-    unqtDot Greens   = unqtText "greens"
-    unqtDot Greys    = unqtText "greys"
-    unqtDot Oranges  = unqtText "oranges"
-    unqtDot Orrd     = unqtText "orrd"
-    unqtDot Paired   = unqtText "paired"
-    unqtDot Pastel1  = unqtText "pastel1"
-    unqtDot Pastel2  = unqtText "pastel2"
-    unqtDot Piyg     = unqtText "piyg"
-    unqtDot Prgn     = unqtText "prgn"
-    unqtDot Pubu     = unqtText "pubu"
-    unqtDot Pubugn   = unqtText "pubugn"
-    unqtDot Puor     = unqtText "puor"
-    unqtDot Purd     = unqtText "purd"
-    unqtDot Purples  = unqtText "purples"
-    unqtDot Rdbu     = unqtText "rdbu"
-    unqtDot Rdgy     = unqtText "rdgy"
-    unqtDot Rdpu     = unqtText "rdpu"
-    unqtDot Rdylbu   = unqtText "rdylbu"
-    unqtDot Rdylgn   = unqtText "rdylgn"
-    unqtDot Reds     = unqtText "reds"
-    unqtDot Set1     = unqtText "set1"
-    unqtDot Set2     = unqtText "set2"
-    unqtDot Set3     = unqtText "set3"
-    unqtDot Spectral = unqtText "spectral"
-    unqtDot Ylgn     = unqtText "ylgn"
-    unqtDot Ylgnbu   = unqtText "ylgnbu"
-    unqtDot Ylorbr   = unqtText "ylorbr"
-    unqtDot Ylorrd   = unqtText "ylorrd"
+  unqtDot Accent   = unqtText "accent"
+  unqtDot Blues    = unqtText "blues"
+  unqtDot Brbg     = unqtText "brbg"
+  unqtDot Bugn     = unqtText "bugn"
+  unqtDot Bupu     = unqtText "bupu"
+  unqtDot Dark2    = unqtText "dark2"
+  unqtDot Gnbu     = unqtText "gnbu"
+  unqtDot Greens   = unqtText "greens"
+  unqtDot Greys    = unqtText "greys"
+  unqtDot Oranges  = unqtText "oranges"
+  unqtDot Orrd     = unqtText "orrd"
+  unqtDot Paired   = unqtText "paired"
+  unqtDot Pastel1  = unqtText "pastel1"
+  unqtDot Pastel2  = unqtText "pastel2"
+  unqtDot Piyg     = unqtText "piyg"
+  unqtDot Prgn     = unqtText "prgn"
+  unqtDot Pubu     = unqtText "pubu"
+  unqtDot Pubugn   = unqtText "pubugn"
+  unqtDot Puor     = unqtText "puor"
+  unqtDot Purd     = unqtText "purd"
+  unqtDot Purples  = unqtText "purples"
+  unqtDot Rdbu     = unqtText "rdbu"
+  unqtDot Rdgy     = unqtText "rdgy"
+  unqtDot Rdpu     = unqtText "rdpu"
+  unqtDot Rdylbu   = unqtText "rdylbu"
+  unqtDot Rdylgn   = unqtText "rdylgn"
+  unqtDot Reds     = unqtText "reds"
+  unqtDot Set1     = unqtText "set1"
+  unqtDot Set2     = unqtText "set2"
+  unqtDot Set3     = unqtText "set3"
+  unqtDot Spectral = unqtText "spectral"
+  unqtDot Ylgn     = unqtText "ylgn"
+  unqtDot Ylgnbu   = unqtText "ylgnbu"
+  unqtDot Ylorbr   = unqtText "ylorbr"
+  unqtDot Ylorrd   = unqtText "ylorrd"
 

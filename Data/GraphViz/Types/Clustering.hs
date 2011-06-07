@@ -52,7 +52,7 @@ clustersToNodes clusterBy cID fmtCluster fmtNode
 -- | A tree representation of a cluster.
 data ClusterTree c a = NT a
                      | CT c [ClusterTree c a]
-                       deriving (Show)
+                     deriving (Show)
 
 -- | Convert a single node cluster into its tree representation.
 clustToTree          :: NodeCluster c a -> ClusterTree c a
@@ -83,10 +83,10 @@ collapseNClusts :: (Ord c) => [ClusterTree c a] -> [ClusterTree c a]
 collapseNClusts = concatMap grpCls
                   . groupBy sameClust
                   . sortBy clustOrder
-    where
-      grpCls []              = []
-      grpCls ns@(NT _ : _)   = ns
-      grpCls cs@(CT c _ : _) = [CT c (collapseNClusts $ concatMap getNodes cs)]
+  where
+    grpCls []              = []
+    grpCls ns@(NT _ : _)   = ns
+    grpCls cs@(CT c _ : _) = [CT c (collapseNClusts $ concatMap getNodes cs)]
 
 -- | Convert the cluster representation of the trees into 'DotNode's
 --   and 'DotSubGraph's (with @'isCluster' = 'True'@, and
@@ -111,10 +111,10 @@ treeToDot cID fmtCluster fmtNode (CT c nts)
                  , subGraphID    = cID c
                  , subGraphStmts = stmts
                  }
-    where
-      stmts = DotStmts { attrStmts = fmtCluster c
-                       , subGraphs = cs
-                       , nodeStmts = ns
-                       , edgeStmts = []
-                       }
-      (cs, ns) = treesToDot cID fmtCluster fmtNode nts
+  where
+    stmts = DotStmts { attrStmts = fmtCluster c
+                     , subGraphs = cs
+                     , nodeStmts = ns
+                     , edgeStmts = []
+                     }
+    (cs, ns) = treesToDot cID fmtCluster fmtNode nts

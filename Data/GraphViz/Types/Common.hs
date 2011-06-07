@@ -37,22 +37,22 @@ import Control.Monad(liftM, liftM2, when)
 data GraphID = Str Text
              | Int Int
              | Dbl Double
-               deriving (Eq, Ord, Show, Read)
+             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GraphID where
-    unqtDot (Str str) = unqtDot str
-    unqtDot (Int i)   = unqtDot i
-    unqtDot (Dbl d)   = unqtDot d
+  unqtDot (Str str) = unqtDot str
+  unqtDot (Int i)   = unqtDot i
+  unqtDot (Dbl d)   = unqtDot d
 
-    toDot (Str str) = toDot str
-    toDot gID       = unqtDot gID
+  toDot (Str str) = toDot str
+  toDot gID       = unqtDot gID
 
 instance ParseDot GraphID where
-    parseUnqt = liftM stringNum parseUnqt
+  parseUnqt = liftM stringNum parseUnqt
 
-    parse = liftM stringNum parse
-            `adjustErr`
-            (++ "\nNot a valid GraphID")
+  parse = liftM stringNum parse
+          `adjustErr`
+          (++ "\nNot a valid GraphID")
 
 stringNum     :: Text -> GraphID
 stringNum str = maybe checkDbl Int $ stringToInt str
@@ -85,15 +85,15 @@ data DotError a = GraphError Attribute
 data GlobalAttributes = GraphAttrs { attrs :: Attributes }
                       | NodeAttrs  { attrs :: Attributes }
                       | EdgeAttrs  { attrs :: Attributes }
-                        deriving (Eq, Ord, Show, Read)
+                      deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GlobalAttributes where
-    -- Can't use printAttrBased because an empty list still must be printed.
-    unqtDot ga = printGlobAttrType ga <+> toDot (attrs ga) <> semi
+  -- Can't use printAttrBased because an empty list still must be printed.
+  unqtDot ga = printGlobAttrType ga <+> toDot (attrs ga) <> semi
 
-    unqtListToDot = printAttrBasedList printGlobAttrType attrs
+  unqtListToDot = printAttrBasedList printGlobAttrType attrs
 
-    listToDot = unqtListToDot
+  listToDot = unqtListToDot
 
 printGlobAttrType              :: GlobalAttributes -> DotCode
 printGlobAttrType GraphAttrs{} = text "graph"
@@ -101,22 +101,22 @@ printGlobAttrType NodeAttrs{}  = text "node"
 printGlobAttrType EdgeAttrs{}  = text "edge"
 
 instance ParseDot GlobalAttributes where
-    -- Not using parseAttrBased here because we want to force usage of
-    -- Attributes.
-    parseUnqt = do gat <- parseGlobAttrType
-                   as <- whitespace' >> parse
-                   return $ gat as
-                `onFail`
-                liftM determineType parse
+  -- Not using parseAttrBased here because we want to force usage of
+  -- Attributes.
+  parseUnqt = do gat <- parseGlobAttrType
+                 as <- whitespace' >> parse
+                 return $ gat as
+              `onFail`
+              liftM determineType parse
 
-    parse = parseUnqt -- Don't want the option of quoting
-            `adjustErr`
-            (++ "\n\nNot a valid listing of global attributes")
+  parse = parseUnqt -- Don't want the option of quoting
+          `adjustErr`
+          (++ "\n\nNot a valid listing of global attributes")
 
-    -- Have to do this manually because of the special case
-    parseUnqtList = parseStatements parse
+  -- Have to do this manually because of the special case
+  parseUnqtList = parseStatements parse
 
-    parseList = parseUnqtList
+  parseList = parseUnqtList
 
 parseGlobAttrType :: Parse (Attributes -> GlobalAttributes)
 parseGlobAttrType = oneOf [ stringRep GraphAttrs "graph"
@@ -126,12 +126,12 @@ parseGlobAttrType = oneOf [ stringRep GraphAttrs "graph"
 
 determineType :: Attribute -> GlobalAttributes
 determineType attr
-    | usedByGraphs attr   = GraphAttrs attr'
-    | usedByClusters attr = GraphAttrs attr' -- Also covers SubGraph case
-    | usedByNodes attr    = NodeAttrs attr'
-    | otherwise           = EdgeAttrs attr' -- Must be for edges.
-    where
-      attr' = [attr]
+  | usedByGraphs attr   = GraphAttrs attr'
+  | usedByClusters attr = GraphAttrs attr' -- Also covers SubGraph case
+  | usedByNodes attr    = NodeAttrs attr'
+  | otherwise           = EdgeAttrs attr' -- Must be for edges.
+  where
+    attr' = [attr]
 
 invalidGlobal                   :: (Attribute -> Bool) -> GlobalAttributes
                                    -> [DotError a]
@@ -147,26 +147,26 @@ invalidGlobal _ (EdgeAttrs  as) = map (EdgeError Nothing)
 data DotNode a = DotNode { nodeID :: a
                          , nodeAttributes :: Attributes
                          }
-                 deriving (Eq, Ord, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotNode a) where
-    unqtDot = printAttrBased printNodeID nodeAttributes
+  unqtDot = printAttrBased printNodeID nodeAttributes
 
-    unqtListToDot = printAttrBasedList printNodeID nodeAttributes
+  unqtListToDot = printAttrBasedList printNodeID nodeAttributes
 
-    listToDot = unqtListToDot
+  listToDot = unqtListToDot
 
 printNodeID :: (PrintDot a) => DotNode a -> DotCode
 printNodeID = toDot . nodeID
 
 instance (ParseDot a) => ParseDot (DotNode a) where
-    parseUnqt = parseAttrBased parseNodeID
+  parseUnqt = parseAttrBased parseNodeID
 
-    parse = parseUnqt -- Don't want the option of quoting
+  parse = parseUnqt -- Don't want the option of quoting
 
-    parseUnqtList = parseAttrBasedList parseNodeID
+  parseUnqtList = parseAttrBasedList parseNodeID
 
-    parseList = parseUnqtList
+  parseList = parseUnqtList
 
 parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
 parseNodeID = liftM DotNode parseAndCheck
@@ -180,7 +180,7 @@ parseNodeID = liftM DotNode parseAndCheck
                           ]
 
 instance Functor DotNode where
-    fmap f n = n { nodeID = f $ nodeID n }
+  fmap f n = n { nodeID = f $ nodeID n }
 
 invalidNode   :: DotNode a -> [DotError a]
 invalidNode n = map (NodeError (Just $ nodeID n))
@@ -197,14 +197,14 @@ data DotEdge a = DotEdge { edgeFromNodeID :: a
                          , edgeToNodeID   :: a
                          , edgeAttributes :: Attributes
                          }
-             deriving (Eq, Ord, Show, Read)
+               deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotEdge a) where
-    unqtDot = printAttrBased printEdgeID edgeAttributes
+  unqtDot = printAttrBased printEdgeID edgeAttributes
 
-    unqtListToDot = printAttrBasedList printEdgeID edgeAttributes
+  unqtListToDot = printAttrBasedList printEdgeID edgeAttributes
 
-    listToDot = unqtListToDot
+  listToDot = unqtListToDot
 
 printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
 printEdgeID e = do isDir <- getDirectedness
@@ -214,15 +214,15 @@ printEdgeID e = do isDir <- getDirectedness
 
 
 instance (ParseDot a) => ParseDot (DotEdge a) where
-    parseUnqt = parseAttrBased parseEdgeID
+  parseUnqt = parseAttrBased parseEdgeID
 
-    parse = parseUnqt -- Don't want the option of quoting
+  parse = parseUnqt -- Don't want the option of quoting
 
-    -- Have to take into account edges of the type "n1 -> n2 -> n3", etc.
-    parseUnqtList = liftM concat
-                    $ parseStatements parseEdgeLine
+  -- Have to take into account edges of the type "n1 -> n2 -> n3", etc.
+  parseUnqtList = liftM concat
+                  $ parseStatements parseEdgeLine
 
-    parseList = parseUnqtList
+  parseList = parseUnqtList
 
 parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
 parseEdgeID = do eFrom <- parseEdgeNode
@@ -276,9 +276,9 @@ parseEdgeLine = do n1 <- parseEdgeNodes
                    parseAttrBased ef
 
 instance Functor DotEdge where
-    fmap f e = e { edgeFromNodeID = f $ edgeFromNodeID e
-                 , edgeToNodeID   = f $ edgeToNodeID e
-                 }
+  fmap f e = e { edgeFromNodeID = f $ edgeFromNodeID e
+               , edgeToNodeID   = f $ edgeToNodeID e
+               }
 
 dirEdge :: String
 dirEdge = "->"
@@ -295,8 +295,8 @@ undirEdge' = text $ T.pack undirEdge
 invalidEdge   :: DotEdge a -> [DotError a]
 invalidEdge e = map (EdgeError eID)
                 $ filter (not . usedByEdges) (edgeAttributes e)
-    where
-      eID = Just (edgeFromNodeID e, edgeToNodeID e)
+  where
+    eID = Just (edgeFromNodeID e, edgeToNodeID e)
 
 -- -----------------------------------------------------------------------------
 -- Labels
@@ -457,11 +457,11 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
 
 printAttrBased          :: (a -> DotCode) -> (a -> Attributes) -> a -> DotCode
 printAttrBased ff fas a = dc <> semi
-    where
-      f = ff a
-      dc = case fas a of
-             [] -> f
-             as -> f <+> toDot as
+  where
+    f = ff a
+    dc = case fas a of
+           [] -> f
+           as -> f <+> toDot as
 
 printAttrBasedList        :: (a -> DotCode) -> (a -> Attributes)
                              -> [a] -> DotCode

@@ -51,24 +51,24 @@ isNumString "-" = False
 isNumString str = case T.uncons $ T.toLower str of
                     Just ('-',str') -> go str'
                     _               -> go str
-    where
-      go s = uncurry go' $ T.span isDigit s
-      go' ds nds
-        | T.null nds = True
-        | T.null ds && nds == "." = False
-        | T.null ds
-        , Just ('.',nds') <- T.uncons nds
-        , Just (d,nds'') <- T.uncons nds' = isDigit d && checkEs' nds''
-        | Just ('.',nds') <- T.uncons nds = checkEs $ T.dropWhile isDigit nds'
-        | T.null ds = False
-        | otherwise = checkEs nds
-      checkEs' s = case T.break ('e' ==) s of
-                     ("", _) -> False
-                     (ds,es) -> T.all isDigit ds && checkEs es
-      checkEs str' = case T.uncons str' of
-                       Nothing       -> True
-                       Just ('e',ds) -> isIntString ds
-                       _             -> False
+  where
+    go s = uncurry go' $ T.span isDigit s
+    go' ds nds
+      | T.null nds = True
+      | T.null ds && nds == "." = False
+      | T.null ds
+      , Just ('.',nds') <- T.uncons nds
+      , Just (d,nds'') <- T.uncons nds' = isDigit d && checkEs' nds''
+      | Just ('.',nds') <- T.uncons nds = checkEs $ T.dropWhile isDigit nds'
+      | T.null ds = False
+      | otherwise = checkEs nds
+    checkEs' s = case T.break ('e' ==) s of
+                   ("", _) -> False
+                   (ds,es) -> T.all isDigit ds && checkEs es
+    checkEs str' = case T.uncons str' of
+                     Nothing       -> True
+                     Just ('e',ds) -> isIntString ds
+                     _             -> False
 
 -- | This assumes that 'isNumString' is 'True'.
 toDouble     :: Text -> Double

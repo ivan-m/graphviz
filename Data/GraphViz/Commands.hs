@@ -72,7 +72,7 @@ data GraphvizCommand = Dot   -- ^ For hierachical graphs (ideal for
                      | TwoPi -- ^ For radial layout of graphs.
                      | Circo -- ^ For circular layout of graphs.
                      | Fdp   -- ^ For symmetric layout of graphs.
-                       deriving (Eq, Ord, Show, Read)
+                     deriving (Eq, Ord, Show, Read)
 
 showCmd        :: GraphvizCommand -> String
 showCmd Dot    = "dot"
@@ -115,7 +115,7 @@ commandFor dg = if graphIsDirected dg
 -- | This class is for those data types that are valid options for the
 --   Graphviz tools to use with the @-T@ argument.
 class GraphvizResult o where
-    outputCall :: o -> String
+  outputCall :: o -> String
 
 -- | The possible Graphviz output formats (that is, those that
 --   actually produce a file).
@@ -163,37 +163,37 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                     | WBmp      -- ^ Wireless BitMap format;
                                 --   monochrome format usually used
                                 --   for mobile computing devices.
-                      deriving (Eq, Ord, Bounded, Enum, Show, Read)
+                    deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance GraphvizResult GraphvizOutput where
-    outputCall Bmp       = "bmp"
-    outputCall Canon     = "canon"
-    outputCall DotOutput = "dot"
-    outputCall XDot      = "xdot"
-    outputCall Eps       = "eps"
-    outputCall Fig       = "fig"
-    outputCall Gd        = "gd"
-    outputCall Gd2       = "gd2"
-    outputCall Gif       = "gif"
-    outputCall Ico       = "ico"
-    outputCall Imap      = "imap"
-    outputCall Cmapx     = "cmapx"
-    outputCall ImapNP    = "imap_np"
-    outputCall CmapxNP   = "cmapx_np"
-    outputCall Jpeg      = "jpeg"
-    outputCall Pdf       = "pdf"
-    outputCall Plain     = "plain"
-    outputCall PlainExt  = "plain-ext"
-    outputCall Png       = "png"
-    outputCall Ps        = "ps"
-    outputCall Ps2       = "ps2"
-    outputCall Svg       = "svg"
-    outputCall SvgZ      = "svgz"
-    outputCall Tiff      = "tiff"
-    outputCall Vml       = "vml"
-    outputCall VmlZ      = "vmlz"
-    outputCall Vrml      = "vrml"
-    outputCall WBmp      = "wbmp"
+  outputCall Bmp       = "bmp"
+  outputCall Canon     = "canon"
+  outputCall DotOutput = "dot"
+  outputCall XDot      = "xdot"
+  outputCall Eps       = "eps"
+  outputCall Fig       = "fig"
+  outputCall Gd        = "gd"
+  outputCall Gd2       = "gd2"
+  outputCall Gif       = "gif"
+  outputCall Ico       = "ico"
+  outputCall Imap      = "imap"
+  outputCall Cmapx     = "cmapx"
+  outputCall ImapNP    = "imap_np"
+  outputCall CmapxNP   = "cmapx_np"
+  outputCall Jpeg      = "jpeg"
+  outputCall Pdf       = "pdf"
+  outputCall Plain     = "plain"
+  outputCall PlainExt  = "plain-ext"
+  outputCall Png       = "png"
+  outputCall Ps        = "ps"
+  outputCall Ps2       = "ps2"
+  outputCall Svg       = "svg"
+  outputCall SvgZ      = "svgz"
+  outputCall Tiff      = "tiff"
+  outputCall Vml       = "vml"
+  outputCall VmlZ      = "vmlz"
+  outputCall Vrml      = "vrml"
+  outputCall WBmp      = "wbmp"
 
 -- | A default file extension for each 'GraphvizOutput'.
 defaultExtension           :: GraphvizOutput -> String
@@ -230,11 +230,11 @@ defaultExtension WBmp      = "wbmp"
 --   file; instead, they directly draw a canvas (i.e. a window) with
 --   the resulting image.
 data GraphvizCanvas = Gtk | Xlib
-                      deriving (Eq, Ord, Bounded, Enum, Read, Show)
+                    deriving (Eq, Ord, Bounded, Enum, Read, Show)
 
 instance GraphvizResult GraphvizCanvas where
-    outputCall Gtk       = "gtk"
-    outputCall Xlib      = "xlib"
+  outputCall Gtk       = "gtk"
+  outputCall Xlib      = "xlib"
 
 -- -----------------------------------------------------------------------------
 
@@ -252,17 +252,17 @@ runGraphvizCommand :: (DotRepr dg n) => GraphvizCommand -> dg n
 runGraphvizCommand cmd gr t fp
   = mapException (\(GVProgramExc e) -> GVProgramExc $ addFl e)
     $ graphvizWithHandle cmd gr t toFile
-      where
-        addFl = (++) ("Unable to create " ++ fp ++ "\n")
-        toFile h = SB.hGetContents h >>= SB.writeFile fp >> return fp
+  where
+    addFl = (++) ("Unable to create " ++ fp ++ "\n")
+    toFile h = SB.hGetContents h >>= SB.writeFile fp >> return fp
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
 --   the provided 'FilePath' for the output file.
 addExtension          :: (GraphvizOutput -> FilePath -> a)
                          -> GraphvizOutput -> FilePath -> a
 addExtension cmd t fp = cmd t fp'
-    where
-      fp' = fp <.> defaultExtension t
+  where
+    fp' = fp <.> defaultExtension t
 
 -- | Run the chosen Graphviz command on this graph, but send the
 --   result to the given handle rather than to a file.
@@ -298,9 +298,9 @@ graphvizWithHandle' cmd dg t f = runCommand (showCmd cmd)
 runGraphvizCanvas          :: (DotRepr dg n) => GraphvizCommand -> dg n
                               -> GraphvizCanvas -> IO ()
 runGraphvizCanvas cmd gr c = graphvizWithHandle' cmd gr c nullHandle
-    where
-      nullHandle :: Handle -> IO ()
-      nullHandle = liftM (const ()) . SB.hGetContents
+  where
+    nullHandle :: Handle -> IO ()
+    nullHandle = liftM (const ()) . SB.hGetContents
 
 -- | Run the recommended Graphviz command on this graph and render it
 --   using the given canvas type.

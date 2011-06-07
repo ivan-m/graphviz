@@ -193,7 +193,7 @@ data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multipl
                            , graphID         :: Maybe GraphID
                            , graphStatements :: DotStatements a
                            }
-                  deriving (Eq, Ord, Show, Read)
+                deriving (Eq, Ord, Show, Read)
 
 instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
   getID = graphID
@@ -231,14 +231,14 @@ instance (PrintDot a) => PrintDot (DotGraph a) where
       printGraphID' = printGraphID strictGraph directedGraph graphID
 
 instance (ParseDot a) => ParseDot (DotGraph a) where
-    parseUnqt = parseStmtBased parse (parseGraphID DotGraph)
+  parseUnqt = parseStmtBased parse (parseGraphID DotGraph)
 
-    parse = parseUnqt -- Don't want the option of quoting
-            `adjustErr`
-            (++ "\n\nNot a valid DotGraph")
+  parse = parseUnqt -- Don't want the option of quoting
+          `adjustErr`
+          (++ "\n\nNot a valid DotGraph")
 
 instance Functor DotGraph where
-    fmap f g = g { graphStatements = fmap f $ graphStatements g }
+  fmap f g = g { graphStatements = fmap f $ graphStatements g }
 
 -- -----------------------------------------------------------------------------
 
@@ -250,31 +250,31 @@ data DotStatements a = DotStmts { attrStmts :: [GlobalAttributes]
                      deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotStatements a) where
-    unqtDot stmts = vcat $ sequence [ unqtDot $ attrStmts stmts
-                                    , unqtDot $ subGraphs stmts
-                                    , unqtDot $ nodeStmts stmts
-                                    , unqtDot $ edgeStmts stmts
-                                    ]
+  unqtDot stmts = vcat $ sequence [ unqtDot $ attrStmts stmts
+                                  , unqtDot $ subGraphs stmts
+                                  , unqtDot $ nodeStmts stmts
+                                  , unqtDot $ edgeStmts stmts
+                                  ]
 
 instance (ParseDot a) => ParseDot (DotStatements a) where
-    parseUnqt = do atts <- tryParseList
-                   newline'
-                   sGraphs <- tryParseList
-                   newline'
-                   nodes <- tryParseList
-                   newline'
-                   edges <- tryParseList
-                   return $ DotStmts atts sGraphs nodes edges
+  parseUnqt = do atts <- tryParseList
+                 newline'
+                 sGraphs <- tryParseList
+                 newline'
+                 nodes <- tryParseList
+                 newline'
+                 edges <- tryParseList
+                 return $ DotStmts atts sGraphs nodes edges
 
-    parse = parseUnqt -- Don't want the option of quoting
-            `adjustErr`
-            (++ "Not a valid set of statements")
+  parse = parseUnqt -- Don't want the option of quoting
+          `adjustErr`
+          (++ "Not a valid set of statements")
 
 instance Functor DotStatements where
-    fmap f stmts = stmts { subGraphs = map (fmap f) $ subGraphs stmts
-                         , nodeStmts = map (fmap f) $ nodeStmts stmts
-                         , edgeStmts = map (fmap f) $ edgeStmts stmts
-                         }
+  fmap f stmts = stmts { subGraphs = map (fmap f) $ subGraphs stmts
+                       , nodeStmts = map (fmap f) $ nodeStmts stmts
+                       , edgeStmts = map (fmap f) $ edgeStmts stmts
+                       }
 
 -- | The function represents which function to use to check the
 --   'GraphAttrs' values.
@@ -311,36 +311,36 @@ data DotSubGraph a = DotSG { isCluster     :: Bool
                    deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot a) => PrintDot (DotSubGraph a) where
-    unqtDot = printStmtBased printSubGraphID' subGraphStmts toDot
+  unqtDot = printStmtBased printSubGraphID' subGraphStmts toDot
 
-    unqtListToDot = printStmtBasedList printSubGraphID' subGraphStmts toDot
+  unqtListToDot = printStmtBasedList printSubGraphID' subGraphStmts toDot
 
-    listToDot = unqtListToDot
+  listToDot = unqtListToDot
 
 printSubGraphID' :: DotSubGraph a -> DotCode
 printSubGraphID' = printSubGraphID (isCluster &&& subGraphID)
 
 instance (ParseDot a) => ParseDot (DotSubGraph a) where
-    parseUnqt = parseStmtBased parseUnqt (parseSubGraphID DotSG)
-                `onFail`
-                -- Take "anonymous" DotSubGraphs into account.
-                liftM (DotSG False Nothing) (parseBracesBased parseUnqt)
+  parseUnqt = parseStmtBased parseUnqt (parseSubGraphID DotSG)
+              `onFail`
+              -- Take "anonymous" DotSubGraphs into account.
+              liftM (DotSG False Nothing) (parseBracesBased parseUnqt)
 
-    parse = parseUnqt -- Don't want the option of quoting
-            `adjustErr`
-            (++ "\n\nNot a valid Sub Graph")
+  parse = parseUnqt -- Don't want the option of quoting
+          `adjustErr`
+          (++ "\n\nNot a valid Sub Graph")
 
-    parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
+  parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
 
-    parseList = parseUnqtList
+  parseList = parseUnqtList
 
 instance Functor DotSubGraph where
-    fmap f sg = sg { subGraphStmts = fmap f $ subGraphStmts sg }
+  fmap f sg = sg { subGraphStmts = fmap f $ subGraphStmts sg }
 
 invalidSubGraph    :: DotSubGraph a -> [DotError a]
 invalidSubGraph sg = invalidStmts valFunc (subGraphStmts sg)
-    where
-      valFunc = bool usedBySubGraphs usedByClusters (isCluster sg)
+  where
+    valFunc = bool usedBySubGraphs usedByClusters (isCluster sg)
 
 withSubGraphID        :: (Maybe (Maybe GraphID) -> b -> a)
                          -> (DotStatements n -> b) -> DotSubGraph n -> a

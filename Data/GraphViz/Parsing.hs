@@ -114,9 +114,9 @@ import Control.Monad(liftM, liftM2, when)
 type Parse a = Parser GraphvizState a
 
 instance GraphvizStateM (Parser GraphvizState) where
-    modifyGS = stUpdate
+  modifyGS = stUpdate
 
-    getsGS = stQuery
+  getsGS = stQuery
 
 runParser     :: Parse a -> Text -> (Either String a, Text)
 runParser p t = let (r,_,t') = P.runParser p initialState t
@@ -131,22 +131,22 @@ runParser' p = checkValidParse . fst . runParser p'
     p' = p `discard` (allWhitespace' >> eof)
 
 class ParseDot a where
-    parseUnqt :: Parse a
+  parseUnqt :: Parse a
 
-    parse :: Parse a
-    parse = optionalQuoted parseUnqt
+  parse :: Parse a
+  parse = optionalQuoted parseUnqt
 
-    parseUnqtList :: Parse [a]
-    parseUnqtList = bracketSep (parseAndSpace $ character '[')
-                               ( wrapWhitespace parseComma
-                                 `onFail`
-                                 allWhitespace
-                               )
-                               (allWhitespace' >> character ']')
-                               parseUnqt
+  parseUnqtList :: Parse [a]
+  parseUnqtList = bracketSep (parseAndSpace $ character '[')
+                             ( wrapWhitespace parseComma
+                               `onFail`
+                               allWhitespace
+                             )
+                             (allWhitespace' >> character ']')
+                             parseUnqt
 
-    parseList :: Parse [a]
-    parseList = quotedParse parseUnqtList
+  parseList :: Parse [a]
+  parseList = quotedParse parseUnqtList
 
 -- | Parse the required value, returning also the rest of the input
 --   'String' that hasn't been parsed (for debugging purposes).
@@ -165,30 +165,30 @@ parseIt' :: (ParseDot a) => Text -> a
 parseIt' = runParser' parse
 
 instance ParseDot Int where
-    parseUnqt = parseInt'
+  parseUnqt = parseInt'
 
 instance ParseDot Word8 where
-    parseUnqt = parseInt
+  parseUnqt = parseInt
 
 instance ParseDot Word16 where
-    parseUnqt = parseInt
+  parseUnqt = parseInt
 
 instance ParseDot Double where
-    parseUnqt = parseFloat'
+  parseUnqt = parseFloat'
 
-    parseUnqtList = sepBy1 parseUnqt (character ':')
+  parseUnqtList = sepBy1 parseUnqt (character ':')
 
-    parseList = quotedParse parseUnqtList
-                `onFail`
-                liftM return parse
+  parseList = quotedParse parseUnqtList
+              `onFail`
+              liftM return parse
 
 instance ParseDot Bool where
-    parseUnqt = onlyBool
-                `onFail`
-                liftM (zero /=) parseInt'
-        where
-          zero :: Int
-          zero = 0
+  parseUnqt = onlyBool
+              `onFail`
+              liftM (zero /=) parseInt'
+    where
+      zero :: Int
+      zero = 0
 
 -- | Use this when you do not want numbers to be treated as 'Bool' values.
 onlyBool :: Parse Bool
@@ -197,33 +197,33 @@ onlyBool = oneOf [ stringRep True "true"
                  ]
 
 instance ParseDot Char where
-    -- Can't be a quote character.
-    parseUnqt = satisfy (quoteChar /=)
+  -- Can't be a quote character.
+  parseUnqt = satisfy (quoteChar /=)
 
-    parse = satisfy restIDString
-            `onFail`
-            quotedParse parseUnqt
+  parse = satisfy restIDString
+          `onFail`
+          quotedParse parseUnqt
 
-    parseUnqtList = liftM T.unpack parseUnqt
+  parseUnqtList = liftM T.unpack parseUnqt
 
-    parseList = liftM T.unpack parse
+  parseList = liftM T.unpack parse
 
 instance ParseDot Text where
-    -- Too many problems with using this within other parsers where
-    -- using numString or stringBlock will cause a parse failure.  As
-    -- such, this will successfully parse all un-quoted Texts.
-    parseUnqt = quotedString
+  -- Too many problems with using this within other parsers where
+  -- using numString or stringBlock will cause a parse failure.  As
+  -- such, this will successfully parse all un-quoted Texts.
+  parseUnqt = quotedString
 
-    parse = quotelessString
-            `onFail`
-            -- This will also take care of quoted versions of
-            -- above.
-            quotedParse quotedString
+  parse = quotelessString
+          `onFail`
+          -- This will also take care of quoted versions of
+          -- above.
+          quotedParse quotedString
 
 instance (ParseDot a) => ParseDot [a] where
-    parseUnqt = parseUnqtList
+  parseUnqt = parseUnqtList
 
-    parse = parseList
+  parse = parseList
 
 -- | Parse a 'String' that doesn't need to be quoted.
 quotelessString :: Parse Text
@@ -256,8 +256,8 @@ parseInt = do cs <- many1 (satisfy isDigit)
               return (foldl1 (\n d-> n*radix+d)
                                    (map (fromIntegral . digitToInt) cs))
            `adjustErr` (++ "\nexpected one or more digits")
-    where
-      radix = 10
+  where
+    radix = 10
 
 parseInt' :: Parse Int
 parseInt' = parseSigned parseInt
@@ -282,21 +282,21 @@ parseFloat = do ds   <- many (satisfy isDigit)
                   . (%1) . runParser' parseInt) (T.pack $ ds++frac')
              `onFail`
              fail "Expected a floating point number"
-    where
-      parseExp = do character 'e'
-                    ((character '+' >> parseInt)
-                     `onFail`
-                     parseInt')
-      noDec = maybe True null
+  where
+    parseExp = do character 'e'
+                  ((character '+' >> parseInt)
+                   `onFail`
+                   parseInt')
+    noDec = maybe True null
 
 parseFloat' :: Parse Double
 parseFloat' = parseSigned ( parseFloat
                             `onFail`
                             liftM fI parseInt
                           )
-    where
-      fI :: Integer -> Double
-      fI = fromIntegral
+  where
+    fI :: Integer -> Double
+    fI = fromIntegral
 
 -- -----------------------------------------------------------------------------
 
@@ -492,7 +492,7 @@ instance ParseDot ColorScheme where
                    return cs
 
 instance ParseDot BrewerScheme where
-    parseUnqt = liftM2 BScheme parseUnqt parseUnqt
+  parseUnqt = liftM2 BScheme parseUnqt parseUnqt
 
 instance ParseDot BrewerName where
   -- The order is different from above to make sure longer names are

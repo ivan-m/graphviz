@@ -181,18 +181,18 @@ test_printParseID_Attributes
          , desc       = dsc
          , test       = quickCheckWithResult args prop
          }
-    where
-      prop :: Attributes -> Property
-      prop = prop_printParseListID
+  where
+    prop :: Attributes -> Property
+    prop = prop_printParseListID
 
-      args = stdArgs { maxSuccess = numGen }
-      numGen = 1000
-      defGen = maxSuccess stdArgs
+    args = stdArgs { maxSuccess = numGen }
+    numGen = 10000
+    defGen = maxSuccess stdArgs
 
-      dsc = "The most common source of errors in printing and parsing are for\n\
-            \Attributes.  As such, these are stress-tested before we run the\n\
-            \rest of the tests, generating " ++ show numGen ++ " lists of\n\
-            \Attributes rather than the default " ++ show defGen ++ " tests."
+    dsc = "The most common source of errors in printing and parsing are for\n\
+          \Attributes.  As such, these are stress-tested before we run the\n\
+          \rest of the tests, generating " ++ show numGen ++ " lists of\n\
+          \Attributes rather than the default " ++ show defGen ++ " tests."
 
 test_generalisedSameDot :: Test
 test_generalisedSameDot
@@ -215,13 +215,13 @@ test_printParseID
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: DotGraph Int -> Bool
-      prop = prop_printParseID
+  where
+    prop :: DotGraph Int -> Bool
+    prop = prop_printParseID
 
-      dsc = "The graphviz library should be able to parse back in its own\n\
-             \generated Dot code.  This test aims to determine the validity\n\
-             \of this for the overall \"DotGraph Int\" values."
+    dsc = "The graphviz library should be able to parse back in its own\n\
+           \generated Dot code.  This test aims to determine the validity\n\
+           \of this for the overall \"DotGraph Int\" values."
 
 test_printParseGID :: Test
 test_printParseGID
@@ -230,13 +230,13 @@ test_printParseGID
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: GDotGraph Int -> Bool
-      prop = prop_printParseID
+  where
+    prop :: GDotGraph Int -> Bool
+    prop = prop_printParseID
 
-      dsc = "The graphviz library should be able to parse back in its own\n\
-             \generated Dot code.  This test aims to determine the validity\n\
-             \of this for the overall \"GDotGraph Int\" values."
+    dsc = "The graphviz library should be able to parse back in its own\n\
+           \generated Dot code.  This test aims to determine the validity\n\
+           \of this for the overall \"GDotGraph Int\" values."
 
 test_preProcessingID :: Test
 test_preProcessingID
@@ -245,16 +245,16 @@ test_preProcessingID
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: DotGraph Int -> Bool
-      prop = prop_preProcessingID
+  where
+    prop :: DotGraph Int -> Bool
+    prop = prop_preProcessingID
 
-      dsc = "When parsing Dot code, some pre-processing is done to remove items\n\
-             \such as comments and to join together multi-line strings.  This\n\
-             \test verifies that this pre-processing doesn't affect actual\n\
-             \Dot code by running the pre-processor on generated Dot code.\n\n\
-             \This test is not run on generalised Dot graphs as if it works for\n\
-             \normal dot graphs then it should also work for generalised ones."
+    dsc = "When parsing Dot code, some pre-processing is done to remove items\n\
+           \such as comments and to join together multi-line strings.  This\n\
+           \test verifies that this pre-processing doesn't affect actual\n\
+           \Dot code by running the pre-processor on generated Dot code.\n\n\
+           \This test is not run on generalised Dot graphs as if it works for\n\
+           \normal dot graphs then it should also work for generalised ones."
 
 test_dotizeAugment :: Test
 test_dotizeAugment
@@ -263,14 +263,14 @@ test_dotizeAugment
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr Char Double -> Bool
-      prop = prop_dotizeAugment
+  where
+    prop :: Gr Char Double -> Bool
+    prop = prop_dotizeAugment
 
-      dsc = "The various Graph to Graph functions in Data.GraphViz should\n\
-             \only _augment_ the graph labels and not change the graphs\n\
-             \themselves.  This test compares the original graphs to these\n\
-             \augmented graphs and verifies that they are the same."
+    dsc = "The various Graph to Graph functions in Data.GraphViz should\n\
+           \only _augment_ the graph labels and not change the graphs\n\
+           \themselves.  This test compares the original graphs to these\n\
+           \augmented graphs and verifies that they are the same."
 
 test_dotizeAugmentUniq :: Test
 test_dotizeAugmentUniq
@@ -279,14 +279,14 @@ test_dotizeAugmentUniq
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr Char Double -> Bool
-      prop = prop_dotizeAugmentUniq
+  where
+    prop :: Gr Char Double -> Bool
+    prop = prop_dotizeAugmentUniq
 
-      dsc = "When augmenting a graph with multiple edges, as long as no\n\
-             \Attributes are provided that override the default settings,\n\
-             \then each edge between two nodes should have a unique position\n\
-             \Attribute, etc."
+    dsc = "When augmenting a graph with multiple edges, as long as no\n\
+           \Attributes are provided that override the default settings,\n\
+           \then each edge between two nodes should have a unique position\n\
+           \Attribute, etc."
 
 test_findAllNodes :: Test
 test_findAllNodes
@@ -295,13 +295,13 @@ test_findAllNodes
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr () () -> Bool
-      prop = prop_findAllNodes
+  where
+    prop :: Gr () () -> Bool
+    prop = prop_findAllNodes
 
-      dsc = "nodeInformation should find all nodes in a DotGraph;\n\
-             \this is tested by converting an FGL graph and comparing\n\
-             \the nodes it should have to those that are found."
+    dsc = "nodeInformation should find all nodes in a DotGraph;\n\
+           \this is tested by converting an FGL graph and comparing\n\
+           \the nodes it should have to those that are found."
 
 test_findAllNodesG :: Test
 test_findAllNodesG
@@ -310,13 +310,13 @@ test_findAllNodesG
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr () () -> Bool
-      prop = prop_findAllNodesG
+  where
+    prop :: Gr () () -> Bool
+    prop = prop_findAllNodesG
 
-      dsc = "nodeInformation should find all nodes in a GDotGraph;\n\
-             \this is tested by converting an FGL graph and comparing\n\
-             \the nodes it should have to those that are found."
+    dsc = "nodeInformation should find all nodes in a GDotGraph;\n\
+           \this is tested by converting an FGL graph and comparing\n\
+           \the nodes it should have to those that are found."
 
 test_findAllNodesE :: Test
 test_findAllNodesE
@@ -325,14 +325,14 @@ test_findAllNodesE
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr () () -> Bool
-      prop = prop_findAllNodesE
+  where
+    prop :: Gr () () -> Bool
+    prop = prop_findAllNodesE
 
-      dsc = "nodeInformation should find all nodes in a DotGraph,\n\
-             \even if there are no explicit nodes in that graph.\n\
-             \This is tested by converting an FGL graph and comparing\n\
-             \the nodes it should have to those that are found."
+    dsc = "nodeInformation should find all nodes in a DotGraph,\n\
+           \even if there are no explicit nodes in that graph.\n\
+           \This is tested by converting an FGL graph and comparing\n\
+           \the nodes it should have to those that are found."
 
 test_findAllNodesEG :: Test
 test_findAllNodesEG
@@ -341,14 +341,14 @@ test_findAllNodesEG
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr () () -> Bool
-      prop = prop_findAllNodesEG
+  where
+    prop :: Gr () () -> Bool
+    prop = prop_findAllNodesEG
 
-      dsc = "nodeInformation should find all nodes in a GDotGraph,\n\
-             \even if there are no explicit nodes in that graph.\n\
-             \This is tested by converting an FGL graph and comparing\n\
-             \the nodes it should have to those that are found."
+    dsc = "nodeInformation should find all nodes in a GDotGraph,\n\
+           \even if there are no explicit nodes in that graph.\n\
+           \This is tested by converting an FGL graph and comparing\n\
+           \the nodes it should have to those that are found."
 
 test_findAllEdges :: Test
 test_findAllEdges
@@ -357,13 +357,13 @@ test_findAllEdges
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr () () -> Bool
-      prop = prop_findAllEdges
+  where
+    prop :: Gr () () -> Bool
+    prop = prop_findAllEdges
 
-      dsc = "nodeInformation should find all edges in a DotGraph;\n\
-             \this is tested by converting an FGL graph and comparing\n\
-             \the edges it should have to those that are found."
+    dsc = "nodeInformation should find all edges in a DotGraph;\n\
+           \this is tested by converting an FGL graph and comparing\n\
+           \the edges it should have to those that are found."
 
 test_findAllEdgesG :: Test
 test_findAllEdgesG
@@ -372,13 +372,13 @@ test_findAllEdgesG
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr () () -> Bool
-      prop = prop_findAllEdgesG
+  where
+    prop :: Gr () () -> Bool
+    prop = prop_findAllEdgesG
 
-      dsc = "nodeInformation should find all edges in a GDotGraph;\n\
-             \this is tested by converting an FGL graph and comparing\n\
-             \the edges it should have to those that are found."
+    dsc = "nodeInformation should find all edges in a GDotGraph;\n\
+           \this is tested by converting an FGL graph and comparing\n\
+           \the edges it should have to those that are found."
 
 test_noGraphInfo :: Test
 test_noGraphInfo
@@ -387,12 +387,12 @@ test_noGraphInfo
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr () () -> Bool
-      prop = prop_noGraphInfo
+  where
+    prop :: Gr () () -> Bool
+    prop = prop_noGraphInfo
 
-      dsc = "When converting a Graph to a DotGraph, there should be no\n\
-             \clusters or global attributes."
+    dsc = "When converting a Graph to a DotGraph, there should be no\n\
+           \clusters or global attributes."
 
 test_noGraphInfoG :: Test
 test_noGraphInfoG
@@ -401,12 +401,12 @@ test_noGraphInfoG
          , desc       = dsc
          , test       = quickCheckResult prop
          }
-    where
-      prop :: Gr () () -> Bool
-      prop = prop_noGraphInfoG
+  where
+    prop :: Gr () () -> Bool
+    prop = prop_noGraphInfoG
 
-      dsc = "When converting a Graph to a GDotGraph, there should be no\n\
-             \clusters or global attributes."
+    dsc = "When converting a Graph to a GDotGraph, there should be no\n\
+           \clusters or global attributes."
 
 test_canonicalise :: Test
 test_canonicalise
@@ -415,8 +415,8 @@ test_canonicalise
          , desc = dsc
          , test = quickCheckResult prop
          }
-    where
-      prop :: GDotGraph Int -> Bool
-      prop = prop_canonicalise
+  where
+    prop :: GDotGraph Int -> Bool
+    prop = prop_canonicalise
 
-      dsc = "Repeated application of canonicalise shouldn't have any further affect."
+    dsc = "Repeated application of canonicalise shouldn't have any further affect."

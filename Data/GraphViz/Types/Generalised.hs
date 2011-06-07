@@ -89,14 +89,14 @@ instance (PrintDot a) => PrintDot (GDotGraph a) where
       printGraphID' = printGraphID gStrictGraph gDirectedGraph gGraphID
 
 instance (ParseDot a) => ParseDot (GDotGraph a) where
-    parseUnqt = parseStmtBased parseGStmts (parseGraphID GDotGraph)
+  parseUnqt = parseStmtBased parseGStmts (parseGraphID GDotGraph)
 
-    parse = parseUnqt -- Don't want the option of quoting
-            `adjustErr`
-            (++ "\n\nNot a valid DotGraph")
+  parse = parseUnqt -- Don't want the option of quoting
+          `adjustErr`
+          (++ "\n\nNot a valid DotGraph")
 
 instance Functor GDotGraph where
-    fmap f g = g { gGraphStatements = (fmap . fmap) f $ gGraphStatements g }
+  fmap f g = g { gGraphStatements = (fmap . fmap) f $ gGraphStatements g }
 
 -- | Convert a 'DotGraph' to a 'GDotGraph', keeping the same order of
 --   statements.

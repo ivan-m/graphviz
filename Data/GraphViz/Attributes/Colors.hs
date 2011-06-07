@@ -77,89 +77,88 @@ data Color = RGB { red   :: Word8
                                             --   level of the
                                             --   'BrewerScheme' being
                                             --   used.
-             deriving (Eq, Ord, Show, Read)
+           deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Color where
-    unqtDot (RGB  r g b)       = hexColor [r,g,b]
-    unqtDot (RGBA r g b a)     = hexColor [r,g,b,a]
-    unqtDot (HSV  h s v)       = hcat . punctuate comma $ mapM unqtDot [h,s,v]
-    unqtDot (X11Color name)    = unqtDot name
-    unqtDot (BrewerColor bs n) = printBrewerColor False bs n
+  unqtDot (RGB  r g b)       = hexColor [r,g,b]
+  unqtDot (RGBA r g b a)     = hexColor [r,g,b,a]
+  unqtDot (HSV  h s v)       = hcat . punctuate comma $ mapM unqtDot [h,s,v]
+  unqtDot (X11Color name)    = unqtDot name
+  unqtDot (BrewerColor bs n) = printBrewerColor False bs n
 
-    toDot (X11Color name)    = toDot name
-    toDot (BrewerColor bs n) = printBrewerColor True bs n
-    toDot c                  = dquotes $ unqtDot c
+  toDot (X11Color name)    = toDot name
+  toDot (BrewerColor bs n) = printBrewerColor True bs n
+  toDot c                  = dquotes $ unqtDot c
 
-    unqtListToDot = hcat . punctuate colon . mapM unqtDot
+  unqtListToDot = hcat . punctuate colon . mapM unqtDot
 
-    -- These two don't need to be quoted if they're on their own.
-    listToDot [X11Color name]    = toDot name
-    listToDot [BrewerColor bs n] = printBrewerColor True bs n
-    listToDot cs                 = dquotes $ unqtListToDot cs
+  -- These two don't need to be quoted if they're on their own.
+  listToDot [X11Color name]    = toDot name
+  listToDot [BrewerColor bs n] = printBrewerColor True bs n
+  listToDot cs                 = dquotes $ unqtListToDot cs
 
 hexColor :: [Word8] -> DotCode
 hexColor = (<>) (char '#') . hcat . mapM word8Doc
 
 word8Doc   :: Word8 -> DotCode
 word8Doc w = text $ padding `T.append` simple
-    where
-      simple = T.pack $ showHex w ""
-      padding = T.replicate count (T.singleton '0')
-      count = 2 - findCols 1 w
-      findCols c n
-          | n < 16 = c
-          | otherwise = findCols (c+1) (n `div` 16)
+  where
+    simple = T.pack $ showHex w ""
+    padding = T.replicate count (T.singleton '0')
+    count = 2 - findCols 1 w
+    findCols c n
+      | n < 16 = c
+      | otherwise = findCols (c+1) (n `div` 16)
 
 instance ParseDot Color where
-    parseUnqt = oneOf [ parseHexBased
-                      , parseHSV
-                        -- Have to parse BrewerColor first, as some of them may appear to be X11 colors
-                      , liftM (uncurry BrewerColor) $ parseBrewerColor False
-                      , liftM X11Color $ parseX11Color False
-                      ]
-        where
-          parseHexBased
-              = do character '#'
-                   cs <- many1 parse2Hex
-                   return $ case cs of
-                              [r,g,b] -> RGB r g b
-                              [r,g,b,a] -> RGBA r g b a
-                              _ -> throw . NotDotCode
-                                   $ "Not a valid hex Color specification: "
-                                      ++ show cs
-          parseHSV = do h <- parse
-                        parseSep
-                        s <- parse
-                        parseSep
-                        v <- parse
-                        return $ HSV h s v
-          parseSep = oneOf [ string ","
-                           , whitespace
-                           ]
-          parse2Hex = do c1 <- satisfy isHexDigit
-                         c2 <- satisfy isHexDigit
-                         let [(n, [])] = readHex [c1, c2]
-                         return n
-
-
-    parse = quotedParse parseUnqt
-            `onFail` -- These two might not need to be quoted
-            oneOf [ liftM X11Color parseUnqt
-                  , do Brewer bc <- getColorScheme
-                       liftM (BrewerColor bc) parseUnqt
-                  ]
-
-    parseUnqtList = sepBy1 parseUnqt (character ':')
-
-    parseList = liftM (:[])
-                -- Unquoted single color
-                (oneOf [ liftM X11Color parseUnqt
-                       , do Brewer bc <- getColorScheme
-                            liftM (BrewerColor bc) parseUnqt
+  parseUnqt = oneOf [ parseHexBased
+                    , parseHSV
+                      -- Have to parse BrewerColor first, as some of them may appear to be X11 colors
+                    , liftM (uncurry BrewerColor) $ parseBrewerColor False
+                    , liftM X11Color $ parseX11Color False
+                    ]
+    where
+      parseHexBased
+          = do character '#'
+               cs <- many1 parse2Hex
+               return $ case cs of
+                          [r,g,b] -> RGB r g b
+                          [r,g,b,a] -> RGBA r g b a
+                          _ -> throw . NotDotCode
+                               $ "Not a valid hex Color specification: "
+                                  ++ show cs
+      parseHSV = do h <- parse
+                    parseSep
+                    s <- parse
+                    parseSep
+                    v <- parse
+                    return $ HSV h s v
+      parseSep = oneOf [ string ","
+                       , whitespace
                        ]
-                )
-                `onFail`
-                quotedParse parseUnqtList
+      parse2Hex = do c1 <- satisfy isHexDigit
+                     c2 <- satisfy isHexDigit
+                     let [(n, [])] = readHex [c1, c2]
+                     return n
+
+  parse = quotedParse parseUnqt
+          `onFail` -- These two might not need to be quoted
+          oneOf [ liftM X11Color parseUnqt
+                , do Brewer bc <- getColorScheme
+                     liftM (BrewerColor bc) parseUnqt
+                ]
+
+  parseUnqtList = sepBy1 parseUnqt (character ':')
+
+  parseList = liftM (:[])
+              -- Unquoted single color
+              (oneOf [ liftM X11Color parseUnqt
+                     , do Brewer bc <- getColorScheme
+                          liftM (BrewerColor bc) parseUnqt
+                     ]
+              )
+              `onFail`
+              quotedParse parseUnqtList
 
 printBrewerColor        :: Bool -> BrewerScheme -> Word8 -> DotCode
 printBrewerColor q bs l = do cs <- getColorScheme
