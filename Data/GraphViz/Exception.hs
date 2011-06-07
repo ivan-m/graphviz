@@ -29,14 +29,18 @@ import Data.Typeable
 --
 --   * An error when trying to run an external program (e.g. @dot@).
 --
+--   * Treating a non-custom Attribute as a custom one.
+--
 data GraphvizException = NotDotCode String
                        | NotUTF8Dot String
                        | GVProgramExc String
+                       | NotCustomAttr String
                        deriving (Eq, Ord, Typeable)
 
 instance Show GraphvizException where
-  showsPrec _ (NotDotCode str)   = showString $ "Error when parsing Dot code: " ++ str
-  showsPrec _ (NotUTF8Dot str)   = showString $ "Invalid UTF-8 Dot code: " ++ str
-  showsPrec _ (GVProgramExc str) = showString $ "Error running utility program: " ++ str
+  showsPrec _ (NotDotCode str)    = showString $ "Error when parsing Dot code: " ++ str
+  showsPrec _ (NotUTF8Dot str)    = showString $ "Invalid UTF-8 Dot code: " ++ str
+  showsPrec _ (GVProgramExc str)  = showString $ "Error running utility program: " ++ str
+  showsPrec _ (NotCustomAttr str) = showString $ "Not a custom Attribute: " ++ str
 
 instance Exception GraphvizException

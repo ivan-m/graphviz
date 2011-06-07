@@ -76,6 +76,19 @@ module Data.GraphViz.Attributes
     , usedByEdges
     , validUnknown
 
+      -- ** Custom attributes.
+    , AttributeName
+    , CustomAttribute
+    , customAttribute
+    , isCustom
+    , isSpecifiedCustom
+    , customValue
+    , customName
+    , findCustoms
+    , findSpecifiedCustom
+    , deleteCustomAttributes
+    , deleteSpecifiedCustom
+
       -- * Value types for @Attribute@s.
     , module Data.GraphViz.Attributes.Colors
     , bgColor
@@ -189,7 +202,9 @@ import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 import Data.GraphViz.State(getLayerSep, setLayerSep)
+import Data.GraphViz.Exception(GraphvizException(NotCustomAttr), throw)
 
+import Data.List(partition)
 import Data.Maybe(isJust)
 import Data.Word(Word16)
 import qualified Data.Set as S
@@ -226,163 +241,164 @@ import Control.Monad(liftM, liftM2)
    used (i.e. corresponds to 'True') when the 'Attribute' name is
    listed on its own in /Dot/ source code.
 
-   Please note that the 'UnknownAttribute' 'Attribute' is defined for
-   /backwards-compatibility purposes only/ (specifically, to be able to
-   parse old Dot code containing 'Attribute's that are no longer valid).
-   As such, this 'Attribute' should not be used directly.  The attribute
-   name is assumed to match the first type of identifier listed in
-   "Data.GraphViz.Printing" (i.e. a non-number that does not need to be
-   quoted).
+   Please note that the 'UnknownAttribute' 'Attribute' is defined
+   primarily for backwards-compatibility purposes.  It is possible to use
+   it directly for custom purposes; for more information, please see
+   'CustomAttribute'.  The 'deleteCustomAttributes' can be used to delete
+   these values.
 
 -}
 data Attribute
-  = Damping Double                   -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
-  | K Double                         -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
-  | URL EscString                    -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
-  | ArrowHead ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
-  | ArrowSize Double                 -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
-  | ArrowTail ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
-  | Aspect AspectType                -- ^ /Valid for/: G; /Notes/: dot only
-  | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
-  | BgColor Color                    -- ^ /Valid for/: GC; /Default/: @'X11Color' 'Transparent'@
-  | Center Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-  | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
-  | ColorScheme ColorScheme          -- ^ /Valid for/: ENCG; /Default/: @'X11'@
-  | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
-  | Comment Text                     -- ^ /Valid for/: ENG; /Default/: @\"\"@
-  | Compound Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
-  | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-  | Constraint Bool                  -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
-  | Decorate Bool                    -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-  | DefaultDist Double               -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(|V|)@; /Minimum/: @epsilon@; /Notes/: neato only
-  | Dimen Int                        -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
-  | Dim Int                          -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
-  | Dir DirType                      -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
-  | DirEdgeConstraints DEConstraints -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
-  | Distortion Double                -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
-  | DPI Double                       -- ^ /Valid for/: G; /Default/: @96.0@, @0.0@; /Notes/: svg, bitmap output only; \"resolution\" is a synonym
-  | EdgeURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-  | EdgeTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-  | EdgeTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-  | Epsilon Double                   -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
-  | ESep DPoint                      -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not dot
-  | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @'X11Color' 'LightGray'@ (nodes), @'X11Color' 'Black'@ (clusters)
-  | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
-  | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
-  | FontName Text                    -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
-  | FontNames Text                   -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
-  | FontPath Text                    -- ^ /Valid for/: G; /Default/: system dependent
-  | FontSize Double                  -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
-  | Group Text                       -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
-  | HeadURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-  | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
-  | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: 'StrLabel' @\"\"@
-  | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
-  | HeadTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-  | HeadTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-  | Height Double                    -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
-  | ID Label                         -- ^ /Valid for/: GNE; /Default/: @'StrLabel' \"\"@; /Notes/: svg, postscript, map only
-  | Image Text                       -- ^ /Valid for/: N; /Default/: @\"\"@
-  | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
-  | LabelURL EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-  | LabelAngle Double                -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
-  | LabelDistance Double             -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
-  | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-  | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: @'X11Color' 'Black'@
-  | LabelFontName Text               -- ^ /Valid for/: E; /Default/: @\"Times-Roman\"@
-  | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: @14.0@; /Minimum/: @1.0@
-  | LabelJust Justification          -- ^ /Valid for/: GC; /Default/: @'JCenter'@
-  | LabelLoc VerticalPlacement       -- ^ /Valid for/: GCN; /Default/: @'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)
-  | LabelTarget EscString            -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-  | LabelTooltip EscString           -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-  | Label Label                      -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
-  | Landscape Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-  | LayerSep LayerSep                -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
-  | Layers LayerList                 -- ^ /Valid for/: G; /Default/: @'LL' []@
-  | Layer LayerRange                 -- ^ /Valid for/: EN
-  | Layout Text                      -- ^ /Valid for/: G; /Default/: @\"\"@
-  | Len Double                       -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
-  | LevelsGap Double                 -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
-  | Levels Int                       -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
-  | LHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-  | LPos Point                       -- ^ /Valid for/: EGC; /Notes/: write only
-  | LTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-  | Margin DPoint                    -- ^ /Valid for/: NG; /Default/: device dependent
-  | MaxIter Int                      -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp); /Notes/: fdp, neato only
-  | MCLimit Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: dot only
-  | MinDist Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: circo only
-  | MinLen Int                       -- ^ /Valid for/: E; /Default/: @1@; /Minimum/: @0@; /Notes/: dot only
-  | Model Model                      -- ^ /Valid for/: G; /Default/: @'ShortPath'@; /Notes/: neato only
-  | Mode ModeType                    -- ^ /Valid for/: G; /Default/: @'Major'@; /Notes/: neato only
-  | Mosek Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: neato only; requires the Mosek software
-  | NodeSep Double                   -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@; /Notes/: dot only
-  | NoJustify Bool                   -- ^ /Valid for/: GCNE; /Default/: @'False'@; /Parsing Default/: 'True'
-  | Normalize Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: not dot
-  | Nslimit1 Double                  -- ^ /Valid for/: G; /Notes/: dot only
-  | Nslimit Double                   -- ^ /Valid for/: G; /Notes/: dot only
-  | Ordering Text                    -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: dot only
-  | Orientation Double               -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
-  | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
-  | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
-  | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
-  | PackMode PackMode                -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
-  | Pack Pack                        -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
-  | Pad DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
-  | PageDir PageDir                  -- ^ /Valid for/: G; /Default/: @'Bl'@
-  | Page Point                       -- ^ /Valid for/: G
-  | PenColor Color                   -- ^ /Valid for/: C; /Default/: @'X11Color' 'Black'@
-  | PenWidth Double                  -- ^ /Valid for/: CNE; /Default/: @1.0@; /Minimum/: @0.0@
-  | Peripheries Int                  -- ^ /Valid for/: NC; /Default/: shape default (nodes), @1@ (clusters); /Minimum/: 0
-  | Pin Bool                         -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: fdp, neato only
-  | Pos Pos                          -- ^ /Valid for/: EN
-  | QuadTree QuadType                -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
-  | Quantum Double                   -- ^ /Valid for/: G; /Default/: @0.0@; /Minimum/: @0.0@
-  | RankDir RankDir                  -- ^ /Valid for/: G; /Default/: @'FromTop'@; /Notes/: dot only
-  | RankSep [Double]                 -- ^ /Valid for/: G; /Default/: @[0.5]@ (dot), @[1.0]@ (twopi); /Minimum/: [0.02]; /Notes/: twopi, dot only
-  | Rank RankType                    -- ^ /Valid for/: S; /Notes/: dot only
-  | Ratio Ratios                     -- ^ /Valid for/: G
-  | Rects [Rect]                     -- ^ /Valid for/: N; /Notes/: write only
-  | Regular Bool                     -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
-  | ReMinCross Bool                  -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
-  | RepulsiveForce Double            -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
-  | Root Root                        -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
-  | Rotate Int                       -- ^ /Valid for/: G; /Default/: @0@
-  | SameHead Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-  | SameTail Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-  | SamplePoints Int                 -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
-  | SearchSize Int                   -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
-  | Sep DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
-  | ShapeFile Text                   -- ^ /Valid for/: N; /Default/: @\"\"@
-  | Shape Shape                      -- ^ /Valid for/: N; /Default/: @'Ellipse'@
-  | ShowBoxes Int                    -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
-  | Sides Int                        -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
-  | Size Point                       -- ^ /Valid for/: G
-  | Skew Double                      -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
-  | Smoothing SmoothType             -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
-  | SortV Word16                     -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
-  | Splines EdgeType                 -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
-  | Start StartType                  -- ^ /Valid for/: G; /Notes/: fdp, neato only
-  | StyleSheet Text                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
-  | Style [StyleItem]                -- ^ /Valid for/: ENC
-  | TailURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-  | TailClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
-  | TailLabel Label                  -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
-  | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
-  | TailTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-  | TailTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-  | Target EscString                 -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, map only
-  | Tooltip EscString                -- ^ /Valid for/: NEC; /Default/: @\"\"@; /Notes/: svg, cmap only
-  | TrueColor Bool                   -- ^ /Valid for/: G; /Parsing Default/: 'True'; /Notes/: bitmap output only
-  | Vertices [Point]                 -- ^ /Valid for/: N; /Notes/: write only
-  | ViewPort ViewPort                -- ^ /Valid for/: G; /Default/: none
-  | VoroMargin Double                -- ^ /Valid for/: G; /Default/: @0.05@; /Minimum/: @0.0@; /Notes/: not dot
-  | Weight Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
-  | Width Double                     -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
-  | Z Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
-  | UnknownAttribute Text Text       -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
+  = Damping Double                      -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
+  | K Double                            -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
+  | URL EscString                       -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
+  | ArrowHead ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
+  | ArrowSize Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
+  | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
+  | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
+  | Bb Rect                             -- ^ /Valid for/: G; /Notes/: write only
+  | BgColor Color                       -- ^ /Valid for/: GC; /Default/: @'X11Color' 'Transparent'@
+  | Center Bool                         -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
+  | ClusterRank ClusterMode             -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
+  | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
+  | Color [Color]                       -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
+  | Comment Text                        -- ^ /Valid for/: ENG; /Default/: @\"\"@
+  | Compound Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
+  | Concentrate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
+  | Constraint Bool                     -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
+  | Decorate Bool                       -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
+  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(|V|)@; /Minimum/: @epsilon@; /Notes/: neato only
+  | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
+  | Dim Int                             -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
+  | Dir DirType                         -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
+  | DirEdgeConstraints DEConstraints    -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
+  | Distortion Double                   -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
+  | DPI Double                          -- ^ /Valid for/: G; /Default/: @96.0@, @0.0@; /Notes/: svg, bitmap output only; \"resolution\" is a synonym
+  | EdgeURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | EdgeTarget EscString                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+  | EdgeTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | Epsilon Double                      -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
+  | ESep DPoint                         -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not dot
+  | FillColor Color                     -- ^ /Valid for/: NC; /Default/: @'X11Color' 'LightGray'@ (nodes), @'X11Color' 'Black'@ (clusters)
+  | FixedSize Bool                      -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
+  | FontColor Color                     -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
+  | FontName Text                       -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
+  | FontNames Text                      -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
+  | FontPath Text                       -- ^ /Valid for/: G; /Default/: system dependent
+  | FontSize Double                     -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
+  | Group Text                          -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
+  | HeadURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | HeadClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
+  | HeadLabel Label                     -- ^ /Valid for/: E; /Default/: 'StrLabel' @\"\"@
+  | HeadPort PortPos                    -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
+  | HeadTarget EscString                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+  | HeadTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | Height Double                       -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
+  | ID Label                            -- ^ /Valid for/: GNE; /Default/: @'StrLabel' \"\"@; /Notes/: svg, postscript, map only
+  | Image Text                          -- ^ /Valid for/: N; /Default/: @\"\"@
+  | ImageScale ScaleType                -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
+  | LabelURL EscString                  -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | LabelAngle Double                   -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
+  | LabelDistance Double                -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
+  | LabelFloat Bool                     -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
+  | LabelFontColor Color                -- ^ /Valid for/: E; /Default/: @'X11Color' 'Black'@
+  | LabelFontName Text                  -- ^ /Valid for/: E; /Default/: @\"Times-Roman\"@
+  | LabelFontSize Double                -- ^ /Valid for/: E; /Default/: @14.0@; /Minimum/: @1.0@
+  | LabelJust Justification             -- ^ /Valid for/: GC; /Default/: @'JCenter'@
+  | LabelLoc VerticalPlacement          -- ^ /Valid for/: GCN; /Default/: @'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)
+  | LabelTarget EscString               -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+  | LabelTooltip EscString              -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | Label Label                         -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
+  | Landscape Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
+  | LayerSep LayerSep                   -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
+  | Layers LayerList                    -- ^ /Valid for/: G; /Default/: @'LL' []@
+  | Layer LayerRange                    -- ^ /Valid for/: EN
+  | Layout Text                         -- ^ /Valid for/: G; /Default/: @\"\"@
+  | Len Double                          -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
+  | LevelsGap Double                    -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
+  | Levels Int                          -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
+  | LHead Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | LPos Point                          -- ^ /Valid for/: EGC; /Notes/: write only
+  | LTail Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | Margin DPoint                       -- ^ /Valid for/: NG; /Default/: device dependent
+  | MaxIter Int                         -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp); /Notes/: fdp, neato only
+  | MCLimit Double                      -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: dot only
+  | MinDist Double                      -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: circo only
+  | MinLen Int                          -- ^ /Valid for/: E; /Default/: @1@; /Minimum/: @0@; /Notes/: dot only
+  | Model Model                         -- ^ /Valid for/: G; /Default/: @'ShortPath'@; /Notes/: neato only
+  | Mode ModeType                       -- ^ /Valid for/: G; /Default/: @'Major'@; /Notes/: neato only
+  | Mosek Bool                          -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: neato only; requires the Mosek software
+  | NodeSep Double                      -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@; /Notes/: dot only
+  | NoJustify Bool                      -- ^ /Valid for/: GCNE; /Default/: @'False'@; /Parsing Default/: 'True'
+  | Normalize Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: not dot
+  | Nslimit1 Double                     -- ^ /Valid for/: G; /Notes/: dot only
+  | Nslimit Double                      -- ^ /Valid for/: G; /Notes/: dot only
+  | Ordering Text                       -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: dot only
+  | Orientation Double                  -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
+  | OutputOrder OutputMode              -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
+  | OverlapScaling Double               -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
+  | Overlap Overlap                     -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
+  | PackMode PackMode                   -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
+  | Pack Pack                           -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
+  | Pad DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
+  | PageDir PageDir                     -- ^ /Valid for/: G; /Default/: @'Bl'@
+  | Page Point                          -- ^ /Valid for/: G
+  | PenColor Color                      -- ^ /Valid for/: C; /Default/: @'X11Color' 'Black'@
+  | PenWidth Double                     -- ^ /Valid for/: CNE; /Default/: @1.0@; /Minimum/: @0.0@
+  | Peripheries Int                     -- ^ /Valid for/: NC; /Default/: shape default (nodes), @1@ (clusters); /Minimum/: 0
+  | Pin Bool                            -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: fdp, neato only
+  | Pos Pos                             -- ^ /Valid for/: EN
+  | QuadTree QuadType                   -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
+  | Quantum Double                      -- ^ /Valid for/: G; /Default/: @0.0@; /Minimum/: @0.0@
+  | RankDir RankDir                     -- ^ /Valid for/: G; /Default/: @'FromTop'@; /Notes/: dot only
+  | RankSep [Double]                    -- ^ /Valid for/: G; /Default/: @[0.5]@ (dot), @[1.0]@ (twopi); /Minimum/: [0.02]; /Notes/: twopi, dot only
+  | Rank RankType                       -- ^ /Valid for/: S; /Notes/: dot only
+  | Ratio Ratios                        -- ^ /Valid for/: G
+  | Rects [Rect]                        -- ^ /Valid for/: N; /Notes/: write only
+  | Regular Bool                        -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
+  | ReMinCross Bool                     -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
+  | RepulsiveForce Double               -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
+  | Root Root                           -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
+  | Rotate Int                          -- ^ /Valid for/: G; /Default/: @0@
+  | SameHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | SameTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | SamplePoints Int                    -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
+  | SearchSize Int                      -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
+  | Sep DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
+  | ShapeFile Text                      -- ^ /Valid for/: N; /Default/: @\"\"@
+  | Shape Shape                         -- ^ /Valid for/: N; /Default/: @'Ellipse'@
+  | ShowBoxes Int                       -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
+  | Sides Int                           -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
+  | Size Point                          -- ^ /Valid for/: G
+  | Skew Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
+  | Smoothing SmoothType                -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
+  | SortV Word16                        -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
+  | Splines EdgeType                    -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
+  | Start StartType                     -- ^ /Valid for/: G; /Notes/: fdp, neato only
+  | StyleSheet Text                     -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
+  | Style [StyleItem]                   -- ^ /Valid for/: ENC
+  | TailURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | TailClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
+  | TailLabel Label                     -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
+  | TailPort PortPos                    -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
+  | TailTarget EscString                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+  | TailTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | Target EscString                    -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, map only
+  | Tooltip EscString                   -- ^ /Valid for/: NEC; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | TrueColor Bool                      -- ^ /Valid for/: G; /Parsing Default/: 'True'; /Notes/: bitmap output only
+  | Vertices [Point]                    -- ^ /Valid for/: N; /Notes/: write only
+  | ViewPort ViewPort                   -- ^ /Valid for/: G; /Default/: none
+  | VoroMargin Double                   -- ^ /Valid for/: G; /Default/: @0.05@; /Minimum/: @0.0@; /Notes/: not dot
+  | Weight Double                       -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
+  | Width Double                        -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
+  | Z Double                            -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
+  | UnknownAttribute AttributeName Text -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
   deriving (Eq, Ord, Show, Read)
 
 type Attributes = [Attribute]
+
+-- | The name for an UnknownAttribute; must satisfy  'validUnknown'.
+type AttributeName = Text
 
 instance PrintDot Attribute where
   unqtDot (Damping v)            = printField "Damping" v
@@ -1172,7 +1188,7 @@ defaultAttributeValue Z{}                  = Just $ Z 0
 defaultAttributeValue _                    = Nothing
 
 -- | Determine if the provided 'Text' value is a valid name for an 'UnknownAttribute'.
-validUnknown     :: Text -> Bool
+validUnknown     :: AttributeName -> Bool
 validUnknown txt = T.toLower txt `S.notMember` names
                    && isIDString txt
   where
@@ -1331,6 +1347,71 @@ validUnknown txt = T.toLower txt `S.notMember` names
             `S.union`
             keywords
 {- Delete to here -}
+
+-- -----------------------------------------------------------------------------
+
+{- | If performing any custom pre-/post-processing on Dot code, you
+     may wish to utilise some custom 'Attributes'.  These are wrappers
+     around the 'UnknownAttribute' constructor (and thus 'CustomAttribute'
+     is just an alias for 'Attribute').
+
+     You should ensure that 'validUnknown' is 'True' for any potential
+     custom attribute name.
+
+-}
+type CustomAttribute = Attribute
+
+-- | Create a custom attribute.
+customAttribute :: AttributeName -> Text -> CustomAttribute
+customAttribute = UnknownAttribute
+
+-- | Determines whether or not this is a custom attribute.
+isCustom                    :: Attribute -> Bool
+isCustom UnknownAttribute{} = True
+isCustom _                  = False
+
+isSpecifiedCustom :: AttributeName -> Attribute -> Bool
+isSpecifiedCustom nm (UnknownAttribute nm' _) = nm == nm'
+isSpecifiedCustom _  _                        = False
+
+-- | The value of a custom attribute.  Will throw a
+--   'GraphvizException' if the provided 'Attribute' isn't a custom
+--   one.
+customValue :: CustomAttribute -> Text
+customValue (UnknownAttribute _ v) = v
+customValue attr                   = throw . NotCustomAttr . T.unpack
+                                     $ printIt attr
+
+-- | The name of a custom attribute.  Will throw a
+--   'GraphvizException' if the provided 'Attribute' isn't a custom
+--   one.
+customName :: CustomAttribute -> AttributeName
+customName (UnknownAttribute nm _) = nm
+customName attr                    = throw . NotCustomAttr . T.unpack
+                                      $ printIt attr
+
+-- | Returns all custom attributes and the list of non-custom Attributes.
+findCustoms :: Attributes -> ([CustomAttribute], Attributes)
+findCustoms = partition isCustom
+
+-- | Find the (first instance of the) specified custom attribute and
+--   returns it along with all other Attributes.
+findSpecifiedCustom :: AttributeName -> Attributes
+                       -> Maybe (CustomAttribute, Attributes)
+findSpecifiedCustom nm attrs
+  = case break (isSpecifiedCustom nm) attrs of
+      (bf,cust:aft) -> Just (cust, bf ++ aft)
+      _             -> Nothing
+
+-- | Delete all custom attributes (actually, this will delete all
+--   'UnknownAttribute' values; as such it can also be used to remove
+--   legacy attributes).
+deleteCustomAttributes :: Attributes -> Attributes
+deleteCustomAttributes = filter (not . isCustom)
+
+-- | Removes all instances of the specified custom attribute.
+deleteSpecifiedCustom :: AttributeName -> Attributes -> Attributes
+deleteSpecifiedCustom nm = filter (not . isSpecifiedCustom nm)
 
 -- -----------------------------------------------------------------------------
 

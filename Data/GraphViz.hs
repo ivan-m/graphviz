@@ -1,4 +1,4 @@
-{-# LANGUAGE   MultiParamTypeClasses, FlexibleContexts #-}
+{-# LANGUAGE   MultiParamTypeClasses, FlexibleContexts, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz
@@ -45,7 +45,7 @@ module Data.GraphViz
       -- $manualAugment
     , EdgeID
     , addEdgeIDs
-    , setEdgeComment
+    , setEdgeIDAttribute
     , dotAttributes
     , augmentGraph
       -- * Utility functions
@@ -65,8 +65,8 @@ import Data.GraphViz.Commands.IO(hGetDot)
 
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
-import Control.Arrow((&&&))
-import Data.Maybe(mapMaybe, isNothing)
+import Control.Arrow((&&&), first)
+import Data.Maybe(mapMaybe, fromJust)
 import qualified Data.Map as Map
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
@@ -282,10 +282,8 @@ dotToGraph dg = mkGraph ns' es
    through the appropriate 'GraphvizCommand' to augment the 'Graph' by
    adding positional information, etc.
 
-   Please note that there are some restrictions on this: to enable
-   support for multiple edges between two nodes, the 'Comment'
-   'Attribute' is used to provide a unique identifier for each edge.  As
-   such, you should /not/ set this 'Attribute' for any 'LEdge'.
+   A 'CustomAttribute' is used to distinguish multiple edges between
+   two nodes from each other.
 
    Note that the reason that most of these functions do not have
    'unsafePerformIO' applied to them is because if you set a global
@@ -318,7 +316,7 @@ graphToGraph :: (Ord cl, Graph gr) => GraphvizParams nl el cl l -> gr nl el
 graphToGraph params gr = dotAttributes (isDirected params) gr' dot
   where
     dot = graphToDot params' gr'
-    params' = params { fmtEdge = setEdgeComment $ fmtEdge params }
+    params' = params { fmtEdge = setEdgeIDAttribute $ fmtEdge params }
     gr' = addEdgeIDs gr
 
 -- -----------------------------------------------------------------------------
@@ -361,7 +359,7 @@ dotizeGraph params gr = unsafePerformIO
    a 'Graph', then the behaviour of 'augmentGraph' (and all functions
    that use it) is undefined.  The main point is to make sure that the
    defined 'DotNode' and 'DotEdge' values aren't removed (or their ID
-   values - or the 'Comment' 'Attribute' for the 'DotEdge's - altered) to
+   values - or the 'Attributes' for the 'DotEdge's - altered) to
    ensure that it is possible to match up the nodes and edges in the
    'Graph' with those in the 'DotRepr'.
 
@@ -388,9 +386,16 @@ addEdgeIDs g = mkGraph ns es'
 
 -- | Add the 'Comment' to the list of attributes containing the value
 --   of the unique edge identifier.
-setEdgeComment     :: (LEdge el -> Attributes)
-                      -> (LEdge (EdgeID el) -> Attributes)
-setEdgeComment f = \ e@(_,_,eid) -> Comment (eID eid) : (f . stripID) e
+setEdgeIDAttribute     :: (LEdge el -> Attributes)
+                          -> (LEdge (EdgeID el) -> Attributes)
+setEdgeIDAttribute f = \ e@(_,_,eid) -> identifierAttribute (eID eid)
+                                        : (f . stripID) e
+
+identifierAttrName :: AttributeName
+identifierAttrName = "graphviz_distinguish_unique_attrs"
+
+identifierAttribute :: Text -> CustomAttribute
+identifierAttribute = customAttribute identifierAttrName
 
 -- | Remove the unique identifier from the 'LEdge'.
 stripID           :: LEdge (EdgeID el) -> LEdge el
@@ -427,13 +432,10 @@ augmentGraph g dg = mkGraph lns les
     ns = graphNodes dg
     es = graphEdges dg
     nodeMap = Map.fromList $ map (nodeID &&& nodeAttributes) ns
-    edgeMap = Map.fromList $ map (findID &&& edgeAttributes') es
-    findID = head . mapMaybe commentID . edgeAttributes
-    commentID (Comment s) = Just s
-    commentID _           = Nothing
-    -- Strip out the comment
-    edgeAttributes' = filter (isNothing . commentID) . edgeAttributes
-
+    edgeMap = Map.fromList $ map edgeIDAttrs es
+    edgeIDAttrs = first customValue . fromJust
+                  . findSpecifiedCustom identifierAttrName
+                  . edgeAttributes
 
 -- -----------------------------------------------------------------------------
 -- Utility Functions

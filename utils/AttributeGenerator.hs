@@ -38,6 +38,7 @@ genCode att = vsep $ map ($att) cds
     where
       cds = [ createDefn
             , createAlias
+            , nameAlias
             , showInstance
             , parseInstance
             , usedByFunc "Graphs" forGraphs
@@ -157,7 +158,7 @@ createDefn att = hdr $+$ constructors $+$ derivs
                      ]
           where
             cm = comment a
-      defUnknown = [ unknownAttr <+> vtype Strng <+> vtype Strng
+      defUnknown = [ unknownAttr <+> unknownNameAlias <+> vtype Strng
                    , text "-- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively."
                    ]
 
@@ -168,6 +169,21 @@ createAlias att = text "type"
                   <+> brackets tp
     where
       tp = tpNm att
+
+nameAlias     :: Atts -> Code
+nameAlias att = comment
+                $$ (text "type"
+                    <+> unknownNameAlias
+                    <+> equals
+                    <+> vtype Strng)
+  where
+    comment = text "-- | The name for an" <+> unknownAttr
+              <> text "; must satisfy "
+              <+> quotes validUnknownName
+              <> text "."
+
+unknownNameAlias :: Code
+unknownNameAlias = text "AttributeName"
 
 showInstance     :: Atts -> Code
 showInstance att = hdr $+$ insts'
@@ -268,7 +284,7 @@ validUnknownFunc att = cmnt $$ asRows [tpSig, def] $$ whClause
       cmnt = text "-- | Determine if the provided 'Text' value is a valid name"
              <+> text "for an '" <> unknownAttr <> text "'."
       tpSig = [ validUnknownName
-              , colon <> colon <+> text "Text -> Bool"
+              , colon <> colon <+> text "AttributeName -> Bool"
               ]
       def = [ validUnknownName <+> var
             , equals <+>
@@ -367,8 +383,8 @@ sameAttributeFunc att = cmnt $$ asRows (tpSig : stmts ++ [unknownAtr, rst])
 defValueFunc :: Atts -> Code
 defValueFunc att = cmnt $$ asRows (tpSig : stmts ++ [unknownAtr])
   where
-    cmnt = text "-- | Return the default value for a specific '" <> dt
-           <> text "' if possible; graph/cluster values are preferred"
+    cmnt = text "-- | Return the default value for a specific" <+> quotes dt
+           <+> text "if possible; graph/cluster values are preferred"
            <+> text "over node/edge values."
     dFunc = text "defaultAttributeValue"
     dt = tpNm att
