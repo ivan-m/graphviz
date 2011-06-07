@@ -74,6 +74,7 @@ module Data.GraphViz.Attributes
     , usedByClusters
     , usedByNodes
     , usedByEdges
+    , validUnknown
 
       -- * Value types for @Attribute@s.
     , module Data.GraphViz.Attributes.Colors
@@ -191,6 +192,7 @@ import Data.GraphViz.State(getLayerSep, setLayerSep)
 
 import Data.Maybe(isJust)
 import Data.Word(Word16)
+import qualified Data.Set as S
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2)
@@ -234,453 +236,453 @@ import Control.Monad(liftM, liftM2)
 
 -}
 data Attribute
-    = Damping Double                   -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
-    | K Double                         -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
-    | URL EscString                    -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
-    | ArrowHead ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
-    | ArrowSize Double                 -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
-    | ArrowTail ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
-    | Aspect AspectType                -- ^ /Valid for/: G; /Notes/: dot only
-    | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
-    | BgColor Color                    -- ^ /Valid for/: GC; /Default/: @'X11Color' 'Transparent'@
-    | Center Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-    | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
-    | ColorScheme ColorScheme          -- ^ /Valid for/: ENCG; /Default/: @'X11'@
-    | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
-    | Comment Text                     -- ^ /Valid for/: ENG; /Default/: @\"\"@
-    | Compound Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
-    | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-    | Constraint Bool                  -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
-    | Decorate Bool                    -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-    | DefaultDist Double               -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(|V|)@; /Minimum/: @epsilon@; /Notes/: neato only
-    | Dimen Int                        -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
-    | Dim Int                          -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
-    | Dir DirType                      -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
-    | DirEdgeConstraints DEConstraints -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
-    | Distortion Double                -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
-    | DPI Double                       -- ^ /Valid for/: G; /Default/: @96.0@, @0.0@; /Notes/: svg, bitmap output only; \"resolution\" is a synonym
-    | EdgeURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-    | EdgeTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-    | EdgeTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-    | Epsilon Double                   -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
-    | ESep DPoint                      -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not dot
-    | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @'X11Color' 'LightGray'@ (nodes), @'X11Color' 'Black'@ (clusters)
-    | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
-    | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
-    | FontName Text                    -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
-    | FontNames Text                   -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
-    | FontPath Text                    -- ^ /Valid for/: G; /Default/: system dependent
-    | FontSize Double                  -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
-    | Group Text                       -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
-    | HeadURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-    | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
-    | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: 'StrLabel' @\"\"@
-    | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
-    | HeadTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-    | HeadTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-    | Height Double                    -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
-    | ID Label                         -- ^ /Valid for/: GNE; /Default/: @'StrLabel' \"\"@; /Notes/: svg, postscript, map only
-    | Image Text                       -- ^ /Valid for/: N; /Default/: @\"\"@
-    | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
-    | LabelURL EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-    | LabelAngle Double                -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
-    | LabelDistance Double             -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
-    | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-    | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: @'X11Color' 'Black'@
-    | LabelFontName Text               -- ^ /Valid for/: E; /Default/: @\"Times-Roman\"@
-    | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: @14.0@; /Minimum/: @1.0@
-    | LabelJust Justification          -- ^ /Valid for/: GC; /Default/: @'JCenter'@
-    | LabelLoc VerticalPlacement       -- ^ /Valid for/: GCN; /Default/: @'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)
-    | LabelTarget EscString            -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-    | LabelTooltip EscString           -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-    | Label Label                      -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
-    | Landscape Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-    | LayerSep LayerSep                -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
-    | Layers LayerList                 -- ^ /Valid for/: G; /Default/: @'LL' []@
-    | Layer LayerRange                 -- ^ /Valid for/: EN
-    | Layout Text                      -- ^ /Valid for/: G; /Default/: @\"\"@
-    | Len Double                       -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
-    | LevelsGap Double                 -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
-    | Levels Int                       -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
-    | LHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-    | LPos Point                       -- ^ /Valid for/: EGC; /Notes/: write only
-    | LTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-    | Margin DPoint                    -- ^ /Valid for/: NG; /Default/: device dependent
-    | MaxIter Int                      -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp); /Notes/: fdp, neato only
-    | MCLimit Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: dot only
-    | MinDist Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: circo only
-    | MinLen Int                       -- ^ /Valid for/: E; /Default/: @1@; /Minimum/: @0@; /Notes/: dot only
-    | Model Model                      -- ^ /Valid for/: G; /Default/: @'ShortPath'@; /Notes/: neato only
-    | Mode ModeType                    -- ^ /Valid for/: G; /Default/: @'Major'@; /Notes/: neato only
-    | Mosek Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: neato only; requires the Mosek software
-    | NodeSep Double                   -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@; /Notes/: dot only
-    | NoJustify Bool                   -- ^ /Valid for/: GCNE; /Default/: @'False'@; /Parsing Default/: 'True'
-    | Normalize Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: not dot
-    | Nslimit1 Double                  -- ^ /Valid for/: G; /Notes/: dot only
-    | Nslimit Double                   -- ^ /Valid for/: G; /Notes/: dot only
-    | Ordering Text                    -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: dot only
-    | Orientation Double               -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
-    | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
-    | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
-    | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
-    | PackMode PackMode                -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
-    | Pack Pack                        -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
-    | Pad DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
-    | PageDir PageDir                  -- ^ /Valid for/: G; /Default/: @'Bl'@
-    | Page Point                       -- ^ /Valid for/: G
-    | PenColor Color                   -- ^ /Valid for/: C; /Default/: @'X11Color' 'Black'@
-    | PenWidth Double                  -- ^ /Valid for/: CNE; /Default/: @1.0@; /Minimum/: @0.0@
-    | Peripheries Int                  -- ^ /Valid for/: NC; /Default/: shape default (nodes), @1@ (clusters); /Minimum/: 0
-    | Pin Bool                         -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: fdp, neato only
-    | Pos Pos                          -- ^ /Valid for/: EN
-    | QuadTree QuadType                -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
-    | Quantum Double                   -- ^ /Valid for/: G; /Default/: @0.0@; /Minimum/: @0.0@
-    | RankDir RankDir                  -- ^ /Valid for/: G; /Default/: @'FromTop'@; /Notes/: dot only
-    | RankSep [Double]                 -- ^ /Valid for/: G; /Default/: @[0.5]@ (dot), @[1.0]@ (twopi); /Minimum/: [0.02]; /Notes/: twopi, dot only
-    | Rank RankType                    -- ^ /Valid for/: S; /Notes/: dot only
-    | Ratio Ratios                     -- ^ /Valid for/: G
-    | Rects [Rect]                     -- ^ /Valid for/: N; /Notes/: write only
-    | Regular Bool                     -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
-    | ReMinCross Bool                  -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
-    | RepulsiveForce Double            -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
-    | Root Root                        -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
-    | Rotate Int                       -- ^ /Valid for/: G; /Default/: @0@
-    | SameHead Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-    | SameTail Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-    | SamplePoints Int                 -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
-    | SearchSize Int                   -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
-    | Sep DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
-    | ShapeFile Text                   -- ^ /Valid for/: N; /Default/: @\"\"@
-    | Shape Shape                      -- ^ /Valid for/: N; /Default/: @'Ellipse'@
-    | ShowBoxes Int                    -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
-    | Sides Int                        -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
-    | Size Point                       -- ^ /Valid for/: G
-    | Skew Double                      -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
-    | Smoothing SmoothType             -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
-    | SortV Word16                     -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
-    | Splines EdgeType                 -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
-    | Start StartType                  -- ^ /Valid for/: G; /Notes/: fdp, neato only
-    | StyleSheet Text                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
-    | Style [StyleItem]                -- ^ /Valid for/: ENC
-    | TailURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-    | TailClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
-    | TailLabel Label                  -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
-    | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
-    | TailTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
-    | TailTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-    | Target EscString                 -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, map only
-    | Tooltip EscString                -- ^ /Valid for/: NEC; /Default/: @\"\"@; /Notes/: svg, cmap only
-    | TrueColor Bool                   -- ^ /Valid for/: G; /Parsing Default/: 'True'; /Notes/: bitmap output only
-    | Vertices [Point]                 -- ^ /Valid for/: N; /Notes/: write only
-    | ViewPort ViewPort                -- ^ /Valid for/: G; /Default/: none
-    | VoroMargin Double                -- ^ /Valid for/: G; /Default/: @0.05@; /Minimum/: @0.0@; /Notes/: not dot
-    | Weight Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
-    | Width Double                     -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
-    | Z Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
-    | UnknownAttribute Text Text       -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
-      deriving (Eq, Ord, Show, Read)
+  = Damping Double                   -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
+  | K Double                         -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
+  | URL EscString                    -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
+  | ArrowHead ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
+  | ArrowSize Double                 -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
+  | ArrowTail ArrowType              -- ^ /Valid for/: E; /Default/: @'normal'@
+  | Aspect AspectType                -- ^ /Valid for/: G; /Notes/: dot only
+  | Bb Rect                          -- ^ /Valid for/: G; /Notes/: write only
+  | BgColor Color                    -- ^ /Valid for/: GC; /Default/: @'X11Color' 'Transparent'@
+  | Center Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
+  | ClusterRank ClusterMode          -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
+  | ColorScheme ColorScheme          -- ^ /Valid for/: ENCG; /Default/: @'X11'@
+  | Color [Color]                    -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
+  | Comment Text                     -- ^ /Valid for/: ENG; /Default/: @\"\"@
+  | Compound Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
+  | Concentrate Bool                 -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
+  | Constraint Bool                  -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
+  | Decorate Bool                    -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
+  | DefaultDist Double               -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(|V|)@; /Minimum/: @epsilon@; /Notes/: neato only
+  | Dimen Int                        -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
+  | Dim Int                          -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
+  | Dir DirType                      -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
+  | DirEdgeConstraints DEConstraints -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
+  | Distortion Double                -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
+  | DPI Double                       -- ^ /Valid for/: G; /Default/: @96.0@, @0.0@; /Notes/: svg, bitmap output only; \"resolution\" is a synonym
+  | EdgeURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | EdgeTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+  | EdgeTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | Epsilon Double                   -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
+  | ESep DPoint                      -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not dot
+  | FillColor Color                  -- ^ /Valid for/: NC; /Default/: @'X11Color' 'LightGray'@ (nodes), @'X11Color' 'Black'@ (clusters)
+  | FixedSize Bool                   -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
+  | FontColor Color                  -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
+  | FontName Text                    -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
+  | FontNames Text                   -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
+  | FontPath Text                    -- ^ /Valid for/: G; /Default/: system dependent
+  | FontSize Double                  -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
+  | Group Text                       -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
+  | HeadURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | HeadClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
+  | HeadLabel Label                  -- ^ /Valid for/: E; /Default/: 'StrLabel' @\"\"@
+  | HeadPort PortPos                 -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
+  | HeadTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+  | HeadTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | Height Double                    -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
+  | ID Label                         -- ^ /Valid for/: GNE; /Default/: @'StrLabel' \"\"@; /Notes/: svg, postscript, map only
+  | Image Text                       -- ^ /Valid for/: N; /Default/: @\"\"@
+  | ImageScale ScaleType             -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
+  | LabelURL EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | LabelAngle Double                -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
+  | LabelDistance Double             -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
+  | LabelFloat Bool                  -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
+  | LabelFontColor Color             -- ^ /Valid for/: E; /Default/: @'X11Color' 'Black'@
+  | LabelFontName Text               -- ^ /Valid for/: E; /Default/: @\"Times-Roman\"@
+  | LabelFontSize Double             -- ^ /Valid for/: E; /Default/: @14.0@; /Minimum/: @1.0@
+  | LabelJust Justification          -- ^ /Valid for/: GC; /Default/: @'JCenter'@
+  | LabelLoc VerticalPlacement       -- ^ /Valid for/: GCN; /Default/: @'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)
+  | LabelTarget EscString            -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+  | LabelTooltip EscString           -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | Label Label                      -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
+  | Landscape Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
+  | LayerSep LayerSep                -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
+  | Layers LayerList                 -- ^ /Valid for/: G; /Default/: @'LL' []@
+  | Layer LayerRange                 -- ^ /Valid for/: EN
+  | Layout Text                      -- ^ /Valid for/: G; /Default/: @\"\"@
+  | Len Double                       -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
+  | LevelsGap Double                 -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
+  | Levels Int                       -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
+  | LHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | LPos Point                       -- ^ /Valid for/: EGC; /Notes/: write only
+  | LTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | Margin DPoint                    -- ^ /Valid for/: NG; /Default/: device dependent
+  | MaxIter Int                      -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp); /Notes/: fdp, neato only
+  | MCLimit Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: dot only
+  | MinDist Double                   -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: circo only
+  | MinLen Int                       -- ^ /Valid for/: E; /Default/: @1@; /Minimum/: @0@; /Notes/: dot only
+  | Model Model                      -- ^ /Valid for/: G; /Default/: @'ShortPath'@; /Notes/: neato only
+  | Mode ModeType                    -- ^ /Valid for/: G; /Default/: @'Major'@; /Notes/: neato only
+  | Mosek Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: neato only; requires the Mosek software
+  | NodeSep Double                   -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@; /Notes/: dot only
+  | NoJustify Bool                   -- ^ /Valid for/: GCNE; /Default/: @'False'@; /Parsing Default/: 'True'
+  | Normalize Bool                   -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: not dot
+  | Nslimit1 Double                  -- ^ /Valid for/: G; /Notes/: dot only
+  | Nslimit Double                   -- ^ /Valid for/: G; /Notes/: dot only
+  | Ordering Text                    -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: dot only
+  | Orientation Double               -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
+  | OutputOrder OutputMode           -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
+  | OverlapScaling Double            -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
+  | Overlap Overlap                  -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
+  | PackMode PackMode                -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
+  | Pack Pack                        -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
+  | Pad DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
+  | PageDir PageDir                  -- ^ /Valid for/: G; /Default/: @'Bl'@
+  | Page Point                       -- ^ /Valid for/: G
+  | PenColor Color                   -- ^ /Valid for/: C; /Default/: @'X11Color' 'Black'@
+  | PenWidth Double                  -- ^ /Valid for/: CNE; /Default/: @1.0@; /Minimum/: @0.0@
+  | Peripheries Int                  -- ^ /Valid for/: NC; /Default/: shape default (nodes), @1@ (clusters); /Minimum/: 0
+  | Pin Bool                         -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: fdp, neato only
+  | Pos Pos                          -- ^ /Valid for/: EN
+  | QuadTree QuadType                -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
+  | Quantum Double                   -- ^ /Valid for/: G; /Default/: @0.0@; /Minimum/: @0.0@
+  | RankDir RankDir                  -- ^ /Valid for/: G; /Default/: @'FromTop'@; /Notes/: dot only
+  | RankSep [Double]                 -- ^ /Valid for/: G; /Default/: @[0.5]@ (dot), @[1.0]@ (twopi); /Minimum/: [0.02]; /Notes/: twopi, dot only
+  | Rank RankType                    -- ^ /Valid for/: S; /Notes/: dot only
+  | Ratio Ratios                     -- ^ /Valid for/: G
+  | Rects [Rect]                     -- ^ /Valid for/: N; /Notes/: write only
+  | Regular Bool                     -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
+  | ReMinCross Bool                  -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
+  | RepulsiveForce Double            -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
+  | Root Root                        -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
+  | Rotate Int                       -- ^ /Valid for/: G; /Default/: @0@
+  | SameHead Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | SameTail Text                    -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | SamplePoints Int                 -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
+  | SearchSize Int                   -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
+  | Sep DPoint                       -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
+  | ShapeFile Text                   -- ^ /Valid for/: N; /Default/: @\"\"@
+  | Shape Shape                      -- ^ /Valid for/: N; /Default/: @'Ellipse'@
+  | ShowBoxes Int                    -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
+  | Sides Int                        -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
+  | Size Point                       -- ^ /Valid for/: G
+  | Skew Double                      -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
+  | Smoothing SmoothType             -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
+  | SortV Word16                     -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
+  | Splines EdgeType                 -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
+  | Start StartType                  -- ^ /Valid for/: G; /Notes/: fdp, neato only
+  | StyleSheet Text                  -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
+  | Style [StyleItem]                -- ^ /Valid for/: ENC
+  | TailURL EscString                -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | TailClip Bool                    -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
+  | TailLabel Label                  -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
+  | TailPort PortPos                 -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
+  | TailTarget EscString             -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
+  | TailTooltip EscString            -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | Target EscString                 -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, map only
+  | Tooltip EscString                -- ^ /Valid for/: NEC; /Default/: @\"\"@; /Notes/: svg, cmap only
+  | TrueColor Bool                   -- ^ /Valid for/: G; /Parsing Default/: 'True'; /Notes/: bitmap output only
+  | Vertices [Point]                 -- ^ /Valid for/: N; /Notes/: write only
+  | ViewPort ViewPort                -- ^ /Valid for/: G; /Default/: none
+  | VoroMargin Double                -- ^ /Valid for/: G; /Default/: @0.05@; /Minimum/: @0.0@; /Notes/: not dot
+  | Weight Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
+  | Width Double                     -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
+  | Z Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
+  | UnknownAttribute Text Text       -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
+    deriving (Eq, Ord, Show, Read)
 
 type Attributes = [Attribute]
 
 instance PrintDot Attribute where
-    unqtDot (Damping v)            = printField "Damping" v
-    unqtDot (K v)                  = printField "K" v
-    unqtDot (URL v)                = printField "URL" v
-    unqtDot (ArrowHead v)          = printField "arrowhead" v
-    unqtDot (ArrowSize v)          = printField "arrowsize" v
-    unqtDot (ArrowTail v)          = printField "arrowtail" v
-    unqtDot (Aspect v)             = printField "aspect" v
-    unqtDot (Bb v)                 = printField "bb" v
-    unqtDot (BgColor v)            = printField "bgcolor" v
-    unqtDot (Center v)             = printField "center" v
-    unqtDot (ClusterRank v)        = printField "clusterrank" v
-    unqtDot (ColorScheme v)        = printField "colorscheme" v
-    unqtDot (Color v)              = printField "color" v
-    unqtDot (Comment v)            = printField "comment" v
-    unqtDot (Compound v)           = printField "compound" v
-    unqtDot (Concentrate v)        = printField "concentrate" v
-    unqtDot (Constraint v)         = printField "constraint" v
-    unqtDot (Decorate v)           = printField "decorate" v
-    unqtDot (DefaultDist v)        = printField "defaultdist" v
-    unqtDot (Dimen v)              = printField "dimen" v
-    unqtDot (Dim v)                = printField "dim" v
-    unqtDot (Dir v)                = printField "dir" v
-    unqtDot (DirEdgeConstraints v) = printField "diredgeconstraints" v
-    unqtDot (Distortion v)         = printField "distortion" v
-    unqtDot (DPI v)                = printField "dpi" v
-    unqtDot (EdgeURL v)            = printField "edgeURL" v
-    unqtDot (EdgeTarget v)         = printField "edgetarget" v
-    unqtDot (EdgeTooltip v)        = printField "edgetooltip" v
-    unqtDot (Epsilon v)            = printField "epsilon" v
-    unqtDot (ESep v)               = printField "esep" v
-    unqtDot (FillColor v)          = printField "fillcolor" v
-    unqtDot (FixedSize v)          = printField "fixedsize" v
-    unqtDot (FontColor v)          = printField "fontcolor" v
-    unqtDot (FontName v)           = printField "fontname" v
-    unqtDot (FontNames v)          = printField "fontnames" v
-    unqtDot (FontPath v)           = printField "fontpath" v
-    unqtDot (FontSize v)           = printField "fontsize" v
-    unqtDot (Group v)              = printField "group" v
-    unqtDot (HeadURL v)            = printField "headURL" v
-    unqtDot (HeadClip v)           = printField "headclip" v
-    unqtDot (HeadLabel v)          = printField "headlabel" v
-    unqtDot (HeadPort v)           = printField "headport" v
-    unqtDot (HeadTarget v)         = printField "headtarget" v
-    unqtDot (HeadTooltip v)        = printField "headtooltip" v
-    unqtDot (Height v)             = printField "height" v
-    unqtDot (ID v)                 = printField "id" v
-    unqtDot (Image v)              = printField "image" v
-    unqtDot (ImageScale v)         = printField "imagescale" v
-    unqtDot (LabelURL v)           = printField "labelURL" v
-    unqtDot (LabelAngle v)         = printField "labelangle" v
-    unqtDot (LabelDistance v)      = printField "labeldistance" v
-    unqtDot (LabelFloat v)         = printField "labelfloat" v
-    unqtDot (LabelFontColor v)     = printField "labelfontcolor" v
-    unqtDot (LabelFontName v)      = printField "labelfontname" v
-    unqtDot (LabelFontSize v)      = printField "labelfontsize" v
-    unqtDot (LabelJust v)          = printField "labeljust" v
-    unqtDot (LabelLoc v)           = printField "labelloc" v
-    unqtDot (LabelTarget v)        = printField "labeltarget" v
-    unqtDot (LabelTooltip v)       = printField "labeltooltip" v
-    unqtDot (Label v)              = printField "label" v
-    unqtDot (Landscape v)          = printField "landscape" v
-    unqtDot (LayerSep v)           = printField "layersep" v
-    unqtDot (Layers v)             = printField "layers" v
-    unqtDot (Layer v)              = printField "layer" v
-    unqtDot (Layout v)             = printField "layout" v
-    unqtDot (Len v)                = printField "len" v
-    unqtDot (LevelsGap v)          = printField "levelsgap" v
-    unqtDot (Levels v)             = printField "levels" v
-    unqtDot (LHead v)              = printField "lhead" v
-    unqtDot (LPos v)               = printField "lp" v
-    unqtDot (LTail v)              = printField "ltail" v
-    unqtDot (Margin v)             = printField "margin" v
-    unqtDot (MaxIter v)            = printField "maxiter" v
-    unqtDot (MCLimit v)            = printField "mclimit" v
-    unqtDot (MinDist v)            = printField "mindist" v
-    unqtDot (MinLen v)             = printField "minlen" v
-    unqtDot (Model v)              = printField "model" v
-    unqtDot (Mode v)               = printField "mode" v
-    unqtDot (Mosek v)              = printField "mosek" v
-    unqtDot (NodeSep v)            = printField "nodesep" v
-    unqtDot (NoJustify v)          = printField "nojustify" v
-    unqtDot (Normalize v)          = printField "normalize" v
-    unqtDot (Nslimit1 v)           = printField "nslimit1" v
-    unqtDot (Nslimit v)            = printField "nslimit" v
-    unqtDot (Ordering v)           = printField "ordering" v
-    unqtDot (Orientation v)        = printField "orientation" v
-    unqtDot (OutputOrder v)        = printField "outputorder" v
-    unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
-    unqtDot (Overlap v)            = printField "overlap" v
-    unqtDot (PackMode v)           = printField "packmode" v
-    unqtDot (Pack v)               = printField "pack" v
-    unqtDot (Pad v)                = printField "pad" v
-    unqtDot (PageDir v)            = printField "pagedir" v
-    unqtDot (Page v)               = printField "page" v
-    unqtDot (PenColor v)           = printField "pencolor" v
-    unqtDot (PenWidth v)           = printField "penwidth" v
-    unqtDot (Peripheries v)        = printField "peripheries" v
-    unqtDot (Pin v)                = printField "pin" v
-    unqtDot (Pos v)                = printField "pos" v
-    unqtDot (QuadTree v)           = printField "quadtree" v
-    unqtDot (Quantum v)            = printField "quantum" v
-    unqtDot (RankDir v)            = printField "rankdir" v
-    unqtDot (RankSep v)            = printField "ranksep" v
-    unqtDot (Rank v)               = printField "rank" v
-    unqtDot (Ratio v)              = printField "ratio" v
-    unqtDot (Rects v)              = printField "rects" v
-    unqtDot (Regular v)            = printField "regular" v
-    unqtDot (ReMinCross v)         = printField "remincross" v
-    unqtDot (RepulsiveForce v)     = printField "repulsiveforce" v
-    unqtDot (Root v)               = printField "root" v
-    unqtDot (Rotate v)             = printField "rotate" v
-    unqtDot (SameHead v)           = printField "samehead" v
-    unqtDot (SameTail v)           = printField "sametail" v
-    unqtDot (SamplePoints v)       = printField "samplepoints" v
-    unqtDot (SearchSize v)         = printField "searchsize" v
-    unqtDot (Sep v)                = printField "sep" v
-    unqtDot (ShapeFile v)          = printField "shapefile" v
-    unqtDot (Shape v)              = printField "shape" v
-    unqtDot (ShowBoxes v)          = printField "showboxes" v
-    unqtDot (Sides v)              = printField "sides" v
-    unqtDot (Size v)               = printField "size" v
-    unqtDot (Skew v)               = printField "skew" v
-    unqtDot (Smoothing v)          = printField "smoothing" v
-    unqtDot (SortV v)              = printField "sortv" v
-    unqtDot (Splines v)            = printField "splines" v
-    unqtDot (Start v)              = printField "start" v
-    unqtDot (StyleSheet v)         = printField "stylesheet" v
-    unqtDot (Style v)              = printField "style" v
-    unqtDot (TailURL v)            = printField "tailURL" v
-    unqtDot (TailClip v)           = printField "tailclip" v
-    unqtDot (TailLabel v)          = printField "taillabel" v
-    unqtDot (TailPort v)           = printField "tailport" v
-    unqtDot (TailTarget v)         = printField "tailtarget" v
-    unqtDot (TailTooltip v)        = printField "tailtooltip" v
-    unqtDot (Target v)             = printField "target" v
-    unqtDot (Tooltip v)            = printField "tooltip" v
-    unqtDot (TrueColor v)          = printField "truecolor" v
-    unqtDot (Vertices v)           = printField "vertices" v
-    unqtDot (ViewPort v)           = printField "viewport" v
-    unqtDot (VoroMargin v)         = printField "voro_margin" v
-    unqtDot (Weight v)             = printField "weight" v
-    unqtDot (Width v)              = printField "width" v
-    unqtDot (Z v)                  = printField "z" v
-    unqtDot (UnknownAttribute a v) = toDot a <> equals <> toDot v
+  unqtDot (Damping v)            = printField "Damping" v
+  unqtDot (K v)                  = printField "K" v
+  unqtDot (URL v)                = printField "URL" v
+  unqtDot (ArrowHead v)          = printField "arrowhead" v
+  unqtDot (ArrowSize v)          = printField "arrowsize" v
+  unqtDot (ArrowTail v)          = printField "arrowtail" v
+  unqtDot (Aspect v)             = printField "aspect" v
+  unqtDot (Bb v)                 = printField "bb" v
+  unqtDot (BgColor v)            = printField "bgcolor" v
+  unqtDot (Center v)             = printField "center" v
+  unqtDot (ClusterRank v)        = printField "clusterrank" v
+  unqtDot (ColorScheme v)        = printField "colorscheme" v
+  unqtDot (Color v)              = printField "color" v
+  unqtDot (Comment v)            = printField "comment" v
+  unqtDot (Compound v)           = printField "compound" v
+  unqtDot (Concentrate v)        = printField "concentrate" v
+  unqtDot (Constraint v)         = printField "constraint" v
+  unqtDot (Decorate v)           = printField "decorate" v
+  unqtDot (DefaultDist v)        = printField "defaultdist" v
+  unqtDot (Dimen v)              = printField "dimen" v
+  unqtDot (Dim v)                = printField "dim" v
+  unqtDot (Dir v)                = printField "dir" v
+  unqtDot (DirEdgeConstraints v) = printField "diredgeconstraints" v
+  unqtDot (Distortion v)         = printField "distortion" v
+  unqtDot (DPI v)                = printField "dpi" v
+  unqtDot (EdgeURL v)            = printField "edgeURL" v
+  unqtDot (EdgeTarget v)         = printField "edgetarget" v
+  unqtDot (EdgeTooltip v)        = printField "edgetooltip" v
+  unqtDot (Epsilon v)            = printField "epsilon" v
+  unqtDot (ESep v)               = printField "esep" v
+  unqtDot (FillColor v)          = printField "fillcolor" v
+  unqtDot (FixedSize v)          = printField "fixedsize" v
+  unqtDot (FontColor v)          = printField "fontcolor" v
+  unqtDot (FontName v)           = printField "fontname" v
+  unqtDot (FontNames v)          = printField "fontnames" v
+  unqtDot (FontPath v)           = printField "fontpath" v
+  unqtDot (FontSize v)           = printField "fontsize" v
+  unqtDot (Group v)              = printField "group" v
+  unqtDot (HeadURL v)            = printField "headURL" v
+  unqtDot (HeadClip v)           = printField "headclip" v
+  unqtDot (HeadLabel v)          = printField "headlabel" v
+  unqtDot (HeadPort v)           = printField "headport" v
+  unqtDot (HeadTarget v)         = printField "headtarget" v
+  unqtDot (HeadTooltip v)        = printField "headtooltip" v
+  unqtDot (Height v)             = printField "height" v
+  unqtDot (ID v)                 = printField "id" v
+  unqtDot (Image v)              = printField "image" v
+  unqtDot (ImageScale v)         = printField "imagescale" v
+  unqtDot (LabelURL v)           = printField "labelURL" v
+  unqtDot (LabelAngle v)         = printField "labelangle" v
+  unqtDot (LabelDistance v)      = printField "labeldistance" v
+  unqtDot (LabelFloat v)         = printField "labelfloat" v
+  unqtDot (LabelFontColor v)     = printField "labelfontcolor" v
+  unqtDot (LabelFontName v)      = printField "labelfontname" v
+  unqtDot (LabelFontSize v)      = printField "labelfontsize" v
+  unqtDot (LabelJust v)          = printField "labeljust" v
+  unqtDot (LabelLoc v)           = printField "labelloc" v
+  unqtDot (LabelTarget v)        = printField "labeltarget" v
+  unqtDot (LabelTooltip v)       = printField "labeltooltip" v
+  unqtDot (Label v)              = printField "label" v
+  unqtDot (Landscape v)          = printField "landscape" v
+  unqtDot (LayerSep v)           = printField "layersep" v
+  unqtDot (Layers v)             = printField "layers" v
+  unqtDot (Layer v)              = printField "layer" v
+  unqtDot (Layout v)             = printField "layout" v
+  unqtDot (Len v)                = printField "len" v
+  unqtDot (LevelsGap v)          = printField "levelsgap" v
+  unqtDot (Levels v)             = printField "levels" v
+  unqtDot (LHead v)              = printField "lhead" v
+  unqtDot (LPos v)               = printField "lp" v
+  unqtDot (LTail v)              = printField "ltail" v
+  unqtDot (Margin v)             = printField "margin" v
+  unqtDot (MaxIter v)            = printField "maxiter" v
+  unqtDot (MCLimit v)            = printField "mclimit" v
+  unqtDot (MinDist v)            = printField "mindist" v
+  unqtDot (MinLen v)             = printField "minlen" v
+  unqtDot (Model v)              = printField "model" v
+  unqtDot (Mode v)               = printField "mode" v
+  unqtDot (Mosek v)              = printField "mosek" v
+  unqtDot (NodeSep v)            = printField "nodesep" v
+  unqtDot (NoJustify v)          = printField "nojustify" v
+  unqtDot (Normalize v)          = printField "normalize" v
+  unqtDot (Nslimit1 v)           = printField "nslimit1" v
+  unqtDot (Nslimit v)            = printField "nslimit" v
+  unqtDot (Ordering v)           = printField "ordering" v
+  unqtDot (Orientation v)        = printField "orientation" v
+  unqtDot (OutputOrder v)        = printField "outputorder" v
+  unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
+  unqtDot (Overlap v)            = printField "overlap" v
+  unqtDot (PackMode v)           = printField "packmode" v
+  unqtDot (Pack v)               = printField "pack" v
+  unqtDot (Pad v)                = printField "pad" v
+  unqtDot (PageDir v)            = printField "pagedir" v
+  unqtDot (Page v)               = printField "page" v
+  unqtDot (PenColor v)           = printField "pencolor" v
+  unqtDot (PenWidth v)           = printField "penwidth" v
+  unqtDot (Peripheries v)        = printField "peripheries" v
+  unqtDot (Pin v)                = printField "pin" v
+  unqtDot (Pos v)                = printField "pos" v
+  unqtDot (QuadTree v)           = printField "quadtree" v
+  unqtDot (Quantum v)            = printField "quantum" v
+  unqtDot (RankDir v)            = printField "rankdir" v
+  unqtDot (RankSep v)            = printField "ranksep" v
+  unqtDot (Rank v)               = printField "rank" v
+  unqtDot (Ratio v)              = printField "ratio" v
+  unqtDot (Rects v)              = printField "rects" v
+  unqtDot (Regular v)            = printField "regular" v
+  unqtDot (ReMinCross v)         = printField "remincross" v
+  unqtDot (RepulsiveForce v)     = printField "repulsiveforce" v
+  unqtDot (Root v)               = printField "root" v
+  unqtDot (Rotate v)             = printField "rotate" v
+  unqtDot (SameHead v)           = printField "samehead" v
+  unqtDot (SameTail v)           = printField "sametail" v
+  unqtDot (SamplePoints v)       = printField "samplepoints" v
+  unqtDot (SearchSize v)         = printField "searchsize" v
+  unqtDot (Sep v)                = printField "sep" v
+  unqtDot (ShapeFile v)          = printField "shapefile" v
+  unqtDot (Shape v)              = printField "shape" v
+  unqtDot (ShowBoxes v)          = printField "showboxes" v
+  unqtDot (Sides v)              = printField "sides" v
+  unqtDot (Size v)               = printField "size" v
+  unqtDot (Skew v)               = printField "skew" v
+  unqtDot (Smoothing v)          = printField "smoothing" v
+  unqtDot (SortV v)              = printField "sortv" v
+  unqtDot (Splines v)            = printField "splines" v
+  unqtDot (Start v)              = printField "start" v
+  unqtDot (StyleSheet v)         = printField "stylesheet" v
+  unqtDot (Style v)              = printField "style" v
+  unqtDot (TailURL v)            = printField "tailURL" v
+  unqtDot (TailClip v)           = printField "tailclip" v
+  unqtDot (TailLabel v)          = printField "taillabel" v
+  unqtDot (TailPort v)           = printField "tailport" v
+  unqtDot (TailTarget v)         = printField "tailtarget" v
+  unqtDot (TailTooltip v)        = printField "tailtooltip" v
+  unqtDot (Target v)             = printField "target" v
+  unqtDot (Tooltip v)            = printField "tooltip" v
+  unqtDot (TrueColor v)          = printField "truecolor" v
+  unqtDot (Vertices v)           = printField "vertices" v
+  unqtDot (ViewPort v)           = printField "viewport" v
+  unqtDot (VoroMargin v)         = printField "voro_margin" v
+  unqtDot (Weight v)             = printField "weight" v
+  unqtDot (Width v)              = printField "width" v
+  unqtDot (Z v)                  = printField "z" v
+  unqtDot (UnknownAttribute a v) = toDot a <> equals <> toDot v
 
-    listToDot = unqtListToDot
+  listToDot = unqtListToDot
 
 instance ParseDot Attribute where
-    parseUnqt = stringParse (concat [ parseField Damping "Damping"
-                                    , parseField K "K"
-                                    , parseFields URL ["URL", "href"]
-                                    , parseField ArrowHead "arrowhead"
-                                    , parseField ArrowSize "arrowsize"
-                                    , parseField ArrowTail "arrowtail"
-                                    , parseField Aspect "aspect"
-                                    , parseField Bb "bb"
-                                    , parseField BgColor "bgcolor"
-                                    , parseFieldBool Center "center"
-                                    , parseField ClusterRank "clusterrank"
-                                    , parseField ColorScheme "colorscheme"
-                                    , parseField Color "color"
-                                    , parseField Comment "comment"
-                                    , parseFieldBool Compound "compound"
-                                    , parseFieldBool Concentrate "concentrate"
-                                    , parseFieldBool Constraint "constraint"
-                                    , parseFieldBool Decorate "decorate"
-                                    , parseField DefaultDist "defaultdist"
-                                    , parseField Dimen "dimen"
-                                    , parseField Dim "dim"
-                                    , parseField Dir "dir"
-                                    , parseFieldDef DirEdgeConstraints EdgeConstraints "diredgeconstraints"
-                                    , parseField Distortion "distortion"
-                                    , parseFields DPI ["dpi", "resolution"]
-                                    , parseFields EdgeURL ["edgeURL", "edgehref"]
-                                    , parseField EdgeTarget "edgetarget"
-                                    , parseField EdgeTooltip "edgetooltip"
-                                    , parseField Epsilon "epsilon"
-                                    , parseField ESep "esep"
-                                    , parseField FillColor "fillcolor"
-                                    , parseFieldBool FixedSize "fixedsize"
-                                    , parseField FontColor "fontcolor"
-                                    , parseField FontName "fontname"
-                                    , parseField FontNames "fontnames"
-                                    , parseField FontPath "fontpath"
-                                    , parseField FontSize "fontsize"
-                                    , parseField Group "group"
-                                    , parseFields HeadURL ["headURL", "headhref"]
-                                    , parseFieldBool HeadClip "headclip"
-                                    , parseField HeadLabel "headlabel"
-                                    , parseField HeadPort "headport"
-                                    , parseField HeadTarget "headtarget"
-                                    , parseField HeadTooltip "headtooltip"
-                                    , parseField Height "height"
-                                    , parseField ID "id"
-                                    , parseField Image "image"
-                                    , parseFieldDef ImageScale UniformScale "imagescale"
-                                    , parseFields LabelURL ["labelURL", "labelhref"]
-                                    , parseField LabelAngle "labelangle"
-                                    , parseField LabelDistance "labeldistance"
-                                    , parseFieldBool LabelFloat "labelfloat"
-                                    , parseField LabelFontColor "labelfontcolor"
-                                    , parseField LabelFontName "labelfontname"
-                                    , parseField LabelFontSize "labelfontsize"
-                                    , parseField LabelJust "labeljust"
-                                    , parseField LabelLoc "labelloc"
-                                    , parseField LabelTarget "labeltarget"
-                                    , parseField LabelTooltip "labeltooltip"
-                                    , parseField Label "label"
-                                    , parseFieldBool Landscape "landscape"
-                                    , parseField LayerSep "layersep"
-                                    , parseField Layers "layers"
-                                    , parseField Layer "layer"
-                                    , parseField Layout "layout"
-                                    , parseField Len "len"
-                                    , parseField LevelsGap "levelsgap"
-                                    , parseField Levels "levels"
-                                    , parseField LHead "lhead"
-                                    , parseField LPos "lp"
-                                    , parseField LTail "ltail"
-                                    , parseField Margin "margin"
-                                    , parseField MaxIter "maxiter"
-                                    , parseField MCLimit "mclimit"
-                                    , parseField MinDist "mindist"
-                                    , parseField MinLen "minlen"
-                                    , parseField Model "model"
-                                    , parseField Mode "mode"
-                                    , parseFieldBool Mosek "mosek"
-                                    , parseField NodeSep "nodesep"
-                                    , parseFieldBool NoJustify "nojustify"
-                                    , parseFieldBool Normalize "normalize"
-                                    , parseField Nslimit1 "nslimit1"
-                                    , parseField Nslimit "nslimit"
-                                    , parseField Ordering "ordering"
-                                    , parseField Orientation "orientation"
-                                    , parseField OutputOrder "outputorder"
-                                    , parseField OverlapScaling "overlap_scaling"
-                                    , parseFieldDef Overlap KeepOverlaps "overlap"
-                                    , parseField PackMode "packmode"
-                                    , parseFieldDef Pack DoPack "pack"
-                                    , parseField Pad "pad"
-                                    , parseField PageDir "pagedir"
-                                    , parseField Page "page"
-                                    , parseField PenColor "pencolor"
-                                    , parseField PenWidth "penwidth"
-                                    , parseField Peripheries "peripheries"
-                                    , parseFieldBool Pin "pin"
-                                    , parseField Pos "pos"
-                                    , parseFieldDef QuadTree NormalQT "quadtree"
-                                    , parseField Quantum "quantum"
-                                    , parseField RankDir "rankdir"
-                                    , parseField RankSep "ranksep"
-                                    , parseField Rank "rank"
-                                    , parseField Ratio "ratio"
-                                    , parseField Rects "rects"
-                                    , parseFieldBool Regular "regular"
-                                    , parseFieldBool ReMinCross "remincross"
-                                    , parseField RepulsiveForce "repulsiveforce"
-                                    , parseFieldDef Root IsCentral "root"
-                                    , parseField Rotate "rotate"
-                                    , parseField SameHead "samehead"
-                                    , parseField SameTail "sametail"
-                                    , parseField SamplePoints "samplepoints"
-                                    , parseField SearchSize "searchsize"
-                                    , parseField Sep "sep"
-                                    , parseField ShapeFile "shapefile"
-                                    , parseField Shape "shape"
-                                    , parseField ShowBoxes "showboxes"
-                                    , parseField Sides "sides"
-                                    , parseField Size "size"
-                                    , parseField Skew "skew"
-                                    , parseField Smoothing "smoothing"
-                                    , parseField SortV "sortv"
-                                    , parseFieldDef Splines SplineEdges "splines"
-                                    , parseField Start "start"
-                                    , parseField StyleSheet "stylesheet"
-                                    , parseField Style "style"
-                                    , parseFields TailURL ["tailURL", "tailhref"]
-                                    , parseFieldBool TailClip "tailclip"
-                                    , parseField TailLabel "taillabel"
-                                    , parseField TailPort "tailport"
-                                    , parseField TailTarget "tailtarget"
-                                    , parseField TailTooltip "tailtooltip"
-                                    , parseField Target "target"
-                                    , parseField Tooltip "tooltip"
-                                    , parseFieldBool TrueColor "truecolor"
-                                    , parseField Vertices "vertices"
-                                    , parseField ViewPort "viewport"
-                                    , parseField VoroMargin "voro_margin"
-                                    , parseField Weight "weight"
-                                    , parseField Width "width"
-                                    , parseField Z "z"
-                                    ])
-                `onFail`
-                liftM2 UnknownAttribute stringBlock (parseEq >> parse)
+  parseUnqt = stringParse (concat [ parseField Damping "Damping"
+                                  , parseField K "K"
+                                  , parseFields URL ["URL", "href"]
+                                  , parseField ArrowHead "arrowhead"
+                                  , parseField ArrowSize "arrowsize"
+                                  , parseField ArrowTail "arrowtail"
+                                  , parseField Aspect "aspect"
+                                  , parseField Bb "bb"
+                                  , parseField BgColor "bgcolor"
+                                  , parseFieldBool Center "center"
+                                  , parseField ClusterRank "clusterrank"
+                                  , parseField ColorScheme "colorscheme"
+                                  , parseField Color "color"
+                                  , parseField Comment "comment"
+                                  , parseFieldBool Compound "compound"
+                                  , parseFieldBool Concentrate "concentrate"
+                                  , parseFieldBool Constraint "constraint"
+                                  , parseFieldBool Decorate "decorate"
+                                  , parseField DefaultDist "defaultdist"
+                                  , parseField Dimen "dimen"
+                                  , parseField Dim "dim"
+                                  , parseField Dir "dir"
+                                  , parseFieldDef DirEdgeConstraints EdgeConstraints "diredgeconstraints"
+                                  , parseField Distortion "distortion"
+                                  , parseFields DPI ["dpi", "resolution"]
+                                  , parseFields EdgeURL ["edgeURL", "edgehref"]
+                                  , parseField EdgeTarget "edgetarget"
+                                  , parseField EdgeTooltip "edgetooltip"
+                                  , parseField Epsilon "epsilon"
+                                  , parseField ESep "esep"
+                                  , parseField FillColor "fillcolor"
+                                  , parseFieldBool FixedSize "fixedsize"
+                                  , parseField FontColor "fontcolor"
+                                  , parseField FontName "fontname"
+                                  , parseField FontNames "fontnames"
+                                  , parseField FontPath "fontpath"
+                                  , parseField FontSize "fontsize"
+                                  , parseField Group "group"
+                                  , parseFields HeadURL ["headURL", "headhref"]
+                                  , parseFieldBool HeadClip "headclip"
+                                  , parseField HeadLabel "headlabel"
+                                  , parseField HeadPort "headport"
+                                  , parseField HeadTarget "headtarget"
+                                  , parseField HeadTooltip "headtooltip"
+                                  , parseField Height "height"
+                                  , parseField ID "id"
+                                  , parseField Image "image"
+                                  , parseFieldDef ImageScale UniformScale "imagescale"
+                                  , parseFields LabelURL ["labelURL", "labelhref"]
+                                  , parseField LabelAngle "labelangle"
+                                  , parseField LabelDistance "labeldistance"
+                                  , parseFieldBool LabelFloat "labelfloat"
+                                  , parseField LabelFontColor "labelfontcolor"
+                                  , parseField LabelFontName "labelfontname"
+                                  , parseField LabelFontSize "labelfontsize"
+                                  , parseField LabelJust "labeljust"
+                                  , parseField LabelLoc "labelloc"
+                                  , parseField LabelTarget "labeltarget"
+                                  , parseField LabelTooltip "labeltooltip"
+                                  , parseField Label "label"
+                                  , parseFieldBool Landscape "landscape"
+                                  , parseField LayerSep "layersep"
+                                  , parseField Layers "layers"
+                                  , parseField Layer "layer"
+                                  , parseField Layout "layout"
+                                  , parseField Len "len"
+                                  , parseField LevelsGap "levelsgap"
+                                  , parseField Levels "levels"
+                                  , parseField LHead "lhead"
+                                  , parseField LPos "lp"
+                                  , parseField LTail "ltail"
+                                  , parseField Margin "margin"
+                                  , parseField MaxIter "maxiter"
+                                  , parseField MCLimit "mclimit"
+                                  , parseField MinDist "mindist"
+                                  , parseField MinLen "minlen"
+                                  , parseField Model "model"
+                                  , parseField Mode "mode"
+                                  , parseFieldBool Mosek "mosek"
+                                  , parseField NodeSep "nodesep"
+                                  , parseFieldBool NoJustify "nojustify"
+                                  , parseFieldBool Normalize "normalize"
+                                  , parseField Nslimit1 "nslimit1"
+                                  , parseField Nslimit "nslimit"
+                                  , parseField Ordering "ordering"
+                                  , parseField Orientation "orientation"
+                                  , parseField OutputOrder "outputorder"
+                                  , parseField OverlapScaling "overlap_scaling"
+                                  , parseFieldDef Overlap KeepOverlaps "overlap"
+                                  , parseField PackMode "packmode"
+                                  , parseFieldDef Pack DoPack "pack"
+                                  , parseField Pad "pad"
+                                  , parseField PageDir "pagedir"
+                                  , parseField Page "page"
+                                  , parseField PenColor "pencolor"
+                                  , parseField PenWidth "penwidth"
+                                  , parseField Peripheries "peripheries"
+                                  , parseFieldBool Pin "pin"
+                                  , parseField Pos "pos"
+                                  , parseFieldDef QuadTree NormalQT "quadtree"
+                                  , parseField Quantum "quantum"
+                                  , parseField RankDir "rankdir"
+                                  , parseField RankSep "ranksep"
+                                  , parseField Rank "rank"
+                                  , parseField Ratio "ratio"
+                                  , parseField Rects "rects"
+                                  , parseFieldBool Regular "regular"
+                                  , parseFieldBool ReMinCross "remincross"
+                                  , parseField RepulsiveForce "repulsiveforce"
+                                  , parseFieldDef Root IsCentral "root"
+                                  , parseField Rotate "rotate"
+                                  , parseField SameHead "samehead"
+                                  , parseField SameTail "sametail"
+                                  , parseField SamplePoints "samplepoints"
+                                  , parseField SearchSize "searchsize"
+                                  , parseField Sep "sep"
+                                  , parseField ShapeFile "shapefile"
+                                  , parseField Shape "shape"
+                                  , parseField ShowBoxes "showboxes"
+                                  , parseField Sides "sides"
+                                  , parseField Size "size"
+                                  , parseField Skew "skew"
+                                  , parseField Smoothing "smoothing"
+                                  , parseField SortV "sortv"
+                                  , parseFieldDef Splines SplineEdges "splines"
+                                  , parseField Start "start"
+                                  , parseField StyleSheet "stylesheet"
+                                  , parseField Style "style"
+                                  , parseFields TailURL ["tailURL", "tailhref"]
+                                  , parseFieldBool TailClip "tailclip"
+                                  , parseField TailLabel "taillabel"
+                                  , parseField TailPort "tailport"
+                                  , parseField TailTarget "tailtarget"
+                                  , parseField TailTooltip "tailtooltip"
+                                  , parseField Target "target"
+                                  , parseField Tooltip "tooltip"
+                                  , parseFieldBool TrueColor "truecolor"
+                                  , parseField Vertices "vertices"
+                                  , parseField ViewPort "viewport"
+                                  , parseField VoroMargin "voro_margin"
+                                  , parseField Weight "weight"
+                                  , parseField Width "width"
+                                  , parseField Z "z"
+                                  ])
+              `onFail`
+              liftM2 UnknownAttribute stringBlock (parseEq >> parse)
 
-    parse = parseUnqt
+  parse = parseUnqt
 
-    parseList = parseUnqtList
+  parseList = parseUnqtList
 
 -- | Determine if this 'Attribute' is valid for use with Graphs.
 usedByGraphs                      :: Attribute -> Bool
@@ -1168,6 +1170,163 @@ defaultAttributeValue VoroMargin{}         = Just $ VoroMargin 0.05
 defaultAttributeValue Width{}              = Just $ Width 0.75
 defaultAttributeValue Z{}                  = Just $ Z 0
 defaultAttributeValue _                    = Nothing
+
+-- | Determine if the provided 'Text' value is a valid name for an 'UnknownAttribute'.
+validUnknown     :: Text -> Bool
+validUnknown txt = T.toLower txt `S.notMember` names
+  where
+    names = S.fromList . map T.toLower
+            $ [ "Damping"
+              , "K"
+              , "URL"
+              , "href"
+              , "arrowhead"
+              , "arrowsize"
+              , "arrowtail"
+              , "aspect"
+              , "bb"
+              , "bgcolor"
+              , "center"
+              , "clusterrank"
+              , "colorscheme"
+              , "color"
+              , "comment"
+              , "compound"
+              , "concentrate"
+              , "constraint"
+              , "decorate"
+              , "defaultdist"
+              , "dimen"
+              , "dim"
+              , "dir"
+              , "diredgeconstraints"
+              , "distortion"
+              , "dpi"
+              , "resolution"
+              , "edgeURL"
+              , "edgehref"
+              , "edgetarget"
+              , "edgetooltip"
+              , "epsilon"
+              , "esep"
+              , "fillcolor"
+              , "fixedsize"
+              , "fontcolor"
+              , "fontname"
+              , "fontnames"
+              , "fontpath"
+              , "fontsize"
+              , "group"
+              , "headURL"
+              , "headhref"
+              , "headclip"
+              , "headlabel"
+              , "headport"
+              , "headtarget"
+              , "headtooltip"
+              , "height"
+              , "id"
+              , "image"
+              , "imagescale"
+              , "labelURL"
+              , "labelhref"
+              , "labelangle"
+              , "labeldistance"
+              , "labelfloat"
+              , "labelfontcolor"
+              , "labelfontname"
+              , "labelfontsize"
+              , "labeljust"
+              , "labelloc"
+              , "labeltarget"
+              , "labeltooltip"
+              , "label"
+              , "landscape"
+              , "layersep"
+              , "layers"
+              , "layer"
+              , "layout"
+              , "len"
+              , "levelsgap"
+              , "levels"
+              , "lhead"
+              , "lp"
+              , "ltail"
+              , "margin"
+              , "maxiter"
+              , "mclimit"
+              , "mindist"
+              , "minlen"
+              , "model"
+              , "mode"
+              , "mosek"
+              , "nodesep"
+              , "nojustify"
+              , "normalize"
+              , "nslimit1"
+              , "nslimit"
+              , "ordering"
+              , "orientation"
+              , "outputorder"
+              , "overlap_scaling"
+              , "overlap"
+              , "packmode"
+              , "pack"
+              , "pad"
+              , "pagedir"
+              , "page"
+              , "pencolor"
+              , "penwidth"
+              , "peripheries"
+              , "pin"
+              , "pos"
+              , "quadtree"
+              , "quantum"
+              , "rankdir"
+              , "ranksep"
+              , "rank"
+              , "ratio"
+              , "rects"
+              , "regular"
+              , "remincross"
+              , "repulsiveforce"
+              , "root"
+              , "rotate"
+              , "samehead"
+              , "sametail"
+              , "samplepoints"
+              , "searchsize"
+              , "sep"
+              , "shapefile"
+              , "shape"
+              , "showboxes"
+              , "sides"
+              , "size"
+              , "skew"
+              , "smoothing"
+              , "sortv"
+              , "splines"
+              , "start"
+              , "stylesheet"
+              , "style"
+              , "tailURL"
+              , "tailhref"
+              , "tailclip"
+              , "taillabel"
+              , "tailport"
+              , "tailtarget"
+              , "tailtooltip"
+              , "target"
+              , "tooltip"
+              , "truecolor"
+              , "vertices"
+              , "viewport"
+              , "voro_margin"
+              , "weight"
+              , "width"
+              , "z"
+              , "charset" -- Defined upstream, just not used here.
+              ]
 {- Delete to here -}
 
 -- -----------------------------------------------------------------------------

@@ -47,6 +47,7 @@ genCode att = vsep $ map ($att) cds
             , usedByFunc "Edges" forEdges
             , sameAttributeFunc
             , defValueFunc
+            , validUnknownFunc
             ]
 
 genArbitrary :: Atts -> Doc
@@ -223,7 +224,7 @@ parseInstance att = hdr $+$ nest tab fns
                  <+> parens (text "parseEq >> parse")
 
 arbitraryInstance     :: Atts -> Code
-arbitraryInstance att = vsep [hdr $+$ fns, kFunc]
+arbitraryInstance att = hdr $+$ fns
     where
       hdr = text "instance" <+> text "Arbitrary" <+> tpNm att <+> text "where"
       fns = nest tab $ vsep [aFn, sFn]
@@ -247,33 +248,47 @@ arbitraryInstance att = vsep [hdr $+$ fns, kFunc]
                      , dollar <+> shrinkFor (valtype a) <+> var
                      ]
       aUnknown = text "liftM2" <+> unknownAttr
-                 <+> parens (text "suchThat" <+> text "arbIDString" <+> kFuncNm)
+                 <+> parens (text "suchThat" <+> text "arbIDString" <+> validUnknownName)
                  <+> arbitraryFor Strng
       sUnknown = [ sFunc <+> parens (unknownAttr <+> char 'a' <+> var)
                  , equals <+> text "liftM2" <+> unknownAttr
-                 , parens (text "liftM" <+> parens (text "filter" <+> kFuncNm)
+                 , parens (text "liftM" <+> parens (text "filter" <+> validUnknownName)
                            <+> shrinkFor Strng <+> char 'a')
                    <+> parens (shrinkFor Strng <+> var)
                  ]
 
-      kFunc = asRows (kTpSig : kTrs ++ kOths)
-      kFuncNm = text "validUnknown"
-      kTpSig = [ kFuncNm
-               , colon <> colon <+> text "Text -> Bool"
-               ]
-      kTrs = map kTr . concatMap parseNames $ atts att
-      kTr pn = [ kFuncNm <+> doubleQuotes pn
-               , equals <+> text "False"
-               ]
-               -- charset isn't recognised as an attribute, but don't
-               -- generate it for Arbitrary instances.
-      kOths = [ [ kFuncNm <+> doubleQuotes (text "charset")
-                , equals <+> text "False"
-                ]
-              , [ kFuncNm <+> char '_'
-                , equals <+> text "True"
-                ]
+validUnknownName :: Code
+validUnknownName = text "validUnknown"
+
+validUnknownFunc     :: Atts -> Code
+validUnknownFunc att = cmnt $$ asRows [tpSig, def] $$ whClause
+    where
+      var = text "txt"
+      setVar = text "names"
+      cmnt = text "-- | Determine if the provided 'Text' value is a valid name"
+             <+> text "for an '" <> unknownAttr <> text "'."
+      tpSig = [ validUnknownName
+              , colon <> colon <+> text "Text -> Bool"
               ]
+      def = [ validUnknownName <+> var
+            , equals <+> text "T.toLower" <+> var
+              <+> text "`S.notMember`" <+> setVar
+            ]
+      whClause = nest tab
+                 $ text "where"
+                 $$ nest tab setDef
+      setDef = setVar <+> equals <+> mkSet
+      mkSet = text "S.fromList . map T.toLower"
+              $$ dollar
+              <+> setList
+      setList = flip ($$) rbrack
+                . asRows
+                . firstOthers lbrack comma
+                . flip (++) [[doubleQuotes (text "charset")
+                              <+> text "-- Defined upstream, just not used here."]]
+                . map ((:[]) . doubleQuotes)
+                . concatMap parseNames
+                $ atts att
 
 arbitraryFor                :: VType -> Doc
 arbitraryFor (Cust ('[':_)) = text "arbList"

@@ -155,449 +155,296 @@ instance (Eq a, Arbitrary a) => Arbitrary (GDotSubGraph a) where
 -- Defining Arbitrary instances for Attributes
 
 instance Arbitrary Attribute where
-    arbitrary = oneof [ liftM Damping arbitrary
-                      , liftM K arbitrary
-                      , liftM URL arbitrary
-                      , liftM ArrowHead arbitrary
-                      , liftM ArrowSize arbitrary
-                      , liftM ArrowTail arbitrary
-                      , liftM Aspect arbitrary
-                      , liftM Bb arbitrary
-                      , liftM BgColor arbitrary
-                      , liftM Center arbitrary
-                      , liftM ClusterRank arbitrary
-                      , liftM ColorScheme arbitrary
-                      , liftM Color arbList
-                      , liftM Comment arbitrary
-                      , liftM Compound arbitrary
-                      , liftM Concentrate arbitrary
-                      , liftM Constraint arbitrary
-                      , liftM Decorate arbitrary
-                      , liftM DefaultDist arbitrary
-                      , liftM Dimen arbitrary
-                      , liftM Dim arbitrary
-                      , liftM Dir arbitrary
-                      , liftM DirEdgeConstraints arbitrary
-                      , liftM Distortion arbitrary
-                      , liftM DPI arbitrary
-                      , liftM EdgeURL arbitrary
-                      , liftM EdgeTarget arbitrary
-                      , liftM EdgeTooltip arbitrary
-                      , liftM Epsilon arbitrary
-                      , liftM ESep arbitrary
-                      , liftM FillColor arbitrary
-                      , liftM FixedSize arbitrary
-                      , liftM FontColor arbitrary
-                      , liftM FontName arbitrary
-                      , liftM FontNames arbitrary
-                      , liftM FontPath arbitrary
-                      , liftM FontSize arbitrary
-                      , liftM Group arbitrary
-                      , liftM HeadURL arbitrary
-                      , liftM HeadClip arbitrary
-                      , liftM HeadLabel arbitrary
-                      , liftM HeadPort arbitrary
-                      , liftM HeadTarget arbitrary
-                      , liftM HeadTooltip arbitrary
-                      , liftM Height arbitrary
-                      , liftM ID arbitrary
-                      , liftM Image arbitrary
-                      , liftM ImageScale arbitrary
-                      , liftM LabelURL arbitrary
-                      , liftM LabelAngle arbitrary
-                      , liftM LabelDistance arbitrary
-                      , liftM LabelFloat arbitrary
-                      , liftM LabelFontColor arbitrary
-                      , liftM LabelFontName arbitrary
-                      , liftM LabelFontSize arbitrary
-                      , liftM LabelJust arbitrary
-                      , liftM LabelLoc arbitrary
-                      , liftM LabelTarget arbitrary
-                      , liftM LabelTooltip arbitrary
-                      , liftM Label arbitrary
-                      , liftM Landscape arbitrary
-                      , liftM LayerSep arbitrary
-                      , liftM Layers arbitrary
-                      , liftM Layer arbitrary
-                      , liftM Layout arbitrary
-                      , liftM Len arbitrary
-                      , liftM LevelsGap arbitrary
-                      , liftM Levels arbitrary
-                      , liftM LHead arbitrary
-                      , liftM LPos arbitrary
-                      , liftM LTail arbitrary
-                      , liftM Margin arbitrary
-                      , liftM MaxIter arbitrary
-                      , liftM MCLimit arbitrary
-                      , liftM MinDist arbitrary
-                      , liftM MinLen arbitrary
-                      , liftM Model arbitrary
-                      , liftM Mode arbitrary
-                      , liftM Mosek arbitrary
-                      , liftM NodeSep arbitrary
-                      , liftM NoJustify arbitrary
-                      , liftM Normalize arbitrary
-                      , liftM Nslimit1 arbitrary
-                      , liftM Nslimit arbitrary
-                      , liftM Ordering arbitrary
-                      , liftM Orientation arbitrary
-                      , liftM OutputOrder arbitrary
-                      , liftM OverlapScaling arbitrary
-                      , liftM Overlap arbitrary
-                      , liftM PackMode arbitrary
-                      , liftM Pack arbitrary
-                      , liftM Pad arbitrary
-                      , liftM PageDir arbitrary
-                      , liftM Page arbitrary
-                      , liftM PenColor arbitrary
-                      , liftM PenWidth arbitrary
-                      , liftM Peripheries arbitrary
-                      , liftM Pin arbitrary
-                      , liftM Pos arbitrary
-                      , liftM QuadTree arbitrary
-                      , liftM Quantum arbitrary
-                      , liftM RankDir arbitrary
-                      , liftM RankSep arbList
-                      , liftM Rank arbitrary
-                      , liftM Ratio arbitrary
-                      , liftM Rects arbList
-                      , liftM Regular arbitrary
-                      , liftM ReMinCross arbitrary
-                      , liftM RepulsiveForce arbitrary
-                      , liftM Root arbitrary
-                      , liftM Rotate arbitrary
-                      , liftM SameHead arbitrary
-                      , liftM SameTail arbitrary
-                      , liftM SamplePoints arbitrary
-                      , liftM SearchSize arbitrary
-                      , liftM Sep arbitrary
-                      , liftM ShapeFile arbitrary
-                      , liftM Shape arbitrary
-                      , liftM ShowBoxes arbitrary
-                      , liftM Sides arbitrary
-                      , liftM Size arbitrary
-                      , liftM Skew arbitrary
-                      , liftM Smoothing arbitrary
-                      , liftM SortV arbitrary
-                      , liftM Splines arbitrary
-                      , liftM Start arbitrary
-                      , liftM StyleSheet arbitrary
-                      , liftM Style arbList
-                      , liftM TailURL arbitrary
-                      , liftM TailClip arbitrary
-                      , liftM TailLabel arbitrary
-                      , liftM TailPort arbitrary
-                      , liftM TailTarget arbitrary
-                      , liftM TailTooltip arbitrary
-                      , liftM Target arbitrary
-                      , liftM Tooltip arbitrary
-                      , liftM TrueColor arbitrary
-                      , liftM Vertices arbList
-                      , liftM ViewPort arbitrary
-                      , liftM VoroMargin arbitrary
-                      , liftM Weight arbitrary
-                      , liftM Width arbitrary
-                      , liftM Z arbitrary
-                      , liftM2 UnknownAttribute (suchThat arbIDString validUnknown) arbitrary
-                      ]
+  arbitrary = oneof [ liftM Damping arbitrary
+                    , liftM K arbitrary
+                    , liftM URL arbitrary
+                    , liftM ArrowHead arbitrary
+                    , liftM ArrowSize arbitrary
+                    , liftM ArrowTail arbitrary
+                    , liftM Aspect arbitrary
+                    , liftM Bb arbitrary
+                    , liftM BgColor arbitrary
+                    , liftM Center arbitrary
+                    , liftM ClusterRank arbitrary
+                    , liftM ColorScheme arbitrary
+                    , liftM Color arbList
+                    , liftM Comment arbitrary
+                    , liftM Compound arbitrary
+                    , liftM Concentrate arbitrary
+                    , liftM Constraint arbitrary
+                    , liftM Decorate arbitrary
+                    , liftM DefaultDist arbitrary
+                    , liftM Dimen arbitrary
+                    , liftM Dim arbitrary
+                    , liftM Dir arbitrary
+                    , liftM DirEdgeConstraints arbitrary
+                    , liftM Distortion arbitrary
+                    , liftM DPI arbitrary
+                    , liftM EdgeURL arbitrary
+                    , liftM EdgeTarget arbitrary
+                    , liftM EdgeTooltip arbitrary
+                    , liftM Epsilon arbitrary
+                    , liftM ESep arbitrary
+                    , liftM FillColor arbitrary
+                    , liftM FixedSize arbitrary
+                    , liftM FontColor arbitrary
+                    , liftM FontName arbitrary
+                    , liftM FontNames arbitrary
+                    , liftM FontPath arbitrary
+                    , liftM FontSize arbitrary
+                    , liftM Group arbitrary
+                    , liftM HeadURL arbitrary
+                    , liftM HeadClip arbitrary
+                    , liftM HeadLabel arbitrary
+                    , liftM HeadPort arbitrary
+                    , liftM HeadTarget arbitrary
+                    , liftM HeadTooltip arbitrary
+                    , liftM Height arbitrary
+                    , liftM ID arbitrary
+                    , liftM Image arbitrary
+                    , liftM ImageScale arbitrary
+                    , liftM LabelURL arbitrary
+                    , liftM LabelAngle arbitrary
+                    , liftM LabelDistance arbitrary
+                    , liftM LabelFloat arbitrary
+                    , liftM LabelFontColor arbitrary
+                    , liftM LabelFontName arbitrary
+                    , liftM LabelFontSize arbitrary
+                    , liftM LabelJust arbitrary
+                    , liftM LabelLoc arbitrary
+                    , liftM LabelTarget arbitrary
+                    , liftM LabelTooltip arbitrary
+                    , liftM Label arbitrary
+                    , liftM Landscape arbitrary
+                    , liftM LayerSep arbitrary
+                    , liftM Layers arbitrary
+                    , liftM Layer arbitrary
+                    , liftM Layout arbitrary
+                    , liftM Len arbitrary
+                    , liftM LevelsGap arbitrary
+                    , liftM Levels arbitrary
+                    , liftM LHead arbitrary
+                    , liftM LPos arbitrary
+                    , liftM LTail arbitrary
+                    , liftM Margin arbitrary
+                    , liftM MaxIter arbitrary
+                    , liftM MCLimit arbitrary
+                    , liftM MinDist arbitrary
+                    , liftM MinLen arbitrary
+                    , liftM Model arbitrary
+                    , liftM Mode arbitrary
+                    , liftM Mosek arbitrary
+                    , liftM NodeSep arbitrary
+                    , liftM NoJustify arbitrary
+                    , liftM Normalize arbitrary
+                    , liftM Nslimit1 arbitrary
+                    , liftM Nslimit arbitrary
+                    , liftM Ordering arbitrary
+                    , liftM Orientation arbitrary
+                    , liftM OutputOrder arbitrary
+                    , liftM OverlapScaling arbitrary
+                    , liftM Overlap arbitrary
+                    , liftM PackMode arbitrary
+                    , liftM Pack arbitrary
+                    , liftM Pad arbitrary
+                    , liftM PageDir arbitrary
+                    , liftM Page arbitrary
+                    , liftM PenColor arbitrary
+                    , liftM PenWidth arbitrary
+                    , liftM Peripheries arbitrary
+                    , liftM Pin arbitrary
+                    , liftM Pos arbitrary
+                    , liftM QuadTree arbitrary
+                    , liftM Quantum arbitrary
+                    , liftM RankDir arbitrary
+                    , liftM RankSep arbList
+                    , liftM Rank arbitrary
+                    , liftM Ratio arbitrary
+                    , liftM Rects arbList
+                    , liftM Regular arbitrary
+                    , liftM ReMinCross arbitrary
+                    , liftM RepulsiveForce arbitrary
+                    , liftM Root arbitrary
+                    , liftM Rotate arbitrary
+                    , liftM SameHead arbitrary
+                    , liftM SameTail arbitrary
+                    , liftM SamplePoints arbitrary
+                    , liftM SearchSize arbitrary
+                    , liftM Sep arbitrary
+                    , liftM ShapeFile arbitrary
+                    , liftM Shape arbitrary
+                    , liftM ShowBoxes arbitrary
+                    , liftM Sides arbitrary
+                    , liftM Size arbitrary
+                    , liftM Skew arbitrary
+                    , liftM Smoothing arbitrary
+                    , liftM SortV arbitrary
+                    , liftM Splines arbitrary
+                    , liftM Start arbitrary
+                    , liftM StyleSheet arbitrary
+                    , liftM Style arbList
+                    , liftM TailURL arbitrary
+                    , liftM TailClip arbitrary
+                    , liftM TailLabel arbitrary
+                    , liftM TailPort arbitrary
+                    , liftM TailTarget arbitrary
+                    , liftM TailTooltip arbitrary
+                    , liftM Target arbitrary
+                    , liftM Tooltip arbitrary
+                    , liftM TrueColor arbitrary
+                    , liftM Vertices arbList
+                    , liftM ViewPort arbitrary
+                    , liftM VoroMargin arbitrary
+                    , liftM Weight arbitrary
+                    , liftM Width arbitrary
+                    , liftM Z arbitrary
+                    , liftM2 UnknownAttribute (suchThat arbIDString validUnknown) arbitrary
+                    ]
 
-    shrink (Damping v)            = map Damping             $ shrink v
-    shrink (K v)                  = map K                   $ shrink v
-    shrink (URL v)                = map URL                 $ shrink v
-    shrink (ArrowHead v)          = map ArrowHead           $ shrink v
-    shrink (ArrowSize v)          = map ArrowSize           $ shrink v
-    shrink (ArrowTail v)          = map ArrowTail           $ shrink v
-    shrink (Aspect v)             = map Aspect              $ shrink v
-    shrink (Bb v)                 = map Bb                  $ shrink v
-    shrink (BgColor v)            = map BgColor             $ shrink v
-    shrink (Center v)             = map Center              $ shrink v
-    shrink (ClusterRank v)        = map ClusterRank         $ shrink v
-    shrink (ColorScheme v)        = map ColorScheme         $ shrink v
-    shrink (Color v)              = map Color               $ nonEmptyShrinks v
-    shrink (Comment v)            = map Comment             $ shrink v
-    shrink (Compound v)           = map Compound            $ shrink v
-    shrink (Concentrate v)        = map Concentrate         $ shrink v
-    shrink (Constraint v)         = map Constraint          $ shrink v
-    shrink (Decorate v)           = map Decorate            $ shrink v
-    shrink (DefaultDist v)        = map DefaultDist         $ shrink v
-    shrink (Dimen v)              = map Dimen               $ shrink v
-    shrink (Dim v)                = map Dim                 $ shrink v
-    shrink (Dir v)                = map Dir                 $ shrink v
-    shrink (DirEdgeConstraints v) = map DirEdgeConstraints  $ shrink v
-    shrink (Distortion v)         = map Distortion          $ shrink v
-    shrink (DPI v)                = map DPI                 $ shrink v
-    shrink (EdgeURL v)            = map EdgeURL             $ shrink v
-    shrink (EdgeTarget v)         = map EdgeTarget          $ shrink v
-    shrink (EdgeTooltip v)        = map EdgeTooltip         $ shrink v
-    shrink (Epsilon v)            = map Epsilon             $ shrink v
-    shrink (ESep v)               = map ESep                $ shrink v
-    shrink (FillColor v)          = map FillColor           $ shrink v
-    shrink (FixedSize v)          = map FixedSize           $ shrink v
-    shrink (FontColor v)          = map FontColor           $ shrink v
-    shrink (FontName v)           = map FontName            $ shrink v
-    shrink (FontNames v)          = map FontNames           $ shrink v
-    shrink (FontPath v)           = map FontPath            $ shrink v
-    shrink (FontSize v)           = map FontSize            $ shrink v
-    shrink (Group v)              = map Group               $ shrink v
-    shrink (HeadURL v)            = map HeadURL             $ shrink v
-    shrink (HeadClip v)           = map HeadClip            $ shrink v
-    shrink (HeadLabel v)          = map HeadLabel           $ shrink v
-    shrink (HeadPort v)           = map HeadPort            $ shrink v
-    shrink (HeadTarget v)         = map HeadTarget          $ shrink v
-    shrink (HeadTooltip v)        = map HeadTooltip         $ shrink v
-    shrink (Height v)             = map Height              $ shrink v
-    shrink (ID v)                 = map ID                  $ shrink v
-    shrink (Image v)              = map Image               $ shrink v
-    shrink (ImageScale v)         = map ImageScale          $ shrink v
-    shrink (LabelURL v)           = map LabelURL            $ shrink v
-    shrink (LabelAngle v)         = map LabelAngle          $ shrink v
-    shrink (LabelDistance v)      = map LabelDistance       $ shrink v
-    shrink (LabelFloat v)         = map LabelFloat          $ shrink v
-    shrink (LabelFontColor v)     = map LabelFontColor      $ shrink v
-    shrink (LabelFontName v)      = map LabelFontName       $ shrink v
-    shrink (LabelFontSize v)      = map LabelFontSize       $ shrink v
-    shrink (LabelJust v)          = map LabelJust           $ shrink v
-    shrink (LabelLoc v)           = map LabelLoc            $ shrink v
-    shrink (LabelTarget v)        = map LabelTarget         $ shrink v
-    shrink (LabelTooltip v)       = map LabelTooltip        $ shrink v
-    shrink (Label v)              = map Label               $ shrink v
-    shrink (Landscape v)          = map Landscape           $ shrink v
-    shrink (LayerSep v)           = map LayerSep            $ shrink v
-    shrink (Layers v)             = map Layers              $ shrink v
-    shrink (Layer v)              = map Layer               $ shrink v
-    shrink (Layout v)             = map Layout              $ shrink v
-    shrink (Len v)                = map Len                 $ shrink v
-    shrink (LevelsGap v)          = map LevelsGap           $ shrink v
-    shrink (Levels v)             = map Levels              $ shrink v
-    shrink (LHead v)              = map LHead               $ shrink v
-    shrink (LPos v)               = map LPos                $ shrink v
-    shrink (LTail v)              = map LTail               $ shrink v
-    shrink (Margin v)             = map Margin              $ shrink v
-    shrink (MaxIter v)            = map MaxIter             $ shrink v
-    shrink (MCLimit v)            = map MCLimit             $ shrink v
-    shrink (MinDist v)            = map MinDist             $ shrink v
-    shrink (MinLen v)             = map MinLen              $ shrink v
-    shrink (Model v)              = map Model               $ shrink v
-    shrink (Mode v)               = map Mode                $ shrink v
-    shrink (Mosek v)              = map Mosek               $ shrink v
-    shrink (NodeSep v)            = map NodeSep             $ shrink v
-    shrink (NoJustify v)          = map NoJustify           $ shrink v
-    shrink (Normalize v)          = map Normalize           $ shrink v
-    shrink (Nslimit1 v)           = map Nslimit1            $ shrink v
-    shrink (Nslimit v)            = map Nslimit             $ shrink v
-    shrink (Ordering v)           = map Ordering            $ shrink v
-    shrink (Orientation v)        = map Orientation         $ shrink v
-    shrink (OutputOrder v)        = map OutputOrder         $ shrink v
-    shrink (OverlapScaling v)     = map OverlapScaling      $ shrink v
-    shrink (Overlap v)            = map Overlap             $ shrink v
-    shrink (PackMode v)           = map PackMode            $ shrink v
-    shrink (Pack v)               = map Pack                $ shrink v
-    shrink (Pad v)                = map Pad                 $ shrink v
-    shrink (PageDir v)            = map PageDir             $ shrink v
-    shrink (Page v)               = map Page                $ shrink v
-    shrink (PenColor v)           = map PenColor            $ shrink v
-    shrink (PenWidth v)           = map PenWidth            $ shrink v
-    shrink (Peripheries v)        = map Peripheries         $ shrink v
-    shrink (Pin v)                = map Pin                 $ shrink v
-    shrink (Pos v)                = map Pos                 $ shrink v
-    shrink (QuadTree v)           = map QuadTree            $ shrink v
-    shrink (Quantum v)            = map Quantum             $ shrink v
-    shrink (RankDir v)            = map RankDir             $ shrink v
-    shrink (RankSep v)            = map RankSep             $ nonEmptyShrinks v
-    shrink (Rank v)               = map Rank                $ shrink v
-    shrink (Ratio v)              = map Ratio               $ shrink v
-    shrink (Rects v)              = map Rects               $ nonEmptyShrinks v
-    shrink (Regular v)            = map Regular             $ shrink v
-    shrink (ReMinCross v)         = map ReMinCross          $ shrink v
-    shrink (RepulsiveForce v)     = map RepulsiveForce      $ shrink v
-    shrink (Root v)               = map Root                $ shrink v
-    shrink (Rotate v)             = map Rotate              $ shrink v
-    shrink (SameHead v)           = map SameHead            $ shrink v
-    shrink (SameTail v)           = map SameTail            $ shrink v
-    shrink (SamplePoints v)       = map SamplePoints        $ shrink v
-    shrink (SearchSize v)         = map SearchSize          $ shrink v
-    shrink (Sep v)                = map Sep                 $ shrink v
-    shrink (ShapeFile v)          = map ShapeFile           $ shrink v
-    shrink (Shape v)              = map Shape               $ shrink v
-    shrink (ShowBoxes v)          = map ShowBoxes           $ shrink v
-    shrink (Sides v)              = map Sides               $ shrink v
-    shrink (Size v)               = map Size                $ shrink v
-    shrink (Skew v)               = map Skew                $ shrink v
-    shrink (Smoothing v)          = map Smoothing           $ shrink v
-    shrink (SortV v)              = map SortV               $ shrink v
-    shrink (Splines v)            = map Splines             $ shrink v
-    shrink (Start v)              = map Start               $ shrink v
-    shrink (StyleSheet v)         = map StyleSheet          $ shrink v
-    shrink (Style v)              = map Style               $ nonEmptyShrinks v
-    shrink (TailURL v)            = map TailURL             $ shrink v
-    shrink (TailClip v)           = map TailClip            $ shrink v
-    shrink (TailLabel v)          = map TailLabel           $ shrink v
-    shrink (TailPort v)           = map TailPort            $ shrink v
-    shrink (TailTarget v)         = map TailTarget          $ shrink v
-    shrink (TailTooltip v)        = map TailTooltip         $ shrink v
-    shrink (Target v)             = map Target              $ shrink v
-    shrink (Tooltip v)            = map Tooltip             $ shrink v
-    shrink (TrueColor v)          = map TrueColor           $ shrink v
-    shrink (Vertices v)           = map Vertices            $ nonEmptyShrinks v
-    shrink (ViewPort v)           = map ViewPort            $ shrink v
-    shrink (VoroMargin v)         = map VoroMargin          $ shrink v
-    shrink (Weight v)             = map Weight              $ shrink v
-    shrink (Width v)              = map Width               $ shrink v
-    shrink (Z v)                  = map Z                   $ shrink v
-    shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrink a) (shrink v)
-
-validUnknown                      :: Text -> Bool
-validUnknown "Damping"            = False
-validUnknown "K"                  = False
-validUnknown "URL"                = False
-validUnknown "href"               = False
-validUnknown "arrowhead"          = False
-validUnknown "arrowsize"          = False
-validUnknown "arrowtail"          = False
-validUnknown "aspect"             = False
-validUnknown "bb"                 = False
-validUnknown "bgcolor"            = False
-validUnknown "center"             = False
-validUnknown "clusterrank"        = False
-validUnknown "colorscheme"        = False
-validUnknown "color"              = False
-validUnknown "comment"            = False
-validUnknown "compound"           = False
-validUnknown "concentrate"        = False
-validUnknown "constraint"         = False
-validUnknown "decorate"           = False
-validUnknown "defaultdist"        = False
-validUnknown "dimen"              = False
-validUnknown "dim"                = False
-validUnknown "dir"                = False
-validUnknown "diredgeconstraints" = False
-validUnknown "distortion"         = False
-validUnknown "dpi"                = False
-validUnknown "resolution"         = False
-validUnknown "edgeURL"            = False
-validUnknown "edgehref"           = False
-validUnknown "edgetarget"         = False
-validUnknown "edgetooltip"        = False
-validUnknown "epsilon"            = False
-validUnknown "esep"               = False
-validUnknown "fillcolor"          = False
-validUnknown "fixedsize"          = False
-validUnknown "fontcolor"          = False
-validUnknown "fontname"           = False
-validUnknown "fontnames"          = False
-validUnknown "fontpath"           = False
-validUnknown "fontsize"           = False
-validUnknown "group"              = False
-validUnknown "headURL"            = False
-validUnknown "headhref"           = False
-validUnknown "headclip"           = False
-validUnknown "headlabel"          = False
-validUnknown "headport"           = False
-validUnknown "headtarget"         = False
-validUnknown "headtooltip"        = False
-validUnknown "height"             = False
-validUnknown "id"                 = False
-validUnknown "image"              = False
-validUnknown "imagescale"         = False
-validUnknown "labelURL"           = False
-validUnknown "labelhref"          = False
-validUnknown "labelangle"         = False
-validUnknown "labeldistance"      = False
-validUnknown "labelfloat"         = False
-validUnknown "labelfontcolor"     = False
-validUnknown "labelfontname"      = False
-validUnknown "labelfontsize"      = False
-validUnknown "labeljust"          = False
-validUnknown "labelloc"           = False
-validUnknown "labeltarget"        = False
-validUnknown "labeltooltip"       = False
-validUnknown "label"              = False
-validUnknown "landscape"          = False
-validUnknown "layersep"           = False
-validUnknown "layers"             = False
-validUnknown "layer"              = False
-validUnknown "layout"             = False
-validUnknown "len"                = False
-validUnknown "levelsgap"          = False
-validUnknown "levels"             = False
-validUnknown "lhead"              = False
-validUnknown "lp"                 = False
-validUnknown "ltail"              = False
-validUnknown "margin"             = False
-validUnknown "maxiter"            = False
-validUnknown "mclimit"            = False
-validUnknown "mindist"            = False
-validUnknown "minlen"             = False
-validUnknown "model"              = False
-validUnknown "mode"               = False
-validUnknown "mosek"              = False
-validUnknown "nodesep"            = False
-validUnknown "nojustify"          = False
-validUnknown "normalize"          = False
-validUnknown "nslimit1"           = False
-validUnknown "nslimit"            = False
-validUnknown "ordering"           = False
-validUnknown "orientation"        = False
-validUnknown "outputorder"        = False
-validUnknown "overlap_scaling"    = False
-validUnknown "overlap"            = False
-validUnknown "packmode"           = False
-validUnknown "pack"               = False
-validUnknown "pad"                = False
-validUnknown "pagedir"            = False
-validUnknown "page"               = False
-validUnknown "pencolor"           = False
-validUnknown "penwidth"           = False
-validUnknown "peripheries"        = False
-validUnknown "pin"                = False
-validUnknown "pos"                = False
-validUnknown "quadtree"           = False
-validUnknown "quantum"            = False
-validUnknown "rankdir"            = False
-validUnknown "ranksep"            = False
-validUnknown "rank"               = False
-validUnknown "ratio"              = False
-validUnknown "rects"              = False
-validUnknown "regular"            = False
-validUnknown "remincross"         = False
-validUnknown "repulsiveforce"     = False
-validUnknown "root"               = False
-validUnknown "rotate"             = False
-validUnknown "samehead"           = False
-validUnknown "sametail"           = False
-validUnknown "samplepoints"       = False
-validUnknown "searchsize"         = False
-validUnknown "sep"                = False
-validUnknown "shapefile"          = False
-validUnknown "shape"              = False
-validUnknown "showboxes"          = False
-validUnknown "sides"              = False
-validUnknown "size"               = False
-validUnknown "skew"               = False
-validUnknown "smoothing"          = False
-validUnknown "sortv"              = False
-validUnknown "splines"            = False
-validUnknown "start"              = False
-validUnknown "stylesheet"         = False
-validUnknown "style"              = False
-validUnknown "tailURL"            = False
-validUnknown "tailhref"           = False
-validUnknown "tailclip"           = False
-validUnknown "taillabel"          = False
-validUnknown "tailport"           = False
-validUnknown "tailtarget"         = False
-validUnknown "tailtooltip"        = False
-validUnknown "target"             = False
-validUnknown "tooltip"            = False
-validUnknown "truecolor"          = False
-validUnknown "vertices"           = False
-validUnknown "viewport"           = False
-validUnknown "voro_margin"        = False
-validUnknown "weight"             = False
-validUnknown "width"              = False
-validUnknown "z"                  = False
-validUnknown "charset"            = False
-validUnknown _                    = True
+  shrink (Damping v)            = map Damping             $ shrink v
+  shrink (K v)                  = map K                   $ shrink v
+  shrink (URL v)                = map URL                 $ shrink v
+  shrink (ArrowHead v)          = map ArrowHead           $ shrink v
+  shrink (ArrowSize v)          = map ArrowSize           $ shrink v
+  shrink (ArrowTail v)          = map ArrowTail           $ shrink v
+  shrink (Aspect v)             = map Aspect              $ shrink v
+  shrink (Bb v)                 = map Bb                  $ shrink v
+  shrink (BgColor v)            = map BgColor             $ shrink v
+  shrink (Center v)             = map Center              $ shrink v
+  shrink (ClusterRank v)        = map ClusterRank         $ shrink v
+  shrink (ColorScheme v)        = map ColorScheme         $ shrink v
+  shrink (Color v)              = map Color               $ nonEmptyShrinks v
+  shrink (Comment v)            = map Comment             $ shrink v
+  shrink (Compound v)           = map Compound            $ shrink v
+  shrink (Concentrate v)        = map Concentrate         $ shrink v
+  shrink (Constraint v)         = map Constraint          $ shrink v
+  shrink (Decorate v)           = map Decorate            $ shrink v
+  shrink (DefaultDist v)        = map DefaultDist         $ shrink v
+  shrink (Dimen v)              = map Dimen               $ shrink v
+  shrink (Dim v)                = map Dim                 $ shrink v
+  shrink (Dir v)                = map Dir                 $ shrink v
+  shrink (DirEdgeConstraints v) = map DirEdgeConstraints  $ shrink v
+  shrink (Distortion v)         = map Distortion          $ shrink v
+  shrink (DPI v)                = map DPI                 $ shrink v
+  shrink (EdgeURL v)            = map EdgeURL             $ shrink v
+  shrink (EdgeTarget v)         = map EdgeTarget          $ shrink v
+  shrink (EdgeTooltip v)        = map EdgeTooltip         $ shrink v
+  shrink (Epsilon v)            = map Epsilon             $ shrink v
+  shrink (ESep v)               = map ESep                $ shrink v
+  shrink (FillColor v)          = map FillColor           $ shrink v
+  shrink (FixedSize v)          = map FixedSize           $ shrink v
+  shrink (FontColor v)          = map FontColor           $ shrink v
+  shrink (FontName v)           = map FontName            $ shrink v
+  shrink (FontNames v)          = map FontNames           $ shrink v
+  shrink (FontPath v)           = map FontPath            $ shrink v
+  shrink (FontSize v)           = map FontSize            $ shrink v
+  shrink (Group v)              = map Group               $ shrink v
+  shrink (HeadURL v)            = map HeadURL             $ shrink v
+  shrink (HeadClip v)           = map HeadClip            $ shrink v
+  shrink (HeadLabel v)          = map HeadLabel           $ shrink v
+  shrink (HeadPort v)           = map HeadPort            $ shrink v
+  shrink (HeadTarget v)         = map HeadTarget          $ shrink v
+  shrink (HeadTooltip v)        = map HeadTooltip         $ shrink v
+  shrink (Height v)             = map Height              $ shrink v
+  shrink (ID v)                 = map ID                  $ shrink v
+  shrink (Image v)              = map Image               $ shrink v
+  shrink (ImageScale v)         = map ImageScale          $ shrink v
+  shrink (LabelURL v)           = map LabelURL            $ shrink v
+  shrink (LabelAngle v)         = map LabelAngle          $ shrink v
+  shrink (LabelDistance v)      = map LabelDistance       $ shrink v
+  shrink (LabelFloat v)         = map LabelFloat          $ shrink v
+  shrink (LabelFontColor v)     = map LabelFontColor      $ shrink v
+  shrink (LabelFontName v)      = map LabelFontName       $ shrink v
+  shrink (LabelFontSize v)      = map LabelFontSize       $ shrink v
+  shrink (LabelJust v)          = map LabelJust           $ shrink v
+  shrink (LabelLoc v)           = map LabelLoc            $ shrink v
+  shrink (LabelTarget v)        = map LabelTarget         $ shrink v
+  shrink (LabelTooltip v)       = map LabelTooltip        $ shrink v
+  shrink (Label v)              = map Label               $ shrink v
+  shrink (Landscape v)          = map Landscape           $ shrink v
+  shrink (LayerSep v)           = map LayerSep            $ shrink v
+  shrink (Layers v)             = map Layers              $ shrink v
+  shrink (Layer v)              = map Layer               $ shrink v
+  shrink (Layout v)             = map Layout              $ shrink v
+  shrink (Len v)                = map Len                 $ shrink v
+  shrink (LevelsGap v)          = map LevelsGap           $ shrink v
+  shrink (Levels v)             = map Levels              $ shrink v
+  shrink (LHead v)              = map LHead               $ shrink v
+  shrink (LPos v)               = map LPos                $ shrink v
+  shrink (LTail v)              = map LTail               $ shrink v
+  shrink (Margin v)             = map Margin              $ shrink v
+  shrink (MaxIter v)            = map MaxIter             $ shrink v
+  shrink (MCLimit v)            = map MCLimit             $ shrink v
+  shrink (MinDist v)            = map MinDist             $ shrink v
+  shrink (MinLen v)             = map MinLen              $ shrink v
+  shrink (Model v)              = map Model               $ shrink v
+  shrink (Mode v)               = map Mode                $ shrink v
+  shrink (Mosek v)              = map Mosek               $ shrink v
+  shrink (NodeSep v)            = map NodeSep             $ shrink v
+  shrink (NoJustify v)          = map NoJustify           $ shrink v
+  shrink (Normalize v)          = map Normalize           $ shrink v
+  shrink (Nslimit1 v)           = map Nslimit1            $ shrink v
+  shrink (Nslimit v)            = map Nslimit             $ shrink v
+  shrink (Ordering v)           = map Ordering            $ shrink v
+  shrink (Orientation v)        = map Orientation         $ shrink v
+  shrink (OutputOrder v)        = map OutputOrder         $ shrink v
+  shrink (OverlapScaling v)     = map OverlapScaling      $ shrink v
+  shrink (Overlap v)            = map Overlap             $ shrink v
+  shrink (PackMode v)           = map PackMode            $ shrink v
+  shrink (Pack v)               = map Pack                $ shrink v
+  shrink (Pad v)                = map Pad                 $ shrink v
+  shrink (PageDir v)            = map PageDir             $ shrink v
+  shrink (Page v)               = map Page                $ shrink v
+  shrink (PenColor v)           = map PenColor            $ shrink v
+  shrink (PenWidth v)           = map PenWidth            $ shrink v
+  shrink (Peripheries v)        = map Peripheries         $ shrink v
+  shrink (Pin v)                = map Pin                 $ shrink v
+  shrink (Pos v)                = map Pos                 $ shrink v
+  shrink (QuadTree v)           = map QuadTree            $ shrink v
+  shrink (Quantum v)            = map Quantum             $ shrink v
+  shrink (RankDir v)            = map RankDir             $ shrink v
+  shrink (RankSep v)            = map RankSep             $ nonEmptyShrinks v
+  shrink (Rank v)               = map Rank                $ shrink v
+  shrink (Ratio v)              = map Ratio               $ shrink v
+  shrink (Rects v)              = map Rects               $ nonEmptyShrinks v
+  shrink (Regular v)            = map Regular             $ shrink v
+  shrink (ReMinCross v)         = map ReMinCross          $ shrink v
+  shrink (RepulsiveForce v)     = map RepulsiveForce      $ shrink v
+  shrink (Root v)               = map Root                $ shrink v
+  shrink (Rotate v)             = map Rotate              $ shrink v
+  shrink (SameHead v)           = map SameHead            $ shrink v
+  shrink (SameTail v)           = map SameTail            $ shrink v
+  shrink (SamplePoints v)       = map SamplePoints        $ shrink v
+  shrink (SearchSize v)         = map SearchSize          $ shrink v
+  shrink (Sep v)                = map Sep                 $ shrink v
+  shrink (ShapeFile v)          = map ShapeFile           $ shrink v
+  shrink (Shape v)              = map Shape               $ shrink v
+  shrink (ShowBoxes v)          = map ShowBoxes           $ shrink v
+  shrink (Sides v)              = map Sides               $ shrink v
+  shrink (Size v)               = map Size                $ shrink v
+  shrink (Skew v)               = map Skew                $ shrink v
+  shrink (Smoothing v)          = map Smoothing           $ shrink v
+  shrink (SortV v)              = map SortV               $ shrink v
+  shrink (Splines v)            = map Splines             $ shrink v
+  shrink (Start v)              = map Start               $ shrink v
+  shrink (StyleSheet v)         = map StyleSheet          $ shrink v
+  shrink (Style v)              = map Style               $ nonEmptyShrinks v
+  shrink (TailURL v)            = map TailURL             $ shrink v
+  shrink (TailClip v)           = map TailClip            $ shrink v
+  shrink (TailLabel v)          = map TailLabel           $ shrink v
+  shrink (TailPort v)           = map TailPort            $ shrink v
+  shrink (TailTarget v)         = map TailTarget          $ shrink v
+  shrink (TailTooltip v)        = map TailTooltip         $ shrink v
+  shrink (Target v)             = map Target              $ shrink v
+  shrink (Tooltip v)            = map Tooltip             $ shrink v
+  shrink (TrueColor v)          = map TrueColor           $ shrink v
+  shrink (Vertices v)           = map Vertices            $ nonEmptyShrinks v
+  shrink (ViewPort v)           = map ViewPort            $ shrink v
+  shrink (VoroMargin v)         = map VoroMargin          $ shrink v
+  shrink (Weight v)             = map Weight              $ shrink v
+  shrink (Width v)              = map Width               $ shrink v
+  shrink (Z v)                  = map Z                   $ shrink v
+  shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrink a) (shrink v)
 {- delete to here -}
 
 instance Arbitrary ArrowType where
