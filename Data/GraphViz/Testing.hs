@@ -181,20 +181,14 @@ test_printParseID_Attributes
   = Test { name       = "Printing and parsing of Attributes"
          , lookupName = "attributes"
          , desc       = dsc
-         , test       = quickCheckWithResult args prop
+         , test       = quickCheckResult prop
          }
   where
     prop :: Attributes -> Property
     prop = prop_printParseListID
 
-    args = stdArgs { maxSuccess = numGen }
-    numGen = 10000
-    defGen = maxSuccess stdArgs
-
     dsc = "The most common source of errors in printing and parsing are for\n\
-          \Attributes.  As such, these are stress-tested before we run the\n\
-          \rest of the tests, generating " ++ show numGen ++ " lists of\n\
-          \Attributes rather than the default " ++ show defGen ++ " tests."
+          \Attributes."
 
 test_generalisedSameDot :: Test
 test_generalisedSameDot
