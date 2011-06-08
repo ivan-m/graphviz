@@ -24,7 +24,7 @@ import Data.GraphViz.Attributes
 import Data.GraphViz.Attributes.Internal(compassLookup)
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical
-import Data.GraphViz.Types.Generalised
+import qualified Data.GraphViz.Types.Generalised as G
 import Data.GraphViz.Util(bool)
 import Data.GraphViz.State(initialState, layerSep)
 
@@ -103,16 +103,16 @@ instance (Arbitrary a) => Arbitrary (DotEdge a) where
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the generalised types
 
-instance (Eq a, Arbitrary a) => Arbitrary (GDotGraph a) where
-  arbitrary = liftM4 GDotGraph arbitrary arbitrary arbitrary genGDStmts
+instance (Eq a, Arbitrary a) => Arbitrary (G.DotGraph a) where
+  arbitrary = liftM4 G.DotGraph arbitrary arbitrary arbitrary genGDStmts
 
-  shrink (GDotGraph str dir gid stmts) = map (GDotGraph str dir gid)
-                                         $ shrinkGDStmts stmts
+  shrink (G.DotGraph str dir gid stmts) = map (G.DotGraph str dir gid)
+                                          $ shrinkGDStmts stmts
 
-genGDStmts :: (Eq a, Arbitrary a) => Gen (GDotStatements a)
+genGDStmts :: (Eq a, Arbitrary a) => Gen (G.DotStatements a)
 genGDStmts = sized (arbGDS True)
 
-shrinkGDStmts :: (Eq a, Arbitrary a) => GDotStatements a -> [GDotStatements a]
+shrinkGDStmts :: (Eq a, Arbitrary a) => G.DotStatements a -> [G.DotStatements a]
 shrinkGDStmts gds
   | len == 1  = map Seq.singleton . shrink $ Seq.index gds 0
   | otherwise = [gds1, gds2]
@@ -121,36 +121,36 @@ shrinkGDStmts gds
       -- Halve the sequence
       (gds1, gds2) = (len `div` 2) `Seq.splitAt` gds
 
-instance (Eq a, Arbitrary a) => Arbitrary (GDotStatement a) where
+instance (Eq a, Arbitrary a) => Arbitrary (G.DotStatement a) where
   -- Don't want as many sub-graphs as nodes, etc.
-  arbitrary = frequency [ (3, liftM GA arbitrary)
-                        , (1, liftM SG arbitrary)
-                        , (5, liftM DN arbitrary)
-                        , (7, liftM DE arbitrary)
+  arbitrary = frequency [ (3, liftM G.GA arbitrary)
+                        , (1, liftM G.SG arbitrary)
+                        , (5, liftM G.DN arbitrary)
+                        , (7, liftM G.DE arbitrary)
                         ]
 
-  shrink (GA ga) = map GA $ shrink ga
-  shrink (SG sg) = map SG $ shrink sg
-  shrink (DN dn) = map DN $ shrink dn
-  shrink (DE de) = map DE $ shrink de
+  shrink (G.GA ga) = map G.GA $ shrink ga
+  shrink (G.SG sg) = map G.SG $ shrink sg
+  shrink (G.DN dn) = map G.DN $ shrink dn
+  shrink (G.DE de) = map G.DE $ shrink de
 
 -- | If 'True', generate 'GDotSubGraph's; otherwise don't.
-arbGDS           :: (Arbitrary a, Eq a) => Bool -> Int -> Gen (GDotStatements a)
+arbGDS           :: (Arbitrary a, Eq a) => Bool -> Int -> Gen (G.DotStatements a)
 arbGDS haveSGs s = liftM (Seq.fromList . checkSGs) (resize s' arbList)
   where
     checkSGs = if haveSGs
                then id
                else filter notSG
-    notSG SG{} = False
-    notSG _    = True
+    notSG G.SG{} = False
+    notSG _      = True
 
     s' = min s 10
 
 
-instance (Eq a, Arbitrary a) => Arbitrary (GDotSubGraph a) where
-  arbitrary = liftM3 GDotSG arbitrary arbitrary (sized $ arbGDS False)
+instance (Eq a, Arbitrary a) => Arbitrary (G.DotSubGraph a) where
+  arbitrary = liftM3 G.DotSG arbitrary arbitrary (sized $ arbGDS False)
 
-  shrink (GDotSG isCl mid stmts) = map (GDotSG isCl mid) $ shrinkGDStmts stmts
+  shrink (G.DotSG isCl mid stmts) = map (G.DotSG isCl mid) $ shrinkGDStmts stmts
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for Attributes

@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 {- |
    Module      : Data.GraphViz.Testing.Properties
    Description : Properties for testing.
@@ -11,11 +13,11 @@ module Data.GraphViz.Testing.Properties where
 
 import Data.GraphViz( dotizeGraph, graphToDot
                     , setDirectedness, nonClusteredParams)
-import Data.GraphViz.Types( DotRepr, DotGraph(..), DotStatements(..)
+import Data.GraphViz.Types( DotRepr(..)
                           , DotNode(..), DotEdge(..), GlobalAttributes(..)
                           , printDotGraph, graphNodes, graphEdges
                           , graphStructureInformation)
-import Data.GraphViz.Types.Generalised(generaliseDotGraph)
+import Data.GraphViz.Types.Canonical(DotGraph(..), DotStatements(..))
 import Data.GraphViz.Printing(PrintDot(..), printIt)
 import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt')
 import Data.GraphViz.PreProcessing(preProcess)
@@ -47,13 +49,13 @@ prop_printParseID a = tryParse' a == a
 prop_printParseListID    :: (ParseDot a, PrintDot a, Eq a) => [a] -> Property
 prop_printParseListID as =  not (null as) ==> prop_printParseID as
 
--- | When converting a 'DotGraph' value to a 'GDotGraph' one, they
---   should generate the same Dot code.
-prop_generalisedSameDot    :: (Ord n, ParseDot n, PrintDot n)
-                              => DotGraph n -> Bool
-prop_generalisedSameDot dg = printDotGraph dg == printDotGraph gdg
+-- | When converting a canonical 'DotGraph' value to any other one,
+--   they should generate the same Dot code.
+prop_generalisedSameDot        :: (DotRepr dg n, Ord n, ParseDot n, PrintDot n)
+                                  => dg n -> DotGraph n -> Bool
+prop_generalisedSameDot dg' dg = printDotGraph dg == printDotGraph gdg
   where
-    gdg = generaliseDotGraph dg
+    gdg = canonicalToType dg' dg
 
 -- | Pre-processing shouldn't change the output of printed Dot code.
 --   This should work for all 'PrintDot' instances, but is more
@@ -88,32 +90,25 @@ prop_dotizeAugmentUniq g = all uniqLs lss
           $ groupSortBy fst les
     uniqLs ls = ls == nub ls
 
--- | Ensure that the definition of 'nodeInformation' for 'DotGraph'
+-- | Ensure that the definition of 'nodeInformation' for a DotRepr
 --   finds all the nodes.
-prop_findAllNodes   :: (Ord el, Graph g) => g nl el -> Bool
-prop_findAllNodes g = ((==) `on` sort) gns dgns
+prop_findAllNodes       :: (DotRepr dg Int, Ord el, Graph g)
+                           => dg Int -> g nl el -> Bool
+prop_findAllNodes dg' g = ((==) `on` sort) gns dgns
   where
     gns = nodes g
-    dg = setDirectedness graphToDot nonClusteredParams g
+    dg = canonicalToType dg' $ setDirectedness graphToDot nonClusteredParams g
     dgns = map nodeID $ graphNodes dg
 
--- | Ensure that the definition of 'nodeInformation' for 'GDotGraph'
---   finds all the nodes.
-prop_findAllNodesG   :: (Ord el, Graph g) => g nl el -> Bool
-prop_findAllNodesG g = ((==) `on` sort) gns dgns
-  where
-    gns = nodes g
-    dg = generaliseDotGraph $ setDirectedness graphToDot nonClusteredParams g
-    dgns = map nodeID $ graphNodes dg
-
--- | Ensure that the definition of 'nodeInformation' for 'DotGraph'
+-- | Ensure that the definition of 'nodeInformation' for DotReprs
 --   finds all the nodes when the explicit 'DotNode' definitions are
 --   removed.
-prop_findAllNodesE   :: (Ord el, Graph g) => g nl el -> Bool
-prop_findAllNodesE g = ((==) `on` sort) gns dgns
+prop_findAllNodesE       :: (DotRepr dg Int, Ord el, Graph g)
+                            => dg Int -> g nl el -> Bool
+prop_findAllNodesE dg' g = ((==) `on` sort) gns dgns
   where
     gns = nodes g
-    dg = removeNodes $ setDirectedness graphToDot nonClusteredParams g
+    dg = canonicalToType dg' . removeNodes $ setDirectedness graphToDot nonClusteredParams g
     dgns = map nodeID $ graphNodes dg
     removeNodes dot@DotGraph{graphStatements = stmts}
       = dot { graphStatements
@@ -122,55 +117,24 @@ prop_findAllNodesE g = ((==) `on` sort) gns dgns
     gnes = Set.fromList . concatMap (\(f,t) -> [f,t]) $ edges g
     notInEdge dn = nodeID dn `Set.notMember` gnes
 
--- | Ensure that the definition of 'nodeInformation' for 'GDotGraph'
---   finds all the nodes when the explicit 'DotNode' definitions are
---   removed.
-prop_findAllNodesEG   :: (Ord el, Graph g) => g nl el -> Bool
-prop_findAllNodesEG g = ((==) `on` sort) gns dgns
+-- | Ensure that the definition of 'edgeInformation' for DotReprs
+--   finds all the nodes.
+prop_findAllEdges       :: (DotRepr dg Int, Ord el, Graph g) => dg Int -> g nl el -> Bool
+prop_findAllEdges dg' g = ((==) `on` sort) ges dges
   where
-    gns = nodes g
-    dg = generaliseDotGraph . removeNodes
+    ges = edges g
+    dg = canonicalToType dg' $ graphToDot nonClusteredParams g
+    dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
+
+-- | There should be no clusters or global attributes when converting
+--   a 'Graph' to a DotRepr (via fromCanonical) without any formatting
+--   or clustering.
+prop_noGraphInfo       :: (DotRepr dg Int, Ord el, Graph g)
+                          => dg Int -> g nl el -> Bool
+prop_noGraphInfo dg' g = info == (GraphAttrs [], Map.empty)
+  where
+    dg = canonicalToType dg'
          $ setDirectedness graphToDot nonClusteredParams g
-    dgns = map nodeID $ graphNodes dg
-    removeNodes dot@DotGraph{graphStatements = stmts}
-      = dot { graphStatements
-               = stmts {nodeStmts = filter notInEdge $ nodeStmts stmts}
-            }
-    gnes = Set.fromList . concatMap (\(f,t) -> [f,t]) $ edges g
-    notInEdge dn = nodeID dn `Set.notMember` gnes
-
--- | Ensure that the definition of 'edgeInformation' for 'DotGraph'
---   finds all the nodes.
-prop_findAllEdges   :: (Ord el, Graph g) => g nl el -> Bool
-prop_findAllEdges g = ((==) `on` sort) ges dges
-  where
-    ges = edges g
-    dg = graphToDot nonClusteredParams g
-    dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
-
--- | Ensure that the definition of 'edgeInformation' for 'GDotGraph'
---   finds all the nodes.
-prop_findAllEdgesG   :: (Ord el, Graph g) => g nl el -> Bool
-prop_findAllEdgesG g = ((==) `on` sort) ges dges
-  where
-    ges = edges g
-    dg = generaliseDotGraph $ graphToDot nonClusteredParams g
-    dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
-
--- | There should be no clusters or global attributes when converting
---   a 'Graph' to a 'DotGraph' without any formatting or clustering.
-prop_noGraphInfo   :: (Ord el, Graph g) => g nl el -> Bool
-prop_noGraphInfo g = info == (GraphAttrs [], Map.empty)
-  where
-    dg = setDirectedness graphToDot nonClusteredParams g
-    info = graphStructureInformation dg
-
--- | There should be no clusters or global attributes when converting
---   a 'Graph' to a 'GDotGraph' without any formatting or clustering.
-prop_noGraphInfoG   :: (Ord el, Graph g) => g nl el -> Bool
-prop_noGraphInfoG g = info == (GraphAttrs [], Map.empty)
-  where
-    dg = generaliseDotGraph $ setDirectedness graphToDot nonClusteredParams g
     info = graphStructureInformation dg
 
 -- | Canonicalisation should be idempotent.
@@ -199,3 +163,9 @@ tryParse = parseIt . printIt
 --   entire 'String' *is* fully consumed.
 tryParse' :: (ParseDot a, PrintDot a) => a -> a
 tryParse' = parseIt' . printIt
+
+-- | A wrapper around 'fromCanonical' that lets you specify up-front
+--   what type to create (it need not be a sensible value).
+canonicalToType   :: (DotRepr dg n, PrintDot n, ParseDot n)
+                     => dg n -> DotGraph n -> dg n
+canonicalToType _ = fromCanonical
