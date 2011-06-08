@@ -179,6 +179,12 @@ prop_canonicalise g = cdg == canonicalise cdg
   where
     cdg = canonicalise g
 
+-- | Removing transitive edges should be idempotent.
+prop_transitive   :: (Ord n, PrintDot n, ParseDot n, DotRepr dg n) => dg n -> Bool
+prop_transitive g = tdg == transitiveReduction tdg
+  where
+    tdg = transitiveReduction g
+
 -- -----------------------------------------------------------------------------
 -- Helper utility functions
 

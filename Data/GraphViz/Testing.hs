@@ -51,6 +51,7 @@ module Data.GraphViz.Testing
        , test_dotizeAugment
        , test_dotizeAugmentUniq
        , test_canonicalise
+       , test_transitive
         -- * Re-exporting modules for manual testing.
        , module Data.GraphViz
        , module Data.GraphViz.Types.Generalised
@@ -171,6 +172,7 @@ defaultTests = [ test_printParseID_Attributes
                , test_noGraphInfo
                , test_noGraphInfoG
                , test_canonicalise
+               , test_transitive
                ]
 
 -- | Test that 'Attributes' can be printed and then parsed back.
@@ -420,3 +422,16 @@ test_canonicalise
     prop = prop_canonicalise
 
     dsc = "Repeated application of canonicalise shouldn't have any further affect."
+
+test_transitive :: Test
+test_transitive
+  = Test { name = "Transitive reduction should be idempotent"
+         , lookupName = "transitive"
+         , desc = dsc
+         , test = quickCheckResult prop
+         }
+  where
+    prop :: GDotGraph Int -> Bool
+    prop = prop_transitive
+
+    dsc = "Repeated application of transitiveReduction shouldn't have any further affect."
