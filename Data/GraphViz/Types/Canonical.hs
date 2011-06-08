@@ -35,7 +35,6 @@ module Data.GraphViz.Types.Canonical
 import Data.GraphViz.Types.Common
 import Data.GraphViz.Attributes( Attribute
                                , usedByGraphs, usedByClusters, usedBySubGraphs)
-import Data.GraphViz.Util(bool)
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 

@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 {- |
    Module      : Data.GraphViz.State
    Description : Printing and parsing state.
@@ -22,12 +24,25 @@ module Data.GraphViz.State
 
 import Data.GraphViz.Attributes.ColorScheme
 
+import Control.Monad.Trans.State(State, modify, gets)
+import Text.ParserCombinators.Poly.StateText(Parser, stUpdate, stQuery)
+
 -- -----------------------------------------------------------------------------
 
 class (Monad m) => GraphvizStateM m where
   modifyGS :: (GraphvizState -> GraphvizState) -> m ()
 
   getsGS :: (GraphvizState -> a) -> m a
+
+instance GraphvizStateM (State GraphvizState) where
+  modifyGS = modify
+
+  getsGS = gets
+
+instance GraphvizStateM (Parser GraphvizState) where
+  modifyGS = stUpdate
+
+  getsGS = stQuery
 
 -- | Several aspects of Dot code are either global or mutable state.
 data GraphvizState = GS { directedEdges :: Bool

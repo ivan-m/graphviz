@@ -113,11 +113,6 @@ import Control.Monad(liftM, liftM2, when)
 -- | A @ReadS@-like type alias.
 type Parse a = Parser GraphvizState a
 
-instance GraphvizStateM (Parser GraphvizState) where
-  modifyGS = stUpdate
-
-  getsGS = stQuery
-
 runParser     :: Parse a -> Text -> (Either String a, Text)
 runParser p t = let (r,_,t') = P.runParser p initialState t
                 in (r,t')

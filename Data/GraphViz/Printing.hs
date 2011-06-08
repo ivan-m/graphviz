@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings, TypeSynonymInstances #-}
 
 {- |
    Module      : Data.GraphViz.Printing
@@ -92,11 +92,6 @@ type DotCode = State GraphvizState Doc
 
 instance Show DotCode where
   showsPrec d = showsPrec d . renderDot
-
-instance GraphvizStateM (State GraphvizState) where
-  modifyGS = modify
-
-  getsGS = gets
 
 -- | Correctly render Graphviz output.
 renderDot :: DotCode -> Text

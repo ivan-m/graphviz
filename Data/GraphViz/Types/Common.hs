@@ -18,7 +18,7 @@ import Data.GraphViz.Printing
 import Data.GraphViz.Util
 import Data.GraphViz.Attributes( Attributes, Attribute(HeadPort, TailPort)
                                , usedByGraphs, usedByClusters
-                               , usedByNodes, usedByEdges)
+                               , usedByNodes)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
 import Data.GraphViz.State(setDirectedness, getDirectedness, getsGS, modifyGS)
 
