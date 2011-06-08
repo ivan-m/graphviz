@@ -1,6 +1,4 @@
-{-# LANGUAGE   MultiParamTypeClasses
-             , FlexibleInstances
-  #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 {- |
    Module      : Data.GraphViz.Types.Generalised.
@@ -10,35 +8,29 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module provides an alternate definition of the types found in
-   "Data.GraphViz.Types", in that the ordering constraint found in
-   'DotStatements' is no longer present.  All other
-   limitations\/constraints are still present however.
+   "Data.GraphViz.Types.Canonical", in that there is no limitation on the
+   ordering of statements.
 
    The types here have the same names as those in
-   "Data.GraphViz.Types" but with a prefix of @\"G\"@.
+   "Data.GraphViz.Types.Canonical", and as such if both are being used
+   then at least one must be imported qualified.
 
-   This module is partially experimental, and may change in the
-   future.
--}
+ -}
 module Data.GraphViz.Types.Generalised
-       ( -- * The overall representation of a graph in generalised /Dot/ format.
-         GDotGraph(..)
-         -- * Sub-components of a @GDotGraph@.
-       , GDotStatements
-       , GDotStatement(..)
-       , GDotSubGraph(..)
-         -- ** Re-exported from @Data.GraphViz.Types@.
+       ( DotGraph(..)
+         -- * Sub-components of a @DotGraph@.
+       , DotStatements
+       , DotStatement(..)
+       , DotSubGraph(..)
+         -- * Re-exported from @Data.GraphViz.Types@.
        , GraphID(..)
        , GlobalAttributes(..)
        , DotNode(..)
        , DotEdge(..)
-         -- * Conversion from a @DotGraph@.
-       , generaliseDotGraph
        ) where
 
-import Data.GraphViz.Types hiding ( GraphID(..)
-                                  , GlobalAttributes(..)
-                                  , DotEdge(..))
+import Data.GraphViz.Types
+import qualified Data.GraphViz.Types.Canonical as C
 import Data.GraphViz.Types.Common
 import Data.GraphViz.Types.State
 import Data.GraphViz.Parsing
@@ -54,95 +46,98 @@ import Control.Monad(liftM)
 -- -----------------------------------------------------------------------------
 
 -- | The internal representation of a generalised graph in Dot form.
-data GDotGraph a = GDotGraph { gStrictGraph     :: Bool  -- ^ If 'True', no multiple edges are drawn.
-                             , gDirectedGraph   :: Bool
-                             , gGraphID         :: Maybe GraphID
-                             , gGraphStatements :: GDotStatements a
-                             }
-                 deriving (Eq, Ord, Show, Read)
+data DotGraph a = DotGraph { -- | If 'True', no multiple edges are drawn.
+                             strictGraph     :: Bool
+                           , directedGraph   :: Bool
+                           , graphID         :: Maybe GraphID
+                           , graphStatements :: DotStatements a
+                           }
+                deriving (Eq, Ord, Show, Read)
 
-instance (Ord n, PrintDot n, ParseDot n) => DotRepr GDotGraph n where
-  getID = gGraphID
+instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
+  fromCanonical = generaliseDotGraph
 
-  setID i g = g { gGraphID = Just i }
+  getID = graphID
 
-  graphIsDirected = gDirectedGraph
+  setID i g = g { graphID = Just i }
 
-  setIsDirected d g = g { gDirectedGraph = d }
+  graphIsDirected = directedGraph
 
-  graphIsStrict = gStrictGraph
+  setIsDirected d g = g { directedGraph = d }
 
-  setStrictness s g = g { gStrictGraph = s }
+  graphIsStrict = strictGraph
+
+  setStrictness s g = g { strictGraph = s }
 
   graphStructureInformation = getGraphInfo
-                              . statementStructure . gGraphStatements
+                              . statementStructure . graphStatements
 
   nodeInformation wGlobal = getNodeLookup wGlobal
-                            . statementNodes . gGraphStatements
+                            . statementNodes . graphStatements
 
   edgeInformation wGlobal = getDotEdges wGlobal
-                            . statementEdges . gGraphStatements
+                            . statementEdges . graphStatements
 
-instance (PrintDot a) => PrintDot (GDotGraph a) where
-  unqtDot = printStmtBased printGraphID' gGraphStatements printGStmts
+instance (PrintDot a) => PrintDot (DotGraph a) where
+  unqtDot = printStmtBased printGraphID' graphStatements printGStmts
     where
-      printGraphID' = printGraphID gStrictGraph gDirectedGraph gGraphID
+      printGraphID' = printGraphID strictGraph directedGraph graphID
 
-instance (ParseDot a) => ParseDot (GDotGraph a) where
-  parseUnqt = parseStmtBased parseGStmts (parseGraphID GDotGraph)
+instance (ParseDot a) => ParseDot (DotGraph a) where
+  parseUnqt = parseStmtBased parseGStmts (parseGraphID DotGraph)
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
           (++ "\n\nNot a valid DotGraph")
 
-instance Functor GDotGraph where
-  fmap f g = g { gGraphStatements = (fmap . fmap) f $ gGraphStatements g }
+instance Functor DotGraph where
+  fmap f g = g { graphStatements = (fmap . fmap) f $ graphStatements g }
 
--- | Convert a 'DotGraph' to a 'GDotGraph', keeping the same order of
+-- | Convert a 'DotGraph' to a 'DotGraph', keeping the same order of
 --   statements.
-generaliseDotGraph    :: DotGraph a -> GDotGraph a
-generaliseDotGraph dg = GDotGraph { gStrictGraph = strictGraph dg
-                                  , gDirectedGraph = directedGraph dg
-                                  , gGraphID = graphID dg
-                                  , gGraphStatements = generaliseStatements
-                                                       $ graphStatements dg
-                                  }
+generaliseDotGraph    :: C.DotGraph n -> DotGraph n
+generaliseDotGraph dg = DotGraph { strictGraph     = C.strictGraph dg
+                                 , directedGraph   = C.directedGraph dg
+                                 , graphID         = C.graphID dg
+                                 , graphStatements = generaliseStatements
+                                                     $ C.graphStatements dg
+                                 }
 
 -- -----------------------------------------------------------------------------
 
-type GDotStatements a = Seq (GDotStatement a)
+type DotStatements a = Seq (DotStatement a)
 
-printGStmts :: (PrintDot a) => GDotStatements a -> DotCode
+printGStmts :: (PrintDot a) => DotStatements a -> DotCode
 printGStmts = toDot . F.toList
 
-parseGStmts :: (ParseDot a) => Parse (GDotStatements a)
+parseGStmts :: (ParseDot a) => Parse (DotStatements a)
 parseGStmts = liftM Seq.fromList parse
 
-statementStructure :: GDotStatements a -> GraphState ()
+statementStructure :: DotStatements a -> GraphState ()
 statementStructure = F.mapM_ stmtStructure
 
-statementNodes :: (Ord a) => GDotStatements a -> NodeState a ()
+statementNodes :: (Ord a) => DotStatements a -> NodeState a ()
 statementNodes = F.mapM_ stmtNodes
 
-statementEdges :: GDotStatements a -> EdgeState a ()
+statementEdges :: DotStatements a -> EdgeState a ()
 statementEdges = F.mapM_ stmtEdges
 
-generaliseStatements       :: DotStatements a -> GDotStatements a
+generaliseStatements       :: C.DotStatements a -> DotStatements a
 generaliseStatements stmts = atts >< sgs >< ns >< es
   where
-    atts = Seq.fromList . map GA $ attrStmts stmts
-    sgs = Seq.fromList . map (SG . generaliseSubGraph) $ subGraphs stmts
-    ns = Seq.fromList . map DN $ nodeStmts stmts
-    es = Seq.fromList . map DE $ edgeStmts stmts
+    atts = Seq.fromList . map GA $ C.attrStmts stmts
+    sgs  = Seq.fromList . map (SG . generaliseSubGraph) $ C.subGraphs stmts
+    ns   = Seq.fromList . map DN $ C.nodeStmts stmts
+    es   = Seq.fromList . map DE $ C.edgeStmts stmts
 
 
-data GDotStatement a = GA GlobalAttributes
-                     | SG (GDotSubGraph a)
-                     | DN (DotNode a)
-                     | DE (DotEdge a)
-                     deriving (Eq, Ord, Show, Read)
+data DotStatement a = GA GlobalAttributes
+                    | SG (DotSubGraph a)
+                    | DN (DotNode a)
+                    | DE (DotEdge a)
+                    deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot a) => PrintDot (GDotStatement a) where
+instance (PrintDot a) => PrintDot (DotStatement a) where
   unqtDot (GA ga) = unqtDot ga
   unqtDot (SG sg) = unqtDot sg
   unqtDot (DN dn) = unqtDot dn
@@ -152,7 +147,7 @@ instance (PrintDot a) => PrintDot (GDotStatement a) where
 
   listToDot = unqtListToDot
 
-instance (ParseDot a) => ParseDot (GDotStatement a) where
+instance (ParseDot a) => ParseDot (DotStatement a) where
   parseUnqt = oneOf [ liftM GA parseUnqt
                     , liftM SG parseUnqt
                     , liftM DN parseUnqt
@@ -174,24 +169,24 @@ instance (ParseDot a) => ParseDot (GDotStatement a) where
 
   parseList = parseUnqtList
 
-instance Functor GDotStatement where
+instance Functor DotStatement where
   fmap _ (GA ga) = GA ga -- Have to re-make this to make the type checker happy.
   fmap f (SG sg) = SG $ fmap f sg
   fmap f (DN dn) = DN $ fmap f dn
   fmap f (DE de) = DE $ fmap f de
 
-stmtStructure         :: GDotStatement n -> GraphState ()
+stmtStructure         :: DotStatement n -> GraphState ()
 stmtStructure (GA ga) = addGraphGlobals ga
 stmtStructure (SG sg) = withSubGraphID addSubGraph statementStructure sg
 stmtStructure _       = return ()
 
-stmtNodes         :: (Ord a) => GDotStatement a -> NodeState a ()
+stmtNodes         :: (Ord a) => DotStatement a -> NodeState a ()
 stmtNodes (GA ga) = addNodeGlobals ga
 stmtNodes (SG sg) = withSubGraphID recursiveCall statementNodes sg
 stmtNodes (DN dn) = addNode dn
 stmtNodes (DE de) = addEdgeNodes de
 
-stmtEdges         :: GDotStatement a -> EdgeState a ()
+stmtEdges         :: DotStatement a -> EdgeState a ()
 stmtEdges (GA ga) = addEdgeGlobals ga
 stmtEdges (SG sg) = withSubGraphID recursiveCall statementEdges sg
 stmtEdges (DE de) = addEdge de
@@ -199,27 +194,27 @@ stmtEdges _       = return ()
 
 -- -----------------------------------------------------------------------------
 
-data GDotSubGraph a = GDotSG { gIsCluster     :: Bool
-                             , gSubGraphID    :: Maybe GraphID
-                             , gSubGraphStmts :: GDotStatements a
+data DotSubGraph a = DotSG { isCluster     :: Bool
+                             , subGraphID    :: Maybe GraphID
+                             , subGraphStmts :: DotStatements a
                              }
                     deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot a) => PrintDot (GDotSubGraph a) where
-  unqtDot = printStmtBased printSubGraphID' gSubGraphStmts printGStmts
+instance (PrintDot a) => PrintDot (DotSubGraph a) where
+  unqtDot = printStmtBased printSubGraphID' subGraphStmts printGStmts
 
-  unqtListToDot = printStmtBasedList printSubGraphID' gSubGraphStmts printGStmts
+  unqtListToDot = printStmtBasedList printSubGraphID' subGraphStmts printGStmts
 
   listToDot = unqtListToDot
 
-printSubGraphID' :: GDotSubGraph a -> DotCode
-printSubGraphID' = printSubGraphID (gIsCluster &&& gSubGraphID)
+printSubGraphID' :: DotSubGraph a -> DotCode
+printSubGraphID' = printSubGraphID (isCluster &&& subGraphID)
 
-instance (ParseDot a) => ParseDot (GDotSubGraph a) where
-  parseUnqt = parseStmtBased parseGStmts (parseSubGraphID GDotSG)
+instance (ParseDot a) => ParseDot (DotSubGraph a) where
+  parseUnqt = parseStmtBased parseGStmts (parseSubGraphID DotSG)
               `onFail`
-              -- Take anonymous GDotSubGraphs into account
-              liftM (GDotSG False Nothing) (parseBracesBased parseGStmts)
+              -- Take anonymous DotSubGraphs into account
+              liftM (DotSG False Nothing) (parseBracesBased parseGStmts)
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
@@ -229,19 +224,19 @@ instance (ParseDot a) => ParseDot (GDotSubGraph a) where
 
   parseList = parseUnqtList
 
-instance Functor GDotSubGraph where
-    fmap f sg = sg { gSubGraphStmts = (fmap . fmap) f $ gSubGraphStmts sg }
+instance Functor DotSubGraph where
+  fmap f sg = sg { subGraphStmts = (fmap . fmap) f $ subGraphStmts sg }
 
-generaliseSubGraph                       :: DotSubGraph a -> GDotSubGraph a
-generaliseSubGraph (DotSG isC mID stmts) = GDotSG { gIsCluster     = isC
-                                                  , gSubGraphID    = mID
-                                                  , gSubGraphStmts = stmts'
-                                                  }
+generaliseSubGraph :: C.DotSubGraph a -> DotSubGraph a
+generaliseSubGraph (C.DotSG isC mID stmts) = DotSG { isCluster     = isC
+                                                   , subGraphID    = mID
+                                                   , subGraphStmts = stmts'
+                                                   }
   where
     stmts' = generaliseStatements stmts
 
 withSubGraphID        :: (Maybe (Maybe GraphID) -> b -> a)
-                         -> (GDotStatements n -> b) -> GDotSubGraph n -> a
-withSubGraphID f g sg = f mid . g $ gSubGraphStmts sg
+                         -> (DotStatements n -> b) -> DotSubGraph n -> a
+withSubGraphID f g sg = f mid . g $ subGraphStmts sg
   where
-    mid = bool Nothing (Just $ gSubGraphID sg) $ gIsCluster sg
+    mid = bool Nothing (Just $ subGraphID sg) $ isCluster sg
