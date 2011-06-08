@@ -15,7 +15,7 @@ module Data.GraphViz.Types.Clustering
     , clustersToNodes
     ) where
 
-import Data.GraphViz.Types
+import Data.GraphViz.Types.Canonical
 import Data.GraphViz.Attributes
 
 import Data.Either(partitionEithers)

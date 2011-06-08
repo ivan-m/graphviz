@@ -27,6 +27,7 @@ import Data.GraphViz.Attributes( Attributes
                                , usedByClusters, defaultAttributeValue)
 import Data.GraphViz.Attributes.Same
 import Data.GraphViz.Types
+import Data.GraphViz.Types.Canonical
 
 import Data.Function(on)
 import Data.List(groupBy, sortBy, partition, (\\), sort, deleteBy)

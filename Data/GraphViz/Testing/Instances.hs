@@ -23,6 +23,7 @@ import Data.GraphViz.Parsing(isNumString)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Attributes.Internal(compassLookup)
 import Data.GraphViz.Types
+import Data.GraphViz.Types.Canonical
 import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Util(bool)
 import Data.GraphViz.State(initialState, layerSep)
