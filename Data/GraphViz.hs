@@ -58,7 +58,8 @@ module Data.GraphViz
     ) where
 
 import Data.GraphViz.Types
-import Data.GraphViz.Types.Canonical
+import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
+                                    , DotSubGraph(..))
 import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Util(uniq, uniqBy)
 import Data.GraphViz.Attributes
