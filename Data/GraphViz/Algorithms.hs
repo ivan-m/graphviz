@@ -289,7 +289,7 @@ transitiveReductionOptions opts dg = cdg { strictGraph = graphIsStrict dg
     cdg = createCanonical opts gas cl nl es'
     (gas, cl) = graphStructureInformation dg
     nl = nodeInformation True dg
-    es = rmTransEdges $ edgeInformation True dg
+    es = edgeInformation True dg
     es' | graphIsDirected dg = rmTransEdges es
         | otherwise          = es
 
