@@ -346,7 +346,7 @@ modifySet f = modify (second f)
 
 -- Create the Map representing the graph from the edges.
 edgeGraph :: (Ord n) => [TaggedEdge n] -> TagState n ()
-edgeGraph = mapM_ addEdge
+edgeGraph = mapM_ addEdge . reverse
   where
     addEdge te = addVal f tvOut >> addVal t tvIn
       where
