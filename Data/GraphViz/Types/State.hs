@@ -35,7 +35,7 @@ module Data.GraphViz.Types.State
        ) where
 
 import Data.GraphViz.Types.Common
-import Data.GraphViz.Attributes(Attributes, usedByClusters)
+import Data.GraphViz.Attributes.Complete(Attributes, usedByClusters)
 import Data.GraphViz.Attributes.Same
 
 import Data.Function(on)

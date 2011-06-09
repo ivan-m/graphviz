@@ -18,7 +18,7 @@ module Data.GraphViz.Attributes.Same
        , unSame
        ) where
 
-import Data.GraphViz.Attributes(Attribute, Attributes, sameAttribute)
+import Data.GraphViz.Attributes.Complete(Attribute, Attributes, sameAttribute)
 
 import Data.Function(on)
 import qualified Data.Set as Set

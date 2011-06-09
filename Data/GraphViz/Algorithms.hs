@@ -23,8 +23,8 @@ module Data.GraphViz.Algorithms
        , transitiveReductionOptions
        ) where
 
-import Data.GraphViz.Attributes( Attributes
-                               , usedByClusters, defaultAttributeValue)
+import Data.GraphViz.Attributes.Complete( Attributes, usedByClusters
+                                        , defaultAttributeValue)
 import Data.GraphViz.Attributes.Same
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical

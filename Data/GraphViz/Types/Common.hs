@@ -16,9 +16,9 @@ module Data.GraphViz.Types.Common where
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 import Data.GraphViz.Util
-import Data.GraphViz.Attributes( Attributes, Attribute(HeadPort, TailPort)
-                               , usedByGraphs, usedByClusters
-                               , usedByNodes)
+import Data.GraphViz.Attributes.Complete( Attributes, Attribute(HeadPort, TailPort)
+                                        , usedByGraphs, usedByClusters
+                                        , usedByNodes)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
 import Data.GraphViz.State(setDirectedness, getDirectedness, getsGS, modifyGS)
 

@@ -49,7 +49,7 @@ import Prelude hiding (catch)
 
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
-import Data.GraphViz.Attributes(Attribute(Z))
+import Data.GraphViz.Attributes.Complete(Attribute(Z))
 import Data.GraphViz.Commands.IO(runCommand)
 import Data.GraphViz.Exception
 

@@ -16,7 +16,7 @@ module Data.GraphViz.Types.Clustering
     ) where
 
 import Data.GraphViz.Types.Canonical
-import Data.GraphViz.Attributes
+import Data.GraphViz.Attributes.Complete(Attributes)
 
 import Data.Either(partitionEithers)
 import Data.List(groupBy, sortBy)

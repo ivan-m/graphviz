@@ -20,7 +20,7 @@ module Data.GraphViz.Testing.Instances() where
 
 import Data.GraphViz.Parsing(isNumString)
 
-import Data.GraphViz.Attributes
+import Data.GraphViz.Attributes.Complete
 import Data.GraphViz.Attributes.Internal(compassLookup)
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical

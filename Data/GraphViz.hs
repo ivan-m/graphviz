@@ -53,7 +53,7 @@ module Data.GraphViz
       -- * Re-exporting other modules.
     , module Data.GraphViz.Types
     , module Data.GraphViz.Types.Canonical
-    , module Data.GraphViz.Attributes
+    , module Data.GraphViz.Attributes.Complete
     , module Data.GraphViz.Commands
     ) where
 
@@ -62,7 +62,7 @@ import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
                                     , DotSubGraph(..))
 import Data.GraphViz.Types.Clustering
 import Data.GraphViz.Util(uniq, uniqBy)
-import Data.GraphViz.Attributes
+import Data.GraphViz.Attributes.Complete
 import Data.GraphViz.Commands
 import Data.GraphViz.Commands.IO(hGetDot)
 

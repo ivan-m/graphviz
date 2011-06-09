@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances, OverloadedStrings #-}
 
 {- |
-   Module      : Data.GraphViz.Attributes
+   Module      : Data.GraphViz.Attributes.Complete
    Description : Definition of the Graphviz attributes.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
@@ -62,7 +62,7 @@
      also support Latin1 encoding).
 
  -}
-module Data.GraphViz.Attributes
+module Data.GraphViz.Attributes.Complete
     ( -- * The actual /Dot/ attributes.
       Attribute(..)
     , Attributes
