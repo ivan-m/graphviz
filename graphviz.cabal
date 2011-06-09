@@ -79,6 +79,7 @@ Library {
                            Data.GraphViz.State
                            Data.GraphViz.Commands
                            Data.GraphViz.Commands.IO
+                           Data.GraphViz.Attributes
                            Data.GraphViz.Attributes.Complete
                            Data.GraphViz.Attributes.Colors
                            Data.GraphViz.Attributes.HTML

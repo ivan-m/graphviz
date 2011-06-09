@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz.Attributes.Complete
@@ -6,6 +6,10 @@
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
+
+   If you are just using graphviz to create basic Dot graphs, then you
+   probably want to use "Data.GraphViz.Attributes" rather than this
+   module.
 
    This module defines the various attributes that different parts of
    a Graphviz graph can have.  These attributes are based on the
@@ -63,137 +67,109 @@
 
  -}
 module Data.GraphViz.Attributes.Complete
-    ( -- * The actual /Dot/ attributes.
-      Attribute(..)
-    , Attributes
-    , sameAttribute
-    , defaultAttributeValue
-      -- ** Validity functions on @Attribute@ values.
-    , usedByGraphs
-    , usedBySubGraphs
-    , usedByClusters
-    , usedByNodes
-    , usedByEdges
-    , validUnknown
+       ( -- * The actual /Dot/ attributes.
+         -- $attributes
+         Attribute(..)
+       , Attributes
+       , sameAttribute
+       , defaultAttributeValue
+         -- ** Validity functions on @Attribute@ values.
+       , usedByGraphs
+       , usedBySubGraphs
+       , usedByClusters
+       , usedByNodes
+       , usedByEdges
+       , validUnknown
 
-      -- ** Custom attributes.
-    , AttributeName
-    , CustomAttribute
-    , customAttribute
-    , isCustom
-    , isSpecifiedCustom
-    , customValue
-    , customName
-    , findCustoms
-    , findSpecifiedCustom
-    , deleteCustomAttributes
-    , deleteSpecifiedCustom
+         -- ** Custom attributes.
+       , AttributeName
+       , CustomAttribute
+       , customAttribute
+       , isCustom
+       , isSpecifiedCustom
+       , customValue
+       , customName
+       , findCustoms
+       , findSpecifiedCustom
+       , deleteCustomAttributes
+       , deleteSpecifiedCustom
 
-      -- * Value types for @Attribute@s.
-    , module Data.GraphViz.Attributes.Colors
-    , bgColor
-    , fillColor
-    , fontColor
-    , color
+         -- * Value types for @Attribute@s.
+       , module Data.GraphViz.Attributes.Colors
 
-      -- ** Labels
-    , EscString
-    , Label(..)
-    , Labellable(..)
-    , toLabel
-    , VerticalPlacement(..)
-    , module Data.GraphViz.Attributes.HTML
-      -- *** Types representing the Dot grammar for records.
-    , RecordFields
-    , RecordField(..)
-    , Rect(..)
-    , Justification(..)
+         -- ** Labels
+       , EscString
+       , Label(..)
+       , VerticalPlacement(..)
+       , module Data.GraphViz.Attributes.HTML
+         -- *** Types representing the Dot grammar for records.
+       , RecordFields
+       , RecordField(..)
+       , Rect(..)
+       , Justification(..)
 
-      -- ** Nodes
-    , Shape(..)
-    , ScaleType(..)
+         -- ** Nodes
+       , Shape(..)
+       , ScaleType(..)
 
-      -- ** Edges
-    , DirType(..)
-    , EdgeType(..)
-      -- *** Modifying where edges point
-    , PortName(..)
-    , PortPos(..)
-    , CompassPoint(..)
-      -- *** Arrows
-    , ArrowType(..)
-    , ArrowShape(..)
-    , ArrowModifier(..)
-    , ArrowFill(..)
-    , ArrowSide(..)
-      -- **** Default @ArrowType@ aliases.
-      -- ***** The 9 primitive @ArrowShape@s.
-    , box
-    , crow
-    , diamond
-    , dotArrow
-    , inv
-    , noArrow
-    , normal
-    , tee
-    , vee
-      -- ***** 5 derived Arrows.
-    , oDot
-    , invDot
-    , invODot
-    , oBox
-    , oDiamond
-      -- ***** 5 supported cases for backwards compatibility
-    , eDiamond
-    , openArr
-    , halfOpen
-    , emptyArr
-    , invEmpty
-      -- **** @ArrowModifier@ instances
-    , noMods
-    , openMod
+         -- ** Edges
+       , DirType(..)
+       , EdgeType(..)
+         -- *** Modifying where edges point
+       , PortName(..)
+       , PortPos(..)
+       , CompassPoint(..)
+         -- *** Arrows
+       , ArrowType(..)
+       , ArrowShape(..)
+       , ArrowModifier(..)
+       , ArrowFill(..)
+       , ArrowSide(..)
+         -- **** @ArrowModifier@ values
+       , noMods
+       , openMod
 
-      -- ** Positioning
-    , Point(..)
-    , createPoint
-    , Pos(..)
-    , Spline(..)
-    , DPoint(..)
+         -- ** Positioning
+       , Point(..)
+       , createPoint
+       , Pos(..)
+       , Spline(..)
+       , DPoint(..)
 
-      -- ** Layout
-    , AspectType(..)
-    , ClusterMode(..)
-    , Model(..)
-    , Overlap(..)
-    , Root(..)
-    , OutputMode(..)
-    , Pack(..)
-    , PackMode(..)
-    , PageDir(..)
-    , QuadType(..)
-    , RankType(..)
-    , RankDir(..)
-    , StartType(..)
-    , ViewPort(..)
-    , FocusType(..)
-    , Ratios(..)
+         -- ** Layout
+       , AspectType(..)
+       , ClusterMode(..)
+       , Model(..)
+       , Overlap(..)
+       , Root(..)
+       , OutputMode(..)
+       , Pack(..)
+       , PackMode(..)
+       , PageDir(..)
+       , QuadType(..)
+       , RankType(..)
+       , RankDir(..)
+       , StartType(..)
+       , ViewPort(..)
+       , FocusType(..)
+       , Ratios(..)
 
-      -- ** Modes
-    , ModeType(..)
-    , DEConstraints(..)
+         -- ** Modes
+       , ModeType(..)
+       , DEConstraints(..)
 
-      -- ** Layers
-    , LayerSep(..)
-    , LayerRange(..)
-    , LayerID(..)
-    , LayerList(..)
+         -- ** Layers
+       , LayerSep(..)
+       , LayerRange(..)
+       , LayerID(..)
+       , LayerList(..)
 
-      -- ** Stylistic
-    , SmoothType(..)
-    , STStyle(..)
-    , StyleItem(..)
-    , StyleName(..)
-    ) where
+         -- ** Stylistic
+       , SmoothType(..)
+       , STStyle(..)
+       , StyleItem(..)
+       , StyleName(..)
+       ) where
 
 import Data.GraphViz.Attributes.Colors
 import Data.GraphViz.Attributes.HTML
@@ -214,7 +190,7 @@ import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
 
-{- |
+{- $attributes
 
    These attributes have been implemented in a /permissive/ manner:
    that is, rather than split them up based on which type of value
@@ -247,7 +223,11 @@ import Control.Monad(liftM, liftM2)
    'CustomAttribute'.  The 'deleteCustomAttributes' can be used to delete
    these values.
 
--}
+ -}
+
+-- | Attributes are used to customise the layout and design of Dot
+--   graphs.  Care must be taken to ensure that the attribute you use
+--   is valid, as not all attributes can be used everywhere.
 data Attribute
   = Damping Double                      -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
   | K Double                            -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
@@ -1420,11 +1400,11 @@ deleteSpecifiedCustom nm = filter (not . isSpecifiedCustom nm)
    Some 'Attribute's (mainly label-like ones) take a 'String' argument
    that allows for extra escape codes.  This library doesn't do any
    extra checks or special parsing for these escape codes, but usage
-   of 'EscString' rather than 'String' indicates that the Graphviz
+   of 'EscString' rather than 'Text' indicates that the Graphviz
    tools will recognise these extra escape codes for these
    'Attribute's.
 
-   The extra escape codes include (note that these are all 'String's):
+   The extra escape codes include (note that these are all Strings):
 
      [@\\N@] Replace with the name of the node (for Node 'Attribute's).
 
@@ -1452,28 +1432,6 @@ type EscString = Text
 
 -- -----------------------------------------------------------------------------
 
--- | A convenience function to make it easier to use 'X11Color'
---   values; equivalent to @BgColor . X11Color@.
-bgColor :: X11Color -> Attribute
-bgColor = BgColor . X11Color
-
--- | A convenience function to make it easier to use 'X11Color'
---   values; equivalent to @FillColor . X11Color@.
-fillColor :: X11Color -> Attribute
-fillColor = FillColor . X11Color
-
--- | A convenience function to make it easier to use 'X11Color'
---   values; equivalent to @FontColor . X11Color@.
-fontColor :: X11Color -> Attribute
-fontColor = FontColor . X11Color
-
--- | A convenience function to make it easier to use 'X11Color'
---   values; equivalent to @Color . map X11Color@.
-color :: [X11Color] -> Attribute
-color = Color . map X11Color
-
--- -----------------------------------------------------------------------------
-
 -- | /Dot/ has a basic grammar of arrow shapes which allows usage of
 --   up to 1,544,761 different shapes from 9 different basic
 --   'ArrowShape's.  Note that whilst an explicit list is used in the
@@ -1487,32 +1445,19 @@ color = Color . map X11Color
 newtype ArrowType = AType [(ArrowModifier, ArrowShape)]
     deriving (Eq, Ord, Show, Read)
 
-box, crow, diamond, dotArrow, inv, noArrow, normal, tee, vee :: ArrowType
-oDot, invDot, invODot, oBox, oDiamond :: ArrowType
+-- Used for default
+normal :: ArrowType
+normal = AType [(noMods, Normal)]
+
+-- Used for backward-compatible parsing
 eDiamond, openArr, halfOpen, emptyArr, invEmpty :: ArrowType
 
-normal = AType [(noMods, Normal)]
-inv = AType [(noMods, Inv)]
-dotArrow = AType [(noMods, DotArrow)]
-invDot = AType [ (noMods, Inv)
-               , (noMods, DotArrow)]
-oDot = AType [(ArrMod OpenArrow BothSides, DotArrow)]
-invODot = AType [ (noMods, Inv)
-                , (openMod, DotArrow)]
-noArrow = AType [(noMods, NoArrow)]
-tee = AType [(noMods, Tee)]
+eDiamond = AType [(openMod, Diamond)]
+openArr = AType [(noMods, Vee)]
+halfOpen = AType [(ArrMod FilledArrow LeftSide, Vee)]
 emptyArr = AType [(openMod, Normal)]
 invEmpty = AType [ (noMods, Inv)
                  , (openMod, Normal)]
-diamond = AType [(noMods, Diamond)]
-oDiamond = AType [(openMod, Diamond)]
-eDiamond = oDiamond
-crow = AType [(noMods, Crow)]
-box = AType [(noMods, Box)]
-oBox = AType [(openMod, Box)]
-openArr = vee
-halfOpen = AType [(ArrMod FilledArrow LeftSide, Vee)]
-vee = AType [(noMods, Vee)]
 
 instance PrintDot ArrowType where
   unqtDot (AType mas) = hcat $ mapM appMod mas
@@ -1691,7 +1636,13 @@ instance ParseDot ClusterMode where
 
 -- -----------------------------------------------------------------------------
 
-data DirType = Forward | Back | Both | NoDir
+-- | Specify where to place arrow heads on an edge.
+data DirType = Forward -- ^ Draw a directed edge with an arrow to the
+                       --   node it's pointing go.
+             | Back    -- ^ Draw a reverse directed edge with an arrow
+                       --   to the node it's coming from.
+             | Both    -- ^ Draw arrows on both ends of the edge.
+             | NoDir   -- ^ Draw an undirected edge.
              deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot DirType where
@@ -1825,61 +1776,6 @@ instance ParseDot Label where
                 , liftM RecordLabel parse
                 , liftM StrLabel parse
                 ]
-
--- | A convenience class to make it easier to create labels.  It is
---   highly recommended that you make any other types that you wish to
---   create labels from an instance of this class, preferably via the
---   @String@ or @Text@ instances.
-class Labellable a where
-  -- | This function only creates a 'Label' value to enable you to use
-  --   it for 'Attributes' such as 'HeadLabel', etc.
-  toLabelValue :: a -> Label
-
--- | Equivalent to @'Label' . 'toLabelValue'@; the most common label
---   'Attribute'.
-toLabel :: (Labellable a) => a -> Attribute
-toLabel = Label . toLabelValue
-
-instance Labellable Text where
-  toLabelValue = StrLabel
-
-instance Labellable Char where
-  toLabelValue = toLabelValue . T.singleton
-
-instance Labellable String where
-  toLabelValue = toLabelValue . T.pack
-
-instance Labellable Int where
-  toLabelValue = toLabelValue . show
-
-instance Labellable Double where
-  toLabelValue = toLabelValue . show
-
-instance Labellable Bool where
-  toLabelValue = toLabelValue . show
-
-instance Labellable HtmlLabel where
-  toLabelValue = HtmlLabel
-
-instance Labellable HtmlText where
-  toLabelValue = toLabelValue . HtmlText
-
-instance Labellable HtmlTable where
-  toLabelValue = toLabelValue . HtmlTable
-
-instance Labellable RecordFields where
-  toLabelValue = RecordLabel
-
-instance Labellable RecordField where
-  toLabelValue = toLabelValue . (:[])
-
--- | A shorter variant than using @PortName@ from 'RecordField'.
-instance Labellable PortName where
-  toLabelValue = toLabelValue . PortName
-
--- | A shorter variant than using 'LabelledTarget'.
-instance Labellable (PortName, EscString) where
-  toLabelValue = toLabelValue . uncurry LabelledTarget
 
 -- -----------------------------------------------------------------------------
 
