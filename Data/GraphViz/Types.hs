@@ -148,12 +148,12 @@ class (PrintDot (dg n), ParseDot (dg n)) => DotRepr dg n where
 -- | Returns all resultant 'DotNode's in the 'DotRepr' (not including
 --   'NodeAttr's).
 graphNodes :: (DotRepr dg n, Ord n) => dg n -> [DotNode n]
-graphNodes = toDotNodes . nodeInformation True
+graphNodes = toDotNodes . nodeInformation False
 
 -- | Returns all resultant 'DotEdge's in the 'DotRepr' (not including
 --   'EdgeAttr's).
 graphEdges :: (DotRepr dg n) => dg n -> [DotEdge n]
-graphEdges = edgeInformation True
+graphEdges = edgeInformation False
 
 -- | The actual /Dot/ code for an instance of 'DotRepr'.  Note that it
 --   is expected that @'parseDotGraph' . 'printDotGraph' == 'id'@
