@@ -8,9 +8,7 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module defines functions to call the various Graphviz
-   commands.  It is based upon code originally written for version 0.5
-   of /Graphalyze/:
-     <http://hackage.haskell.org/cgi-bin/hackage-scripts/package/Graphalyze-0.5>
+   commands.
 
    Whilst various output formats are supported (see 'GraphvizOutput'
    for a complete list), it is not yet possible to choose a desired
