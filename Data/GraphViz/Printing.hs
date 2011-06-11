@@ -131,6 +131,9 @@ printIt = renderDot . toDot
 instance PrintDot Int where
   unqtDot = int
 
+instance PrintDot Integer where
+  unqtDot = text . T.pack . show
+
 instance PrintDot Word8 where
   unqtDot = int . fromIntegral
 

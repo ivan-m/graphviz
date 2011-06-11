@@ -162,6 +162,9 @@ parseIt' = runParser' parse
 instance ParseDot Int where
   parseUnqt = parseInt'
 
+instance ParseDot Integer where
+  parseUnqt = parseSigned parseInt
+
 instance ParseDot Word8 where
   parseUnqt = parseInt
 
