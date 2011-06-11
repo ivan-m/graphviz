@@ -85,6 +85,15 @@ instance PrintDot GlobalAttributes where
 
   listToDot = unqtListToDot
 
+-- GraphAttrs, NodeAttrs and EdgeAttrs respectively
+partitionGlobal :: [GlobalAttributes] -> (Attributes, Attributes, Attributes)
+partitionGlobal = foldr select ([], [], [])
+  where
+    select globA ~(gs,ns,es) = case globA of
+                                 GraphAttrs as -> (as ++ gs, ns, es)
+                                 NodeAttrs  as -> (gs, as ++ ns, es)
+                                 EdgeAttrs  as -> (gs, ns, as ++ es)
+
 printGlobAttrType              :: GlobalAttributes -> DotCode
 printGlobAttrType GraphAttrs{} = text "graph"
 printGlobAttrType NodeAttrs{}  = text "node"
