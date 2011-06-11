@@ -241,7 +241,7 @@ stringBlock = do frst <- satisfy frstIDString
 quotedString :: Parse Text
 quotedString = parseEscaped True [] []
 
-parseSigned :: Real a => Parse a -> Parse a
+parseSigned :: (Num a) => Parse a -> Parse a
 parseSigned p = (character '-' >> liftM negate p)
                 `onFail`
                 p
