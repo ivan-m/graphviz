@@ -24,6 +24,7 @@ import Data.Function(on)
 import qualified Data.Set as Set
 import Data.Set(Set)
 import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.Read as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM2)
 
@@ -53,6 +54,8 @@ isNumString str = case T.uncons $ T.toLower str of
                     Just ('-',str') -> go str'
                     _               -> go str
   where
+    -- Can't use Data.Text.Lazy.Read.double as it doesn't cover all
+    -- possible cases
     go s = uncurry go' $ T.span isDigit s
     go' ds nds
       | T.null nds = True
@@ -81,26 +84,20 @@ toDouble str = case T.uncons $ T.toLower str of
             $ case T.span ('.' ==) s of
                 (ds, ".") | not $ T.null ds -> s `T.snoc` '0'
                 (ds, ds') | Just ('.',es) <- T.uncons ds'
-                          , Just ('e',_) <- T.uncons es
-                            -> ds `T.snoc` '.' `T.snoc` '0' `T.append` es
-                _              -> s
-    toD = read . T.unpack
+                          , Just ('e',es') <- T.uncons es
+                            -> ds `T.snoc` '.' `T.snoc` '0'
+                                   `T.snoc` 'e' `T.snoc` '0' `T.append` es'
+                _         -> s
+    toD = either (const $ error "Not a Double") fst . T.signed T.double
 
 isIntString :: Text -> Bool
 isIntString = isJust . stringToInt
 
 -- | Determine if this String represents an integer.
 stringToInt     :: Text -> Maybe Int
-stringToInt str = if isNum
-                  then Just (read $ T.unpack str)
-                  else Nothing
-  where
-    isNum = case T.uncons str of
-              Nothing         -> False
-              Just ('-',"")   -> False
-              Just ('-', num) -> isNum' num
-              _               -> isNum' str
-    isNum' = T.all isDigit
+stringToInt str = case T.signed T.decimal str of
+                       Right (n, "") -> Just n
+                       _             -> Nothing
 
 -- | Graphviz requires double quotes to be explicitly escaped.
 escapeQuotes           :: String -> String
