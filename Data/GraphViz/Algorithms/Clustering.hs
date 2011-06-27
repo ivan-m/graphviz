@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
-   Module      : Data.GraphViz.Types.Clustering
+   Module      : Data.GraphViz.Algorithms.Clustering
    Description : Definition of the clustering types for Graphviz.
    Copyright   : (c) Matthew Sackman, Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
@@ -9,7 +9,7 @@
 
    This module defines types for creating clusters.
 -}
-module Data.GraphViz.Types.Clustering
+module Data.GraphViz.Algorithms.Clustering
     ( LNodeCluster
     , NodeCluster(..)
     , clustersToNodes

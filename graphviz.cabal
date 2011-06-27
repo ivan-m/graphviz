@@ -87,10 +87,10 @@ Library {
                            Data.GraphViz.Exception
                            Data.GraphViz.Algorithms
 
-        Other-Modules:     Data.GraphViz.Attributes.ColorScheme
+        Other-Modules:     Data.GraphViz.Algorithms.Clustering
+                           Data.GraphViz.Attributes.ColorScheme
                            Data.GraphViz.Attributes.Internal
                            Data.GraphViz.Attributes.Same
-                           Data.GraphViz.Types.Clustering
                            Data.GraphViz.Types.Common
                            Data.GraphViz.Types.State
                            Data.GraphViz.Util

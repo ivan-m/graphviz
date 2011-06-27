@@ -60,7 +60,7 @@ module Data.GraphViz
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
                                     , DotSubGraph(..))
-import Data.GraphViz.Types.Clustering
+import Data.GraphViz.Algorithms.Clustering
 import Data.GraphViz.Util(uniq, uniqBy)
 import Data.GraphViz.Attributes
 import Data.GraphViz.Attributes.Complete(CustomAttribute, AttributeName
