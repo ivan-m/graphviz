@@ -107,6 +107,8 @@ import Data.Text.Lazy(Text)
 
 -- | This class is used to provide a common interface to different
 --   ways of representing a graph in /Dot/ form.
+--
+--   The type variable represents the current node type of the Dot graph;
 class (Ord n, PrintDot n, ParseDot n, PrintDot (dg n), ParseDot (dg n))
       => DotRepr dg n where
   -- | Convert from a graph in canonical form.  This is especially
@@ -125,7 +127,7 @@ class (Ord n, PrintDot n, ParseDot n, PrintDot (dg n), ParseDot (dg n))
   -- | Set whether a graph is directed or not.
   setIsDirected :: Bool -> dg n -> dg n
 
-  -- | Is this graph strict?
+  -- | Is this graph strict?  Strict graphs disallow multiple edges.
   graphIsStrict :: dg n -> Bool
 
   -- | A strict graph disallows multiple edges.
