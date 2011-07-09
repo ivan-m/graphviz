@@ -202,14 +202,14 @@ statementStructure stmts
   = do mapM_ addGraphGlobals $ attrStmts stmts
        mapM_ (withSubGraphID addSubGraph statementStructure) $ subGraphs stmts
 
-statementNodes :: (Ord a) => DotStatements a -> NodeState a ()
+statementNodes :: (Ord n) => DotStatements n -> NodeState n ()
 statementNodes stmts
   = do mapM_ addNodeGlobals $ attrStmts stmts
        mapM_ (withSubGraphID recursiveCall statementNodes) $ subGraphs stmts
        mapM_ addNode $ nodeStmts stmts
        mapM_ addEdgeNodes $ edgeStmts stmts
 
-statementEdges :: DotStatements a -> EdgeState a ()
+statementEdges :: DotStatements n -> EdgeState n ()
 statementEdges stmts
   = do mapM_ addEdgeGlobals $ attrStmts stmts
        mapM_ (withSubGraphID recursiveCall statementEdges) $ subGraphs stmts

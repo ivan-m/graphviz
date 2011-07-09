@@ -42,19 +42,19 @@ import Control.Monad(liftM)
 -- -----------------------------------------------------------------------------
 
 -- | A Dot graph in canonical form.
-data DotGraph a = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multiple edges are drawn.
+data DotGraph n = DotGraph { strictGraph     :: Bool  -- ^ If 'True', no multiple edges are drawn.
                            , directedGraph   :: Bool
                            , graphID         :: Maybe GraphID
-                           , graphStatements :: DotStatements a
+                           , graphStatements :: DotStatements n
                            }
                 deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot a) => PrintDot (DotGraph a) where
+instance (PrintDot n) => PrintDot (DotGraph n) where
   unqtDot = printStmtBased printGraphID' graphStatements toDot
     where
       printGraphID' = printGraphID strictGraph directedGraph graphID
 
-instance (ParseDot a) => ParseDot (DotGraph a) where
+instance (ParseDot n) => ParseDot (DotGraph n) where
   parseUnqt = parseStmtBased parse (parseGraphID DotGraph)
 
   parse = parseUnqt -- Don't want the option of quoting
@@ -66,21 +66,21 @@ instance Functor DotGraph where
 
 -- -----------------------------------------------------------------------------
 
-data DotStatements a = DotStmts { attrStmts :: [GlobalAttributes]
-                                , subGraphs :: [DotSubGraph a]
-                                , nodeStmts :: [DotNode a]
-                                , edgeStmts :: [DotEdge a]
+data DotStatements n = DotStmts { attrStmts :: [GlobalAttributes]
+                                , subGraphs :: [DotSubGraph n]
+                                , nodeStmts :: [DotNode n]
+                                , edgeStmts :: [DotEdge n]
                                 }
                      deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot a) => PrintDot (DotStatements a) where
+instance (PrintDot n) => PrintDot (DotStatements n) where
   unqtDot stmts = vcat $ sequence [ unqtDot $ attrStmts stmts
                                   , unqtDot $ subGraphs stmts
                                   , unqtDot $ nodeStmts stmts
                                   , unqtDot $ edgeStmts stmts
                                   ]
 
-instance (ParseDot a) => ParseDot (DotStatements a) where
+instance (ParseDot n) => ParseDot (DotStatements n) where
   parseUnqt = do atts <- tryParseList
                  newline'
                  sGraphs <- tryParseList
@@ -102,23 +102,23 @@ instance Functor DotStatements where
 
 -- -----------------------------------------------------------------------------
 
-data DotSubGraph a = DotSG { isCluster     :: Bool
+data DotSubGraph n = DotSG { isCluster     :: Bool
                            , subGraphID    :: Maybe GraphID
-                           , subGraphStmts :: DotStatements a
+                           , subGraphStmts :: DotStatements n
                            }
                    deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot a) => PrintDot (DotSubGraph a) where
+instance (PrintDot n) => PrintDot (DotSubGraph n) where
   unqtDot = printStmtBased printSubGraphID' subGraphStmts toDot
 
   unqtListToDot = printStmtBasedList printSubGraphID' subGraphStmts toDot
 
   listToDot = unqtListToDot
 
-printSubGraphID' :: DotSubGraph a -> DotCode
+printSubGraphID' :: DotSubGraph n -> DotCode
 printSubGraphID' = printSubGraphID (isCluster &&& subGraphID)
 
-instance (ParseDot a) => ParseDot (DotSubGraph a) where
+instance (ParseDot n) => ParseDot (DotSubGraph n) where
   parseUnqt = parseStmtBased parseUnqt (parseSubGraphID DotSG)
               `onFail`
               -- Take "anonymous" DotSubGraphs into account.

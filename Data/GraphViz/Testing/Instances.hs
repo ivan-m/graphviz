@@ -40,7 +40,7 @@ import Control.Monad(liftM, liftM2, liftM3, liftM4)
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the overall types
 
-instance (Eq a, Arbitrary a) => Arbitrary (DotGraph a) where
+instance (Eq n, Arbitrary n) => Arbitrary (DotGraph n) where
   arbitrary = liftM4 DotGraph arbitrary arbitrary arbitrary arbitrary
 
   shrink (DotGraph str dir gid stmts) = map (DotGraph str dir gid)
@@ -56,7 +56,7 @@ instance Arbitrary GraphID where
   shrink (Int i) = map Int $ shrink i
   shrink (Dbl d) = map Dbl $ filter notInt $ shrink d
 
-instance (Eq a, Arbitrary a) => Arbitrary (DotStatements a) where
+instance (Eq n, Arbitrary n) => Arbitrary (DotStatements n) where
   arbitrary = sized (arbDS True)
 
   shrink ds@(DotStmts gas sgs ns es) = do gas' <- shrinkL gas
@@ -67,7 +67,7 @@ instance (Eq a, Arbitrary a) => Arbitrary (DotStatements a) where
                                             $ DotStmts gas' sgs' ns' es'
 
 -- | If 'True', generate 'DotSubGraph's; otherwise don't.
-arbDS           :: (Arbitrary a, Eq a) => Bool -> Int -> Gen (DotStatements a)
+arbDS           :: (Arbitrary n, Eq n) => Bool -> Int -> Gen (DotStatements n)
 arbDS haveSGs s = liftM4 DotStmts arbitrary genSGs arbitrary arbitrary
   where
     s' = min s 2
@@ -85,17 +85,17 @@ instance Arbitrary GlobalAttributes where
   shrink (NodeAttrs  atts) = map NodeAttrs  $ nonEmptyShrinks atts
   shrink (EdgeAttrs  atts) = map EdgeAttrs  $ nonEmptyShrinks atts
 
-instance (Eq a, Arbitrary a) => Arbitrary (DotSubGraph a) where
+instance (Eq n, Arbitrary n) => Arbitrary (DotSubGraph n) where
   arbitrary = liftM3 DotSG arbitrary arbitrary (sized $ arbDS False)
 
   shrink (DotSG isCl mid stmts) = map (DotSG isCl mid) $ shrink stmts
 
-instance (Arbitrary a) => Arbitrary (DotNode a) where
+instance (Arbitrary n) => Arbitrary (DotNode n) where
   arbitrary = liftM2 DotNode arbitrary arbitrary
 
   shrink (DotNode n as) = map (DotNode n) $ shrinkList as
 
-instance (Arbitrary a) => Arbitrary (DotEdge a) where
+instance (Arbitrary n) => Arbitrary (DotEdge n) where
   arbitrary = liftM3 DotEdge arbitrary arbitrary arbitrary
 
   shrink (DotEdge f t as) = map (DotEdge f t) $ shrinkList as
@@ -103,16 +103,16 @@ instance (Arbitrary a) => Arbitrary (DotEdge a) where
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the generalised types
 
-instance (Eq a, Arbitrary a) => Arbitrary (G.DotGraph a) where
+instance (Eq n, Arbitrary n) => Arbitrary (G.DotGraph n) where
   arbitrary = liftM4 G.DotGraph arbitrary arbitrary arbitrary genGDStmts
 
   shrink (G.DotGraph str dir gid stmts) = map (G.DotGraph str dir gid)
                                           $ shrinkGDStmts stmts
 
-genGDStmts :: (Eq a, Arbitrary a) => Gen (G.DotStatements a)
+genGDStmts :: (Eq n, Arbitrary n) => Gen (G.DotStatements n)
 genGDStmts = sized (arbGDS True)
 
-shrinkGDStmts :: (Eq a, Arbitrary a) => G.DotStatements a -> [G.DotStatements a]
+shrinkGDStmts :: (Eq n, Arbitrary n) => G.DotStatements n -> [G.DotStatements n]
 shrinkGDStmts gds
   | len == 1  = map Seq.singleton . shrink $ Seq.index gds 0
   | otherwise = [gds1, gds2]
@@ -121,7 +121,7 @@ shrinkGDStmts gds
       -- Halve the sequence
       (gds1, gds2) = (len `div` 2) `Seq.splitAt` gds
 
-instance (Eq a, Arbitrary a) => Arbitrary (G.DotStatement a) where
+instance (Eq n, Arbitrary n) => Arbitrary (G.DotStatement n) where
   -- Don't want as many sub-graphs as nodes, etc.
   arbitrary = frequency [ (3, liftM G.GA arbitrary)
                         , (1, liftM G.SG arbitrary)
@@ -135,7 +135,7 @@ instance (Eq a, Arbitrary a) => Arbitrary (G.DotStatement a) where
   shrink (G.DE de) = map G.DE $ shrink de
 
 -- | If 'True', generate 'GDotSubGraph's; otherwise don't.
-arbGDS           :: (Arbitrary a, Eq a) => Bool -> Int -> Gen (G.DotStatements a)
+arbGDS           :: (Arbitrary n, Eq n) => Bool -> Int -> Gen (G.DotStatements n)
 arbGDS haveSGs s = liftM (Seq.fromList . checkSGs) (resize s' arbList)
   where
     checkSGs = if haveSGs
@@ -147,7 +147,7 @@ arbGDS haveSGs s = liftM (Seq.fromList . checkSGs) (resize s' arbList)
     s' = min s 10
 
 
-instance (Eq a, Arbitrary a) => Arbitrary (G.DotSubGraph a) where
+instance (Eq n, Arbitrary n) => Arbitrary (G.DotSubGraph n) where
   arbitrary = liftM3 G.DotSG arbitrary arbitrary (sized $ arbGDS False)
 
   shrink (G.DotSG isCl mid stmts) = map (G.DotSG isCl mid) $ shrinkGDStmts stmts
