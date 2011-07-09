@@ -169,7 +169,7 @@ data GraphvizParams nl el cl l
                 --   'LNode' is in.
               , clusterBy        :: (LNode nl -> LNodeCluster cl l)
                 -- | The name/identifier for a cluster.
-              , clusterID        :: (cl -> Maybe GraphID)
+              , clusterID        :: (cl -> GraphID)
                 -- | Specify which global attributes are applied in
                 --   the given cluster.
               , fmtCluster       :: (cl -> [GlobalAttributes])
@@ -186,11 +186,15 @@ data GraphvizParams nl el cl l
 --   type after applying 'clusterBy' from before clustering, then you
 --   will have to specify your own 'GraphvizParams' value from
 --   scratch (or use 'blankParams').
+--
+--   If you use a custom 'clusterBy' function (which if you actually
+--   want clusters you should) then you should also override the
+--   (nonsensical) default 'clusterID'.
 defaultParams :: GraphvizParams nl el cl nl
 defaultParams = Params { isDirected       = True
                        , globalAttributes = []
                        , clusterBy        = N
-                       , clusterID        = const Nothing
+                       , clusterID        = const (Int 0)
                        , fmtCluster       = const []
                        , fmtNode          = const []
                        , fmtEdge          = const []
@@ -246,7 +250,7 @@ graphToDot params graph
                      , nodeStmts = ns
                      , edgeStmts = es
                      }
-    (cs, ns) = clustersToNodes (clusterBy params) (clusterID params)
+    (cs, ns) = clustersToNodes (clusterBy params) (Just . clusterID params)
                                (fmtCluster params) (fmtNode params)
                                graph
     es = mapMaybe mkDotEdge . labEdges $ graph
