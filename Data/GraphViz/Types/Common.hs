@@ -180,8 +180,8 @@ instance Functor DotNode where
 -- c"-style edge statements).
 
 -- | An edge in 'DotGraph'.
-data DotEdge a = DotEdge { edgeFromNodeID :: a
-                         , edgeToNodeID   :: a
+data DotEdge a = DotEdge { fromNode       :: a
+                         , toNode         :: a
                          , edgeAttributes :: Attributes
                          }
                deriving (Eq, Ord, Show, Read)
@@ -195,9 +195,9 @@ instance (PrintDot a) => PrintDot (DotEdge a) where
 
 printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
 printEdgeID e = do isDir <- getDirectedness
-                   toDot (edgeFromNodeID e)
+                   toDot (fromNode e)
                      <+> bool undirEdge' dirEdge' isDir
-                     <+> toDot (edgeToNodeID e)
+                     <+> toDot (toNode e)
 
 
 instance (ParseDot a) => ParseDot (DotEdge a) where
@@ -263,8 +263,8 @@ parseEdgeLine = do n1 <- parseEdgeNodes
                    parseAttrBased ef
 
 instance Functor DotEdge where
-  fmap f e = e { edgeFromNodeID = f $ edgeFromNodeID e
-               , edgeToNodeID   = f $ edgeToNodeID e
+  fmap f e = e { fromNode = f $ fromNode e
+               , toNode   = f $ toNode e
                }
 
 dirEdge :: String

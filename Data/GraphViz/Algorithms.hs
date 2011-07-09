@@ -351,8 +351,8 @@ edgeGraph = mapM_ addEdge . reverse
     addEdge te = addVal f tvOut >> addVal t tvIn
       where
         e = snd te
-        f = edgeFromNodeID e
-        t = edgeToNodeID e
+        f = fromNode e
+        t = toNode e
         addVal n tv = modifyMap (Map.insertWith mergeTV n tv)
         tvIn  = defTV { incoming = [te] }
         tvOut = defTV { outgoing = [te] }
@@ -380,15 +380,15 @@ traverse t n = do setMark True
                        modifySet (Set.union $ Set.fromList (map fst delEs))
                        mapM_ delOtherEdge delEs
       where
-        keepEdge m (t',e) = t == t' || not (isMarked m $ edgeFromNodeID e)
+        keepEdge m (t',e) = t == t' || not (isMarked m $ fromNode e)
 
-        delOtherEdge te = modifyMap (Map.adjust delE . edgeFromNodeID $ snd te)
+        delOtherEdge te = modifyMap (Map.adjust delE . fromNode $ snd te)
           where
             delE tv = tv {outgoing = deleteBy ((==) `on` fst) te $ outgoing tv}
 
     maybeRecurse (t',e) = do m <- getMap
                              delSet <- getSet
-                             let n' = edgeToNodeID e
+                             let n' = toNode e
                              unless (isMarked m n' || t' `Set.member` delSet)
                                $ traverse t' n'
 

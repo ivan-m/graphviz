@@ -252,8 +252,8 @@ graphToDot params graph
     es = mapMaybe mkDotEdge . labEdges $ graph
     mkDotEdge e@(f,t,_) = if dirGraph || f <= t
                           then Just
-                               DotEdge { edgeFromNodeID = f
-                                       , edgeToNodeID   = t
+                               DotEdge { fromNode       = f
+                                       , toNode         = t
                                        , edgeAttributes = fmtEdge params e
                                        }
                           else Nothing

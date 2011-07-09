@@ -124,7 +124,7 @@ prop_findAllEdges dg' g = ((==) `on` sort) ges dges
   where
     ges = edges g
     dg = canonicalToType dg' $ graphToDot nonClusteredParams g
-    dges = map (edgeFromNodeID &&& edgeToNodeID) $ graphEdges dg
+    dges = map (fromNode &&& toNode) $ graphEdges dg
 
 -- | There should be no clusters or global attributes when converting
 --   a 'Graph' to a DotRepr (via fromCanonical) without any formatting
