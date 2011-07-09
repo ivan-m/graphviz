@@ -25,6 +25,7 @@ import qualified Data.Set as Set
 import Data.Set(Set)
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
+import Control.Monad(liftM2)
 
 -- -----------------------------------------------------------------------------
 
@@ -136,6 +137,9 @@ uniqBy f = map head . groupSortBy f
 
 groupSortBy   :: (Ord b) => (a -> b) -> [a] -> [[a]]
 groupSortBy f = groupBy ((==) `on` f) . sortBy (compare `on` f)
+
+groupSortCollectBy     :: (Ord b) => (a -> b) -> (a -> c) -> [a] -> [(b,[c])]
+groupSortCollectBy f g = map (liftM2 (,) (f . head) (map g)) . groupSortBy f
 
 -- | Fold over 'Bool's; first param is for 'False', second for 'True'.
 bool       :: a -> a -> Bool -> a
