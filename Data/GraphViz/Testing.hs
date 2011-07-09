@@ -190,11 +190,11 @@ test_generalisedSameDot
   = Test { name       = "Printing generalised Dot code"
          , lookupName = "makegeneralised"
          , desc       = dsc
-         , tests      = map quickCheckResult props
+         , tests      = [quickCheckResult prop]
          }
     where
-      props :: [DotGraph Int -> Bool]
-      props = testAllGraphTypes prop_generalisedSameDot
+      prop :: DotGraph Int -> Bool
+      prop = prop_generalisedSameDot
 
       dsc = "When generalising \"DotGraph\" values to other \"DotRepr\" values,\n\
              \the generated Dot code should be identical."

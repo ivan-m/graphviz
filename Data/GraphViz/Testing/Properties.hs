@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, ScopedTypeVariables #-}
 
 {- |
    Module      : Data.GraphViz.Testing.Properties
@@ -18,6 +18,7 @@ import Data.GraphViz.Types( DotRepr(..)
                           , printDotGraph, graphNodes, graphEdges
                           , graphStructureInformation)
 import Data.GraphViz.Types.Canonical(DotGraph(..), DotStatements(..))
+import qualified Data.GraphViz.Types.Generalised as G
 import Data.GraphViz.Printing(PrintDot(..), printIt)
 import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt')
 import Data.GraphViz.PreProcessing(preProcess)
@@ -51,10 +52,10 @@ prop_printParseListID as =  not (null as) ==> prop_printParseID as
 
 -- | When converting a canonical 'DotGraph' value to any other one,
 --   they should generate the same Dot code.
-prop_generalisedSameDot        :: (DotRepr dg n) => dg n -> DotGraph n -> Bool
-prop_generalisedSameDot dg' dg = printDotGraph dg == printDotGraph gdg
+prop_generalisedSameDot    :: (Ord n, PrintDot n, ParseDot n) => DotGraph n -> Bool
+prop_generalisedSameDot dg = printDotGraph dg == printDotGraph gdg
   where
-    gdg = canonicalToType dg' dg
+    gdg = canonicalToType (undefined :: G.DotGraph n) dg
 
 -- | Pre-processing shouldn't change the output of printed Dot code.
 --   This should work for all 'PrintDot' instances, but is more
