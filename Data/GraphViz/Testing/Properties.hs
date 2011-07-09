@@ -51,8 +51,7 @@ prop_printParseListID as =  not (null as) ==> prop_printParseID as
 
 -- | When converting a canonical 'DotGraph' value to any other one,
 --   they should generate the same Dot code.
-prop_generalisedSameDot        :: (DotRepr dg n, Ord n, ParseDot n, PrintDot n)
-                                  => dg n -> DotGraph n -> Bool
+prop_generalisedSameDot        :: (DotRepr dg n) => dg n -> DotGraph n -> Bool
 prop_generalisedSameDot dg' dg = printDotGraph dg == printDotGraph gdg
   where
     gdg = canonicalToType dg' dg
@@ -138,13 +137,13 @@ prop_noGraphInfo dg' g = info == (GraphAttrs [], Map.empty)
     info = graphStructureInformation dg
 
 -- | Canonicalisation should be idempotent.
-prop_canonicalise   :: (Ord n, PrintDot n, ParseDot n, DotRepr dg n) => dg n -> Bool
+prop_canonicalise   :: (DotRepr dg n) => dg n -> Bool
 prop_canonicalise g = cdg == canonicalise cdg
   where
     cdg = canonicalise g
 
 -- | Removing transitive edges should be idempotent.
-prop_transitive   :: (Ord n, PrintDot n, ParseDot n, DotRepr dg n) => dg n -> Bool
+prop_transitive   :: (DotRepr dg n) => dg n -> Bool
 prop_transitive g = tdg == transitiveReduction tdg
   where
     tdg = transitiveReduction g
@@ -166,6 +165,5 @@ tryParse' = parseIt' . printIt
 
 -- | A wrapper around 'fromCanonical' that lets you specify up-front
 --   what type to create (it need not be a sensible value).
-canonicalToType   :: (DotRepr dg n, PrintDot n, ParseDot n)
-                     => dg n -> DotGraph n -> dg n
+canonicalToType   :: (DotRepr dg n) => dg n -> DotGraph n -> dg n
 canonicalToType _ = fromCanonical

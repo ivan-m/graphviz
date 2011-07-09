@@ -81,11 +81,11 @@ dotLikeOptions = COpts { edgesInClusters = True
 --   position in the cluster hierarchy.  All edges are found in the
 --   deepest cluster that contains both nodes.  Currently node and
 --   edge attributes are not grouped into global ones.
-canonicalise :: (Ord n, DotRepr dg n) => dg n -> DotGraph n
+canonicalise :: (DotRepr dg n) => dg n -> DotGraph n
 canonicalise = canonicaliseOptions defaultCanonOptions
 
 -- | As with 'canonicalise', but allow custom 'CanonicaliseOptions'.
-canonicaliseOptions :: (Ord n, DotRepr dg n) => CanonicaliseOptions
+canonicaliseOptions :: (DotRepr dg n) => CanonicaliseOptions
                        -> dg n -> DotGraph n
 canonicaliseOptions opts dg = cdg { strictGraph   = graphIsStrict dg
                                   , directedGraph = graphIsDirected dg
@@ -276,10 +276,10 @@ innerAttributes outer outerS inner = sort $ inner' ++ override
    canonicalisation functions above.
  -}
 
-transitiveReduction :: (DotRepr dg n, Ord n) => dg n -> DotGraph n
+transitiveReduction :: (DotRepr dg n) => dg n -> DotGraph n
 transitiveReduction = transitiveReductionOptions defaultCanonOptions
 
-transitiveReductionOptions         :: (DotRepr dg n, Ord n) => CanonicaliseOptions
+transitiveReductionOptions         :: (DotRepr dg n) => CanonicaliseOptions
                                       -> dg n -> DotGraph n
 transitiveReductionOptions opts dg = cdg { strictGraph = graphIsStrict dg
                                          , directedGraph = graphIsDirected dg

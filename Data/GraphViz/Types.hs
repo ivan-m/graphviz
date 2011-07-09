@@ -107,7 +107,8 @@ import Data.Text.Lazy(Text)
 
 -- | This class is used to provide a common interface to different
 --   ways of representing a graph in /Dot/ form.
-class (PrintDot (dg n), ParseDot (dg n)) => DotRepr dg n where
+class (Ord n, PrintDot n, ParseDot n, PrintDot (dg n), ParseDot (dg n))
+      => DotRepr dg n where
   -- | Convert from a graph in canonical form.  This is especially
   --   useful when using the functions from "Data.GraphViz.Algorithms".
   fromCanonical :: DotGraph n -> dg n
@@ -147,7 +148,7 @@ class (PrintDot (dg n), ParseDot (dg n)) => DotRepr dg n where
 
 -- | Returns all resultant 'DotNode's in the 'DotRepr' (not including
 --   'NodeAttr's).
-graphNodes :: (DotRepr dg n, Ord n) => dg n -> [DotNode n]
+graphNodes :: (DotRepr dg n) => dg n -> [DotNode n]
 graphNodes = toDotNodes . nodeInformation False
 
 -- | Returns all resultant 'DotEdge's in the 'DotRepr' (not including
