@@ -61,6 +61,7 @@ instance (ParseDot n) => ParseDot (DotGraph n) where
           `adjustErr`
           (++ "\n\nNot a valid DotGraph")
 
+-- | Assumed to be an injective mapping function.
 instance Functor DotGraph where
   fmap f g = g { graphStatements = fmap f $ graphStatements g }
 

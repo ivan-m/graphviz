@@ -133,6 +133,12 @@ class (Ord n, PrintDot n, ParseDot n, PrintDot (dg n), ParseDot (dg n))
   -- | A strict graph disallows multiple edges.
   setStrictness :: Bool -> dg n -> dg n
 
+  -- | Change the node values.  This function is assumed to be
+  --   /injective/, otherwise the resulting graph will not be
+  --   identical to the original (modulo labels).
+  mapDotGraph :: (Ord n', PrintDot n', ParseDot n', DotRepr dg n')
+                 => (n -> n') -> dg n -> dg n'
+
   -- | Return information on all the clusters contained within this
   --   'DotRepr', as well as the top-level 'GraphAttrs' for the
   --   overall graph.
@@ -190,6 +196,8 @@ instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
   graphIsStrict = strictGraph
 
   setStrictness s g = g { strictGraph = s }
+
+  mapDotGraph = fmap
 
   graphStructureInformation = getGraphInfo
                               . statementStructure . graphStatements

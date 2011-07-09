@@ -69,6 +69,8 @@ instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
 
   setStrictness s g = g { strictGraph = s }
 
+  mapDotGraph = fmap
+
   graphStructureInformation = getGraphInfo
                               . statementStructure . graphStatements
 
@@ -90,6 +92,7 @@ instance (ParseDot n) => ParseDot (DotGraph n) where
           `adjustErr`
           (++ "\n\nNot a valid DotGraph")
 
+-- | Assumed to be an injective mapping function.
 instance Functor DotGraph where
   fmap f g = g { graphStatements = (fmap . fmap) f $ graphStatements g }
 
