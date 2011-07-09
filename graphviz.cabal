@@ -98,10 +98,15 @@ Library {
            Build-Depends:       QuickCheck >= 2.3 && < 2.5
 
            Exposed-Modules:     Data.GraphViz.Testing
+                                Data.GraphViz.Testing.Instances
                                 Data.GraphViz.Testing.Properties
 
-           Other-Modules:       Data.GraphViz.Testing.Instances
-                                Data.GraphViz.Testing.Instances.FGL
+           Other-Modules:       Data.GraphViz.Testing.Instances.FGL
+                                Data.GraphViz.Testing.Instances.Helpers
+                                Data.GraphViz.Testing.Instances.Attributes
+                                Data.GraphViz.Testing.Instances.Common
+                                Data.GraphViz.Testing.Instances.Canonical
+                                Data.GraphViz.Testing.Instances.Generalised
 
         if True
            Ghc-Options: -Wall

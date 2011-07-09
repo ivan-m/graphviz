@@ -71,9 +71,6 @@ module Data.GraphViz.Testing
 import Test.QuickCheck
 
 import Data.GraphViz.Testing.Instances()
--- This module cannot be re-exported from Instances, as it causes
--- Overlapping Instances.
-import Data.GraphViz.Testing.Instances.FGL()
 import Data.GraphViz.Testing.Properties
 
 import Data.GraphViz
