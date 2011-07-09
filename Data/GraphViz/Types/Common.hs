@@ -135,22 +135,22 @@ determineType attr
 -- -----------------------------------------------------------------------------
 
 -- | A node in 'DotGraph'.
-data DotNode a = DotNode { nodeID :: a
+data DotNode n = DotNode { nodeID :: n
                          , nodeAttributes :: Attributes
                          }
                deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot a) => PrintDot (DotNode a) where
+instance (PrintDot n) => PrintDot (DotNode n) where
   unqtDot = printAttrBased printNodeID nodeAttributes
 
   unqtListToDot = printAttrBasedList printNodeID nodeAttributes
 
   listToDot = unqtListToDot
 
-printNodeID :: (PrintDot a) => DotNode a -> DotCode
+printNodeID :: (PrintDot n) => DotNode n -> DotCode
 printNodeID = toDot . nodeID
 
-instance (ParseDot a) => ParseDot (DotNode a) where
+instance (ParseDot n) => ParseDot (DotNode n) where
   parseUnqt = parseAttrBased parseNodeID
 
   parse = parseUnqt -- Don't want the option of quoting
@@ -159,12 +159,12 @@ instance (ParseDot a) => ParseDot (DotNode a) where
 
   parseList = parseUnqtList
 
-parseNodeID :: (ParseDot a) => Parse (Attributes -> DotNode a)
+parseNodeID :: (ParseDot n) => Parse (Attributes -> DotNode n)
 parseNodeID = liftM DotNode parseAndCheck
   where
-    parseAndCheck = do a <- parse
+    parseAndCheck = do n <- parse
                        me <- optional parseUnwanted
-                       maybe (return a) (const notANode) me
+                       maybe (return n) (const notANode) me
     notANode = fail "This appears to be an edge, not a node"
     parseUnwanted = oneOf [ parseEdgeType >> return ()
                           , character ':' >> return () -- PortPos value
@@ -180,27 +180,27 @@ instance Functor DotNode where
 -- c"-style edge statements).
 
 -- | An edge in 'DotGraph'.
-data DotEdge a = DotEdge { fromNode       :: a
-                         , toNode         :: a
+data DotEdge n = DotEdge { fromNode       :: n
+                         , toNode         :: n
                          , edgeAttributes :: Attributes
                          }
                deriving (Eq, Ord, Show, Read)
 
-instance (PrintDot a) => PrintDot (DotEdge a) where
+instance (PrintDot n) => PrintDot (DotEdge n) where
   unqtDot = printAttrBased printEdgeID edgeAttributes
 
   unqtListToDot = printAttrBasedList printEdgeID edgeAttributes
 
   listToDot = unqtListToDot
 
-printEdgeID   :: (PrintDot a) => DotEdge a -> DotCode
+printEdgeID   :: (PrintDot n) => DotEdge n -> DotCode
 printEdgeID e = do isDir <- getDirectedness
                    toDot (fromNode e)
                      <+> bool undirEdge' dirEdge' isDir
                      <+> toDot (toNode e)
 
 
-instance (ParseDot a) => ParseDot (DotEdge a) where
+instance (ParseDot n) => ParseDot (DotEdge n) where
   parseUnqt = parseAttrBased parseEdgeID
 
   parse = parseUnqt -- Don't want the option of quoting
@@ -211,18 +211,18 @@ instance (ParseDot a) => ParseDot (DotEdge a) where
 
   parseList = parseUnqtList
 
-parseEdgeID :: (ParseDot a) => Parse (Attributes -> DotEdge a)
+parseEdgeID :: (ParseDot n) => Parse (Attributes -> DotEdge n)
 parseEdgeID = do eFrom <- parseEdgeNode
                  -- Parse both edge types just to be more liberal
                  parseEdgeType
                  eTo <- parseEdgeNode
                  return $ mkEdge eFrom eTo
 
-type EdgeNode a = (a, Maybe PortPos)
+type EdgeNode n = (n, Maybe PortPos)
 
 -- | Takes into account edge statements containing something like
 --   @a -> \{b c\}@.
-parseEdgeNodes :: (ParseDot a) => Parse [EdgeNode a]
+parseEdgeNodes :: (ParseDot n) => Parse [EdgeNode n]
 parseEdgeNodes = parseBraced ( wrapWhitespace
                                -- Should really use sepBy1, but this will do.
                                $ parseStatements parseEdgeNode
@@ -230,18 +230,17 @@ parseEdgeNodes = parseBraced ( wrapWhitespace
                  `onFail`
                  liftM return parseEdgeNode
 
-parseEdgeNode :: (ParseDot a) => Parse (EdgeNode a)
+parseEdgeNode :: (ParseDot n) => Parse (EdgeNode n)
 parseEdgeNode = liftM2 (,) parse
                            (optional $ character ':' >> parseEdgeBasedPP)
 
-mkEdge :: EdgeNode a -> EdgeNode a
-          -> Attributes -> DotEdge a
+mkEdge :: EdgeNode n -> EdgeNode n -> Attributes -> DotEdge n
 mkEdge (eFrom, mFP) (eTo, mTP) = DotEdge eFrom eTo
                                  . addPortPos TailPort mFP
                                  . addPortPos HeadPort mTP
 
-mkEdges :: [EdgeNode a] -> [EdgeNode a]
-           -> Attributes -> [DotEdge a]
+mkEdges :: [EdgeNode n] -> [EdgeNode n]
+           -> Attributes -> [DotEdge n]
 mkEdges fs ts as = liftM2 (\f t -> mkEdge f t as) fs ts
 
 addPortPos   :: (PortPos -> Attribute) -> Maybe PortPos
@@ -253,7 +252,7 @@ parseEdgeType = wrapWhitespace $ stringRep True dirEdge
                                  `onFail`
                                  stringRep False undirEdge
 
-parseEdgeLine :: (ParseDot a) => Parse [DotEdge a]
+parseEdgeLine :: (ParseDot n) => Parse [DotEdge n]
 parseEdgeLine = do n1 <- parseEdgeNodes
                    ens <- many1 $ do parseEdgeType
                                      parseEdgeNodes
