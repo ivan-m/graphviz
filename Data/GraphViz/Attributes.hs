@@ -24,6 +24,8 @@ module Data.GraphViz.Attributes
          -- * Creating labels
          -- $labels
        , toLabel
+       , textLabel
+       , textLabelValue
        , Labellable(..)
          -- * Colors
          -- $colors
@@ -121,6 +123,16 @@ class Labellable a where
 --   'Attribute'.
 toLabel :: (Labellable a) => a -> Attribute
 toLabel = Label . toLabelValue
+
+-- | An alias for 'toLabel' for use with the OverloadedStrings
+--   extension.
+textLabel :: Text -> Attribute
+textLabel = toLabel
+
+-- | An alias for 'toLabelValue' for use with the OverloadedStrings
+--   extension.
+textLabelValue :: Text -> Label
+textLabelValue = toLabelValue
 
 instance Labellable Text where
   toLabelValue = StrLabel
