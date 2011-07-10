@@ -37,7 +37,7 @@ data NodeCluster c a = N a -- ^ Indicates the actual Node in the Graph.
                         deriving (Show)
 
 -- | Create the /Dot/ representation for the given graph.
-clustersToNodes :: (Ord c, Graph gr) => (LNode a -> NodeCluster c (LNode l))
+clustersToNodes :: (Ord c, Graph gr) => (LNode a -> LNodeCluster c l)
                    -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
                    -> (LNode l -> Attributes) -> gr a b
                    -> ([DotSubGraph Node], [DotNode Node])
