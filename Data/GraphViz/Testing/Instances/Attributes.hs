@@ -9,7 +9,13 @@
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
  -}
-module Data.GraphViz.Testing.Instances.Attributes() where
+module Data.GraphViz.Testing.Instances.Attributes
+       ( arbGraphAttrs
+       , arbSubGraphAttrs
+       , arbClusterAttrs
+       , arbNodeAttrs
+       , arbEdgeAttrs
+       ) where
 
 import Data.GraphViz.Testing.Instances.Helpers
 
@@ -28,6 +34,24 @@ import Control.Monad(liftM, liftM2, liftM3, liftM4)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for Attributes
+
+arbGraphAttrs :: Gen Attributes
+arbGraphAttrs = arbAttrs usedByGraphs
+
+arbSubGraphAttrs :: Gen Attributes
+arbSubGraphAttrs = arbAttrs usedBySubGraphs
+
+arbClusterAttrs :: Gen Attributes
+arbClusterAttrs = arbAttrs usedByClusters
+
+arbNodeAttrs :: Gen Attributes
+arbNodeAttrs = arbAttrs usedByNodes
+
+arbEdgeAttrs :: Gen Attributes
+arbEdgeAttrs = arbAttrs usedByEdges
+
+arbAttrs   :: (Attribute -> Bool) -> Gen Attributes
+arbAttrs p = liftM (filter p) arbList
 
 instance Arbitrary Attribute where
   arbitrary = oneof [ liftM Damping arbitrary

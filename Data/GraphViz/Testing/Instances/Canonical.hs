@@ -10,15 +10,16 @@
  -}
 module Data.GraphViz.Testing.Instances.Canonical where
 
-import Data.GraphViz.Testing.Instances.Attributes()
-import Data.GraphViz.Testing.Instances.Common()
+import Data.GraphViz.Testing.Instances.Attributes
+import Data.GraphViz.Testing.Instances.Common
 import Data.GraphViz.Testing.Instances.Helpers
 
 import Data.GraphViz.Types.Canonical
+import Data.GraphViz.Util(bool)
 
 import Test.QuickCheck
 
-import Control.Monad(liftM3, liftM4)
+import Control.Monad(liftM2, liftM4)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the overall types
@@ -30,7 +31,7 @@ instance (Eq n, Arbitrary n) => Arbitrary (DotGraph n) where
                                         $ shrink stmts
 
 instance (Eq n, Arbitrary n) => Arbitrary (DotStatements n) where
-  arbitrary = sized (arbDS True)
+  arbitrary = sized (arbDS gaGraph True)
 
   shrink ds@(DotStmts gas sgs ns es) = do gas' <- shrinkL gas
                                           sgs' <- shrinkL sgs
@@ -40,8 +41,9 @@ instance (Eq n, Arbitrary n) => Arbitrary (DotStatements n) where
                                             $ DotStmts gas' sgs' ns' es'
 
 -- | If 'True', generate 'DotSubGraph's; otherwise don't.
-arbDS           :: (Arbitrary n, Eq n) => Bool -> Int -> Gen (DotStatements n)
-arbDS haveSGs s = liftM4 DotStmts arbitrary genSGs arbitrary arbitrary
+arbDS              :: (Arbitrary n, Eq n) => Gen GlobalAttributes -> Bool
+                      -> Int -> Gen (DotStatements n)
+arbDS ga haveSGs s = liftM4 DotStmts (listOf ga) genSGs arbitrary arbitrary
   where
     s' = min s 2
     genSGs = if haveSGs
@@ -49,6 +51,8 @@ arbDS haveSGs s = liftM4 DotStmts arbitrary genSGs arbitrary arbitrary
              else return []
 
 instance (Eq n, Arbitrary n) => Arbitrary (DotSubGraph n) where
-  arbitrary = liftM3 DotSG arbitrary arbitrary (sized $ arbDS False)
+  arbitrary = do isClust <- arbitrary
+                 let ga = bool gaSubGraph gaClusters isClust
+                 liftM2 (DotSG isClust) arbitrary (sized $ arbDS ga False)
 
   shrink (DotSG isCl mid stmts) = map (DotSG isCl mid) $ shrink stmts

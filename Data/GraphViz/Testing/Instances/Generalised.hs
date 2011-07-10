@@ -11,30 +11,42 @@
 module Data.GraphViz.Testing.Instances.Generalised where
 
 import Data.GraphViz.Testing.Instances.Attributes()
-import Data.GraphViz.Testing.Instances.Common()
+import Data.GraphViz.Testing.Instances.Common
 import Data.GraphViz.Testing.Instances.Helpers
 
 import Data.GraphViz.Types.Generalised
+import Data.GraphViz.Util(bool)
 
 import Test.QuickCheck
 
 import qualified Data.Sequence as Seq
-import Control.Monad(liftM, liftM3, liftM4)
+import Control.Monad(liftM, liftM2, liftM4)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the generalised types
 
-instance (Eq n, Arbitrary n) => Arbitrary (DotGraph n) where
-  arbitrary = liftM4 DotGraph arbitrary arbitrary arbitrary genGDStmts
+instance (Arbitrary n) => Arbitrary (DotGraph n) where
+  arbitrary = liftM4 DotGraph arbitrary arbitrary arbitrary genDStmts
 
   shrink (DotGraph str dir gid stmts) = map (DotGraph str dir gid)
-                                          $ shrinkGDStmts stmts
+                                          $ shrinkDStmts stmts
 
-genGDStmts :: (Eq n, Arbitrary n) => Gen (DotStatements n)
-genGDStmts = sized (arbGDS True)
+genDStmts :: (Arbitrary n) => Gen (DotStatements n)
+genDStmts = sized (arbDS gaGraph True)
 
-shrinkGDStmts :: (Eq n, Arbitrary n) => DotStatements n -> [DotStatements n]
-shrinkGDStmts gds
+genDStmt :: (Arbitrary n) => Gen GlobalAttributes -> Bool
+            -> Gen (DotStatement n)
+genDStmt ga haveSGs = frequency
+                      . bool id ((1,genSG):) haveSGs
+                      $ [ (3, liftM GA ga)
+                        , (5, liftM DN arbitrary)
+                        , (7, liftM DE arbitrary)
+                        ]
+  where
+    genSG = liftM SG arbitrary
+
+shrinkDStmts :: (Arbitrary n) => DotStatements n -> [DotStatements n]
+shrinkDStmts gds
   | len == 1  = map Seq.singleton . shrink $ Seq.index gds 0
   | otherwise = [gds1, gds2]
     where
@@ -42,13 +54,8 @@ shrinkGDStmts gds
       -- Halve the sequence
       (gds1, gds2) = (len `div` 2) `Seq.splitAt` gds
 
-instance (Eq n, Arbitrary n) => Arbitrary (DotStatement n) where
-  -- Don't want as many sub-graphs as nodes, etc.
-  arbitrary = frequency [ (3, liftM GA arbitrary)
-                        , (1, liftM SG arbitrary)
-                        , (5, liftM DN arbitrary)
-                        , (7, liftM DE arbitrary)
-                        ]
+instance (Arbitrary n) => Arbitrary (DotStatement n) where
+  arbitrary = genDStmt gaGraph True
 
   shrink (GA ga) = map GA $ shrink ga
   shrink (SG sg) = map SG $ shrink sg
@@ -56,19 +63,15 @@ instance (Eq n, Arbitrary n) => Arbitrary (DotStatement n) where
   shrink (DE de) = map DE $ shrink de
 
 -- | If 'True', generate 'GDotSubGraph's; otherwise don't.
-arbGDS           :: (Arbitrary n, Eq n) => Bool -> Int -> Gen (DotStatements n)
-arbGDS haveSGs s = liftM (Seq.fromList . checkSGs) (resize s' arbList)
+arbDS              :: (Arbitrary n) => Gen GlobalAttributes -> Bool -> Int -> Gen (DotStatements n)
+arbDS ga haveSGs s = liftM Seq.fromList . resize s' . listOf $ genDStmt ga haveSGs
   where
-    checkSGs = if haveSGs
-               then id
-               else filter notSG
-    notSG SG{} = False
-    notSG _      = True
-
     s' = min s 10
 
 
-instance (Eq n, Arbitrary n) => Arbitrary (DotSubGraph n) where
-  arbitrary = liftM3 DotSG arbitrary arbitrary (sized $ arbGDS False)
+instance (Arbitrary n) => Arbitrary (DotSubGraph n) where
+  arbitrary = do isClust <- arbitrary
+                 let ga = bool gaSubGraph gaClusters isClust
+                 liftM2 (DotSG isClust) arbitrary (sized $ arbDS ga False)
 
-  shrink (DotSG isCl mid stmts) = map (DotSG isCl mid) $ shrinkGDStmts stmts
+  shrink (DotSG isCl mid stmts) = map (DotSG isCl mid) $ shrinkDStmts stmts
