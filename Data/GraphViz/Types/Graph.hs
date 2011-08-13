@@ -289,16 +289,16 @@ graphToDot params = fromCanon . GV.graphToDot params
 -- | Convert this DotGraph into canonical form.  All edges are found
 --   in the outer graph rather than in clusters.
 toCanonical :: (Ord n) => DotGraph n -> C.DotGraph n
-toCanonical dg = DG { C.strictGraph     = strictGraph dg
-                    , C.directedGraph   = directedGraph dg
-                    , C.graphID         = graphID dg
-                    , C.graphStatements = stmts
-                    }
+toCanonical dg = C.DotGraph { C.strictGraph     = strictGraph dg
+                            , C.directedGraph   = directedGraph dg
+                            , C.graphID         = graphID dg
+                            , C.graphStatements = stmts
+                            }
   where
     stmts = C.DotStmts { C.attrStmts = fromGlobAttrs $ graphAttrs dg
                        , C.subGraphs = cs
                        , C.nodeStmts = ns
-                       , C.edgeStmts = edgeInformation False dg
+                       , C.edgeStmts = getEdgeInfo False dg
                        }
 
     cls = clusters dg
