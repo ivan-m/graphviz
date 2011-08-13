@@ -13,6 +13,7 @@ module Data.GraphViz.Algorithms.Clustering
     ( LNodeCluster
     , NodeCluster(..)
     , clustersToNodes
+    , clustersToNodes'
     ) where
 
 import Data.GraphViz.Types.Canonical
@@ -36,12 +37,20 @@ data NodeCluster c a = N a -- ^ Indicates the actual Node in the Graph.
                                              --   the Cluster /c/.
                         deriving (Show)
 
--- | Create the /Dot/ representation for the given graph.
+-- | Extract the clusters and nodes from the graph.
 clustersToNodes :: (Ord c, Graph gr) => (LNode a -> LNodeCluster c l)
                    -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
                    -> (LNode l -> Attributes) -> gr a b
                    -> ([DotSubGraph Node], [DotNode Node])
 clustersToNodes clusterBy cID fmtCluster fmtNode
+    = clustersToNodes'
+      . labNodes
+
+clustersToNodes' :: (Ord c) => (LNode a -> LNodeCluster c l)
+                   -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+                   -> (LNode l -> Attributes) -> [LNode a]
+                   -> ([DotSubGraph Node], [DotNode Node])
+clustersToNodes' clusterBy cID fmtCluster fmtNode
     = treesToDot cID fmtCluster fmtNode
       . collapseNClusts
       . map (clustToTree . clusterBy)
