@@ -32,6 +32,8 @@ module Data.GraphViz.Types.Graph
        ( DotGraph
        , GraphID(..)
        , Context(..)
+         -- * Conversions
+       , toCanonical
        , fromDotRepr
          -- * Graph information
        , isEmpty
@@ -83,10 +85,12 @@ import Data.GraphViz.Attributes.Same
 import Data.GraphViz.Attributes.Complete(Attributes)
 import Data.GraphViz.Util(groupSortBy, groupSortCollectBy)
 import Data.GraphViz.Algorithms(CanonicaliseOptions(..), canonicaliseOptions)
+import Data.GraphViz.Algorithms.Clustering
 import Data.GraphViz.Printing(PrintDot(..))
 import Data.GraphViz.Parsing(ParseDot(..))
 
 import Data.List(foldl', delete)
+import qualified Data.Foldable as F
 import qualified Data.Graph.Inductive.Graph as IG
 import Data.Maybe(mapMaybe, fromMaybe)
 import qualified Data.Map as M
@@ -281,13 +285,35 @@ graphToDot :: (Ord cl, IG.Graph gr) => GraphvizParams nl el cl l
 graphToDot params = fromCanon . GV.graphToDot params
 -- Cheat for this, as the output of GV.graphToDot produces output
 -- suitable for fromCanon.
-{-
+
+-- | Convert this DotGraph into canonical form.  All edges are found
+--   in the outer graph rather than in clusters.
 toCanonical :: (Ord n) => DotGraph n -> C.DotGraph n
-toCanonical dg -- (DG str dir gas gid cls vs)
+toCanonical dg = DG { C.strictGraph     = strictGraph dg
+                    , C.directedGraph   = directedGraph dg
+                    , C.graphID         = graphID dg
+                    , C.graphStatements = stmts
+                    }
   where
-    (gas, cgs) = getGraph
-    pM = clusterPath dg
--}
+    stmts = C.DotStmts { C.attrStmts = fromGlobAttrs $ graphAttrs dg
+                       , C.subGraphs = cs
+                       , C.nodeStmts = ns
+                       , C.edgeStmts = edgeInformation False dg
+                       }
+
+    cls = clusters dg
+    pM = clusterPath' dg
+
+    clustAs = maybe [] (fromGlobAttrs . clusterAttrs) . (`M.lookup`cls)
+
+    lns = map (\ (n,ni) -> (n,(_inCluster ni, _attributes ni)))
+          . M.assocs $ values dg
+
+    (cs,ns) = clustersToNodes' pathOf id clustAs snd lns
+
+    pathOf (n,(c,as)) = pathFrom c (n,as)
+    pathFrom c ln = F.foldr C (N ln) . fromMaybe Seq.empty $ (`M.lookup`pM) =<< c
+
 -- -----------------------------------------------------------------------------
 -- Deconstruction
 
