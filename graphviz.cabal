@@ -73,6 +73,7 @@ Library {
                            Data.GraphViz.Types
                            Data.GraphViz.Types.Canonical
                            Data.GraphViz.Types.Generalised
+                           Data.GraphViz.Types.Graph
                            Data.GraphViz.Parsing
                            Data.GraphViz.Printing
                            Data.GraphViz.State

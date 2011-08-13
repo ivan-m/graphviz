@@ -21,6 +21,7 @@ module Data.GraphViz.Testing.Instances() where
 import Data.GraphViz.Testing.Instances.FGL()
 import Data.GraphViz.Testing.Instances.Canonical()
 import Data.GraphViz.Testing.Instances.Generalised()
+import Data.GraphViz.Testing.Instances.Graph()
 
 -- -----------------------------------------------------------------------------
 

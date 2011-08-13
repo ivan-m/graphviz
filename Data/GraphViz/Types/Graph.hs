@@ -1,0 +1,663 @@
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
+
+{- |
+   Module      : Data.GraphViz.Types.Graph
+   Description : A graph-like representation of Dot graphs.
+   Copyright   : (c) Ivan Lazar Miljenovic
+   License     : 3-Clause BSD-style
+   Maintainer  : Ivan.Miljenovic@gmail.com
+
+   It is sometimes useful to be able to manipulate a Dot graph /as/ an
+   actual graph.  This representation lets you do so, using an inductive
+   approach based upon that from FGL (note that 'DotGraph' is /not/ an
+   instance of the FGL classes due to having the wrong kind).
+
+   For purposes of manipulation, all edges are found in the root graph
+   and not in a cluster; as such, having 'EdgeAttrs' in a cluster's
+   'GlobalAttributes' is redundant.
+
+   Printing is achieved via "Data.GraphViz.Types.Canonical" (using
+   'canonicalise' with custom options) and parsing via
+   "Data.GraphViz.Types.Generalised" (so /any/ piece of Dot code can be
+   parsed in).
+
+   This representation doesn't allow non-cluster sub-graphs.  Also, all
+   clusters /must/ have a unique identifier.  For those functions (with
+   the exception of 'DotRepr' methods) that take or return a \"@Maybe
+   GraphID@\", a value of \"@Nothing@\" refers to the root graph; \"@Just
+   clust@\" refers to the cluster with the identifier \"@clust@\".
+
+ -}
+module Data.GraphViz.Types.Graph
+       ( DotGraph
+       , GraphID(..)
+       , Context(..)
+       , fromDotRepr
+         -- * Graph information
+       , isEmpty
+       , hasClusters
+       , isEmptyGraph
+       , graphAttributes
+       , parentOf
+       , clusterAttributes
+       , foundInCluster
+       , attributesOf
+       , predecessorsOf
+       , successorsOf
+       , adjacentTo
+       , adjacent
+         -- * Graph construction
+       , mkGraph
+       , emptyGraph
+       , (&)
+       , addNode
+       , DotNode(..)
+       , addDotNode
+       , addEdge
+       , DotEdge(..)
+       , addDotEdge
+       , addCluster
+         -- ** Conversion from FGL graphs
+       , graphToDot
+       , GraphvizParams(..)
+       , LNodeCluster
+       , NodeCluster(..)
+         -- * Graph deconstruction
+       , decompose
+       , deleteNode
+       , deleteAllEdges
+       , deleteEdge
+       , deleteDotEdge
+       , deleteCluster
+       , removeEmptyClusters
+       ) where
+
+import Data.GraphViz(GraphvizParams(..), LNodeCluster, NodeCluster(..))
+import qualified Data.GraphViz as GV
+import Data.GraphViz.Types
+import qualified Data.GraphViz.Types.Canonical as C
+import qualified Data.GraphViz.Types.Generalised as G
+import Data.GraphViz.Types.Common(partitionGlobal)
+import qualified Data.GraphViz.Types.State as St
+import Data.GraphViz.Attributes.Same
+import Data.GraphViz.Attributes.Complete(Attributes)
+import Data.GraphViz.Util(groupSortBy, groupSortCollectBy)
+import Data.GraphViz.Algorithms(CanonicaliseOptions(..), canonicaliseOptions)
+import Data.GraphViz.Printing(PrintDot(..))
+import Data.GraphViz.Parsing(ParseDot(..))
+
+import Data.List(foldl', delete)
+import qualified Data.Graph.Inductive.Graph as IG
+import Data.Maybe(mapMaybe, fromMaybe)
+import qualified Data.Map as M
+import Data.Map(Map)
+import qualified Data.Set as S
+import qualified Data.Sequence as Seq
+import Control.Arrow((***))
+import Control.Monad(liftM, liftM2)
+
+-- -----------------------------------------------------------------------------
+
+data DotGraph n = DG { strictGraph   :: Bool
+                     , directedGraph :: Bool
+                     , graphAttrs    :: GlobAttrs
+                     , graphID       :: Maybe GraphID
+                     , clusters      :: Map GraphID ClusterInfo
+                     , values        :: NodeMap n
+                     }
+                deriving (Eq, Ord, Show, Read)
+
+data GlobAttrs = GA { graphAs :: SAttrs
+                    , nodeAs  :: SAttrs
+                    , edgeAs  :: SAttrs
+                    }
+               deriving (Eq, Ord, Show, Read)
+
+data NodeInfo n = NI { _inCluster    :: Maybe GraphID
+                     , _attributes   :: Attributes
+                     , _predecessors :: EdgeMap n
+                     , _successors   :: EdgeMap n
+                     }
+                deriving (Eq, Ord, Show, Read)
+
+data ClusterInfo = CI { parentCluster :: Maybe GraphID
+                      , clusterAttrs  :: GlobAttrs
+                      }
+                 deriving (Eq, Ord, Show, Read)
+
+type NodeMap n = Map n (NodeInfo n)
+
+type EdgeMap n = Map n [Attributes]
+
+-- | The decomposition of a node from a dot graph.  Any loops should
+--   be found in 'successors' rather than 'predecessors'.  Note also
+--   that these are created/consumed as if for /directed/ graphs.
+data Context n = Cntxt { node         :: n
+                         -- | The cluster this node can be found in;
+                         --   @Nothing@ indicates the node can be
+                         --   found in the root graph.
+                       , inCluster    :: Maybe GraphID
+                       , attributes   :: Attributes
+                       , predecessors :: [(n, Attributes)]
+                       , successors   :: [(n, Attributes)]
+                       }
+               deriving (Eq, Ord, Show, Read)
+
+adjacent :: Context n -> [DotEdge n]
+adjacent c = mapU (flip DotEdge n) (predecessors c)
+             ++ mapU (DotEdge n) (successors c)
+  where
+    n = node c
+    mapU = map . uncurry
+
+emptyGraph :: DotGraph n
+emptyGraph = DG { strictGraph   = False
+                , directedGraph = True
+                , graphID       = Nothing
+                , graphAttrs    = emptyGA
+                , clusters      = M.empty
+                , values        = M.empty
+                }
+
+emptyGA :: GlobAttrs
+emptyGA = GA S.empty S.empty S.empty
+
+-- -----------------------------------------------------------------------------
+-- Construction
+
+-- | Merge the 'Context' into the graph.  Assumes that the specified
+--   node is not in the graph but that all endpoints in the
+--   'successors' and 'predecessors' (with the exception of loops)
+--   are.  If the cluster is not present in the graph, then it will be
+--   added with no attributes with a parent of the root graph.
+--
+--   Note that @&@ and @'decompose'@ are /not/ quite inverses, as this
+--   function will add in the cluster if it does not yet exist in the
+--   graph, but 'decompose' will not delete it.
+(&) :: (Ord n) => Context n -> DotGraph n -> DotGraph n
+(Cntxt n mc as ps ss) & dg = withValues merge dg'
+  where
+    ps' = toMap ps
+    ss' = toMap ss
+
+    dg' = addNode n mc as dg
+
+    merge = addSucc n ps' . addPred n ss'
+
+infixr 5 &
+
+addSucc :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
+addSucc = addPS niSucc
+
+addPred :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
+addPred = addPS niPred
+
+addPS :: (Ord n) => ((EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n)
+         -> n -> EdgeMap n -> NodeMap n -> NodeMap n
+addPS fni t fas nm = foldl' addSucc' nm fas'
+  where
+    fas' = fromMap fas
+
+    addSucc' nm' (f,as) = M.alter (addS as) f nm'
+
+    addS as = Just
+              . maybe (error "Node not in the graph!")
+                      (fni (M.insertWith (++) t [as]))
+
+-- | Add a node to the current graph.  Throws an error if the node
+--   already exists in the graph.
+--
+--   If the specified cluster does not yet exist in the graph, then it
+--   will be added (as a sub-graph of the overall graph and no
+--   attributes).
+addNode :: (Ord n)
+           => n
+           -> Maybe GraphID -- ^ The cluster the node can be found in
+                            --   (@Nothing@ refers to the root graph).
+           -> Attributes
+           -> DotGraph n
+           -> DotGraph n
+addNode n mc as dg
+  | n `M.member` ns = error "Node already exists in the graph"
+  | otherwise       = addEmptyCluster mc
+                      $ dg { values   = ns' }
+  where
+    ns = values dg
+    ns' = M.insert n (NI mc as M.empty M.empty) ns
+
+-- | A variant of 'addNode' that takes in a DotNode (not in a
+--   cluster).
+addDotNode                :: (Ord n) => DotNode n -> DotGraph n -> DotGraph n
+addDotNode (DotNode n as) = addNode n Nothing as
+
+-- | Add the specified edge to the graph; assumes both node values are
+--   already present in the graph.  If the graph is undirected then
+--   the order of nodes doesn't matter.
+addEdge :: (Ord n) => n -> n -> Attributes -> DotGraph n -> DotGraph n
+addEdge f t as = withValues merge
+  where
+    -- Add the edge assuming it's directed; let the getter functions
+    -- be smart regarding directedness.
+    merge = addPred t (M.singleton f [as]) . addSucc f (M.singleton t [as])
+
+-- | A variant of 'addEdge' that takes a 'DotEdge' value.
+addDotEdge                  :: (Ord n) => DotEdge n -> DotGraph n -> DotGraph n
+addDotEdge (DotEdge f t as) = addEdge f t as
+
+-- | Add a new cluster to the graph; throws an error if the cluster
+--   already exists.  Assumes that it doesn't match the identifier of
+--   the overall graph.  If the parent cluster doesn't already exist
+--   in the graph then it will be added.
+addCluster :: GraphID          -- ^ The identifier for this cluster.
+              -> Maybe GraphID -- ^ The parent of this cluster
+                               --   (@Nothing@ refers to the root
+                               --   graph)
+              -> [GlobalAttributes]
+              -> DotGraph n
+              -> DotGraph n
+addCluster c mp gas dg
+  | c `M.member` cs = error "Cluster already exists in the graph"
+  | otherwise       = addEmptyCluster mp
+                      $ dg { clusters = M.insert c ci cs }
+  where
+    cs = clusters dg
+    ci = CI mp $ toGlobAttrs gas
+
+-- Used to make sure that the parent cluster exists
+addEmptyCluster :: Maybe GraphID -> DotGraph n -> DotGraph n
+addEmptyCluster = maybe id (withClusters . flip dontReplace defCI)
+  where
+    dontReplace = M.insertWith (const id)
+    defCI = CI Nothing emptyGA
+
+-- | Create a graph with no clusters.
+mkGraph :: (Ord n) => [DotNode n] -> [DotEdge n] -> DotGraph n
+mkGraph ns es = flip (foldl' (flip addDotEdge)) es
+                $ foldl' (flip addDotNode) emptyGraph ns
+
+-- | Create a Dot graph from an inductive graph.  Note that the
+graphToDot :: (Ord cl, IG.Graph gr) => GraphvizParams nl el cl l
+              -> gr nl el -> DotGraph Int
+graphToDot params = fromCanon . GV.graphToDot params
+-- Cheat for this, as the output of GV.graphToDot produces output
+-- suitable for fromCanon.
+{-
+toCanonical :: (Ord n) => DotGraph n -> C.DotGraph n
+toCanonical dg -- (DG str dir gas gid cls vs)
+  where
+    (gas, cgs) = getGraph
+    pM = clusterPath dg
+-}
+-- -----------------------------------------------------------------------------
+-- Deconstruction
+
+-- | A partial inverse of @'&'@, in that if a node exists in a graph
+--   then it will be decomposed, but will not remove the cluster that
+--   it was in even if it was the only node in that cluster.
+decompose :: (Ord n) => n -> DotGraph n -> Maybe (Context n, DotGraph n)
+decompose n dg
+  | n `M.notMember` ns = Nothing
+  | otherwise          = Just (c, dg')
+  where
+    ns = values dg
+    (Just (NI mc as ps ss), ns') = M.updateLookupWithKey (const . const Nothing) n ns
+
+    c = Cntxt n mc as (fromMap $ n `M.delete` ps) (fromMap ss)
+    dg' = dg { values = delSucc n ps . delPred n ss $ ns' }
+
+delSucc :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
+delSucc = delPS niSucc
+
+delPred :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
+delPred = delPS niPred
+
+-- Only takes in EdgeMap rather than [n] to make it easier to call
+-- from decompose
+delPS :: (Ord n) => ((EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n)
+         -> n -> EdgeMap n -> NodeMap n -> NodeMap n
+delPS fni t fm nm = foldl' delE nm $ M.keys fm
+  where
+    delE nm' f = M.adjust (fni $ M.delete t) f nm'
+
+-- | Delete the specified node from the graph; returns the original
+--   graph if that node isn't present.
+deleteNode      :: (Ord n) => n -> DotGraph n -> DotGraph n
+deleteNode n dg = maybe dg snd $ decompose n dg
+
+-- | Delete all edges between the two nodes; returns the original
+--   graph if there are no edges.
+deleteAllEdges          :: (Ord n) => n -> n -> DotGraph n -> DotGraph n
+deleteAllEdges n1 n2 = withValues (delAE n1 n2 . delAE n2 n1)
+  where
+    delAE f t = delSucc f t' . delPred f t'
+      where
+        t' = M.singleton t []
+
+-- | Deletes the specified edge from the DotGraph (note: for unordered
+--   graphs both orientations are considered).
+deleteEdge :: (Ord n) => n -> n -> Attributes -> DotGraph n -> DotGraph n
+deleteEdge n1 n2 as dg = withValues delEs dg
+  where
+    delE f t = M.adjust (niSucc $ M.adjust (delete as) t) f
+               . M.adjust (niPred $ M.adjust (delete as) f) t
+
+    delEs | directedGraph dg = delE n1 n2
+          | otherwise        = delE n1 n2 . delE n2 n1
+
+-- | As with 'deleteEdge' but takes a 'DotEdge' rather than individual
+--   values.
+deleteDotEdge :: (Ord n) => DotEdge n -> DotGraph n -> DotGraph n
+deleteDotEdge (DotEdge n1 n2 as) = deleteEdge n1 n2 as
+
+-- | Delete the specified cluster, and makes any clusters or nodes
+--   within it be in its root cluster (or the overall graph if
+--   required).
+deleteCluster      :: (Ord n) => GraphID -> DotGraph n -> DotGraph n
+deleteCluster c dg = withValues (M.map adjNode)
+                     . withClusters (M.map adjCluster . M.delete c)
+                     $ dg
+  where
+    p = parentCluster =<< c `M.lookup` clusters dg
+
+    adjParent p'
+      | p' == Just c = p
+      | otherwise    = p'
+
+    adjNode ni = ni { _inCluster = adjParent $ _inCluster ni }
+
+    adjCluster ci = ci { parentCluster = adjParent $ parentCluster ci }
+
+-- | Remove clusters with no sub-clusters and no nodes within them.
+removeEmptyClusters :: (Ord n) => DotGraph n -> DotGraph n
+removeEmptyClusters dg = dg { clusters = cM' }
+  where
+    cM = clusters dg
+    cM' = (cM `M.difference` invCs) `M.difference` invNs
+
+    invCs = usedClustsIn $ M.map parentCluster cM
+    invNs = usedClustsIn . M.map _inCluster $ values dg
+
+    usedClustsIn = M.fromAscList
+                   . map (liftM2 (,) (fst . head) (map snd))
+                   . groupSortBy fst
+                   . mapMaybe (uncurry (fmap . flip (,)))
+                   . M.assocs
+
+-- -----------------------------------------------------------------------------
+-- Information
+
+-- | Does this graph have any nodes?
+isEmpty :: DotGraph n -> Bool
+isEmpty = M.null . values
+
+-- | Does this graph have any clusters?
+hasClusters :: DotGraph n -> Bool
+hasClusters = M.null . clusters
+
+-- | Determine if this graph has nodes or clusters.
+isEmptyGraph :: DotGraph n -> Bool
+isEmptyGraph = liftM2 (&&) isEmpty (not . hasClusters)
+
+graphAttributes :: DotGraph n -> [GlobalAttributes]
+graphAttributes = fromGlobAttrs . graphAttrs
+
+-- | Return the ID for the cluster the node is in.
+foundInCluster :: (Ord n) => DotGraph n -> n -> Maybe GraphID
+foundInCluster dg n = _inCluster $ values dg M.! n
+
+-- | Return the attributes for the node.
+attributesOf :: (Ord n) => DotGraph n -> n -> Attributes
+attributesOf dg n = _attributes $ values dg M.! n
+
+-- | Predecessor edges for the specified node.  For undirected graphs
+--   equivalent to 'adjacentTo'.
+predecessorsOf :: (Ord n) => DotGraph n -> n -> [DotEdge n]
+predecessorsOf dg t
+  | directedGraph dg = emToDE (flip DotEdge t)
+                       . _predecessors $ values dg M.! t
+  | otherwise        = adjacentTo dg t
+
+-- | Successor edges for the specified node.  For undirected graphs
+--   equivalent to 'adjacentTo'.
+successorsOf :: (Ord n) => DotGraph n -> n -> [DotEdge n]
+successorsOf dg f
+  | directedGraph dg = emToDE (DotEdge f)
+                       . _successors $ values dg M.! f
+  | otherwise        = adjacentTo dg f
+
+-- | All edges involving this node.
+adjacentTo :: (Ord n) => DotGraph n -> n -> [DotEdge n]
+adjacentTo dg n = sucs ++ preds
+  where
+    ni = values dg M.! n
+    sucs = emToDE (DotEdge n) $ _successors ni
+    preds = emToDE (flip DotEdge n) $ n `M.delete` _predecessors ni
+
+emToDE :: (Ord n) => (n -> Attributes -> DotEdge n)
+          -> EdgeMap n -> [DotEdge n]
+emToDE f = map (uncurry f) . fromMap
+
+-- | Which cluster (or the root graph) is this cluster in?
+parentOf :: DotGraph n -> GraphID -> Maybe GraphID
+parentOf dg c = parentCluster $ clusters dg M.! c
+
+clusterAttributes :: DotGraph n -> GraphID -> [GlobalAttributes]
+clusterAttributes dg c = fromGlobAttrs . clusterAttrs $ clusters dg M.! c
+
+-- -----------------------------------------------------------------------------
+-- For DotRepr instance
+
+instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
+  fromCanonical = fromDotRepr
+
+  getID = graphID
+
+  setID i g = g { graphID = Just i }
+
+  graphIsDirected = directedGraph
+
+  setIsDirected d g = g { directedGraph = d }
+
+  graphIsStrict = strictGraph
+
+  setStrictness s g = g { strictGraph = s }
+
+  mapDotGraph = mapNs
+
+  graphStructureInformation = getGraphInfo
+
+  nodeInformation = getNodeInfo
+
+  edgeInformation = getEdgeInfo
+
+  unAnonymise = id -- No anonymous clusters!
+
+-- | Uses the PrintDot instance for canonical 'C.DotGraph's.
+instance (Ord n, PrintDot n, ParseDot n) => PrintDot (DotGraph n) where
+  unqtDot = unqtDot . canonicaliseOptions cOptions
+
+-- | Uses the ParseDot instance for generalised 'G.DotGraph's.
+instance forall n. (Ord n, PrintDot n, ParseDot n) => ParseDot (DotGraph n) where
+  parseUnqt = liftM fromGDot $ parseUnqt
+    where
+      fromGDot :: G.DotGraph n -> DotGraph n
+      fromGDot = fromDotRepr
+
+cOptions :: CanonicaliseOptions
+cOptions = COpts { edgesInClusters = False
+                 , groupAttributes = True
+                 }
+
+-- | Convert any existing DotRepr instance to a 'DotGraph'.
+fromDotRepr :: (DotRepr dg n) => dg n -> DotGraph n
+fromDotRepr = fromCanon . canonicaliseOptions cOptions
+
+-- Convert a dot-graph that's already been canonicalised
+fromCanon :: (Ord n) => C.DotGraph n -> DotGraph n
+fromCanon dg = DG { strictGraph   = C.strictGraph dg
+                  , directedGraph = dirGraph
+                  , graphAttrs    = as
+                  , graphID       = mgid
+                  , clusters      = cs
+                  , values        = ns
+                  }
+  where
+    stmts = C.graphStatements dg
+    mgid = C.graphID dg
+    dirGraph = C.directedGraph dg
+
+    (as, cs, ns) = fCStmt mgid stmts
+
+    fCStmt p stmts' = (sgAs, cs', ns')
+      where
+        sgAs = toGlobAttrs $ C.attrStmts stmts'
+        (cs', sgNs) = (M.unions *** M.unions) . unzip
+                      . map (fCSG p) $ C.subGraphs stmts'
+        nNs = M.fromList . map (fDN p) $ C.nodeStmts stmts'
+        ns' = sgNs `M.union` nNs
+
+    fCSG p sg = (M.insert sgid ci cs', ns')
+      where
+        msgid@(Just sgid) = C.subGraphID sg
+        (as', cs', ns') = fCStmt msgid $ C.subGraphStmts sg
+        ci = CI p as'
+
+    fDN p (DotNode n as') = ( n
+                            , NI { _inCluster    = p
+                                 , _attributes   = as'
+                                 , _predecessors = eSel n tEs
+                                 , _successors   = eSel n fEs
+                                 }
+                            )
+
+    es = C.edgeStmts stmts
+    fEs = toEdgeMap fromNode toNode es
+    tEs = delLoops $ toEdgeMap toNode fromNode es
+    eSel n es' = fromMaybe M.empty $ n `M.lookup` es'
+    delLoops = M.mapWithKey M.delete
+
+toEdgeMap     :: (Ord n) => (DotEdge n -> n) -> (DotEdge n -> n) -> [DotEdge n]
+                 -> Map n (EdgeMap n)
+toEdgeMap f t = M.map eM . M.fromList . groupSortCollectBy f t'
+  where
+    t' = liftM2 (,) t edgeAttributes
+    eM = M.fromList . groupSortCollectBy fst snd
+
+mapNs :: (Ord n, Ord n') => (n -> n') -> DotGraph n -> DotGraph n'
+mapNs f (DG st d as mid cs vs) = DG st d as mid cs
+                                 $ mapNM vs
+  where
+    mapNM = M.map mapNI . mpM
+    mapNI (NI mc as' ps ss) = NI mc as' (mpM ps) (mpM ss)
+    mpM = M.mapKeys f
+
+getGraphInfo    :: DotGraph n -> (GlobalAttributes, ClusterLookup)
+getGraphInfo dg = (gas, cl)
+  where
+    toGA = GraphAttrs . unSame
+    (gas, cgs) = (toGA *** M.map toGA) $ globAttrMap graphAs dg
+    pM = M.map pInit $ clusterPath dg
+
+    cl = M.mapWithKey addPath $ M.mapKeysMonotonic Just cgs
+
+    addPath c as = ( maybe [] (:[]) $ c `M.lookup` pM
+                   , as
+                   )
+
+    pInit p = case Seq.viewr p of
+                (p' Seq.:> _) -> p'
+                _             -> Seq.empty
+
+getNodeInfo             :: (Ord n) => Bool -> DotGraph n
+                           -> NodeLookup n
+getNodeInfo withGlob dg = M.map toLookup ns
+  where
+    (gGlob, aM) = globAttrMap nodeAs dg
+    pM = clusterPath dg
+
+    ns = values dg
+
+    toLookup ni = (pth, as')
+      where
+        as = _attributes ni
+        mp = _inCluster ni
+        pth = fromMaybe Seq.empty $ mp `M.lookup` pM
+        pAs = fromMaybe gGlob $ flip M.lookup aM =<< mp
+        as' | withGlob  = unSame $ toSAttr as `S.union` pAs
+            | otherwise = as
+
+getEdgeInfo             :: (Ord n) => Bool -> DotGraph n -> [DotEdge n]
+getEdgeInfo withGlob dg = concatMap (uncurry mkDotEdges) es
+  where
+    gGlob = edgeAs $ graphAttrs dg
+
+    es = concatMap (uncurry (map . (,)))
+         . M.assocs . M.map (M.assocs . _successors)
+         $ values dg
+
+    addGlob as
+      | withGlob  = unSame $ toSAttr as `S.union` gGlob
+      | otherwise = as
+
+    mkDotEdges f (t, ass) = map (DotEdge f t . addGlob) ass
+
+globAttrMap       :: (GlobAttrs -> SAttrs) -> DotGraph n
+                     -> (SAttrs, Map GraphID SAttrs)
+globAttrMap af dg = (gGlob, aM)
+  where
+    gGlob = af $ graphAttrs dg
+
+    cs = clusters dg
+
+    aM = M.map attrsFor cs
+
+    attrsFor ci = as `S.union` pAs
+      where
+        as = af $ clusterAttrs ci
+        p = parentCluster ci
+        pAs = fromMaybe gGlob $ flip M.lookup aM =<< p
+
+clusterPath :: DotGraph n -> Map (Maybe GraphID) St.Path
+clusterPath dg = M.mapKeysMonotonic Just pM
+  where
+    cs = clusters dg
+
+    pM = M.mapWithKey pathOf cs
+
+    pathOf c ci = pPth Seq.|> Just c
+      where
+        mp = parentCluster ci
+        pPth = fromMaybe Seq.empty $ flip M.lookup pM =<< mp
+
+-- -----------------------------------------------------------------------------
+
+withValues      :: (Ord n) => (NodeMap n -> NodeMap n)
+                   -> DotGraph n -> DotGraph n
+withValues f dg = dg { values = f $ values dg }
+
+withClusters      :: (Map GraphID ClusterInfo -> Map GraphID ClusterInfo)
+                     -> DotGraph n -> DotGraph n
+withClusters f dg = dg { clusters = f $ clusters dg }
+
+toGlobAttrs :: [GlobalAttributes] -> GlobAttrs
+toGlobAttrs = mkGA . partitionGlobal
+  where
+    mkGA (ga,na,ea) = GA (toSAttr ga) (toSAttr na) (toSAttr ea)
+
+fromGlobAttrs :: GlobAttrs -> [GlobalAttributes]
+fromGlobAttrs (GA ga na ea) = [ GraphAttrs $ unSame ga
+                              , NodeAttrs  $ unSame na
+                              , EdgeAttrs  $ unSame ea
+                              ]
+
+niSucc      :: (Ord n) => (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
+niSucc f ni = ni { _successors = f $ _successors ni }
+
+niPred      :: (Ord n) => (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
+niPred f ni = ni { _predecessors = f $ _predecessors ni }
+
+toMap :: (Ord n) => [(n, Attributes)] -> EdgeMap n
+toMap = M.fromAscList . groupSortCollectBy fst snd
+
+fromMap :: EdgeMap n -> [(n, Attributes)]
+fromMap = concatMap (uncurry (map . (,))) . M.toList

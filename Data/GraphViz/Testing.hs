@@ -78,6 +78,7 @@ import Data.GraphViz.Parsing(ParseDot(..), parseIt, runParser)
 import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Printing(PrintDot(..), printIt, renderDot)
 import qualified Data.GraphViz.Types.Generalised as G
+import qualified Data.GraphViz.Types.Graph as Gr
 -- Can't use PatriciaTree because a Show instance is needed.
 import Data.Graph.Inductive.Tree(Gr)
 
@@ -205,8 +206,9 @@ test_printParseID
          }
   where
     tsts :: [IO Result]
-    tsts = [ quickCheckResult (prop_printParseID :: DotGraph Int   -> Bool)
-           , quickCheckResult (prop_printParseID :: G.DotGraph Int -> Bool)
+    tsts = [ quickCheckResult (prop_printParseID :: DotGraph    Int -> Bool)
+           , quickCheckResult (prop_printParseID :: G.DotGraph  Int -> Bool)
+           , quickCheckResult (prop_printParseID :: Gr.DotGraph Int -> Bool)
            ]
 
     dsc = "The graphviz library should be able to parse back in its own\n\
@@ -357,4 +359,5 @@ testAllGraphTypes      :: (Testable prop)
                           -> [prop]
 testAllGraphTypes prop = [ prop (undefined :: DotGraph Int)
                          , prop (undefined :: G.DotGraph Int)
+                         , prop (undefined :: Gr.DotGraph Int)
                          ]
