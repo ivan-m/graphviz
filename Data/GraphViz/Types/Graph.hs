@@ -618,13 +618,16 @@ globAttrMap af dg = (gGlob, aM)
         pAs = fromMaybe gGlob $ flip M.lookup aM =<< p
 
 clusterPath :: DotGraph n -> Map (Maybe GraphID) St.Path
-clusterPath dg = M.mapKeysMonotonic Just pM
+clusterPath = M.mapKeysMonotonic Just . M.map (fmap Just) . clusterPath'
+
+clusterPath' :: DotGraph n -> Map GraphID (Seq.Seq GraphID)
+clusterPath' dg = pM
   where
     cs = clusters dg
 
     pM = M.mapWithKey pathOf cs
 
-    pathOf c ci = pPth Seq.|> Just c
+    pathOf c ci = pPth Seq.|> c
       where
         mp = parentCluster ci
         pPth = fromMaybe Seq.empty $ flip M.lookup pM =<< mp
