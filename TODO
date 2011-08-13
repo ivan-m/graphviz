@@ -14,6 +14,20 @@ Short term
 * Quickstart-style documentation to help users get going with graphviz
   quickly.
 
+* Add support for SVG colors.
+
+* Re-name the fields of `DotEdge` to be more user-friendly.
+
+* Define new classes to distinguish between printing/parsing Attribute
+  values and other values (as only the former requires quoted
+  variants).
+
+* Extend the various DotRepr implementations:
+
+    - Add one that is useable as a graph.
+
+    - Add a monadic version ala dotgen.
+
 Medium term
 -----------
 
@@ -25,6 +39,8 @@ Medium term
 
 * Add support for non-visualisation Graphviz tools (e.g. dijkstra and
   tred).
+
+* Add support for clusters as endpoints of edges.
 
 Long term
 ---------
