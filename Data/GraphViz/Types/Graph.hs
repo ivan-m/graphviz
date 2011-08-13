@@ -34,6 +34,7 @@ module Data.GraphViz.Types.Graph
        , Context(..)
          -- * Conversions
        , toCanonical
+       , unsafeFromCanonical
        , fromDotRepr
          -- * Graph information
        , isEmpty
@@ -59,11 +60,6 @@ module Data.GraphViz.Types.Graph
        , DotEdge(..)
        , addDotEdge
        , addCluster
-         -- ** Conversion from FGL graphs
-       , graphToDot
-       , GraphvizParams(..)
-       , LNodeCluster
-       , NodeCluster(..)
          -- * Graph deconstruction
        , decompose
        , deleteNode
@@ -75,7 +71,6 @@ module Data.GraphViz.Types.Graph
        ) where
 
 import Data.GraphViz(GraphvizParams(..), LNodeCluster, NodeCluster(..))
-import qualified Data.GraphViz as GV
 import Data.GraphViz.Types
 import qualified Data.GraphViz.Types.Canonical as C
 import qualified Data.GraphViz.Types.Generalised as G
@@ -278,13 +273,6 @@ addEmptyCluster = maybe id (withClusters . flip dontReplace defCI)
 mkGraph :: (Ord n) => [DotNode n] -> [DotEdge n] -> DotGraph n
 mkGraph ns es = flip (foldl' (flip addDotEdge)) es
                 $ foldl' (flip addDotNode) emptyGraph ns
-
--- | Create a Dot graph from an inductive graph.  Note that the
-graphToDot :: (Ord cl, IG.Graph gr) => GraphvizParams nl el cl l
-              -> gr nl el -> DotGraph Int
-graphToDot params = fromCanon . GV.graphToDot params
--- Cheat for this, as the output of GV.graphToDot produces output
--- suitable for fromCanon.
 
 -- | Convert this DotGraph into canonical form.  All edges are found
 --   in the outer graph rather than in clusters.
@@ -516,17 +504,25 @@ cOptions = COpts { edgesInClusters = False
 
 -- | Convert any existing DotRepr instance to a 'DotGraph'.
 fromDotRepr :: (DotRepr dg n) => dg n -> DotGraph n
-fromDotRepr = fromCanon . canonicaliseOptions cOptions
+fromDotRepr = unsafeFromCanonical . canonicaliseOptions cOptions
 
--- Convert a dot-graph that's already been canonicalised
-fromCanon :: (Ord n) => C.DotGraph n -> DotGraph n
-fromCanon dg = DG { strictGraph   = C.strictGraph dg
-                  , directedGraph = dirGraph
-                  , graphAttrs    = as
-                  , graphID       = mgid
-                  , clusters      = cs
-                  , values        = ns
-                  }
+-- | Convert a canonical Dot graph to a graph-based one.  This assumes
+--   that the canonical graph is the same format as returned by
+--   'toCanonical'.  The \"unsafeness\" is that all nodes are assumed
+--   to be explicitly listed precisely once, and that only edges found
+--   in the root graph are considered.  If this isn't the case, use
+--   'fromCanonical' instead.
+--
+--   The 'graphToDot' function from "Data.GraphViz" produces output
+--   suitable for this function.
+unsafeFromCanonical :: (Ord n) => C.DotGraph n -> DotGraph n
+unsafeFromCanonical dg = DG { strictGraph   = C.strictGraph dg
+                            , directedGraph = dirGraph
+                            , graphAttrs    = as
+                            , graphID       = mgid
+                            , clusters      = cs
+                            , values        = ns
+                            }
   where
     stmts = C.graphStatements dg
     mgid = C.graphID dg
