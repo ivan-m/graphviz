@@ -94,7 +94,7 @@ module Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
                                     , DotSubGraph(..))
 import Data.GraphViz.Types.Common( GraphID(..), GlobalAttributes(..)
-                                 , DotNode(..), DotEdge(..))
+                                 , DotNode(..), DotEdge(..), numericValue)
 import Data.GraphViz.Types.State
 import Data.GraphViz.Util(bool)
 import Data.GraphViz.Parsing(ParseDot, parseIt)
@@ -102,6 +102,7 @@ import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Printing(PrintDot, printIt)
 
 import Data.Text.Lazy(Text)
+import Control.Monad.Trans.State(get, put, modify, execState, evalState)
 
 -- -----------------------------------------------------------------------------
 
@@ -153,6 +154,11 @@ class (Ord n, PrintDot n, ParseDot n, PrintDot (dg n), ParseDot (dg n))
   --   'DotRepr'.  The 'Bool' parameter indicates if applicable
   --   'EdgeAttrs' should be included.
   edgeInformation :: Bool -> dg n -> [DotEdge n]
+
+  -- | Give any anonymous sub-graphs or clusters a unique identifier
+  --   (i.e. there will be no 'Nothing' key in the 'ClusterLookup'
+  --   from 'graphStructureInformation').
+  unAnonymise :: dg n -> dg n
 
 -- | Returns all resultant 'DotNode's in the 'DotRepr' (not including
 --   'NodeAttr's).
@@ -208,6 +214,8 @@ instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
   edgeInformation wGlobal = getDotEdges wGlobal
                             . statementEdges . graphStatements
 
+  unAnonymise = renumber
+
 statementStructure :: DotStatements n -> GraphState ()
 statementStructure stmts
   = do mapM_ addGraphGlobals $ attrStmts stmts
@@ -231,3 +239,34 @@ withSubGraphID        :: (Maybe (Maybe GraphID) -> b -> a)
 withSubGraphID f g sg = f mid . g $ subGraphStmts sg
   where
     mid = bool Nothing (Just $ subGraphID sg) $ isCluster sg
+
+renumber    :: DotGraph n -> DotGraph n
+renumber dg = dg { graphStatements = newStmts }
+  where
+    startN = succ $ maxSGInt dg
+
+    newStmts = evalState (stRe $ graphStatements dg) startN
+
+    stRe st = do sgs' <- mapM sgRe $ subGraphs st
+                 return $ st { subGraphs = sgs' }
+    sgRe sg = do sgid' <- case subGraphID sg of
+                            Nothing -> do n <- get
+                                          put $ succ n
+                                          return . Just $ Int n
+                            sgid    -> return sgid
+                 stmts' <- stRe $ subGraphStmts sg
+                 return $ sg { subGraphID    = sgid'
+                             , subGraphStmts = stmts'
+                             }
+
+maxSGInt    :: DotGraph n -> Int
+maxSGInt dg = execState (stInt $ graphStatements dg)
+              . flip check 0
+              $ graphID dg
+  where
+    check = maybe id max . (numericValue =<<)
+
+    stInt = mapM_ sgInt . subGraphs
+    sgInt sg = do modify (check $ subGraphID sg)
+                  stInt $ subGraphStmts sg
+

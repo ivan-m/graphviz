@@ -40,8 +40,10 @@ import Data.GraphViz.Util(bool)
 import qualified Data.Sequence as Seq
 import Data.Sequence(Seq, (><))
 import qualified Data.Foldable as F
+import qualified Data.Traversable as T
 import Control.Arrow((&&&))
 import Control.Monad(liftM)
+import Control.Monad.Trans.State(get, put, modify, execState, evalState)
 
 -- -----------------------------------------------------------------------------
 
@@ -79,6 +81,8 @@ instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
 
   edgeInformation wGlobal = getDotEdges wGlobal
                             . statementEdges . graphStatements
+
+  unAnonymise = renumber
 
 instance (PrintDot n) => PrintDot (DotGraph n) where
   unqtDot = printStmtBased printGraphID' graphStatements printGStmts
@@ -243,3 +247,36 @@ withSubGraphID        :: (Maybe (Maybe GraphID) -> b -> a)
 withSubGraphID f g sg = f mid . g $ subGraphStmts sg
   where
     mid = bool Nothing (Just $ subGraphID sg) $ isCluster sg
+
+renumber    :: DotGraph n -> DotGraph n
+renumber dg = dg { graphStatements = newStmts }
+  where
+    startN = succ $ maxSGInt dg
+
+    newStmts = evalState (stsRe $ graphStatements dg) startN
+
+    stsRe = T.mapM stRe
+    stRe (SG sg) = liftM SG $ sgRe sg
+    stRe stmt    = return stmt
+    sgRe sg = do sgid' <- case subGraphID sg of
+                            Nothing -> do n <- get
+                                          put $ succ n
+                                          return . Just $ Int n
+                            sgid    -> return sgid
+                 stmts' <- stsRe $ subGraphStmts sg
+                 return $ sg { subGraphID    = sgid'
+                             , subGraphStmts = stmts'
+                             }
+
+maxSGInt    :: DotGraph n -> Int
+maxSGInt dg = execState (stsInt $ graphStatements dg)
+              . flip check 0
+              $ graphID dg
+  where
+    check = maybe id max . (numericValue =<<)
+
+    stsInt = F.mapM_ stInt
+    stInt (SG sg) = sgInt sg
+    stInt _       = return ()
+    sgInt sg = do modify (check $ subGraphID sg)
+                  stsInt $ subGraphStmts sg

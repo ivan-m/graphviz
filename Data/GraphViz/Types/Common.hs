@@ -24,6 +24,7 @@ import Data.GraphViz.State(setDirectedness, getDirectedness, getsGS, modifyGS)
 
 import Data.Maybe(isJust)
 import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.Read as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2, when)
 
@@ -60,6 +61,12 @@ stringNum str = maybe checkDbl Int $ stringToInt str
     checkDbl = if isNumString str
                then Dbl $ toDouble str
                else Str str
+
+numericValue           :: GraphID -> Maybe Int
+numericValue (Str str) = either (const Nothing) (Just . round . fst)
+                         $ T.signed T.double str
+numericValue (Int n)   = Just n
+numericValue (Dbl x)   = Just $ round x
 
 -- -----------------------------------------------------------------------------
 
