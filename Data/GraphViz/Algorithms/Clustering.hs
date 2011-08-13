@@ -47,7 +47,7 @@ clustersToNodes clusterBy cID fmtCluster fmtNode
       . labNodes
 
 clustersToNodes' :: (Ord c) => ((n,a) -> NodeCluster c (n,l))
-                   -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+                   -> (c -> GraphID) -> (c -> [GlobalAttributes])
                    -> ((n,l) -> Attributes) -> [(n,a)]
                    -> ([DotSubGraph n], [DotNode n])
 clustersToNodes' clusterBy cID fmtCluster fmtNode
