@@ -10,7 +10,6 @@
  -}
 module Data.GraphViz.Testing.Instances.Canonical where
 
-import Data.GraphViz.Testing.Instances.Attributes
 import Data.GraphViz.Testing.Instances.Common
 import Data.GraphViz.Testing.Instances.Helpers
 

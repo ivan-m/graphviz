@@ -12,7 +12,7 @@ module Data.GraphViz.Testing.Instances.Generalised where
 
 import Data.GraphViz.Testing.Instances.Attributes()
 import Data.GraphViz.Testing.Instances.Common
-import Data.GraphViz.Testing.Instances.Helpers
+import Data.GraphViz.Testing.Instances.Helpers()
 
 import Data.GraphViz.Types.Generalised
 import Data.GraphViz.Util(bool)
