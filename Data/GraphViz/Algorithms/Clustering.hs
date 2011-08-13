@@ -39,7 +39,7 @@ data NodeCluster c a = N a -- ^ Indicates the actual Node in the Graph.
 
 -- | Extract the clusters and nodes from the graph.
 clustersToNodes :: (Ord c, Graph gr) => (LNode a -> LNodeCluster c l)
-                   -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
+                   -> (c -> GraphID) -> (c -> [GlobalAttributes])
                    -> (LNode l -> Attributes) -> gr a b
                    -> ([DotSubGraph Node], [DotNode Node])
 clustersToNodes clusterBy cID fmtCluster fmtNode
@@ -99,24 +99,24 @@ collapseNClusts = concatMap grpCls
 -- | Convert the cluster representation of the trees into 'DotNode's
 --   and 'DotSubGraph's (with @'isCluster' = 'True'@, and
 --   @'subGraphID' = 'Nothing'@).
-treesToDot :: (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-              -> (LNode a -> Attributes) -> [ClusterTree c (LNode a)]
-              -> ([DotSubGraph Node], [DotNode Node])
+treesToDot :: (c -> GraphID) -> (c -> [GlobalAttributes])
+              -> ((n,a) -> Attributes) -> [ClusterTree c (n,a)]
+              -> ([DotSubGraph n], [DotNode n])
 treesToDot cID fmtCluster fmtNode
     = partitionEithers
       . map (treeToDot cID fmtCluster fmtNode)
 
 -- | Convert this 'ClusterTree' into its /Dot/ representation.
-treeToDot :: (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-             -> (LNode a -> Attributes) -> ClusterTree c (LNode a)
-             -> Either (DotSubGraph Node) (DotNode Node)
+treeToDot :: (c -> GraphID) -> (c -> [GlobalAttributes])
+             -> ((n,a) -> Attributes) -> ClusterTree c (n,a)
+             -> Either (DotSubGraph n) (DotNode n)
 treeToDot _ _ fmtNode (NT ln)
     = Right DotNode { nodeID         = fst ln
                     , nodeAttributes = fmtNode ln
                     }
 treeToDot cID fmtCluster fmtNode (CT c nts)
     = Left DotSG { isCluster     = True
-                 , subGraphID    = cID c
+                 , subGraphID    = Just $ cID c
                  , subGraphStmts = stmts
                  }
   where

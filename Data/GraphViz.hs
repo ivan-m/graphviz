@@ -250,7 +250,7 @@ graphToDot params graph
                      , nodeStmts = ns
                      , edgeStmts = es
                      }
-    (cs, ns) = clustersToNodes (clusterBy params) (Just . clusterID params)
+    (cs, ns) = clustersToNodes (clusterBy params) (clusterID params)
                                (fmtCluster params) (fmtNode params)
                                graph
     es = mapMaybe mkDotEdge . labEdges $ graph
