@@ -190,7 +190,7 @@ compLists []     []     = EQ
 compLists []     _      = GT
 compLists _      []     = LT
 compLists (x:xs) (y:ys) = case compare x y of
-                            EQ  -> compare xs ys
+                            EQ  -> compLists xs ys
                             oth -> oth
 
 nonEmptyGAs :: [GlobalAttributes] -> [GlobalAttributes]
