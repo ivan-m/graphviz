@@ -43,18 +43,17 @@ clustersToNodes :: (Ord c, Graph gr) => (LNode a -> LNodeCluster c l)
                    -> (LNode l -> Attributes) -> gr a b
                    -> ([DotSubGraph Node], [DotNode Node])
 clustersToNodes clusterBy cID fmtCluster fmtNode
-    = clustersToNodes'
+    = clustersToNodes' clusterBy cID fmtCluster fmtNode
       . labNodes
 
-clustersToNodes' :: (Ord c) => (LNode a -> LNodeCluster c l)
+clustersToNodes' :: (Ord c) => ((n,a) -> NodeCluster c (n,l))
                    -> (c -> Maybe GraphID) -> (c -> [GlobalAttributes])
-                   -> (LNode l -> Attributes) -> [LNode a]
-                   -> ([DotSubGraph Node], [DotNode Node])
+                   -> ((n,l) -> Attributes) -> [(n,a)]
+                   -> ([DotSubGraph n], [DotNode n])
 clustersToNodes' clusterBy cID fmtCluster fmtNode
     = treesToDot cID fmtCluster fmtNode
       . collapseNClusts
       . map (clustToTree . clusterBy)
-      . labNodes
 
 -- -----------------------------------------------------------------------------
 
