@@ -74,6 +74,7 @@ isNumString str = case T.uncons $ T.toLower str of
                      Just ('e',ds) -> isIntString ds
                      _             -> False
 
+{-
 -- | This assumes that 'isNumString' is 'True'.
 toDouble     :: Text -> Double
 toDouble str = case T.uncons $ T.toLower str of
@@ -89,6 +90,21 @@ toDouble str = case T.uncons $ T.toLower str of
                                    `T.snoc` 'e' `T.snoc` '0' `T.append` es'
                 _         -> s
     toD = either (const $ error "Not a Double") fst . T.signed T.double
+-}
+-- | This assumes that 'isNumString' is 'True'.
+toDouble     :: Text -> Double
+toDouble str = case T.uncons $ T.toLower str of
+                 Just ('-', str') -> toD $ '-' `T.cons` adj str'
+                 _                -> toD $ adj str
+  where
+    adj s = T.cons '0'
+            $ case T.span ('.' ==) s of
+                (ds, ".") | not $ T.null ds -> s `T.snoc` '0'
+                (ds, ds') | Just ('.',es) <- T.uncons ds'
+                          , Just ('e',_) <- T.uncons es
+                            -> ds `T.snoc` '.' `T.snoc` '0' `T.append` es
+                _              -> s
+    toD = read . T.unpack
 
 isIntString :: Text -> Bool
 isIntString = isJust . stringToInt
