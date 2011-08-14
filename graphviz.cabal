@@ -115,6 +115,9 @@ Library {
         if impl(ghc >= 6.12.1)
            Ghc-Options: -fno-warn-unused-do-bind
 
+        if impl(ghc >= 7.0)
+           Ghc-Options: -dno-debug-output
+
         Ghc-Prof-Options:  -prof -auto-all
 }
 
@@ -132,6 +135,9 @@ Executable graphviz-testsuite {
 
         if impl(ghc >= 6.12.1)
            Ghc-Options: -fno-warn-unused-do-bind
+
+        if impl(ghc >= 7.0)
+           Ghc-Options: -dno-debug-output
 
         GHC-Prof-Options: -auto-all -caf-all -rtsopts
 }
