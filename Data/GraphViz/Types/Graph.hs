@@ -62,6 +62,7 @@ module Data.GraphViz.Types.Graph
        , addCluster
          -- * Graph deconstruction
        , decompose
+       , decomposeAny
        , deleteNode
        , deleteAllEdges
        , deleteEdge
@@ -330,6 +331,13 @@ decompose n dg
 
     c = Cntxt n mc as (fromMap $ n `M.delete` ps) (fromMap ss)
     dg' = dg { values = delSucc n ps . delPred n ss $ ns' }
+
+-- | As with 'decompose', but do not specify /which/ node to
+--   decompose.
+decomposeAny :: (Ord n) => DotGraph n -> Maybe (Context n, DotGraph n)
+decomposeAny dg
+  | isEmpty dg = Nothing
+  | otherwise  = decompose (fst . M.findMin $ values dg) dg
 
 delSucc :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
 delSucc = delPS niSucc
