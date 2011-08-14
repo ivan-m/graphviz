@@ -85,10 +85,9 @@ data GlobalAttributes = GraphAttrs { attrs :: Attributes }
                       deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GlobalAttributes where
-  -- Can't use printAttrBased because an empty list still must be printed.
-  unqtDot ga = printGlobAttrType ga <+> toDot (attrs ga) <> semi
+  unqtDot = printAttrBased True printGlobAttrType attrs
 
-  unqtListToDot = printAttrBasedList printGlobAttrType attrs
+  unqtListToDot = printAttrBasedList True printGlobAttrType attrs
 
   listToDot = unqtListToDot
 
@@ -148,9 +147,9 @@ data DotNode n = DotNode { nodeID :: n
                deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot n) => PrintDot (DotNode n) where
-  unqtDot = printAttrBased printNodeID nodeAttributes
+  unqtDot = printAttrBased False printNodeID nodeAttributes
 
-  unqtListToDot = printAttrBasedList printNodeID nodeAttributes
+  unqtListToDot = printAttrBasedList False printNodeID nodeAttributes
 
   listToDot = unqtListToDot
 
@@ -194,9 +193,9 @@ data DotEdge n = DotEdge { fromNode       :: n
                deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot n) => PrintDot (DotEdge n) where
-  unqtDot = printAttrBased printEdgeID edgeAttributes
+  unqtDot = printAttrBased False printEdgeID edgeAttributes
 
-  unqtListToDot = printAttrBasedList printEdgeID edgeAttributes
+  unqtListToDot = printAttrBasedList False printEdgeID edgeAttributes
 
   listToDot = unqtListToDot
 
@@ -442,17 +441,20 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
                return (isCl, sID)
 -}
 
-printAttrBased          :: (a -> DotCode) -> (a -> Attributes) -> a -> DotCode
-printAttrBased ff fas a = dc <> semi
+-- The Bool indicates whether or not to print empty lists
+printAttrBased                :: Bool -> (a -> DotCode) -> (a -> Attributes)
+                                 -> a -> DotCode
+printAttrBased prEmp ff fas a = dc <> semi
   where
     f = ff a
     dc = case fas a of
-           [] -> f
+           [] | not prEmp -> f
            as -> f <+> toDot as
 
-printAttrBasedList        :: (a -> DotCode) -> (a -> Attributes)
-                             -> [a] -> DotCode
-printAttrBasedList ff fas = vcat . mapM (printAttrBased ff fas)
+-- The Bool indicates whether or not to print empty lists
+printAttrBasedList              :: Bool -> (a -> DotCode) -> (a -> Attributes)
+                                   -> [a] -> DotCode
+printAttrBasedList prEmp ff fas = vcat . mapM (printAttrBased prEmp ff fas)
 
 parseAttrBased   :: Parse (Attributes -> a) -> Parse a
 parseAttrBased p = do f <- p
