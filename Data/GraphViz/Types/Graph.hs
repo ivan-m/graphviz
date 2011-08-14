@@ -94,6 +94,9 @@ import qualified Data.Set as S
 import qualified Data.Sequence as Seq
 import Control.Arrow((***))
 import Control.Monad(liftM, liftM2)
+import Text.Read(Lexeme(Ident), lexP, parens, readPrec)
+import Text.ParserCombinators.ReadPrec(ReadPrec, lift, prec)
+import Text.ParserCombinators.ReadP(string, char, readS_to_P)
 
 -- -----------------------------------------------------------------------------
 
@@ -104,7 +107,19 @@ data DotGraph n = DG { strictGraph   :: Bool
                      , clusters      :: Map GraphID ClusterInfo
                      , values        :: NodeMap n
                      }
-                deriving (Eq, Ord, Show, Read)
+                deriving (Eq, Ord)
+
+instance (Ord n, Show n) => Show (DotGraph n) where
+  showsPrec d dg = showParen (d > 10) $
+                   showString "fromCanonical " . shows (toCanonical dg)
+
+-- | If the graph is the output from 'show', then it should be safe to
+--   substitute 'unsafeFromCanonical' for 'fromCanonical'.
+instance (Ord n, Read n) => Read (DotGraph n) where
+  readPrec = parens . prec 10
+             $ do Ident "fromCanonical" <- lexP
+                  cdg <- readPrec
+                  return $ fromCanonical cdg
 
 data GlobAttrs = GA { graphAs :: SAttrs
                     , nodeAs  :: SAttrs
