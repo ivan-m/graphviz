@@ -7,71 +7,66 @@
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
-   Various different representations of Dot graphs are available, all
-   of which are based loosely upon the specifications at:
-   <http://graphviz.org/doc/info/lang.html> The 'DotRepr' class
+   Four different representations of Dot graphs are available, all of
+   which are based loosely upon the specifications at:
+   <http://graphviz.org/doc/info/lang.html>.  The 'DotRepr' class
    provides a common interface for them (the 'PrintDotRepr',
    'ParseDotRepr' and 'PPDotRepr' classes are used until class aliases
    are implemented).
 
-   Printing of /Dot/ code is done as strictly as possible, whilst
-   parsing is as permissive as possible.  For example, if the types
-   allow it then @\"2\"@ will be parsed as an 'Int' value.  Note that
-   quoting and escaping of 'String' values is done automagically.
+   As a comparison, all four representations provide how you would
+   define the following Dot graph (or at least one isomorphic to it):
 
-   A summary of known limitations\/differences:
+   > digraph G {
+   >
+   > 	subgraph cluster_0 {
+   > 		style=filled;
+   > 		color=lightgrey;
+   > 		node [style=filled,color=white];
+   > 		a0 -> a1 -> a2 -> a3;
+   > 		label = "process #1";
+   > 	}
+   >
+   > 	subgraph cluster_1 {
+   > 		node [style=filled];
+   > 		b0 -> b1 -> b2 -> b3;
+   > 		label = "process #2";
+   > 		color=blue
+   > 	}
+   > 	start -> a0;
+   > 	start -> b0;
+   > 	a1 -> b3;
+   > 	b2 -> a3;
+   > 	a3 -> a0;
+   > 	a3 -> end;
+   > 	b3 -> end;
+   >
+   > 	start [shape=Mdiamond];
+   > 	end [shape=Msquare];
+   > }
 
-   * When creating 'GraphID' values for graphs and sub-graphs,
-     you should ensure that none of them have the same printed value
-     as one of the node identifiers values to avoid any possible problems.
+    Each representation is suited for different things:
 
-   * If you want any 'GlobalAttributes' in a sub-graph and want
-     them to only apply to that sub-graph, then you must ensure it
-     does indeed have a valid 'GraphID'.
+    ["Data.GraphViz.Types.Canonical"] is ideal for converting other
+    graph-like data structures into Dot graphs (the "Data.GraphViz"
+    module provides some functions for this).  It is a structured
+    representation of Dot code.
 
-   * All sub-graphs which represent clusters should have unique
-     identifiers (well, only if you want them to be generated
-     sensibly).
+    ["Data.GraphViz.Types.Generalised"] matches the actual structure
+    of Dot code.  As such, it is suited for parsing in existing Dot
+    code.
 
-   * If eventually outputting to a format such as SVG, then you should
-     make sure to specify an identifier for the overall graph, as that is
-     used as the title of the resulting image.
+    ["Data.GraphViz.Types.Graph"] provides graph operations for
+    manipulating Dot graphs; this is suited when you want to edit
+    existing Dot code.  It uses generalised Dot graphs for parsing and
+    canonical Dot graphs for printing.
 
-   * Whilst the graphs, etc. are polymorphic in their node type, you
-     should ensure that you use a relatively simple node type (that
-     is, it only covers a single line, etc.).
+    ["Data.GraphViz.Types.Monadic"] is a much easier representation to
+    use when defining relatively static Dot graphs in Haskell code,
+    and looks vaguely like actual Dot code if you squint a bit.
 
-   * Also, whilst Graphviz allows you to mix the types used for nodes,
-     this library requires\/assumes that they are all the same type (but
-     you /can/ use a sum-type).
-
-   * 'DotEdge' defines an edge @(a, b)@ (with an edge going from @a@
-     to @b@); in /Dot/ parlance the edge has a head at @a@ and a tail
-     at @b@.  Care must be taken when using the related @Head*@ and
-     @Tail*@ 'Attribute's.  See the differences section in
-     "Data.GraphViz.Attributes" for more information.
-
-   * It is common to see multiple edges defined on the one line in Dot
-     (e.g. @n1 -> n2 -> n3@ means to create a directed edge from @n1@
-     to @n2@ and from @n2@ to @n3@).  These types of edge definitions
-     are parseable; however, they are converted to singleton edges.
-
-   * It is not yet possible to create or parse edges with
-     subgraphs\/clusters as one of the end points.
-
-   * The parser will strip out comments and pre-processor lines, join
-     together multiline statements and concatenate split strings together.
-     However, pre-processing within HTML-like labels is currently not
-     supported.
-
-   * Graphviz allows a node to be \"defined\" twice (e.g. the actual
-     node definition, and then in a subgraph with extra global attributes
-     applied to it).  This actually represents the same node, but when
-     parsing they will be considered as separate 'DotNode's (such that
-     'graphNodes' will return both \"definitions\").  @canonicalise@ from
-     "Data.GraphViz.Algorithms" can be used to fix this.
-
-   See "Data.GraphViz.Attributes" for more limitations.
+    Please also read the limitations section at the end for advice on
+    how to properly use these Dot representations.
 
 -}
 module Data.GraphViz.Types
@@ -94,6 +89,8 @@ module Data.GraphViz.Types
          -- * Printing and parsing a @DotRepr@.
        , printDotGraph
        , parseDotGraph
+         -- * Limitations and documentation
+         -- $limitations
        ) where
 
 import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
@@ -293,3 +290,66 @@ maxSGInt dg = execState (stInt $ graphStatements dg)
     sgInt sg = do modify (check $ subGraphID sg)
                   stInt $ subGraphStmts sg
 
+-- -----------------------------------------------------------------------------
+
+{- $limitations
+
+   Printing of /Dot/ code is done as strictly as possible, whilst
+   parsing is as permissive as possible.  For example, if the types
+   allow it then @\"2\"@ will be parsed as an 'Int' value.  Note that
+   quoting and escaping of textual values is done automagically.
+
+   A summary of known limitations\/differences:
+
+   * When creating 'GraphID' values for graphs and sub-graphs,
+     you should ensure that none of them have the same printed value
+     as one of the node identifiers values to avoid any possible problems.
+
+   * If you want any 'GlobalAttributes' in a sub-graph and want
+     them to only apply to that sub-graph, then you must ensure it
+     does indeed have a valid 'GraphID'.
+
+   * All sub-graphs which represent clusters should have unique
+     identifiers (well, only if you want them to be generated
+     sensibly).
+
+   * If eventually outputting to a format such as SVG, then you should
+     make sure to specify an identifier for the overall graph, as that is
+     used as the title of the resulting image.
+
+   * Whilst the graphs, etc. are polymorphic in their node type, you
+     should ensure that you use a relatively simple node type (that
+     is, it only covers a single line, etc.).
+
+   * Also, whilst Graphviz allows you to mix the types used for nodes,
+     this library requires\/assumes that they are all the same type (but
+     you /can/ use a sum-type).
+
+   * 'DotEdge' defines an edge @(a, b)@ (with an edge going from @a@
+     to @b@); in /Dot/ parlance the edge has a head at @a@ and a tail
+     at @b@.  Care must be taken when using the related @Head*@ and
+     @Tail*@ 'Attribute's.  See the differences section in
+     "Data.GraphViz.Attributes" for more information.
+
+   * It is common to see multiple edges defined on the one line in Dot
+     (e.g. @n1 -> n2 -> n3@ means to create a directed edge from @n1@
+     to @n2@ and from @n2@ to @n3@).  These types of edge definitions
+     are parseable; however, they are converted to singleton edges.
+
+   * It is not yet possible to create or parse edges with
+     subgraphs\/clusters as one of the end points.
+
+   * The parser will strip out comments and pre-processor lines, join
+     together multiline statements and concatenate split strings together.
+     However, pre-processing within HTML-like labels is currently not
+     supported.
+
+   * Graphviz allows a node to be \"defined\" twice (e.g. the actual
+     node definition, and then in a subgraph with extra global attributes
+     applied to it).  This actually represents the same node, but when
+     parsing they will be considered as separate 'DotNode's (such that
+     'graphNodes' will return both \"definitions\").  @canonicalise@ from
+     "Data.GraphViz.Algorithms" can be used to fix this.
+
+   See "Data.GraphViz.Attributes" for more limitations.
+ -}

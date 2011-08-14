@@ -20,6 +20,35 @@
    Note that the generalised Dot graph types are /not/ re-exported, in
    case it causes a clash with other modules you may choose to import.
 
+   The example graph in "Data.GraphViz.Types" can be written as:
+
+   > digraph (Str "G") $ do
+   >
+   >    cluster (Int 0) $ do
+   >        graphAttrs [style filled, color LightGray]
+   >        nodeAttrs [style filled, color White]
+   >        "a0" --> "a1"
+   >        "a1" --> "a2"
+   >        "a2" --> "a3"
+   >        graphAttrs [textLabel "process #1"]
+   >
+   >    cluster (Int 1) $ do
+   >        nodeAttrs [style filled]
+   >        "b0" --> "b1"
+   >        "b1" --> "b2"
+   >        "b2" --> "b3"
+   >        graphAttrs [textLabel "process #2", color Blue]
+   >
+   >    "start" --> "a0"
+   >    "start" --> "b0"
+   >    "a1" --> "b3"
+   >    "b2" --> "a3"
+   >    "a3" --> "end"
+   >    "b3" --> "end"
+   >
+   >    node "start" [shape MDiamond]
+   >    node "end" [shape MSquare]
+
  -}
 module Data.GraphViz.Types.Monadic
        ( Dot
