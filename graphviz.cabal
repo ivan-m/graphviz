@@ -133,5 +133,5 @@ Executable graphviz-testsuite {
         if impl(ghc >= 6.12.1)
            Ghc-Options: -fno-warn-unused-do-bind
 
-        GHC-Prof-Options: -auto-all -caf-all
+        GHC-Prof-Options: -auto-all -caf-all -rtsopts
 }
