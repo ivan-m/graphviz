@@ -312,7 +312,7 @@ toCanonical dg = C.DotGraph { C.strictGraph     = strictGraph dg
     lns = map (\ (n,ni) -> (n,(_inCluster ni, _attributes ni)))
           . M.assocs $ values dg
 
-    (cs,ns) = clustersToNodes' pathOf id clustAs snd lns
+    (cs,ns) = clustersToNodes pathOf id clustAs snd lns
 
     pathOf (n,(c,as)) = pathFrom c (n,as)
     pathFrom c ln = F.foldr C (N ln) . fromMaybe Seq.empty $ (`M.lookup`pM) =<< c

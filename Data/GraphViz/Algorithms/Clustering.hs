@@ -10,10 +10,8 @@
    This module defines types for creating clusters.
 -}
 module Data.GraphViz.Algorithms.Clustering
-    ( LNodeCluster
-    , NodeCluster(..)
+    ( NodeCluster(..)
     , clustersToNodes
-    , clustersToNodes'
     ) where
 
 import Data.GraphViz.Types.Canonical
@@ -21,13 +19,8 @@ import Data.GraphViz.Attributes.Complete(Attributes)
 
 import Data.Either(partitionEithers)
 import Data.List(groupBy, sortBy)
-import Data.Graph.Inductive.Graph(Graph, Node, LNode, labNodes)
 
 -- -----------------------------------------------------------------------------
-
--- | A type alias for 'NodeCluster' that specifies that the node value
---   is an 'LNode'.
-type LNodeCluster c a = NodeCluster c (LNode a)
 
 -- | Define into which cluster a particular node belongs.
 --   Clusters can be nested to arbitrary depth.
@@ -37,20 +30,12 @@ data NodeCluster c a = N a -- ^ Indicates the actual Node in the Graph.
                                              --   the Cluster /c/.
                         deriving (Show)
 
--- | Extract the clusters and nodes from the graph.
-clustersToNodes :: (Ord c, Graph gr) => (LNode a -> LNodeCluster c l)
-                   -> (c -> GraphID) -> (c -> [GlobalAttributes])
-                   -> (LNode l -> Attributes) -> gr a b
-                   -> ([DotSubGraph Node], [DotNode Node])
+-- | Extract the clusters and nodes from the list of nodes.
+clustersToNodes :: (Ord c) => ((n,a) -> NodeCluster c (n,l))
+                  -> (c -> GraphID) -> (c -> [GlobalAttributes])
+                  -> ((n,l) -> Attributes) -> [(n,a)]
+                  -> ([DotSubGraph n], [DotNode n])
 clustersToNodes clusterBy cID fmtCluster fmtNode
-    = clustersToNodes' clusterBy cID fmtCluster fmtNode
-      . labNodes
-
-clustersToNodes' :: (Ord c) => ((n,a) -> NodeCluster c (n,l))
-                   -> (c -> GraphID) -> (c -> [GlobalAttributes])
-                   -> ((n,l) -> Attributes) -> [(n,a)]
-                   -> ([DotSubGraph n], [DotNode n])
-clustersToNodes' clusterBy cID fmtCluster fmtNode
     = treesToDot cID fmtCluster fmtNode
       . collapseNClusts
       . map (clustToTree . clusterBy)
