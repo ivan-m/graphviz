@@ -13,7 +13,7 @@ module Data.GraphViz.Testing.Properties where
 
 import Data.GraphViz( dotizeGraph, graphToDot
                     , setDirectedness, nonClusteredParams)
-import Data.GraphViz.Types( DotRepr(..)
+import Data.GraphViz.Types( DotRepr(..), PrintDotRepr, ParseDotRepr, PPDotRepr
                           , DotNode(..), DotEdge(..), GlobalAttributes(..)
                           , printDotGraph, graphNodes, graphEdges
                           , graphStructureInformation)
@@ -60,7 +60,7 @@ prop_generalisedSameDot dg = printDotGraph dg == printDotGraph gdg
 -- | Pre-processing shouldn't change the output of printed Dot code.
 --   This should work for all 'PrintDot' instances, but is more
 --   specific to 'DotGraph' values.
-prop_preProcessingID    :: (DotRepr dg n) => dg n -> Bool
+prop_preProcessingID    :: (PrintDotRepr dg n) => dg n -> Bool
 prop_preProcessingID dg = preProcess dotCode == dotCode
   where
     dotCode = printDotGraph dg
@@ -138,7 +138,7 @@ prop_noGraphInfo dg' g = info == (GraphAttrs [], Map.empty)
     info = graphStructureInformation dg
 
 -- | Canonicalisation should be idempotent.
-prop_canonicalise   :: (DotRepr dg n) => dg n -> Bool
+prop_canonicalise   :: (ParseDot n, PrintDot n, DotRepr dg n) => dg n -> Bool
 prop_canonicalise g = cdg == canonicalise cdg
   where
     cdg = canonicalise g

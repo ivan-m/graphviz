@@ -9,8 +9,10 @@
 
    Various different representations of Dot graphs are available, all
    of which are based loosely upon the specifications at:
-     <http://graphviz.org/doc/info/lang.html>
-   The 'DotRepr' class provides a common interface for them.
+   <http://graphviz.org/doc/info/lang.html> The 'DotRepr' class
+   provides a common interface for them (the 'PrintDotRepr',
+   'ParseDotRepr' and 'PPDotRepr' classes are used until class aliases
+   are implemented).
 
    Printing of /Dot/ code is done as strictly as possible, whilst
    parsing is as permissive as possible.  For example, if the types
@@ -74,6 +76,9 @@
 -}
 module Data.GraphViz.Types
        ( DotRepr(..)
+       , PrintDotRepr
+       , ParseDotRepr
+       , PPDotRepr
          -- * Common sub-types
        , GraphID(..)
        , GlobalAttributes(..)
@@ -110,8 +115,7 @@ import Control.Monad.Trans.State(get, put, modify, execState, evalState)
 --   ways of representing a graph in /Dot/ form.
 --
 --   The type variable represents the current node type of the Dot graph;
-class (Ord n, PrintDot n, ParseDot n, PrintDot (dg n), ParseDot (dg n))
-      => DotRepr dg n where
+class (Ord n) => DotRepr dg n where
   -- | Convert from a graph in canonical form.  This is especially
   --   useful when using the functions from "Data.GraphViz.Algorithms".
   fromCanonical :: DotGraph n -> dg n
@@ -160,6 +164,21 @@ class (Ord n, PrintDot n, ParseDot n, PrintDot (dg n), ParseDot (dg n))
   --   from 'graphStructureInformation').
   unAnonymise :: dg n -> dg n
 
+-- | This class exists just to make type signatures nicer; all
+--   instances of 'DotRepr' should also be an instance of
+--   'PrintDotRepr'.
+class (DotRepr dg n, PrintDot (dg n)) => PrintDotRepr dg n
+
+-- | This class exists just to make type signatures nicer; all
+--   instances of 'DotRepr' should also be an instance of
+--   'ParseDotRepr'.
+class (DotRepr dg n, ParseDot (dg n)) => ParseDotRepr dg n
+
+-- | This class exists just to make type signatures nicer; all
+--   instances of 'DotRepr' should also be an instance of
+--   'PPDotRepr'.
+class (PrintDotRepr dg n, ParseDotRepr dg n) => PPDotRepr dg n
+
 -- | Returns all resultant 'DotNode's in the 'DotRepr' (not including
 --   'NodeAttr's).
 graphNodes :: (DotRepr dg n) => dg n -> [DotNode n]
@@ -174,7 +193,7 @@ graphEdges = edgeInformation False
 --   is expected that @'parseDotGraph' . 'printDotGraph' == 'id'@
 --   (this might not be true the other way around due to un-parseable
 --   components).
-printDotGraph :: (DotRepr dg n) => dg n -> Text
+printDotGraph :: (PrintDotRepr dg n) => dg n -> Text
 printDotGraph = printIt
 
 -- | Parse a limited subset of the Dot language to form an instance of
@@ -182,13 +201,13 @@ printDotGraph = printIt
 --   may or may not be parseable Dot code.
 --
 --   Also removes any comments, etc. before parsing.
-parseDotGraph :: (DotRepr dg n) => Text -> dg n
+parseDotGraph :: (ParseDotRepr dg n) => Text -> dg n
 parseDotGraph = fst . parseIt . preProcess
 
 -- -----------------------------------------------------------------------------
 -- Instance for Canonical graphs, to avoid cyclic modules.
 
-instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
+instance (Ord n) => DotRepr DotGraph n where
   fromCanonical = id
 
   getID = graphID
@@ -215,6 +234,10 @@ instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
                             . statementEdges . graphStatements
 
   unAnonymise = renumber
+
+instance (Ord n, PrintDot n) => PrintDotRepr DotGraph n
+instance (Ord n, ParseDot n) => ParseDotRepr DotGraph n
+instance (Ord n, PrintDot n, ParseDot n) => PPDotRepr DotGraph n
 
 statementStructure :: DotStatements n -> GraphState ()
 statementStructure stmts

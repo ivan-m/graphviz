@@ -27,7 +27,7 @@ module Data.GraphViz.Commands.IO
        ) where
 
 import Data.GraphViz.State(initialState)
-import Data.GraphViz.Types(DotRepr, printDotGraph, parseDotGraph)
+import Data.GraphViz.Types(DotRepr, PrintDotRepr, ParseDotRepr, printDotGraph, parseDotGraph)
 import Data.GraphViz.Printing(toDot)
 import Data.GraphViz.Exception
 import Text.PrettyPrint.Leijen.Text(displayT, renderCompact)
@@ -52,7 +52,7 @@ import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
 
 -- | Correctly render Graphviz output in a more machine-oriented form
 --   (i.e. more compact than the output of 'renderDot').
-renderCompactDot :: (DotRepr dg n) => dg n -> Text
+renderCompactDot :: (PrintDotRepr dg n) => dg n -> Text
 renderCompactDot = displayT . renderCompact
                    . flip evalState initialState
                    . toDot
@@ -85,15 +85,15 @@ toUTF8 = mapException (\e@DecodeError{} -> NotUTF8Dot $ show e)
 -- Low-level Input/Output
 
 -- | Output the 'DotRepr' to the specified 'Handle'.
-hPutDot :: (DotRepr dg n) => Handle -> dg n -> IO ()
+hPutDot :: (PrintDotRepr dg n) => Handle -> dg n -> IO ()
 hPutDot = toHandle printDotGraph
 
 -- | Output the 'DotRepr' to the spcified 'Handle' in a more compact,
 --   machine-oriented form.
-hPutCompactDot :: (DotRepr dg n) => Handle -> dg n -> IO ()
+hPutCompactDot :: (PrintDotRepr dg n) => Handle -> dg n -> IO ()
 hPutCompactDot = toHandle renderCompactDot
 
-toHandle        :: (DotRepr dg n) => (dg n -> Text) -> Handle -> dg n
+toHandle        :: (PrintDotRepr dg n) => (dg n -> Text) -> Handle -> dg n
                    -> IO ()
 toHandle f h dg = do B.hPutStr h . T.encodeUtf8 $ f dg
                      hPutChar h '\n'
@@ -104,23 +104,23 @@ hGetStrict = liftM (toUTF8 . B.fromChunks . (:[]))
              . SB.hGetContents
 
 -- | Read in and parse a 'DotRepr' value from the specified 'Handle'.
-hGetDot :: (DotRepr dg n) => Handle -> IO (dg n)
+hGetDot :: (ParseDotRepr dg n) => Handle -> IO (dg n)
 hGetDot = liftM parseDotGraph . hGetStrict
 
 -- | Write the specified 'DotRepr' to file.
-writeDotFile   :: (DotRepr dg n) => FilePath -> dg n -> IO ()
+writeDotFile   :: (PrintDotRepr dg n) => FilePath -> dg n -> IO ()
 writeDotFile f = withFile f WriteMode . flip hPutDot
 
 -- | Read in and parse a 'DotRepr' value from a file.
-readDotFile   :: (DotRepr dg n) => FilePath -> IO (dg n)
+readDotFile   :: (ParseDotRepr dg n) => FilePath -> IO (dg n)
 readDotFile f = withFile f ReadMode hGetDot
 
 -- | Print the specified 'DotRepr' to 'stdout'.
-putDot :: (DotRepr dg n) => dg n -> IO ()
+putDot :: (PrintDotRepr dg n) => dg n -> IO ()
 putDot = hPutDot stdout
 
 -- | Read in and parse a 'DotRepr' value from 'stdin'.
-readDot :: (DotRepr dg n) => IO (dg n)
+readDot :: (ParseDotRepr dg n) => IO (dg n)
 readDot = hGetDot stdin
 
 -- -----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ readDot = hGetDot stdin
 --
 --   If the command was unsuccessful, then a 'GraphvizException' is
 --   thrown.
-runCommand :: (DotRepr dg n)
+runCommand :: (PrintDotRepr dg n)
               => String           -- ^ Command to run
               -> [String]         -- ^ Command-line arguments
               -> (Handle -> IO a) -- ^ Obtaining the output

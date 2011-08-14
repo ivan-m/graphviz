@@ -238,13 +238,13 @@ instance GraphvizResult GraphvizCanvas where
 
 -- | Run the recommended Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
-runGraphviz    :: (DotRepr dg n) => dg n -> GraphvizOutput -> FilePath
+runGraphviz    :: (PrintDotRepr dg n) => dg n -> GraphvizOutput -> FilePath
                   -> IO FilePath
 runGraphviz gr = runGraphvizCommand (commandFor gr) gr
 
 -- | Run the chosen Graphviz command on this graph, saving the result
 --   to the file provided (note: file extensions are /not/ checked).
-runGraphvizCommand :: (DotRepr dg n) => GraphvizCommand -> dg n
+runGraphvizCommand :: (PrintDotRepr dg n) => GraphvizCommand -> dg n
                       -> GraphvizOutput -> FilePath
                       -> IO FilePath
 runGraphvizCommand cmd gr t fp
@@ -271,7 +271,7 @@ addExtension cmd t fp = cmd t fp'
 --
 --   If the command was unsuccessful, then a 'GraphvizException' is
 --   thrown.
-graphvizWithHandle :: (DotRepr dg n)
+graphvizWithHandle :: (PrintDotRepr dg n)
                       => GraphvizCommand  -- ^ Which command to run
                       -> dg n             -- ^ The 'DotRepr' to use
                       -> GraphvizOutput   -- ^ The 'GraphvizOutput' type
@@ -281,7 +281,7 @@ graphvizWithHandle = graphvizWithHandle'
 
 -- This version is not exported as we don't want to let arbitrary
 -- @Handle -> IO a@ functions to be used for GraphvizCanvas outputs.
-graphvizWithHandle' :: (DotRepr dg n, GraphvizResult o)
+graphvizWithHandle' :: (PrintDotRepr dg n, GraphvizResult o)
                        => GraphvizCommand -> dg n -> o
                        -> (Handle -> IO a) -> IO a
 graphvizWithHandle' cmd dg t f = runCommand (showCmd cmd)
@@ -293,7 +293,7 @@ graphvizWithHandle' cmd dg t f = runCommand (showCmd cmd)
 
 -- | Run the chosen Graphviz command on this graph and render it using
 --   the given canvas type.
-runGraphvizCanvas          :: (DotRepr dg n) => GraphvizCommand -> dg n
+runGraphvizCanvas          :: (PrintDotRepr dg n) => GraphvizCommand -> dg n
                               -> GraphvizCanvas -> IO ()
 runGraphvizCanvas cmd gr c = graphvizWithHandle' cmd gr c nullHandle
   where
@@ -302,5 +302,5 @@ runGraphvizCanvas cmd gr c = graphvizWithHandle' cmd gr c nullHandle
 
 -- | Run the recommended Graphviz command on this graph and render it
 --   using the given canvas type.
-runGraphvizCanvas'   :: (DotRepr dg n) => dg n -> GraphvizCanvas -> IO ()
+runGraphvizCanvas'   :: (PrintDotRepr dg n) => dg n -> GraphvizCanvas -> IO ()
 runGraphvizCanvas' d = runGraphvizCanvas (commandFor d) d

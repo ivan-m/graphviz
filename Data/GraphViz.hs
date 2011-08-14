@@ -413,7 +413,7 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 
 -- | Pass the 'DotRepr' through the relevant command and then augment
 --   the 'Graph' that it came from.
-dotAttributes :: (Graph gr, DotRepr dg Node) => Bool -> gr nl (EdgeID el)
+dotAttributes :: (Graph gr, PPDotRepr dg Node) => Bool -> gr nl (EdgeID el)
                  -> dg Node -> IO (gr (AttributeNode nl) (AttributeEdge el))
 dotAttributes isDir gr dot
   = liftM (augmentGraph gr . parseDG)

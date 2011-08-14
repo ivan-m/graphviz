@@ -461,7 +461,7 @@ clusterAttributes dg c = fromGlobAttrs . clusterAttrs $ clusters dg M.! c
 -- -----------------------------------------------------------------------------
 -- For DotRepr instance
 
-instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
+instance (Ord n) => DotRepr DotGraph n where
   fromCanonical = fromDotRepr
 
   getID = graphID
@@ -486,12 +486,16 @@ instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
 
   unAnonymise = id -- No anonymous clusters!
 
+instance (Ord n, PrintDot n) => PrintDotRepr DotGraph n
+instance (Ord n, ParseDot n) => ParseDotRepr DotGraph n
+instance (Ord n, PrintDot n, ParseDot n) => PPDotRepr DotGraph n
+
 -- | Uses the PrintDot instance for canonical 'C.DotGraph's.
-instance (Ord n, PrintDot n, ParseDot n) => PrintDot (DotGraph n) where
+instance (Ord n, PrintDot n) => PrintDot (DotGraph n) where
   unqtDot = unqtDot . toCanonical
 
 -- | Uses the ParseDot instance for generalised 'G.DotGraph's.
-instance (Ord n, PrintDot n, ParseDot n) => ParseDot (DotGraph n) where
+instance (Ord n, ParseDot n) => ParseDot (DotGraph n) where
   parseUnqt = liftM fromGDot $ parseUnqt
     where
       -- fromGDot :: G.DotGraph n -> DotGraph n

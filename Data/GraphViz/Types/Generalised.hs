@@ -56,7 +56,7 @@ data DotGraph n = DotGraph { -- | If 'True', no multiple edges are drawn.
                            }
                 deriving (Eq, Ord, Show, Read)
 
-instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
+instance (Ord n) => DotRepr DotGraph n where
   fromCanonical = generaliseDotGraph
 
   getID = graphID
@@ -83,6 +83,10 @@ instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
                             . statementEdges . graphStatements
 
   unAnonymise = renumber
+
+instance (Ord n, PrintDot n) => PrintDotRepr DotGraph n
+instance (Ord n, ParseDot n) => ParseDotRepr DotGraph n
+instance (Ord n, PrintDot n, ParseDot n) => PPDotRepr DotGraph n
 
 instance (PrintDot n) => PrintDot (DotGraph n) where
   unqtDot = printStmtBased printGraphID' graphStatements printGStmts
