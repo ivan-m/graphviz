@@ -22,11 +22,6 @@ Short term
   values and other values (as only the former requires quoted
   variants).
 
-* Extend the various DotRepr implementations:
-
-    - Add one that is useable as a graph.
-
-    - Add a monadic version ala dotgen.
 
 Medium term
 -----------
@@ -37,8 +32,8 @@ Medium term
   arbitrary `Attribute` is valid is rather tricky (as the value itself
   needs to be verified, especially stateful ones).
 
-* Add support for non-visualisation Graphviz tools (e.g. dijkstra and
-  tred).
+* Switch to a proper test-suite library rather than the hand-rolled
+  one currently being used.
 
 * Add support for clusters as endpoints of edges.
 
