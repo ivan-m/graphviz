@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 {- |
    Module      : Data.GraphViz.Types.Graph
@@ -491,11 +491,11 @@ instance (Ord n, PrintDot n, ParseDot n) => PrintDot (DotGraph n) where
   unqtDot = unqtDot . canonicaliseOptions cOptions
 
 -- | Uses the ParseDot instance for generalised 'G.DotGraph's.
-instance forall n. (Ord n, PrintDot n, ParseDot n) => ParseDot (DotGraph n) where
+instance (Ord n, PrintDot n, ParseDot n) => ParseDot (DotGraph n) where
   parseUnqt = liftM fromGDot $ parseUnqt
     where
-      fromGDot :: G.DotGraph n -> DotGraph n
-      fromGDot = fromDotRepr
+      -- fromGDot :: G.DotGraph n -> DotGraph n
+      fromGDot = fromDotRepr . flip asTypeOf (undefined :: G.DotGraph n)
 
 cOptions :: CanonicaliseOptions
 cOptions = COpts { edgesInClusters = False
