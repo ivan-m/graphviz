@@ -7,6 +7,100 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.12.0.0
+----------------------
+
+Many large-level changes were done in this release; in rough
+categories these are:
+
+### Conversions from other types
+
+* Can now more easily create Dot graphs from other graph-like data
+  structures with the new `graphElemsToDot` function, which takes a
+  list of nodes and edges.
+
+* It is now no longer possible to use `graphToDot`, etc. to create Dot
+  graphs with anonymous clusters; all clusters must now have explicit
+  names (note that uniqueness is not enforced, and it is still
+  possible to directly create Dot graphs with anonymous clusters).
+
+### Dot graph representations
+
+* The canonical graph representation has been moved to its own module:
+  `Data.GraphViz.Types.Canonical`.
+
+* The generalised representation has had all its "G" and "g" prefixes
+  removed.
+
+* Two new representations:
+
+    - `Data.GraphViz.Types.Graph` allows graph-like manipulation of
+      Dot code.
+
+    - `Data.GraphViz.Types.Monadic` provides a monadic interface into
+      building relatively static graphs, based upon the
+      [_dotgen_](http://hackage.haskell.org/package/dotgen) library by
+      Andy Gill.
+
+* The `DotRepr` class has been expanded, and three pseudo-classes have
+  been provided to reduce type-class contexts in type signatures.
+
+### Using and manipulation Dot graphs
+
+* Pure Haskell implementations of `dot -Tcanon` and `tred` are
+  available in `Data.GraphViz.Algorithms`.
+
+* A new module is available for more direct low-level I/O with Dot
+  graphs, including the ability to run custom commands as opposed to
+  being limited to the standard dot, neato, etc.
+
+### Attributes
+
+* `Data.GraphViz.Attributes` now contains a slimmed-down recommended
+  list of attributes; the complete list can still be found in
+  `Data.GraphViz.Attributes.Complete`.
+
+* The `charset` attribute is no longer available.
+
+* Functions for specifying custom attributes (for pre-processors,
+  etc.) are available.
+
+### Implementation
+
+* Now uses [`Text`](http://hackage.haskell.org/package/text) values
+  rather than `String`s.  Whilst performing this migration, the
+  improvements in speed for both printing and parsing improved
+  dramatically.
+
+    - As part of this, human-readable Dot code is now produced by
+      default.  As such, the `prettyPrint` and `prettyPrint'`
+      functions have been removed.
+
+* Now uses state-based printing and parsing, so that things like graph
+  directedness, layer separators and color schemes can be taken into
+  account.
+
+* Parsing large data-types (e.g. `Attributes`) now uses less
+  back-tracking.
+
+* Now has a benchmarking script for testing printing and parsing
+  speed.
+
+* Uses a custom exception type rather than a mish-mash of error,
+  `Maybe`, `Either`, exception types from used libraries, etc.
+
+* Usage of UTF-8 is now enforced when doing I/O.  If another encoding
+  is required, the `Text` value that's printed/parsed has to be
+  written/read from disk/network/etc. manually.
+
+### Bug-Fixes
+
+* The `Rects` `Attribute` should be able to take a list of `Rect`
+  values; error spotted by **Henning Gunther**.
+
+* In some cases, global attribute names were being printed without
+  even an empty list (which doesn't match what dot, etc. expect).
+
 Changes in 2999.11.0.0
 ----------------------
 
