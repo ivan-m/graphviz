@@ -53,6 +53,7 @@ module Data.GraphViz.Types.Graph
        , mkGraph
        , emptyGraph
        , (&)
+       , composeList
        , addNode
        , DotNode(..)
        , addDotNode
@@ -63,6 +64,7 @@ module Data.GraphViz.Types.Graph
          -- * Graph deconstruction
        , decompose
        , decomposeAny
+       , decomposeList
        , deleteNode
        , deleteAllEdges
        , deleteEdge
@@ -84,7 +86,7 @@ import Data.GraphViz.Algorithms.Clustering
 import Data.GraphViz.Printing(PrintDot(..))
 import Data.GraphViz.Parsing(ParseDot(..))
 
-import Data.List(foldl', delete)
+import Data.List(foldl', delete, unfoldr)
 import qualified Data.Foldable as F
 import Data.Maybe(mapMaybe, fromMaybe)
 import qualified Data.Map as M
@@ -197,6 +199,12 @@ emptyGA = GA S.empty S.empty S.empty
     merge = addSucc n ps' . addPred n ss'
 
 infixr 5 &
+
+-- | Recursively merge the list of contexts.
+--
+--   > composeList = foldr (&) emptyGraph
+composeList :: (Ord n) => [Context n] -> DotGraph n
+composeList = foldr (&) emptyGraph
 
 addSucc :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
 addSucc = addPS niSucc
@@ -338,6 +346,14 @@ decomposeAny :: (Ord n) => DotGraph n -> Maybe (Context n, DotGraph n)
 decomposeAny dg
   | isEmpty dg = Nothing
   | otherwise  = decompose (fst . M.findMin $ values dg) dg
+
+-- | Recursively decompose the Dot graph into a list of contexts such
+--   that if @(c:cs) = decomposeList dg@, then @dg = c & 'composeList' cs@.
+--
+--   Note that all global attributes are lost, so this is /not/
+--   suitable for representing a Dot graph on its own.
+decomposeList :: (Ord n) => DotGraph n -> [Context n]
+decomposeList = unfoldr decomposeAny
 
 delSucc :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
 delSucc = delPS niSucc
