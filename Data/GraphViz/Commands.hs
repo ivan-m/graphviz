@@ -248,11 +248,13 @@ runGraphvizCommand :: (PrintDotRepr dg n) => GraphvizCommand -> dg n
                       -> GraphvizOutput -> FilePath
                       -> IO FilePath
 runGraphvizCommand cmd gr t fp
-  = mapException (\(GVProgramExc e) -> GVProgramExc $ addFl e)
-    $ graphvizWithHandle cmd gr t toFile
+  = mapException addExc $ graphvizWithHandle cmd gr t toFile
   where
     addFl = (++) ("Unable to create " ++ fp ++ "\n")
     toFile h = SB.hGetContents h >>= SB.writeFile fp >> return fp
+
+    addExc (GVProgramExc e) = GVProgramExc $ addFl e
+    addExc e                = e
 
 -- | Append the default extension for the provided 'GraphvizOutput' to
 --   the provided 'FilePath' for the output file.

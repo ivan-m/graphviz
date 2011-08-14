@@ -27,13 +27,13 @@ module Data.GraphViz.Commands.IO
        ) where
 
 import Data.GraphViz.State(initialState)
-import Data.GraphViz.Types(DotRepr, PrintDotRepr, ParseDotRepr, printDotGraph, parseDotGraph)
+import Data.GraphViz.Types(PrintDotRepr, ParseDotRepr, printDotGraph, parseDotGraph)
 import Data.GraphViz.Printing(toDot)
 import Data.GraphViz.Exception
 import Text.PrettyPrint.Leijen.Text(displayT, renderCompact)
 
 import qualified Data.Text.Lazy.Encoding as T
-import Data.Text.Encoding.Error(UnicodeException(DecodeError))
+import Data.Text.Encoding.Error(UnicodeException)
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as B
@@ -78,17 +78,19 @@ renderCompactDot = displayT . renderCompact
 --   UTF-8 encoding, throwing a 'GraphvizException' if there is a
 --   decoding error.
 toUTF8 :: ByteString -> Text
-toUTF8 = mapException (\e@DecodeError{} -> NotUTF8Dot $ show e)
-         . T.decodeUtf8
+toUTF8 = mapException fE . T.decodeUtf8
+  where
+    fE   :: UnicodeException -> GraphvizException
+    fE e = NotUTF8Dot $ show e
 
 -- -----------------------------------------------------------------------------
 -- Low-level Input/Output
 
--- | Output the 'DotRepr' to the specified 'Handle'.
+-- | Output the @DotRepr@ to the specified 'Handle'.
 hPutDot :: (PrintDotRepr dg n) => Handle -> dg n -> IO ()
 hPutDot = toHandle printDotGraph
 
--- | Output the 'DotRepr' to the spcified 'Handle' in a more compact,
+-- | Output the @DotRepr@ to the spcified 'Handle' in a more compact,
 --   machine-oriented form.
 hPutCompactDot :: (PrintDotRepr dg n) => Handle -> dg n -> IO ()
 hPutCompactDot = toHandle renderCompactDot
@@ -103,29 +105,29 @@ hGetStrict :: Handle -> IO Text
 hGetStrict = liftM (toUTF8 . B.fromChunks . (:[]))
              . SB.hGetContents
 
--- | Read in and parse a 'DotRepr' value from the specified 'Handle'.
+-- | Read in and parse a @DotRepr@ value from the specified 'Handle'.
 hGetDot :: (ParseDotRepr dg n) => Handle -> IO (dg n)
 hGetDot = liftM parseDotGraph . hGetStrict
 
--- | Write the specified 'DotRepr' to file.
+-- | Write the specified @DotRepr@ to file.
 writeDotFile   :: (PrintDotRepr dg n) => FilePath -> dg n -> IO ()
 writeDotFile f = withFile f WriteMode . flip hPutDot
 
--- | Read in and parse a 'DotRepr' value from a file.
+-- | Read in and parse a @DotRepr@ value from a file.
 readDotFile   :: (ParseDotRepr dg n) => FilePath -> IO (dg n)
 readDotFile f = withFile f ReadMode hGetDot
 
--- | Print the specified 'DotRepr' to 'stdout'.
+-- | Print the specified @DotRepr@ to 'stdout'.
 putDot :: (PrintDotRepr dg n) => dg n -> IO ()
 putDot = hPutDot stdout
 
--- | Read in and parse a 'DotRepr' value from 'stdin'.
+-- | Read in and parse a @DotRepr@ value from 'stdin'.
 readDot :: (ParseDotRepr dg n) => IO (dg n)
 readDot = hGetDot stdin
 
 -- -----------------------------------------------------------------------------
 
--- | Run an external command on the specified 'DotRepr'.  Remember to
+-- | Run an external command on the specified @DotRepr@.  Remember to
 --   use 'hSetBinaryMode' on the 'Handle' for the output function if
 --   necessary.
 --

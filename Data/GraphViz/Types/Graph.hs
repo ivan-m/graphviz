@@ -70,7 +70,6 @@ module Data.GraphViz.Types.Graph
        , removeEmptyClusters
        ) where
 
-import Data.GraphViz(GraphvizParams(..), LNodeCluster, NodeCluster(..))
 import Data.GraphViz.Types
 import qualified Data.GraphViz.Types.Canonical as C
 import qualified Data.GraphViz.Types.Generalised as G
@@ -86,7 +85,6 @@ import Data.GraphViz.Parsing(ParseDot(..))
 
 import Data.List(foldl', delete)
 import qualified Data.Foldable as F
-import qualified Data.Graph.Inductive.Graph as IG
 import Data.Maybe(mapMaybe, fromMaybe)
 import qualified Data.Map as M
 import Data.Map(Map)
@@ -95,8 +93,7 @@ import qualified Data.Sequence as Seq
 import Control.Arrow((***))
 import Control.Monad(liftM, liftM2)
 import Text.Read(Lexeme(Ident), lexP, parens, readPrec)
-import Text.ParserCombinators.ReadPrec(ReadPrec, lift, prec)
-import Text.ParserCombinators.ReadP(string, char, readS_to_P)
+import Text.ParserCombinators.ReadPrec(prec)
 
 -- -----------------------------------------------------------------------------
 

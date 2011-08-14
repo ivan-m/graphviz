@@ -13,7 +13,7 @@ module Data.GraphViz.Testing.Properties where
 
 import Data.GraphViz( dotizeGraph, graphToDot
                     , setDirectedness, nonClusteredParams)
-import Data.GraphViz.Types( DotRepr(..), PrintDotRepr, ParseDotRepr, PPDotRepr
+import Data.GraphViz.Types( DotRepr(..), PrintDotRepr
                           , DotNode(..), DotEdge(..), GlobalAttributes(..)
                           , printDotGraph, graphNodes, graphEdges
                           , graphStructureInformation)
