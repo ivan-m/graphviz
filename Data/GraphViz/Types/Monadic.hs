@@ -7,8 +7,43 @@
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
+   This module is based upon the /dotgen/ library by Andy Gill:
+   <http://hackage.haskell.org/package/dotgen>
+
+   It provides a monadic interface for constructing generalised Dot
+   graphs.  Note that this does /not/ have an instance for @DotRepr@
+   (e.g. what would be the point of the @fromCanonical@ function, as
+   you can't do anything with the result): it is purely for
+   construction purposes.  Use the generalised Dot graph instance for
+   printing, etc.
+
+   Note that the generalised Dot graph types are /not/ re-exported, in
+   case it causes a clash with other modules you may choose to import.
+
  -}
-module Data.GraphViz.Types.Monadic where
+module Data.GraphViz.Types.Monadic
+       ( Dot
+       , DotM
+         -- * Creating a generalised DotGraph.
+       , digraph
+       , digraph'
+       , graph
+       , graph'
+         -- * Adding global attributes.
+       , graphAttrs
+       , nodeAttrs
+       , edgeAttrs
+         -- * Adding items to the graph.
+         -- ** Clusters
+       , cluster
+         -- ** Nodes
+       , node
+       , node'
+         -- ** Edges
+       , edge
+       , (-->)
+       , (<->)
+       ) where
 
 import Data.GraphViz.Attributes(Attribute,Attributes)
 import Data.GraphViz.Types.Common
@@ -27,6 +62,9 @@ import Data.Sequence(Seq, (><))
 -- | The monadic representation of a Dot graph.
 type Dot n = DotM n ()
 
+-- | The actual monad; as with 'Dot' but allows you to return a value
+--   within the do-block.  The actual implementation is based upon the
+--   Writer monad.
 newtype DotM n a = DotM { runDot :: (a, DotStmts n) }
 
 execDot :: DotM n a -> DotStmts n
@@ -69,27 +107,29 @@ mkGraph :: Bool -> Maybe GraphID -> DotM n a -> DotGraph n
 mkGraph isDir mid dot = DotGraph { strictGraph     = False
                                  , directedGraph   = isDir
                                  , graphID         = mid
-                                 , graphStatements = stmts
+                                 , graphStatements = execStmts dot
                                  }
-  where
-    stmts = convertStatements $ execDot dot
 
 -- -----------------------------------------------------------------------------
 -- Statements
 
 type DotStmts n = DList (DotStmt n)
 
+execStmts :: DotM n a -> DotStatements n
+execStmts = convertStatements . execDot
+
 convertStatements :: DotStmts n -> DotStatements n
 convertStatements = Seq.fromList . map convertStatement . DL.toList
 
 data DotStmt n = MA GlobalAttributes
-               -- | MS (DotSubGraph n)
+               | MC (Cluster n)
                | MN (DotNode n)
                | ME (DotEdge n)
-               deriving (Eq, Ord, Show, Read)
 
 convertStatement          :: DotStmt n -> DotStatement n
 convertStatement (MA gas) = GA gas
+convertStatement (MC cl)  = SG . DotSG True (Just $ clID cl)
+                                 . execStmts $ clStmts cl
 convertStatement (MN dn)  = DN dn
 convertStatement (ME de)  = DE de
 
@@ -108,10 +148,16 @@ nodeAttrs = tellStmt . MA . NodeAttrs
 edgeAttrs :: Attributes -> Dot n
 edgeAttrs = tellStmt . MA . EdgeAttrs
 
--- | An optional \"attribute creation\" operator, equivalent to
---   @('$')@.
-(=:=) :: (a -> Attribute) -> a -> Attribute
-(=:=) = ($)
+-- -----------------------------------------------------------------------------
+-- Clusters
+
+data Cluster n = Cl { clID    :: GraphID
+                    , clStmts :: Dot n
+                    }
+
+-- | Add a named cluster to the graph.
+cluster     :: GraphID -> DotM n a -> Dot n
+cluster cid = tellStmt . MC . Cl cid . (>> return ())
 
 -- -----------------------------------------------------------------------------
 -- Nodes
@@ -124,80 +170,24 @@ node n = tellStmt . MN . DotNode n
 node' :: n -> Dot n
 node' = flip node []
 
--- | A dummy instance; do not use.
-instance Show (DotM n ()) where
-  show = const "Node creation"
-
--- | A dummy instance; do not use.
-instance (Num n) => Eq (DotM n ()) where
-  _ == _ = False
-
--- | Defined solely for the 'fromInteger' method; all other methods
---   throw an error.
-instance (Num n) => Num (DotM n ()) where
-  fromInteger = flip node [] . fromInteger
-
-  (+) = error "Not valid for Dot monad"
-  (*) = error "Not valid for Dot monad"
-  abs = error "Not valid for Dot monad"
-  signum = error "Not valid for Dot monad"
-
--- | A dummy instance; do not use.
-instance Show (Attributes -> DotM n ()) where
-  show = const "Node creation"
-
--- | A dummy instance; do not use.
-instance (Num n) => Eq (Attributes -> DotM n ()) where
-  _ == _ = False
-
--- | Defined solely for the 'fromInteger' method; all other methods
---   throw an error.
-instance (Num n) => Num (Attributes -> DotM n ()) where
-  fromInteger = node . fromInteger
-
-  (+) = error "Not valid for Dot monad"
-  (*) = error "Not valid for Dot monad"
-  abs = error "Not valid for Dot monad"
-  signum = error "Not valid for Dot monad"
-
 -- -----------------------------------------------------------------------------
 -- Edges
 
-newtype EdgePairs n = EP { fromEP :: (n, DList (n,n)) }
+-- | Add an edge to the graph.
+edge     :: n -> n -> Attributes -> Dot n
+edge f t = tellStmt . ME . DotEdge f t
 
-class FromRight end n where
-  fromEnd :: end -> EdgePairs n
-
-instance FromRight n n where
-  fromEnd n = EP (n, DL.empty)
-
-instance FromRight (EdgePairs n) n where
-  fromEnd = id
-
-class EdgeResult er n where
-  toER :: EdgePairs n -> er
-
--- | Add one or more edges to the Dot graph.
-(-->) :: (FromRight n' n) => n -> n' -> EdgePairs n
-f --> t = ep'
-  where
-    EP (t',ns) = fromEnd t
-    ep' = EP (f, (f,t') `DL.cons` ns)
+-- | Add an edge with no attributes.
+(-->) :: n -> n -> Dot n
+f --> t = edge f t []
 
 infixr 9 -->
 
 -- | An alias for '-->' to make edges look more undirected.
-(<->) :: (FromRight n' n) => n -> n' -> EdgePairs n
+(<->) :: n -> n -> Dot n
 (<->) = (-->)
 
 infixr 9 <->
-
-($$) :: EdgePairs n -> Attributes -> Dot n
-(EP (_,ns)) $$ as = tell $ DL.map (ME . mkEdge) ns
-    where
-      mkEdge (n1,n2) = DotEdge n1 n2 as
-
-infix 0 $$
 
 -- -----------------------------------------------------------------------------
 
