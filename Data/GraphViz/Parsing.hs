@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz.Parsing
@@ -89,8 +89,7 @@ import Data.GraphViz.Exception(GraphvizException(NotDotCode), throw)
 
 import Text.ParserCombinators.Poly.StateText hiding (bracket, empty, indent, runParser)
 import qualified Text.ParserCombinators.Poly.StateText as P
-import Data.Char( digitToInt
-                , isDigit
+import Data.Char( isDigit
                 , isSpace
                 , isLower
                 , toLower
@@ -102,6 +101,7 @@ import Data.Maybe(fromMaybe, isNothing, listToMaybe)
 import Data.Ratio((%))
 import qualified Data.Set as Set
 import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.Read as T
 import Data.Text.Lazy(Text)
 import Data.Word(Word8, Word16)
 import Control.Arrow(first, second)
@@ -250,12 +250,12 @@ parseSigned p = (character '-' >> liftM negate p)
                 p
 
 parseInt :: (Integral a) => Parse a
-parseInt = do cs <- many1 (satisfy isDigit)
-              return (foldl1 (\n d-> n*radix+d)
-                                   (map (fromIntegral . digitToInt) cs))
+parseInt = do cs <- many1Satisfy isDigit
+              case T.decimal cs of
+                Right (n,"")  -> return n
+                Right (_,txt) -> fail $ "Trailing digits not parsed as Integral: " ++ T.unpack txt
+                Left err      -> fail $ "Could not read Integral: " ++ err
            `adjustErr` (++ "\nexpected one or more digits")
-  where
-    radix = 10
 
 parseInt' :: Parse Int
 parseInt' = parseSigned parseInt
@@ -265,19 +265,19 @@ parseStrictFloat :: Parse Double
 parseStrictFloat = parseSigned parseFloat
 
 parseFloat :: (RealFrac a) => Parse a
-parseFloat = do ds   <- many (satisfy isDigit)
+parseFloat = do ds   <- manySatisfy isDigit
                 frac <- optional
                         $ do character '.'
-                             many (satisfy isDigit)
-                when (null ds && noDec frac)
+                             manySatisfy isDigit
+                when (T.null ds && noDec frac)
                   (fail "No actual digits in floating point number!")
                 expn  <- optional parseExp
                 when (isNothing frac && isNothing expn)
                   (fail "This is an integer, not a floating point number!")
                 let frac' = fromMaybe "" frac
                     expn' = fromMaybe 0 expn
-                ( return . fromRational . (* (10^^(expn' - length frac')))
-                  . (%1) . runParser' parseInt) (T.pack $ ds++frac')
+                ( return . fromRational . (* (10^^(expn' - fromIntegral (T.length frac'))))
+                  . (%1) . runParser' parseInt) (ds `T.append` frac')
              `onFail`
              fail "Expected a floating point number"
   where
@@ -285,7 +285,7 @@ parseFloat = do ds   <- many (satisfy isDigit)
                   ((character '+' >> parseInt)
                    `onFail`
                    parseInt')
-    noDec = maybe True null
+    noDec = maybe True T.null
 
 parseFloat' :: Parse Double
 parseFloat' = parseSigned ( parseFloat
