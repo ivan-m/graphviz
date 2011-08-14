@@ -670,7 +670,8 @@ toGlobAttrs = mkGA . partitionGlobal
     mkGA (ga,na,ea) = GA (toSAttr ga) (toSAttr na) (toSAttr ea)
 
 fromGlobAttrs :: GlobAttrs -> [GlobalAttributes]
-fromGlobAttrs (GA ga na ea) = [ GraphAttrs $ unSame ga
+fromGlobAttrs (GA ga na ea) = filter (not . null . attrs)
+                              [ GraphAttrs $ unSame ga
                               , NodeAttrs  $ unSame na
                               , EdgeAttrs  $ unSame ea
                               ]
