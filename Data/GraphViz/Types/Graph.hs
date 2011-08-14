@@ -488,7 +488,7 @@ instance (Ord n, PrintDot n, ParseDot n) => DotRepr DotGraph n where
 
 -- | Uses the PrintDot instance for canonical 'C.DotGraph's.
 instance (Ord n, PrintDot n, ParseDot n) => PrintDot (DotGraph n) where
-  unqtDot = unqtDot . canonicaliseOptions cOptions
+  unqtDot = unqtDot . toCanonical
 
 -- | Uses the ParseDot instance for generalised 'G.DotGraph's.
 instance (Ord n, PrintDot n, ParseDot n) => ParseDot (DotGraph n) where
