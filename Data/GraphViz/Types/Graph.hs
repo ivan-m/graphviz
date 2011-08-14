@@ -523,7 +523,7 @@ cOptions = COpts { edgesInClusters = False
 
 -- | Convert any existing DotRepr instance to a 'DotGraph'.
 fromDotRepr :: (DotRepr dg n) => dg n -> DotGraph n
-fromDotRepr = unsafeFromCanonical . canonicaliseOptions cOptions
+fromDotRepr = unsafeFromCanonical . canonicaliseOptions cOptions . unAnonymise
 
 -- | Convert a canonical Dot graph to a graph-based one.  This assumes
 --   that the canonical graph is the same format as returned by
