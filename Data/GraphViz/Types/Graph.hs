@@ -194,11 +194,15 @@ emptyGA = GA S.empty S.empty S.empty
 (Cntxt n mc as ps ss) & dg = withValues merge dg'
   where
     ps' = toMap ps
+    ps'' = M.delete n ps'
     ss' = toMap ss
+    ss'' = M.delete n ss'
 
     dg' = addNode n mc as dg
 
-    merge = addSucc n ps' . addPred n ss'
+    merge = addSucc n ps'' . addPred n ss''
+            . M.adjust (\ni -> ni { _predecessors = ps', _successors = ss' }) n
+
 
 infixr 5 &
 
