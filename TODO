@@ -14,23 +14,26 @@ Short term
 * Quickstart-style documentation to help users get going with graphviz
   quickly.
 
-* Add support for SVG colors.
+* Add nicer syntax for record labels, and specifying ports in Monadic
+  Dot graphs.
 
-* Re-name the fields of `DotEdge` to be more user-friendly.
+* Add support for SVG colors.
 
 * Define new classes to distinguish between printing/parsing Attribute
   values and other values (as only the former requires quoted
   variants).
 
+* Clean up AttributeGenerator and get it to use a better
+  pretty-printing library.
 
 Medium term
 -----------
 
-* Improve the test suite such that the generated `DotGraph` and
-  `GDotGraph` values are valid (and thus can be passed to Graphviz
-  proper).  This may not in fact be possible as guaranteeing an
-  arbitrary `Attribute` is valid is rather tricky (as the value itself
-  needs to be verified, especially stateful ones).
+* Improve the test suite such that the generated `DotGraph` values are
+  valid (and thus can be passed to Graphviz proper).  This may not in
+  fact be possible as guaranteeing an arbitrary `Attribute` is valid
+  is rather tricky (as the value itself needs to be verified,
+  especially stateful ones).
 
 * Switch to a proper test-suite library rather than the hand-rolled
   one currently being used.
