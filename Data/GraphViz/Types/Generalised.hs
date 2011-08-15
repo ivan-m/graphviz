@@ -7,13 +7,44 @@
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
-   This module provides an alternate definition of the types found in
-   "Data.GraphViz.Types.Canonical", in that there is no limitation on the
-   ordering of statements.
+   The generalised Dot representation most closely matches the
+   implementation of actual Dot code, as it places no restrictions on
+   ordering of elements, etc.  As such it should be able to parse any
+   existing Dot code (taking into account the parsing
+   limitations/assumptions).
 
-   The types here have the same names as those in
-   "Data.GraphViz.Types.Canonical", and as such if both are being used
-   then at least one must be imported qualified.
+   The sample graph could be implemented (this is actually a prettied
+   version of parsing in the Dot code) as:
+
+   > DotGraph { strictGraph = False
+   >          , directedGraph = True
+   >          , graphID = Just (Str "G")
+   >          , graphStatements = Seq.fromList [ SG $ DotSG { isCluster = True
+   >                                                        , subGraphID = Just (Int 0)
+   >                                                        , subGraphStmts = Seq.fromList [ GA $ GraphAttrs [style filled]
+   >                                                                                       , GA $ GraphAttrs [color LightGray]
+   >                                                                                       , GA $ NodeAttrs [style filled, color White]
+   >                                                                                       , DE $ DotEdge "a0" "a1" []
+   >                                                                                       , DE $ DotEdge "a1" "a2" []
+   >                                                                                       , DE $ DotEdge "a2" "a3" []
+   >                                                                                       , GA $ GraphAttrs [textLabel "process #1"]]}
+   >                                           , SG $ DotSG { isCluster = True
+   >                                                        , subGraphID = Just (Int 1)
+   >                                                        , subGraphStmts = fromList [ GA $ NodeAttrs [style filled]
+   >                                                                                   , DE $ DotEdge "b0" "b1" []
+   >                                                                                   , DE $ DotEdge "b1" "b2" []
+   >                                                                                   , DE $ DotEdge "b2" "b3" []
+   >                                                                                   , GA $ GraphAttrs [textLabel "process #2"]
+   >                                                                                   , GA $ GraphAttrs [color Blue]]}
+   >                                           , DE $ DotEdge "start" "a0" []
+   >                                           , DE $ DotEdge "start" "b0" []
+   >                                           , DE $ DotEdge "a1" "b3" []
+   >                                           , DE $ DotEdge "b2" "a3" []
+   >                                           , DE $ DotEdge "a3" "a0" []
+   >                                           , DE $ DotEdge "a3" "end" []
+   >                                           , DE $ DotEdge "b3" "end" []
+   >                                           , DN $ DotNode "start" [shape MDiamond]
+   >                                           , DN $ DotNode "end" [shape MSquare]]}
 
  -}
 module Data.GraphViz.Types.Generalised

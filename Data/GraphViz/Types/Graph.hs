@@ -8,24 +8,45 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    It is sometimes useful to be able to manipulate a Dot graph /as/ an
-   actual graph.  This representation lets you do so, using an inductive
-   approach based upon that from FGL (note that 'DotGraph' is /not/ an
-   instance of the FGL classes due to having the wrong kind).
+   actual graph.  This representation lets you do so, using an
+   inductive approach based upon that from FGL (note that 'DotGraph'
+   is /not/ an instance of the FGL classes due to having the wrong
+   kind).  Note, however, that the API is not as complete as proper
+   graph implementations.
 
    For purposes of manipulation, all edges are found in the root graph
    and not in a cluster; as such, having 'EdgeAttrs' in a cluster's
    'GlobalAttributes' is redundant.
 
    Printing is achieved via "Data.GraphViz.Types.Canonical" (using
-   'canonicalise' with custom options) and parsing via
-   "Data.GraphViz.Types.Generalised" (so /any/ piece of Dot code can be
-   parsed in).
+   'toCanonical') and parsing via "Data.GraphViz.Types.Generalised"
+   (so /any/ piece of Dot code can be parsed in).
 
    This representation doesn't allow non-cluster sub-graphs.  Also, all
    clusters /must/ have a unique identifier.  For those functions (with
    the exception of 'DotRepr' methods) that take or return a \"@Maybe
    GraphID@\", a value of \"@Nothing@\" refers to the root graph; \"@Just
    clust@\" refers to the cluster with the identifier \"@clust@\".
+
+   You would not typically explicitly create these values, instead
+   converting existing Dot graphs (via 'fromDotRepr').  However, one
+   way of constructing the sample graph would be:
+
+setID (Str "G")
+. setStrictness False
+. setIsDirected True
+. setClusterAttributes (Int 0) [GraphAttrs [style filled, color LightGray, textLabel "process #1"], NodeAttrs [style filled, color White]]
+. setClusterAttributes (Int 1) [ GraphAttrs [textLabel "process #2", color Blue], NodeAttrs [style filled]]
+$ composeList [ Cntxt "a0"    (Just $ Int 0)   []               [("a3",[]),("start",[])] [("a1",[])]
+              , Cntxt "a1"    (Just $ Int 0)   []               []                       [("a2",[]),("b3",[])]
+              , Cntxt "a2"    (Just $ Int 0)   []               []                       [("a3",[])]
+              , Cntxt "a3"    (Just $ Int 0)   []               [("b2",[])]              [("end",[])]
+              , Cntxt "b0"    (Just $ Int 1)   []               [("start",[])]           [("b1",[])]
+              , Cntxt "b1"    (Just $ Int 1)   []               []                       [("b2",[])]
+              , Cntxt "b2"    (Just $ Int 1)   []               []                       [("b3",[])]
+              , Cntxt "b3"    (Just $ Int 1)   []               []                       [("end",[])]
+              , Cntxt "end"   Nothing          [shape MSquare]  []                       []
+              , Cntxt "start" Nothing          [shape MDiamond] []                       []]
 
  -}
 module Data.GraphViz.Types.Graph
@@ -102,6 +123,7 @@ import Text.ParserCombinators.ReadPrec(prec)
 
 -- -----------------------------------------------------------------------------
 
+-- | A Dot graph that allows graph operations on it.
 data DotGraph n = DG { strictGraph   :: Bool
                      , directedGraph :: Bool
                      , graphAttrs    :: GlobAttrs
@@ -111,6 +133,8 @@ data DotGraph n = DG { strictGraph   :: Bool
                      }
                 deriving (Eq, Ord)
 
+-- | It should be safe to substitute 'unsafeFromCanonical' for
+--   'fromCanonical' in the output of this.
 instance (Ord n, Show n) => Show (DotGraph n) where
   showsPrec d dg = showParen (d > 10) $
                    showString "fromCanonical " . shows (toCanonical dg)

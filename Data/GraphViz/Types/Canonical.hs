@@ -16,8 +16,60 @@
 
    * edges
 
+   This Dot graph representation is ideally suited for converting
+   other data structures to Dot form (especially with the help of
+   @graphElemsToDot@ from "Data.GraphViz").
+
    If you require arbitrary ordering of statements, then use
    "Data.GraphViz.Types.Generalised".
+
+   The sample graph could be implemented (this is actually the result
+   of calling @canonicalise@ from "Data.GraphViz.Algorithms" on the
+   generalised one) as:
+
+   > DotGraph { strictGraph = False
+   >          , directedGraph = True
+   >          , graphID = Just (Str "G")
+   >          , graphStatements = DotStmts { attrStmts = []
+   >                                       , subGraphs = [ DotSG { isCluster = True
+   >                                                             , subGraphID = Just (Int 0)
+   >                                                             , subGraphStmts = DotStmts { attrStmts = [ GraphAttrs [ style filled
+   >                                                                                                                   , color LightGray
+   >                                                                                                                   , textLabel "process #1"]
+   >                                                                                                      , NodeAttrs [style filled, color White]]}
+   >                                                                                       , subGraphs = []
+   >                                                                                        , nodeStmts = [ DotNode "a0" []
+   >                                                                                                      , DotNode "a1" []
+   >                                                                                                      , DotNode "a2" []
+   >                                                                                                      , DotNode "a3" []]
+   >                                                                                        , edgeStmts = [ DotEdge "a0" "a1" []
+   >                                                                                                      , DotEdge "a1" "a2" []
+   >                                                                                                      , DotEdge "a2" "a3" []
+   >                                                                                                      , DotEdge "a3" "a0" []]}}
+   >                                                     , DotSG { isCluster = True
+   >                                                             , subGraphID = Just (Int 1)
+   >                                                             , subGraphStmts = DotStmts { attrStmts = [ GraphAttrs [textLabel "process #2", color Blue]
+   >                                                                                                      , NodeAttrs [style filled]]
+   >                                                                                        , subGraphs = []
+   >                                                                                        , nodeStmts = [ DotNode "b0" []
+   >                                                                                                      , DotNode "b1" []
+   >                                                                                                      , DotNode "b2" []
+   >                                                                                                      , DotNode "b3" []]
+   >                                                                                        , edgeStmts = [ DotEdge "b0" "b1" []
+   >                                                                                                      , DotEdge "b1" "b2" []
+   >                                                                                                      , DotEdge "b2" "b3" []]}}]
+   >                                       , nodeStmts = [ DotNode "end" [shape MSquare]
+   >                                                     , DotNode "start" [shape MDiamond]]
+   >                                       , edgeStmts = [ DotEdge "start" "a0" []
+   >                                                     , DotEdge "start" "b0" []
+   >                                                     , DotEdge "a1" "b3" []
+   >                                                     , DotEdge "b2" "a3" []
+   >                                                     , DotEdge "a3" "end" []
+   >                                                     , DotEdge "b3" "end" []]}}
+
+   Note that whilst the above graph represents the same Dot graph as
+   specified in "Data.GraphViz.Types.Generalised", etc., it /may/ be
+   drawn slightly differently by the various Graphviz tools.
 
  -}
 module Data.GraphViz.Types.Canonical

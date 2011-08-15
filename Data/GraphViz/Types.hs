@@ -14,8 +14,24 @@
    'ParseDotRepr' and 'PPDotRepr' classes are used until class aliases
    are implemented).
 
+   Every representation takes in a type parameter: this indicates the
+   node type (e.g. @DotGraph Int@ is a Dot graph with integer nodes).
+   Sum types are allowed, though care must be taken when specifying
+   their 'ParseDot' instances if there is the possibility of
+   overlapping definitions.  The 'GraphID' type is an existing sum
+   type that allows textual and numeric values.
+
+   If you require using more than one Dot representation, you will
+   most likely need to import at least one of them qualified, as they
+   typically all use the same names.
+
    As a comparison, all four representations provide how you would
-   define the following Dot graph (or at least one isomorphic to it):
+   define the following Dot graph (or at least one isomorphic to it)
+   (the original of which can be found at
+   <http://graphviz.org/content/cluster>).  Note that in all the
+   examples, they are not necessarily done the best way (variables
+   rather than repeated constants, etc.); they are just there to
+   provide a comparison on the structure of each representation.
 
    > digraph G {
    >
@@ -111,7 +127,12 @@ import Control.Monad.Trans.State(get, put, modify, execState, evalState)
 -- | This class is used to provide a common interface to different
 --   ways of representing a graph in /Dot/ form.
 --
---   The type variable represents the current node type of the Dot graph;
+--   You will most probably /not/ need to create your own instances of
+--   this class.
+--
+--   The type variable represents the current node type of the Dot
+--   graph, and the 'Ord' restriction is there because in practice
+--   most implementations of some of these methods require it.
 class (Ord n) => DotRepr dg n where
   -- | Convert from a graph in canonical form.  This is especially
   --   useful when using the functions from "Data.GraphViz.Algorithms".
