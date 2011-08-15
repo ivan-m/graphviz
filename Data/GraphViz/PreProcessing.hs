@@ -95,7 +95,7 @@ parseMultiLineComment = bracket start end (many inner)
   where
     start = string "/*"
     end = string "*/"
-    inner = (many1 (satisfy ('*' /=)) >> return ())
+    inner = (many1Satisfy ('*' /=) >> return ())
             `onFail`
             do character '*'
                satisfy ('/' /=)
