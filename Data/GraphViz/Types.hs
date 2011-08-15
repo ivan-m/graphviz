@@ -138,8 +138,7 @@ class (Ord n) => DotRepr dg n where
   -- | Change the node values.  This function is assumed to be
   --   /injective/, otherwise the resulting graph will not be
   --   identical to the original (modulo labels).
-  mapDotGraph :: (Ord n', PrintDot n', ParseDot n', DotRepr dg n')
-                 => (n -> n') -> dg n -> dg n'
+  mapDotGraph :: (Ord n', DotRepr dg n') => (n -> n') -> dg n -> dg n'
 
   -- | Return information on all the clusters contained within this
   --   'DotRepr', as well as the top-level 'GraphAttrs' for the
