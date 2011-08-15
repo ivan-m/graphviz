@@ -568,7 +568,7 @@ unsafeFromCanonical dg = DG { strictGraph   = C.strictGraph dg
     mgid = C.graphID dg
     dirGraph = C.directedGraph dg
 
-    (as, cs, ns) = fCStmt mgid stmts
+    (as, cs, ns) = fCStmt Nothing stmts
 
     fCStmt p stmts' = (sgAs, cs', ns')
       where
