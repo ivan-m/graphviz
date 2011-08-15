@@ -61,6 +61,8 @@ module Data.GraphViz.Types.Graph
        , DotEdge(..)
        , addDotEdge
        , addCluster
+       , setClusterParent
+       , setClusterAttributes
          -- * Graph deconstruction
        , decompose
        , decomposeAny
@@ -289,6 +291,22 @@ addEmptyCluster = maybe id (withClusters . flip dontReplace defCI)
   where
     dontReplace = M.insertWith (const id)
     defCI = CI Nothing emptyGA
+
+-- | Specify the parent of the cluster; adds both in if not already present.
+setClusterParent     :: GraphID -> Maybe GraphID -> DotGraph n -> DotGraph n
+setClusterParent c p = withClusters (M.adjust setP c) . addCs
+  where
+    addCs = addEmptyCluster p . addEmptyCluster (Just c)
+    setP ci = ci { parentCluster = p }
+
+-- | Specify the attributes of the cluster; adds it if not already
+--   present.
+setClusterAttributes       :: GraphID -> [GlobalAttributes]
+                              -> DotGraph n -> DotGraph n
+setClusterAttributes c gas = withClusters (M.adjust setAs c)
+                             . addEmptyCluster (Just c)
+  where
+    setAs ci = ci { clusterAttrs = toGlobAttrs gas }
 
 -- | Create a graph with no clusters.
 mkGraph :: (Ord n) => [DotNode n] -> [DotEdge n] -> DotGraph n
