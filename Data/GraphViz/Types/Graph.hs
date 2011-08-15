@@ -124,12 +124,12 @@ import Text.ParserCombinators.ReadPrec(prec)
 -- -----------------------------------------------------------------------------
 
 -- | A Dot graph that allows graph operations on it.
-data DotGraph n = DG { strictGraph   :: Bool
-                     , directedGraph :: Bool
-                     , graphAttrs    :: GlobAttrs
-                     , graphID       :: Maybe GraphID
-                     , clusters      :: Map GraphID ClusterInfo
-                     , values        :: NodeMap n
+data DotGraph n = DG { strictGraph   :: !Bool
+                     , directedGraph :: !Bool
+                     , graphAttrs    :: !GlobAttrs
+                     , graphID       :: !(Maybe GraphID)
+                     , clusters      :: !(Map GraphID ClusterInfo)
+                     , values        :: !(NodeMap n)
                      }
                 deriving (Eq, Ord)
 
@@ -147,21 +147,21 @@ instance (Ord n, Read n) => Read (DotGraph n) where
                   cdg <- readPrec
                   return $ fromCanonical cdg
 
-data GlobAttrs = GA { graphAs :: SAttrs
-                    , nodeAs  :: SAttrs
-                    , edgeAs  :: SAttrs
+data GlobAttrs = GA { graphAs :: !SAttrs
+                    , nodeAs  :: !SAttrs
+                    , edgeAs  :: !SAttrs
                     }
                deriving (Eq, Ord, Show, Read)
 
-data NodeInfo n = NI { _inCluster    :: Maybe GraphID
-                     , _attributes   :: Attributes
-                     , _predecessors :: EdgeMap n
-                     , _successors   :: EdgeMap n
+data NodeInfo n = NI { _inCluster    :: !(Maybe GraphID)
+                     , _attributes   :: !Attributes
+                     , _predecessors :: !(EdgeMap n)
+                     , _successors   :: !(EdgeMap n)
                      }
                 deriving (Eq, Ord, Show, Read)
 
-data ClusterInfo = CI { parentCluster :: Maybe GraphID
-                      , clusterAttrs  :: GlobAttrs
+data ClusterInfo = CI { parentCluster :: !(Maybe GraphID)
+                      , clusterAttrs  :: !GlobAttrs
                       }
                  deriving (Eq, Ord, Show, Read)
 
@@ -172,14 +172,14 @@ type EdgeMap n = Map n [Attributes]
 -- | The decomposition of a node from a dot graph.  Any loops should
 --   be found in 'successors' rather than 'predecessors'.  Note also
 --   that these are created/consumed as if for /directed/ graphs.
-data Context n = Cntxt { node         :: n
+data Context n = Cntxt { node         :: !n
                          -- | The cluster this node can be found in;
                          --   @Nothing@ indicates the node can be
                          --   found in the root graph.
-                       , inCluster    :: Maybe GraphID
-                       , attributes   :: Attributes
-                       , predecessors :: [(n, Attributes)]
-                       , successors   :: [(n, Attributes)]
+                       , inCluster    :: !(Maybe GraphID)
+                       , attributes   :: !Attributes
+                       , predecessors :: ![(n, Attributes)]
+                       , successors   :: ![(n, Attributes)]
                        }
                deriving (Eq, Ord, Show, Read)
 
@@ -227,7 +227,6 @@ emptyGA = GA S.empty S.empty S.empty
     merge = addSucc n ps'' . addPred n ss''
             . M.adjust (\ni -> ni { _predecessors = ps', _successors = ss' }) n
 
-
 infixr 5 &
 
 -- | Recursively merge the list of contexts.
@@ -244,11 +243,11 @@ addPred = addPS niPred
 
 addPS :: (Ord n) => ((EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n)
          -> n -> EdgeMap n -> NodeMap n -> NodeMap n
-addPS fni t fas nm = foldl' addSucc' nm fas'
+addPS fni t fas nm = t `seq` foldl' addSucc' nm fas'
   where
     fas' = fromMap fas
 
-    addSucc' nm' (f,as) = M.alter (addS as) f nm'
+    addSucc' nm' (f,as) = f `seq` M.alter (addS as) f nm'
 
     addS as = Just
               . maybe (error "Node not in the graph!")
