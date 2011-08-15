@@ -149,6 +149,9 @@ die     :: String -> IO a
 die msg = do hPutStrLn stderr msg
              exitWith (ExitFailure 1)
 
+qCheck :: (Testable prop) => prop -> IO Result
+qCheck = quickCheckWithResult (stdArgs { maxSize = 50, maxSuccess = 200 })
+
 -- -----------------------------------------------------------------------------
 -- Defining the tests to use.
 
@@ -174,7 +177,7 @@ test_printParseID_Attributes
   = Test { name       = "Printing and parsing of Attributes"
          , lookupName = "attributes"
          , desc       = dsc
-         , tests      = [quickCheckResult prop]
+         , tests      = [qCheck prop]
          }
   where
     prop :: Attributes -> Property
@@ -188,7 +191,7 @@ test_generalisedSameDot
   = Test { name       = "Printing generalised Dot code"
          , lookupName = "makegeneralised"
          , desc       = dsc
-         , tests      = [quickCheckResult prop]
+         , tests      = [qCheck prop]
          }
     where
       prop :: DotGraph Int -> Bool
@@ -206,9 +209,9 @@ test_printParseID
          }
   where
     tsts :: [IO Result]
-    tsts = [ quickCheckResult (prop_printParseID :: DotGraph    Int -> Bool)
-           , quickCheckResult (prop_printParseID :: G.DotGraph  Int -> Bool)
-           , quickCheckResult (prop_printParseID :: Gr.DotGraph Int -> Bool)
+    tsts = [ qCheck (prop_printParseID :: DotGraph    Int -> Bool)
+           , qCheck (prop_printParseID :: G.DotGraph  Int -> Bool)
+           , qCheck (prop_printParseID :: Gr.DotGraph Int -> Bool)
            ]
 
     dsc = "The graphviz library should be able to parse back in its own\n\
@@ -219,7 +222,7 @@ test_preProcessingID
   = Test { name       = "Pre-processing Dot code"
          , lookupName = "preprocessing"
          , desc       = dsc
-         , tests      = [quickCheckResult prop]
+         , tests      = [qCheck prop]
          }
   where
     prop :: DotGraph Int -> Bool
@@ -237,7 +240,7 @@ test_dotizeAugment
   = Test { name       = "Augmenting FGL Graphs"
          , lookupName = "augment"
          , desc       = dsc
-         , tests      = [quickCheckResult prop]
+         , tests      = [qCheck prop]
          }
   where
     prop :: Gr Char Double -> Bool
@@ -253,7 +256,7 @@ test_dotizeAugmentUniq
   = Test { name       = "Unique edges in augmented FGL Graphs"
          , lookupName = "augmentuniq"
          , desc       = dsc
-         , tests      = [quickCheckResult prop]
+         , tests      = [qCheck prop]
          }
   where
     prop :: Gr Char Double -> Bool
@@ -269,7 +272,7 @@ test_findAllNodes
   = Test { name       = "Ensure all nodes are found in a DotRepr"
          , lookupName = "findnodes"
          , desc       = dsc
-         , tests      = map quickCheckResult props
+         , tests      = map qCheck props
          }
   where
     props :: [Gr () () -> Bool]
@@ -284,7 +287,7 @@ test_findAllNodesE
   = Test { name       = "Ensure all nodes are found in a node-less DotRepr"
          , lookupName = "findedgelessnodes"
          , desc       = dsc
-         , tests      = map quickCheckResult props
+         , tests      = map qCheck props
          }
   where
     props :: [Gr () () -> Bool]
@@ -300,7 +303,7 @@ test_findAllEdges
   = Test { name       = "Ensure all edges are found in a DotRepr"
          , lookupName = "findedges"
          , desc       = dsc
-         , tests      = map quickCheckResult props
+         , tests      = map qCheck props
          }
   where
     props :: [Gr () () -> Bool]
@@ -315,7 +318,7 @@ test_noGraphInfo
   = Test { name       = "Plain DotReprs should have no structural information"
          , lookupName = "nographinfo"
          , desc       = dsc
-         , tests      = map quickCheckResult props
+         , tests      = map qCheck props
          }
   where
     props :: [Gr () () -> Bool]
@@ -329,7 +332,7 @@ test_canonicalise
   = Test { name       = "Canonicalisation should be idempotent"
          , lookupName = "canonicalise"
          , desc       = dsc
-         , tests      = [quickCheckResult prop]
+         , tests      = [qCheck prop]
          }
   where
     prop :: DotGraph Int -> Bool
@@ -342,7 +345,7 @@ test_transitive
   = Test { name       = "Transitive reduction should be idempotent"
          , lookupName = "transitive"
          , desc       = dsc
-         , tests      = [quickCheckResult prop]
+         , tests      = [qCheck prop]
          }
   where
     prop :: DotGraph Int -> Bool
