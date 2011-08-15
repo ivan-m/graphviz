@@ -14,7 +14,6 @@ import Data.GraphViz.Testing( Test(name, lookupName)
                             , defaultTests, runChosenTests)
 
 import Data.Char(toLower)
-import Data.List(maximum)
 import Data.Maybe(mapMaybe)
 import qualified Data.Map as Map
 import Data.Map(Map)
@@ -73,10 +72,10 @@ helpTable = unlines $ fmtName ((lnHeader,lnHeaderLen),(nHeader,nHeaderLen))
   where
     andLen = ((id &&& length) .)
     testNames = map (andLen lookupName &&& andLen name) defaultTests
-    fmtName ((ln,lnl),(n,nl)) = concat [ ln
-                                       , replicate (maxLN-lnl+spacerLen) ' '
-                                       , n
-                                       ]
+    fmtName ((ln,lnl),(n,_)) = concat [ ln
+                                      , replicate (maxLN-lnl+spacerLen) ' '
+                                      , n
+                                      ]
     line = replicate (maxLN + spacerLen + maxN) '-'
     maxLN = maximum $ map (snd . fst) testNames
     maxN = maximum $ map (snd . snd) testNames
