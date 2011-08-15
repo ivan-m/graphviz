@@ -33,12 +33,16 @@ Various Haskell libraries have support for Graphviz to one extent or
 another; however _graphviz_ has the most comprehensive support
 available out of all of them:
 
-* Two different methods of specifying Dot graphs:
+* There are [four different representations] of Dot graphs:
 
-    1. Strict, which matches the layout of `dot -Tcanon`.
-    2. Liberal, which allows statements to be in any order.
+    1. Canonical, which matches the layout of `dot -Tcanon`.
+    2. Generalised, which allows statements to be in any order.
+    3. A graph-based one that allows manipulation of the Dot graph.
+    4. A monadic interface for embedding graphs in Haskell.
 
-  There are also conversion functions between the two of them.
+  There are also conversion functions between them.
+
+  [four different representations](#whats-the-difference-between-the-different-dotgraph-types)
 
 * The ability to parse and generate most aspects of Dot [syntax] and
   [attributes].  This includes taking into account escaping and
@@ -50,18 +54,21 @@ available out of all of them:
 * The ability to use a custom node type for Dot graphs.
 
 * Support for the all five layout algorithm programs and all specified
-  [output formats].
+  [output formats] as well as the ability to use custom programs, etc.
 
   [output formats]: http://www.graphviz.org/doc/info/output.html
 
-* Functions to convert [FGL] graphs to and from the internal Dot
-  representations.  In future, this will be expanded to a much larger
-  range of graph-like values once a suitable abstraction is available.
+* Functions to convert [FGL] graphs and other graph-like structures
+  (albeit not as nicely) to and from the internal Dot representations.
+  In future, this will be expanded to a much larger range of
+  graph-like values once a suitable abstraction is available.
 
   [FGL]: http://web.engr.oregonstate.edu/~erwig/fgl/haskell/
 
 * The ability to augment Dot and FGL graphs with positioning
   information by round-trip passing through Graphviz.
+
+* Pure Haskell implementations of `dot -Tcanon` and `tred`.
 
 * _graphviz_ is continually being worked upon and expanded to better
   suit/match the requirements of Graphviz, to improve performance and
@@ -78,7 +85,7 @@ Note that _graphviz_'s version numbers follow the
 [package versioning policy]; this means that you can immediately tell
 when the API has had a backwards-incompatible change by comparing the
 first two elements of the version.  However, these changes won't
-affect most users.
+always affect most users.
 
 [package versioning policy]: http://www.haskell.org/haskellwiki/Package_versioning_policy
 
@@ -94,11 +101,9 @@ _aren't_ covered:
 * Comments, pre-processor lines and split lines are (currently) not
   supported within HTML-like labels.
 
-* _graphviz_ is currently locale-specific: Dot graphs are meant to be
-  encoded in UTF-8 by default unless specified to be Latin-1, but this
-  isn't verified or checked.  Dot code that is parsed in is assumed to
-  be in UTF-8; in future this will be enforced (both for printing and
-  parsing purposes).
+* _graphviz_ only uses UTF-8 encoding for printing and parsing
+  (whereas Graphviz allows Latin1 encoding with the `charset`
+  attribute).
 
 * Graphviz is more liberal in accepting "invalid" values
   (e.g. accepting a floating-point value when only integer values are
@@ -125,7 +130,6 @@ _aren't_ covered:
   all Dot graphs will be in UTF-8 for simplicity; if Latin1-encoded
   graphs need to be parsed then you shall need to do all I/O for them
   by hand.
-
 
 #### Available items of note ####
 
@@ -276,17 +280,36 @@ than just visualising graphs created solely in Haskell: it can also
 import pre-defined graphs, or else generate Dot code for use with
 other tools.
 
-### What's the difference between DotGraph and GDotGraph? ###
+### What's the difference between the different DotGraph types? ###
 
-The layout of `DotGraph` matches the output of `dot -Tcanon`.  It has
-a fixed layout which makes it easier to reason about and get
-sub-components.
+_graphviz_ has four different "implementations" of Dot code:
 
-`GDotGraph` on the other hand is more liberal in its layout, allowing
-you to put statements in any order you please.  This is useful in
-cases where you want to use the common Graphviz "hack" of specifying
-global attributes that don't apply to sub-graphs _after_ the
-sub-graphs in question.
+**Canonical:**
+
+: matches the output of `dot -Tcanon`.  Recommended for use when
+  converting existing data into Dot (especially with the
+  `graphElemsToDot` function in `Data.GraphViz`).
+
+**Generalised:**
+
+: most closely matches the layout of actual Dot code, as such this is
+  preferred when parsing in arbitrary Dot graphs.  Also useful in
+  cases where you want to use the common Graphviz "hack" of specifying
+  global attributes that don't apply to sub-graphs _after_ the
+  sub-graphs in question.
+
+**Graph:**
+
+: provides common graph operations on Dot graphs, based upon those
+  found in the [FGL].
+
+**Monadic:**
+
+: a nicer way of defining relatively static Dot graphs to embed within
+  Haskell code, etc.  Loosely based (with permission!) upon Andy
+  Gill's [dotgen] library.
+
+  [dotgen]: http://hackage.haskell.org/package/dotgen
 
 ### What's the best way to parse Dot code? ###
 
@@ -521,22 +544,28 @@ Longer answer: Polyparse has several advantages I feel over [Parsec]:
 
 [Parsec]: http://hackage.haskell.org/package/parsec
 
-### Why do you have two different representations of Dot graphs? ###
+### Why do you have four different representations of Dot graphs? ###
 
-_graphviz_ has
-[two different representations](#whats-the-difference-between-dotgraph-and-gdotgraph)
-of Dot graphs.  Apart from the reasons given before, `DotGraph` was
-the original representation, whereas `GDotGraph` was only introduced
-in the 2999.8.0.0 release.
+_graphviz_ has [four different representations] of Dot graphs.  Apart
+from the reasons given before, the canonical implementation was the
+original representation, whereas the generalised one was only
+introduced in the 2999.8.0.0 release and the other two in the
+2999.12.0.0 release.
 
-Note, however, that I was thinking of adding something like
-`GDotGraph` back around the time of the
+Note, however, that I was thinking of adding something like the
+generalised implementation back around the time of the
 [2999.0.0.0 release](http://www.haskell.org/pipermail/haskell-cafe/2009-July/064436.html),
 yet
 [people didn't like the idea](http://www.haskell.org/pipermail/haskell-cafe/2009-July/064442.html).
 
-As such, `GDotGraph` is there if anyone needs/wants to use it, but
-usage of `DotGraph` is recommended/preferred.
+The graph-based implementation was added solely so I could write as
+(un-yet finished) tutorial, and thought others might find it useful.
+The monadic implementation came about as an attempt to encourage more
+people to use _graphviz_ rather than other libraries such as [dotgen],
+and I thought a nicer way of writing Dot graphs might help (the
+initial plans involved complicated type-hackery to try and almost make
+it a DSL for actual Dot code; however it ended up being too
+complicated and unwieldy).
 
 ### Why are only FGL graphs supported? ###
 
