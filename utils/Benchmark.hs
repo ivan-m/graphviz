@@ -10,7 +10,7 @@
 -}
 module Main where
 
-import Data.GraphViz
+import Data.GraphViz hiding (DotGraph)
 import Data.GraphViz.Types.Generalised
 
 import Criterion.Main
@@ -25,13 +25,13 @@ main = defaultMain [ bench "Parsing in-memory GDotGraph" $ nf parseGDG largeDefi
                    , bench "Printing GDotGraph" $ nf printDotGraph largeGraph
                    ]
 
-parseGDG :: Text -> GDotGraph Int
+parseGDG :: Text -> DotGraph Int
 parseGDG = parseDotGraph
 
-instance (Show a) => NFData  (GDotGraph a) where
+instance (Show a) => NFData  (DotGraph a) where
   rnf = rnf . show
 
-largeGraph :: GDotGraph Int
+largeGraph :: DotGraph Int
 largeGraph = parseGDG largeDefined
 
 largeDefined :: Text
