@@ -158,6 +158,10 @@ isUndirected g = all hasFlip es
 --   after clustering the nodes have a label of type @l@ (which may or
 --   may not be the same as @nl@).
 --
+--   The tuples ins the function types represent labelled nodes (for
+--   @(n,nl)@ and @(n,l)@) and labelled edges (@(n,n,el)@; the value
+--   @(f,t,ftl)@ is an edge from @f@ to @l@ with a label of @ftl@).
+--
 --   The clustering in 'clusterBy' can be to arbitrary depth.
 data GraphvizParams n nl el cl l
      = Params { -- | @True@ if the graph is directed; @False@
@@ -167,7 +171,7 @@ data GraphvizParams n nl el cl l
                 --   graph.
               , globalAttributes :: [GlobalAttributes]
                 -- | A function to specify which cluster a particular
-                --   'LNode' is in.
+                --   node is in.
               , clusterBy        :: ((n,nl) -> NodeCluster cl (n,l))
                 -- | The name/identifier for a cluster.
               , clusterID        :: (cl -> GraphID)
