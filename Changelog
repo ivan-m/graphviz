@@ -7,6 +7,11 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.12.0.1
+----------------------
+
+* Fix a bug that prevented graphviz from being built with GHC 7.2.
+
 Changes in 2999.12.0.0
 ----------------------
 
