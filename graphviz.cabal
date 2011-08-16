@@ -1,5 +1,5 @@
 Name:               graphviz
-Version:            2999.12.0.1
+Version:            2999.12.0.2
 Stability:          Beta
 Synopsis:           Bindings to Graphviz for graph visualisation.
 Description: {
@@ -108,6 +108,7 @@ Library {
                                 Data.GraphViz.Testing.Instances.Common
                                 Data.GraphViz.Testing.Instances.Canonical
                                 Data.GraphViz.Testing.Instances.Generalised
+                                Data.GraphViz.Testing.Instances.Graph
 
         if True
            Ghc-Options: -Wall

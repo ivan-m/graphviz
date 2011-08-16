@@ -7,6 +7,12 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.12.0.2
+----------------------
+
+* Forgot to explicitly list the module for Arbitrary instance for the
+  graph representation.
+
 Changes in 2999.12.0.1
 ----------------------
 
