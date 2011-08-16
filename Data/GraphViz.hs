@@ -27,6 +27,7 @@ module Data.GraphViz
     , setDirectedness
       -- *** Specifying clusters.
     , NodeCluster(..)
+    , LNodeCluster
       -- ** Converting graphs.
     , graphToDot
     , graphElemsToDot
@@ -178,6 +179,9 @@ data GraphvizParams n nl el cl l
                 -- | The specific @Attributes@ for an edge.
               , fmtEdge          :: ((n,n,el) -> Attributes)
               }
+
+-- | An alias for 'NodeCluster' when dealing with FGL graphs.
+type LNodeCluster cl l = NodeCluster cl (Node,l)
 
 -- | A default 'GraphvizParams' value which assumes the graph is
 --   directed, contains no clusters and has no 'Attribute's set.
