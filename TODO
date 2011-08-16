@@ -17,6 +17,8 @@ Short term
 * Add nicer syntax for record labels, and specifying ports in Monadic
   Dot graphs.
 
+* Add convenience functions for creating GraphIDs (ala Labellable).
+
 * Add support for SVG colors.
 
 * Define new classes to distinguish between printing/parsing Attribute
