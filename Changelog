@@ -7,6 +7,13 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.12.0.3
+----------------------
+
+* Fixes various mistakes in the Haddock documentation that slipped
+  through (either in the `String -> Text` conversion or adding new
+  modules and not checking their documentation thoroughly enough).
+
 Changes in 2999.12.0.2
 ----------------------
 
