@@ -36,7 +36,7 @@
    > . setStrictness False
    > . setIsDirected True
    > . setClusterAttributes (Int 0) [GraphAttrs [style filled, color LightGray, textLabel "process #1"], NodeAttrs [style filled, color White]]
-   > . setClusterAttributes (Int 1) [ GraphAttrs [textLabel "process #2", color Blue], NodeAttrs [style filled]]
+   > . setClusterAttributes (Int 1) [GraphAttrs [textLabel "process #2", color Blue], NodeAttrs [style filled]]
    > $ composeList [ Cntxt "a0"    (Just $ Int 0)   []               [("a3",[]),("start",[])] [("a1",[])]
    >               , Cntxt "a1"    (Just $ Int 0)   []               []                       [("a2",[]),("b3",[])]
    >               , Cntxt "a2"    (Just $ Int 0)   []               []                       [("a3",[])]
@@ -171,7 +171,7 @@ type EdgeMap n = Map n [Attributes]
 
 -- | The decomposition of a node from a dot graph.  Any loops should
 --   be found in 'successors' rather than 'predecessors'.  Note also
---   that these are created/consumed as if for /directed/ graphs.
+--   that these are created\/consumed as if for /directed/ graphs.
 data Context n = Cntxt { node         :: !n
                          -- | The cluster this node can be found in;
                          --   @Nothing@ indicates the node can be
