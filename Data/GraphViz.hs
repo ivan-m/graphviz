@@ -128,17 +128,17 @@ isUndirected g = all hasFlip es
      > checkDirectednessVis :: (Graph gr, Ord el) => gr nl el -> DotGraph Node
      > checkDirectednessVis = setDirectedness graphToDot nonClusteredParams
 
-   * Clustering nodes based upon whether they are even or odd.  We have
-     the option of either constructing a @GraphvizParams@ directly, or
-     using @'blankParams'@.  Going with the latter to avoid setting
-     @'isDirected'@.
+   * Clustering nodes based upon whether they are even or odd.  We
+     have the option of either constructing a @GraphvizParams@
+     directly, or using @'blankParams'@.  Using the latter to avoid
+     setting @'isDirected'@:
 
      > evenOdd :: (Graph gr, Ord el) => gr Int el -> DotGraph Node
      > evenOdd = setDirectedness graphToDot params
      >   where
      >     params = blankParams { globalAttributes = []
      >                          , clusterBy        = clustBy
-     >                          , clusterID        = Just . Int
+     >                          , clusterID        = Int
      >                          , fmtCluster       = clFmt
      >                          , fmtNode          = const []
      >                          , fmtEdge          = const []
@@ -158,9 +158,10 @@ isUndirected g = all hasFlip es
 --   after clustering the nodes have a label of type @l@ (which may or
 --   may not be the same as @nl@).
 --
---   The tuples ins the function types represent labelled nodes (for
+--   The tuples in the function types represent labelled nodes (for
 --   @(n,nl)@ and @(n,l)@) and labelled edges (@(n,n,el)@; the value
 --   @(f,t,ftl)@ is an edge from @f@ to @l@ with a label of @ftl@).
+--   These correspond to 'LNode' and 'LEdge' in FGL graphs.
 --
 --   The clustering in 'clusterBy' can be to arbitrary depth.
 data GraphvizParams n nl el cl l

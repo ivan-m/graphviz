@@ -16,14 +16,13 @@ import Data.Word(Word8)
 
 -- -----------------------------------------------------------------------------
 
--- | This represents the color schemes that Graphviz accepts.  As
---   mentioned above, these are /not/ used for actual parsing or
---   printing.
+-- | This represents the color schemes that Graphviz accepts.
 data ColorScheme = X11
                  | Brewer BrewerScheme
                  deriving (Eq, Ord, Show, Read)
 
--- | The value of the depends on the name.
+-- | Specify which colour pallete and how many colours it has.  Note
+--   the allowed values for the different 'BrewerName's.
 data BrewerScheme = BScheme BrewerName Word8
                   deriving (Eq, Ord, Show, Read)
 

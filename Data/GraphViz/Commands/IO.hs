@@ -136,7 +136,7 @@ readDot = hGetDot stdin
 runCommand :: (PrintDotRepr dg n)
               => String           -- ^ Command to run
               -> [String]         -- ^ Command-line arguments
-              -> (Handle -> IO a) -- ^ Obtaining the output
+              -> (Handle -> IO a) -- ^ Obtaining the output; should be strict.
               -> dg n
               -> IO a
 runCommand cmd args hf dg

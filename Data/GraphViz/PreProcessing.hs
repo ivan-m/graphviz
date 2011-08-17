@@ -5,7 +5,7 @@
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
-   "Real life" Dot code contains various items that are not directly
+   \"Real life\" Dot code contains various items that are not directly
    parseable by this library.  This module defines the 'preProcess'
    function to remove these components, which include:
 
@@ -16,8 +16,8 @@
      * Split lines (by inserting a @\\@ the rest of that \"line\" is
        continued on the next line).
 
-     * 'String's concatenated together using @\"...\" + \"...\"@;
-       these are concatenated into one big 'String'.
+     * 'Text's concatenated together using @\"...\" + \"...\"@; these
+       are concatenated into one big 'Text'.
 -}
 module Data.GraphViz.PreProcessing(preProcess) where
 

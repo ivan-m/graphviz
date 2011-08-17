@@ -1973,9 +1973,9 @@ instance ParseDot X11Color where
                           ]
 
 -- | Attempt to convert a 'Color' into a 'Colour' value with an alpha
---   channel.  The use of 'Maybe' is because 'BrewerColor' values
---   cannot be converted without knowing which actual 'BrewerName' and
---   level color scheme is being used.
+--   channel.  The use of 'Maybe' is because the RGB values of the
+--   'BrewerColor's haven't been stored here (primarily for licensing
+--   reasons).
 toColour                :: Color -> Maybe (AlphaColour Double)
 toColour (RGB r g b)    = Just . opaque $ sRGB24 r g b
 toColour (RGBA r g b a) = Just . withOpacity (sRGB24 r g b) $ toOpacity a

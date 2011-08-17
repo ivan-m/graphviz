@@ -291,7 +291,7 @@ arrowTo :: Arrow -> Attribute
 arrowTo = ArrowHead
 
 -- | How to draw the arrow at the node the edge is coming from.
---   Requires either @'edgeEnds' 'Back'@ or @'EdgeEnds' 'Both'@.
+--   Requires either @'edgeEnds' 'Back'@ or @'edgeEnds' 'Both'@.
 arrowFrom :: Arrow -> Attribute
 arrowFrom = ArrowTail
 

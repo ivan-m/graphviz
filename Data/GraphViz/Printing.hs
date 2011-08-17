@@ -22,13 +22,16 @@
    The Dot language specification specifies that any identifier is in
    one of four forms:
 
-       * Any string of alphabetic ([a-zA-Z\200-\377]) characters, underscores ('_') or digits ([0-9]), not beginning with a digit;
+       * Any string of alphabetic ([a-zA-Z\\200-\\377]) characters,
+         underscores ('_') or digits ([0-9]), not beginning with a
+         digit;
 
        * a number [-]?(.[0-9]+ | [0-9]+(.[0-9]*)? );
 
-       * any double-quoted string (\"...\") possibly containing escaped quotes (\\\");
+       * any double-quoted string (\"...\") possibly containing
+         escaped quotes (\\\");
 
-       * an HTML string (<...>).
+       * an HTML string (\<...\>).
 
    (Note that the first restriction is referring to a byte-by-byte
    comparison using octal values; when using UTF-8 this corresponds to

@@ -37,7 +37,7 @@
    >                                                                                                                   , color LightGray
    >                                                                                                                   , textLabel "process #1"]
    >                                                                                                      , NodeAttrs [style filled, color White]]}
-   >                                                                                       , subGraphs = []
+   >                                                                                        , subGraphs = []
    >                                                                                        , nodeStmts = [ DotNode "a0" []
    >                                                                                                      , DotNode "a1" []
    >                                                                                                      , DotNode "a2" []

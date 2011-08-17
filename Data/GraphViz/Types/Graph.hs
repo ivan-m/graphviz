@@ -32,21 +32,21 @@
    converting existing Dot graphs (via 'fromDotRepr').  However, one
    way of constructing the sample graph would be:
 
-setID (Str "G")
-. setStrictness False
-. setIsDirected True
-. setClusterAttributes (Int 0) [GraphAttrs [style filled, color LightGray, textLabel "process #1"], NodeAttrs [style filled, color White]]
-. setClusterAttributes (Int 1) [ GraphAttrs [textLabel "process #2", color Blue], NodeAttrs [style filled]]
-$ composeList [ Cntxt "a0"    (Just $ Int 0)   []               [("a3",[]),("start",[])] [("a1",[])]
-              , Cntxt "a1"    (Just $ Int 0)   []               []                       [("a2",[]),("b3",[])]
-              , Cntxt "a2"    (Just $ Int 0)   []               []                       [("a3",[])]
-              , Cntxt "a3"    (Just $ Int 0)   []               [("b2",[])]              [("end",[])]
-              , Cntxt "b0"    (Just $ Int 1)   []               [("start",[])]           [("b1",[])]
-              , Cntxt "b1"    (Just $ Int 1)   []               []                       [("b2",[])]
-              , Cntxt "b2"    (Just $ Int 1)   []               []                       [("b3",[])]
-              , Cntxt "b3"    (Just $ Int 1)   []               []                       [("end",[])]
-              , Cntxt "end"   Nothing          [shape MSquare]  []                       []
-              , Cntxt "start" Nothing          [shape MDiamond] []                       []]
+   > setID (Str "G")
+   > . setStrictness False
+   > . setIsDirected True
+   > . setClusterAttributes (Int 0) [GraphAttrs [style filled, color LightGray, textLabel "process #1"], NodeAttrs [style filled, color White]]
+   > . setClusterAttributes (Int 1) [ GraphAttrs [textLabel "process #2", color Blue], NodeAttrs [style filled]]
+   > $ composeList [ Cntxt "a0"    (Just $ Int 0)   []               [("a3",[]),("start",[])] [("a1",[])]
+   >               , Cntxt "a1"    (Just $ Int 0)   []               []                       [("a2",[]),("b3",[])]
+   >               , Cntxt "a2"    (Just $ Int 0)   []               []                       [("a3",[])]
+   >               , Cntxt "a3"    (Just $ Int 0)   []               [("b2",[])]              [("end",[])]
+   >               , Cntxt "b0"    (Just $ Int 1)   []               [("start",[])]           [("b1",[])]
+   >               , Cntxt "b1"    (Just $ Int 1)   []               []                       [("b2",[])]
+   >               , Cntxt "b2"    (Just $ Int 1)   []               []                       [("b3",[])]
+   >               , Cntxt "b3"    (Just $ Int 1)   []               []                       [("end",[])]
+   >               , Cntxt "end"   Nothing          [shape MSquare]  []                       []
+   >               , Cntxt "start" Nothing          [shape MDiamond] []                       []]
 
  -}
 module Data.GraphViz.Types.Graph
@@ -593,13 +593,21 @@ fromDotRepr = unsafeFromCanonical . canonicaliseOptions cOptions . unAnonymise
 
 -- | Convert a canonical Dot graph to a graph-based one.  This assumes
 --   that the canonical graph is the same format as returned by
---   'toCanonical'.  The \"unsafeness\" is that all nodes are assumed
---   to be explicitly listed precisely once, and that only edges found
---   in the root graph are considered.  If this isn't the case, use
---   'fromCanonical' instead.
+--   'toCanonical'.  The \"unsafeness\" is that:
 --
---   The 'graphToDot' function from "Data.GraphViz" produces output
---   suitable for this function.
+--   * All clusters must have a unique identifier ('unAnonymise' can
+--     be used to make sure all clusters /have/ an identifier, but it
+--     doesn't ensure uniqueness).
+--
+--   * All nodes are assumed to be explicitly listed precisely once
+--
+--   * Only edges found in the root graph are considered.
+--
+--   If this isn't the case, use 'fromCanonical' instead.
+--
+--   The 'graphToDot' and 'graphElemsToDot' functions from
+--   "Data.GraphViz" produces output suitable for this function
+--   (assuming all clusters are provided with a unique identifier).
 unsafeFromCanonical :: (Ord n) => C.DotGraph n -> DotGraph n
 unsafeFromCanonical dg = DG { strictGraph   = C.strictGraph dg
                             , directedGraph = dirGraph
