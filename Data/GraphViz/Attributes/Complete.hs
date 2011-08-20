@@ -1891,7 +1891,6 @@ instance ParseDot Point where
 -- -----------------------------------------------------------------------------
 
 data Overlap = KeepOverlaps
-             | RemoveOverlaps
              | ScaleOverlaps
              | ScaleXYOverlaps
              | PrismOverlap (Maybe Word16) -- ^ Only when sfdp is
@@ -1905,7 +1904,6 @@ data Overlap = KeepOverlaps
 
 instance PrintDot Overlap where
   unqtDot KeepOverlaps     = unqtDot True
-  unqtDot RemoveOverlaps   = unqtDot False
   unqtDot ScaleOverlaps    = text "scale"
   unqtDot ScaleXYOverlaps  = text "scalexy"
   unqtDot (PrismOverlap i) = maybe id (flip (<>) . unqtDot) i $ text "prism"
@@ -1915,10 +1913,10 @@ instance PrintDot Overlap where
 
 instance ParseDot Overlap where
   parseUnqt = oneOf [ stringRep KeepOverlaps "true"
-                    , stringRep RemoveOverlaps "false"
                     , stringRep ScaleXYOverlaps "scalexy"
                     , stringRep ScaleOverlaps "scale"
                     , string "prism" >> liftM PrismOverlap (optional parse)
+                    , stringRep (PrismOverlap Nothing) "false"
                     , stringRep CompressOverlap "compress"
                     , stringRep VpscOverlap "vpsc"
                     , stringRep IpsepOverlap "ipsep"
