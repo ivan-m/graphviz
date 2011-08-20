@@ -63,21 +63,26 @@ import System.FilePath((<.>))
 --   <http://graphviz.org/pdf/dot.1.pdf>, or if installed on your
 --   system @man graphviz@).  Note that any command can be used on
 --   both directed and undirected graphs.
-data GraphvizCommand = Dot   -- ^ For hierachical graphs (ideal for
-                             --   directed graphs).
-                     | Neato -- ^ For symmetric layouts of graphs
-                             --   (ideal for undirected graphs).
-                     | TwoPi -- ^ For radial layout of graphs.
-                     | Circo -- ^ For circular layout of graphs.
-                     | Fdp   -- ^ For symmetric layout of graphs.
+data GraphvizCommand = Dot       -- ^ For hierachical graphs (ideal for
+                                 --   directed graphs).
+                     | Neato     -- ^ For symmetric layouts of graphs
+                                 --   (ideal for undirected graphs).
+                     | TwoPi     -- ^ For radial layout of graphs.
+                     | Circo     -- ^ For circular layout of graphs.
+                     | Fdp       -- ^ For symmetric layout of graphs.
+                     | Osage     -- ^ Filter for drawing clustered graphs.
+                     | Patchwork -- ^ Draw clustered graphs as
+                                 --   treemaps.
                      deriving (Eq, Ord, Show, Read)
 
-showCmd        :: GraphvizCommand -> String
-showCmd Dot    = "dot"
-showCmd Neato  = "neato"
-showCmd TwoPi  = "twopi"
-showCmd Circo  = "circo"
-showCmd Fdp    = "fdp"
+showCmd           :: GraphvizCommand -> String
+showCmd Dot       = "dot"
+showCmd Neato     = "neato"
+showCmd TwoPi     = "twopi"
+showCmd Circo     = "circo"
+showCmd Fdp       = "fdp"
+showCmd Osage     = "osage"
+showCmd Patchwork = "patchwork"
 
 -- | The default command for directed graphs.
 dirCommand :: GraphvizCommand
