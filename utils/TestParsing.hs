@@ -27,7 +27,9 @@ import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString.Lazy as B
 import Control.Exception.Extensible(try, IOException)
-import Control.Monad(liftM)
+import Control.Monad(liftM, filterM)
+import System.Directory
+import System.FilePath
 import System.Environment(getArgs)
 
 -- -----------------------------------------------------------------------------
@@ -35,14 +37,21 @@ import System.Environment(getArgs)
 main :: IO ()
 main = tryParsing =<< getArgs
   where
-    tryParsing [] = putStrLn "Test that the graphviz library can parse\
-                             \ \"real life\" Dot code by passing a list\n\
-                             \of files in which contain Dot graphs.\n\
-                             \\n\
-                             \One way of using this file:\n\t\
-                             \$ locate -r \".*\\.\\(gv\\|dot\\)$\" -0\
-                             \ | xargs -0 runhaskell TestParsing.hs"
+    tryParsing []   = putStrLn "Test that the graphviz library can parse\
+                               \ \"real life\" Dot code by passing a list\n\
+                               \of files in which contain Dot graphs.\n\
+                               \\n\
+                               \One way of using this file:\n\t\
+                               \$ locate -r \".*\\.\\(gv\\|dot\\)$\" -0\
+                               \ | xargs -0 runhaskell TestParsing.hs"
+    tryParsing [fp] = do isDir <- doesDirectoryExist fp
+                         if isDir
+                            then mapM_ tryParseFile =<< getDContents fp
+                            else tryParseFile fp
     tryParsing fs = mapM_ tryParseFile fs
+
+getDContents :: FilePath -> IO [FilePath]
+getDContents fp = (filterM doesFileExist . map (fp </>)) =<< getDirectoryContents fp
 
 -- -----------------------------------------------------------------------------
 
