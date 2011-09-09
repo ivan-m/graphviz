@@ -17,7 +17,7 @@
 module Main where
 
 import Data.GraphViz
-import Data.GraphViz.Types.Generalised
+import qualified Data.GraphViz.Types.Generalised as G
 import Data.GraphViz.Parsing(runParser, parse)
 import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Commands.IO(hGetStrict, toUTF8)
@@ -47,7 +47,7 @@ main = tryParsing =<< getArgs
 -- -----------------------------------------------------------------------------
 
 
-withParse :: (DotRepr dg n) => (a -> IO Text) -> (dg n -> IO ())
+withParse :: (PPDotRepr dg n) => (a -> IO Text) -> (dg n -> IO ())
              -> (ErrMsg -> String) -> a -> IO ()
 withParse toStr withDG cmbErr a = do dc <- toStr a
                                      edg <- tryParse dc
@@ -58,7 +58,7 @@ withParse toStr withDG cmbErr a = do dc <- toStr a
                                                         putStrLn  ""
 
 type DG = DotGraph Text
-type GDG = GDotGraph Text
+type GDG = G.DotGraph Text
 type ErrMsg = String
 
 tryParseFile    :: FilePath -> IO ()
@@ -68,7 +68,7 @@ tryParseFile fp = readFile' fp >>= maybeParse
                                         ++ err ++ "\n"
     maybeParse (Right dot) = withParse (const $ return dot)
                                        (tryParseCanon fp)
-                                       ("Cannot parse as a GDotGraph: "++)
+                                       ("Cannot parse as a G.DotGraph: "++)
                                        fp
 
 tryParseCanon    :: FilePath -> GDG -> IO ()
@@ -81,7 +81,7 @@ tryParseCanon fp = withParse prettyPrint
     emptDG = DotGraph False False Nothing $ DotStmts [] [] [] [] :: DG
     prettyPrint dg = graphvizWithHandle (commandFor dg) dg Canon hGetStrict
 
-tryParse    :: (DotRepr dg n) => Text -> IO (Either ErrMsg (dg n))
+tryParse    :: (PPDotRepr dg n) => Text -> IO (Either ErrMsg (dg n))
 tryParse dc = handle getErr
               $ let (dg, rst) = runParser parse $ preProcess dc
                 in T.length rst `seq` return dg
