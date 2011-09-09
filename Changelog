@@ -20,6 +20,11 @@ Changes in 2999.13.0.0
   It can also now take a single directory as an argument, and will try
   to parse all (non-recursive) files in that directory.
 
+* Parsing error messages have been cleared up, especially when parsing
+  Dot graphs.  This came about from trying to help **Uri J. Braun**
+  with an error in his code (which took a while to diagnose as a
+  problem with the node type).
+
 Changes in 2999.12.0.3
 ----------------------
 
