@@ -73,7 +73,7 @@ tryParseFile fp = readFile' fp >>= maybeParse
 
 tryParseCanon    :: FilePath -> GDG -> IO ()
 tryParseCanon fp = withParse prettyPrint
-                             ((`seq` return ()) . T.length . printDotGraph . asDG)
+                             ((`seq` putStrLn "Parsed OK!") . T.length . printDotGraph . asDG)
                              (\ e -> fp ++ ": Canonical Form not a DotGraph:\n"
                                      ++ e)
   where
@@ -90,7 +90,8 @@ tryParse dc = handle getErr
     getErr = return . Left . show
 
 readFile' :: FilePath -> IO (Either ErrMsg Text)
-readFile' fp = do putStrLn fp
+readFile' fp = do putStr fp
+                  putStr " - "
                   liftM getMsg . try $ readUTF8File fp
   where
     getMsg :: Either IOException Text -> Either ErrMsg Text
