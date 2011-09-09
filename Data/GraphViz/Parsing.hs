@@ -255,7 +255,7 @@ parseInt = do cs <- many1Satisfy isDigit
                 Right (n,"")  -> return n
                 Right (_,txt) -> fail $ "Trailing digits not parsed as Integral: " ++ T.unpack txt
                 Left err      -> fail $ "Could not read Integral: " ++ err
-           `adjustErr` (++ "\nexpected one or more digits")
+           `adjustErr` ("Expected one or more digits\n\t"++)
 
 parseInt' :: Parse Int
 parseInt' = parseSigned parseInt
@@ -339,7 +339,7 @@ strings = oneOf . map string
 character   :: Char -> Parse Char
 character c = satisfy parseC
               `adjustErr`
-              (++ "\nnot the expected char: " ++ [c])
+              (const $ "Not the expected character: " ++ [c])
   where
     parseC c' = c' == c || c == flipCase c'
     flipCase c' = if isLower c'

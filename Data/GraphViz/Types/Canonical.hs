@@ -110,8 +110,6 @@ instance (ParseDot n) => ParseDot (DotGraph n) where
   parseUnqt = parseStmtBased parse (parseGraphID DotGraph)
 
   parse = parseUnqt -- Don't want the option of quoting
-          `adjustErr`
-          (++ "\n\nNot a valid DotGraph")
 
 -- | Assumed to be an injective mapping function.
 instance Functor DotGraph where
@@ -145,7 +143,7 @@ instance (ParseDot n) => ParseDot (DotStatements n) where
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
-          (++ "Not a valid set of statements")
+          ("Not a valid set of statements\n\t"++)
 
 instance Functor DotStatements where
   fmap f stmts = stmts { subGraphs = map (fmap f) $ subGraphs stmts
@@ -179,7 +177,7 @@ instance (ParseDot n) => ParseDot (DotSubGraph n) where
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
-          (++ "\n\nNot a valid Sub Graph")
+          ("Not a valid Sub Graph\n\t"++)
 
   parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
 

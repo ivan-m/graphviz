@@ -102,7 +102,7 @@ instance ParseDot HtmlLabel where
               `onFail`
               liftM HtmlText parseUnqt
               `adjustErr`
-              (++ "\nCan't parse HtmlLabel")
+              ("Can't parse HtmlLabel\n\t"++)
 
   parse = parseUnqt
 
@@ -141,7 +141,7 @@ instance ParseDot HtmlTextItem where
                     , parseHtmlFontTag HtmlFont parseUnqt
                     ]
               `adjustErr`
-              (++ "\nCan't parse HtmlTextItem")
+              ("Can't parse HtmlTextItem\n\t"++)
 
   parse = parseUnqt
 
@@ -175,7 +175,7 @@ instance ParseDot HtmlTable where
               `onFail`
               pTbl
               `adjustErr`
-              (++ "\nCan't parse HtmlTable")
+              ("Can't parse HtmlTable\n\t"++)
     where
       pTbl = wrapWhitespace $ parseHtmlTag (HTable Nothing)
                                            "TABLE"
@@ -203,7 +203,7 @@ instance ParseDot HtmlRow where
   -- 'HtmlAttributes' that it might accidentally parse.
   parseUnqt = wrapWhitespace $ parseHtmlTag (const HtmlRow) "TR" parseUnqt
               `adjustErr`
-              (++ "\nCan't parse HtmlRow")
+              ("Can't parse HtmlRow\n\t"++)
 
   parse = parseUnqt
 
@@ -233,7 +233,7 @@ instance ParseDot HtmlCell where
                     , parseCell HtmlImgCell $ wrapWhitespace parseUnqt
                     ]
               `adjustErr`
-              (++ "\nCan't parse HtmlCell")
+              ("Can't parse HtmlCell\n\t"++)
     where
       parseCell = flip parseHtmlTag "TD"
 
@@ -253,7 +253,7 @@ instance PrintDot HtmlImg where
 instance ParseDot HtmlImg where
   parseUnqt = wrapWhitespace (parseHtmlEmptyTag HtmlImg "IMG")
               `adjustErr`
-              (++ "\nCan't parse HtmlImg")
+              ("Can't parse HtmlImg\n\t"++)
 
   parse = parseUnqt
 

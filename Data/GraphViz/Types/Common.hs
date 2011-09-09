@@ -53,7 +53,7 @@ instance ParseDot GraphID where
 
   parse = liftM stringNum parse
           `adjustErr`
-          (++ "\nNot a valid GraphID")
+          ("Not a valid GraphID\n\t"++)
 
 stringNum     :: Text -> GraphID
 stringNum str = maybe checkDbl Int $ stringToInt str
@@ -116,7 +116,7 @@ instance ParseDot GlobalAttributes where
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
-          (++ "\n\nNot a valid listing of global attributes")
+          ("Not a valid listing of global attributes\n\t"++)
 
   -- Have to do this manually because of the special case
   parseUnqtList = parseStatements parse
@@ -373,7 +373,7 @@ parseBracesBased p = do gs <- getsGS id
                         modifyGS (const gs)
                         return a
                      `adjustErr`
-                     (++ "\nNot a valid value wrapped in braces.")
+                     ("Not a valid value wrapped in braces.\n\t"++)
 
 printSubGraphID     :: (a -> (Bool, Maybe GraphID)) -> a -> DotCode
 printSubGraphID f a = sGraph'
@@ -461,7 +461,7 @@ parseAttrBased p = do f <- p
                       atts <- tryParseList' (whitespace' >> parse)
                       return $ f atts
                    `adjustErr`
-                   (++ "\n\nNot a valid attribute-based structure")
+                   ("Not a valid attribute-based structure\n\t"++)
 
 parseAttrBasedList :: Parse (Attributes -> a) -> Parse [a]
 parseAttrBasedList = parseStatements . parseAttrBased

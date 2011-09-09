@@ -38,7 +38,7 @@ data GraphvizException = NotDotCode String
                        deriving (Eq, Ord, Typeable)
 
 instance Show GraphvizException where
-  showsPrec _ (NotDotCode str)    = showString $ "Error when parsing Dot code: " ++ str
+  showsPrec _ (NotDotCode str)    = showString $ "Error when parsing Dot code:\n" ++ str
   showsPrec _ (NotUTF8Dot str)    = showString $ "Invalid UTF-8 Dot code: " ++ str
   showsPrec _ (GVProgramExc str)  = showString $ "Error running utility program: " ++ str
   showsPrec _ (NotCustomAttr str) = showString $ "Not a custom Attribute: " ++ str

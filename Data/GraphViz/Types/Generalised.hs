@@ -128,8 +128,6 @@ instance (ParseDot n) => ParseDot (DotGraph n) where
   parseUnqt = parseStmtBased parseGStmts (parseGraphID DotGraph)
 
   parse = parseUnqt -- Don't want the option of quoting
-          `adjustErr`
-          (++ "\n\nNot a valid DotGraph")
 
 -- | Assumed to be an injective mapping function.
 instance Functor DotGraph where
