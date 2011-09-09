@@ -115,11 +115,12 @@ import Data.GraphViz.Types.Common( GraphID(..), GlobalAttributes(..)
                                  , DotNode(..), DotEdge(..), numericValue)
 import Data.GraphViz.Types.State
 import Data.GraphViz.Util(bool)
-import Data.GraphViz.Parsing(ParseDot, parseIt)
+import Data.GraphViz.Parsing(ParseDot, runParser, checkValidParse, parse, adjustErr)
 import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Printing(PrintDot, printIt)
 
 import Data.Text.Lazy(Text)
+import Control.Arrow(first)
 import Control.Monad.Trans.State(get, put, modify, execState, evalState)
 
 -- -----------------------------------------------------------------------------
@@ -219,7 +220,16 @@ printDotGraph = printIt
 --
 --   Also removes any comments, etc. before parsing.
 parseDotGraph :: (ParseDotRepr dg n) => Text -> dg n
-parseDotGraph = fst . parseIt . preProcess
+parseDotGraph = fst . prs . preProcess
+  where
+    prs = first checkValidParse . runParser parse'
+
+    parse' = parse `adjustErr`
+             ("Unable to parse the Dot graph; usually this is because of either:\n\
+              \  * Wrong choice of representation: try the Generalised one\n\
+              \  * Wrong choice of node type; try with `DotGraph String`.\n\
+              \\n\
+              \The actual parsing error was:\n\t"++)
 
 -- -----------------------------------------------------------------------------
 -- Instance for Canonical graphs, to avoid cyclic modules.
