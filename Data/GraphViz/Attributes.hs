@@ -323,7 +323,7 @@ arrowFrom = ArrowTail
 
 -- | Specify where to place arrows on an edge.
 edgeEnds :: DirType -> Attribute
-edgeEnds = Direction
+edgeEnds = Dir
 
 box, crow, diamond, dotArrow, inv, noArrow, normal, tee, vee :: Arrow
 oDot, invDot, invODot, oBox, oDiamond :: Arrow
