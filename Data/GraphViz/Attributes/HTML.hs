@@ -54,6 +54,7 @@ module Data.GraphViz.Attributes.HTML
        ( HtmlLabel(..)
        , HtmlText
        , HtmlTextItem(..)
+       , HtmlFormat(..)
        , HtmlTable(..)
        , HtmlRow(..)
        , HtmlCell(..)
@@ -124,12 +125,14 @@ data HtmlTextItem = HtmlStr Text
                     --   printing/parsing.
                   | HtmlNewline HtmlAttributes
                   | HtmlFont HtmlAttributes HtmlText
+                  | HtmlFormat HtmlFormat HtmlText
                   deriving (Eq, Ord, Show, Read)
 
 instance PrintDot HtmlTextItem where
-  unqtDot (HtmlStr str)     = escapeValue str
-  unqtDot (HtmlNewline as)  = printHtmlEmptyTag (text "BR") as
-  unqtDot (HtmlFont as txt) = printHtmlFontTag as $ unqtDot txt
+  unqtDot (HtmlStr str)        = escapeValue str
+  unqtDot (HtmlNewline as)     = printHtmlEmptyTag (text "BR") as
+  unqtDot (HtmlFont as txt)    = printHtmlFontTag as $ unqtDot txt
+  unqtDot (HtmlFormat fmt txt) = printHtmlTag (unqtDot fmt) [] $ unqtDot txt
 
   unqtListToDot = hcat . mapM unqtDot
 
@@ -139,6 +142,7 @@ instance ParseDot HtmlTextItem where
   parseUnqt = oneOf [ liftM HtmlStr unescapeValue
                     , parseHtmlEmptyTag HtmlNewline "BR"
                     , parseHtmlFontTag HtmlFont parseUnqt
+                    , parseHtmlTagRep HtmlFormat parseUnqt parseUnqt
                     ]
               `adjustErr`
               ("Can't parse HtmlTextItem\n\t"++)
@@ -148,6 +152,28 @@ instance ParseDot HtmlTextItem where
   parseUnqtList = many1 parseUnqt -- sepBy1 parseUnqt allWhitespace'
 
   parseList = parseUnqtList
+
+data HtmlFormat = HtmlItalics
+                | HtmlBold
+                | HtmlUnderline
+                | HtmlSubscript
+                | HtmlSuperscript
+                deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot HtmlFormat where
+  unqtDot HtmlItalics     = text "I"
+  unqtDot HtmlBold        = text "B"
+  unqtDot HtmlUnderline   = text "U"
+  unqtDot HtmlSubscript   = text "SUB"
+  unqtDot HtmlSuperscript = text "SUP"
+
+instance ParseDot HtmlFormat where
+  parseUnqt = stringValue [ ("I", HtmlItalics)
+                          , ("B", HtmlBold)
+                          , ("U", HtmlUnderline)
+                          , ("SUB", HtmlSubscript)
+                          , ("SUP", HtmlSuperscript)
+                          ]
 
 -- | A table in HTML-like labels.  Tables are optionally wrapped in
 --   overall @FONT@ tags.
@@ -567,6 +593,9 @@ printHtmlEmptyTag t as = angled $ t <+> toDot as <> fslash
 -- Note: can't use bracket here because we're not completely
 -- discarding everything from the opening bracket.
 
+-- Not using parseHtmlTagRep for parseHtmlTag because open/close case
+-- is different; worth fixing?
+
 -- | Parse something like @<FOO ATTR=\"ATTR_VALUE\">value<\/FOO>@
 parseHtmlTag        :: (HtmlAttributes -> val -> tag) -> String
                        -> Parse val -> Parse tag
@@ -580,6 +609,12 @@ parseHtmlTag c t pv = do as <- parseAngled openingTag
                     as <- tryParseList' $ allWhitespace >> parse
                     allWhitespace'
                     return as
+
+parseHtmlTagRep :: (tagName -> val -> tag) -> Parse tagName -> Parse val -> Parse tag
+parseHtmlTagRep c pt pv = do tn <- parseAngled (pt `discard` allWhitespace')
+                             v <- pv
+                             parseAngled $ character '/' >> pt >> allWhitespace'
+                             return $ c tn v
 
 parseHtmlFontTag :: (HtmlAttributes -> val -> tag) -> Parse val -> Parse tag
 parseHtmlFontTag = flip parseHtmlTag "FONT"

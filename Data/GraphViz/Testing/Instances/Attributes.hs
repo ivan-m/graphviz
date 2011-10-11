@@ -103,6 +103,7 @@ instance Arbitrary Attribute where
                     , liftM Image arbitrary
                     , liftM ImageScale arbitrary
                     , liftM LabelURL arbitrary
+                    , liftM LabelScheme arbitrary
                     , liftM LabelAngle arbitrary
                     , liftM LabelDistance arbitrary
                     , liftM LabelFloat arbitrary
@@ -165,9 +166,11 @@ instance Arbitrary Attribute where
                     , liftM RepulsiveForce arbitrary
                     , liftM Root arbitrary
                     , liftM Rotate arbitrary
+                    , liftM Rotation arbitrary
                     , liftM SameHead arbitrary
                     , liftM SameTail arbitrary
                     , liftM SamplePoints arbitrary
+                    , liftM Scale arbitrary
                     , liftM SearchSize arbitrary
                     , liftM Sep arbitrary
                     , liftM ShapeFile arbitrary
@@ -249,6 +252,7 @@ instance Arbitrary Attribute where
   shrink (Image v)              = map Image               $ shrink v
   shrink (ImageScale v)         = map ImageScale          $ shrink v
   shrink (LabelURL v)           = map LabelURL            $ shrink v
+  shrink (LabelScheme v)        = map LabelScheme         $ shrink v
   shrink (LabelAngle v)         = map LabelAngle          $ shrink v
   shrink (LabelDistance v)      = map LabelDistance       $ shrink v
   shrink (LabelFloat v)         = map LabelFloat          $ shrink v
@@ -311,9 +315,11 @@ instance Arbitrary Attribute where
   shrink (RepulsiveForce v)     = map RepulsiveForce      $ shrink v
   shrink (Root v)               = map Root                $ shrink v
   shrink (Rotate v)             = map Rotate              $ shrink v
+  shrink (Rotation v)           = map Rotation            $ shrink v
   shrink (SameHead v)           = map SameHead            $ shrink v
   shrink (SameTail v)           = map SameTail            $ shrink v
   shrink (SamplePoints v)       = map SamplePoints        $ shrink v
+  shrink (Scale v)              = map Scale               $ shrink v
   shrink (SearchSize v)         = map SearchSize          $ shrink v
   shrink (Sep v)                = map Sep                 $ shrink v
   shrink (ShapeFile v)          = map ShapeFile           $ shrink v
@@ -374,6 +380,9 @@ instance Arbitrary AspectType where
   shrink (RatioPassCount d i) = do ds <- shrink d
                                    is <- shrink i
                                    return $ RatioPassCount ds is
+
+instance Arbitrary LabelScheme where
+  arbitrary = arbBounded
 
 instance Arbitrary Rect where
   arbitrary = liftM2 Rect point2D point2D
@@ -781,31 +790,39 @@ arbHtmlTexts fnt s = liftM simplifyHtmlText
 simplifyHtmlText :: HtmlText -> HtmlText
 simplifyHtmlText = map head . groupBy sameType
   where
-    sameType HtmlStr{}     HtmlStr{}     = True
-    sameType HtmlNewline{} HtmlNewline{} = True
-    sameType HtmlFont{}    HtmlFont{}    = True
-    sameType _             _             = False
+    sameType HtmlStr{}           HtmlStr{}           = True
+    sameType HtmlNewline{}       HtmlNewline{}       = True
+    sameType HtmlFont{}          HtmlFont{}          = True
+    sameType (HtmlFormat fmt1 _) (HtmlFormat fmt2 _) = fmt1 == fmt2
+    sameType _                   _                   = False
 
 instance Arbitrary HtmlTextItem where
   arbitrary = sized $ arbHtmlText True
 
-  shrink (HtmlStr str) = map HtmlStr $ shrink str
-  shrink (HtmlNewline as) = map HtmlNewline $ shrink as
+  shrink (HtmlStr str)        = map HtmlStr $ shrink str
+  shrink (HtmlNewline as)     = map HtmlNewline $ shrink as
   shrink hf@(HtmlFont as txt) = do as' <- shrink as
                                    txt' <- shrinkL txt
                                    returnCheck hf $ HtmlFont as' txt'
+  shrink (HtmlFormat _ txt)   = txt
 
 arbHtmlText        :: Bool -> Int -> Gen HtmlTextItem
 arbHtmlText font s = frequency options
   where
     allowFonts = if font
-                 then (:) (1, arbFont)
+                 then (++) recHtmlText
                  else id
     s' = min 2 s
-    arbFont = liftM2 HtmlFont arbitrary . resize s' . sized $ arbHtmlTexts False
+    arbRec = resize s' . sized $ arbHtmlTexts False
+    recHtmlText = [ (1, liftM2 HtmlFont arbitrary arbRec)
+                  , (3, liftM2 HtmlFormat arbitrary arbRec)
+                  ]
     options = allowFonts [ (10, liftM HtmlStr arbitrary)
                          , (10, liftM HtmlNewline arbitrary)
                          ]
+
+instance Arbitrary HtmlFormat where
+  arbitrary = arbBounded
 
 instance Arbitrary HtmlTable where
   arbitrary = liftM3 HTable arbitrary arbitrary (sized arbRows)

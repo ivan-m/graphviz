@@ -101,6 +101,7 @@ module Data.GraphViz.Attributes.Complete
        , EscString
        , Label(..)
        , VerticalPlacement(..)
+       , LabelScheme(..)
        , module Data.GraphViz.Attributes.HTML
          -- *** Types representing the Dot grammar for records.
        , RecordFields
@@ -279,6 +280,7 @@ data Attribute
   | Image Text                          -- ^ /Valid for/: N; /Default/: @\"\"@
   | ImageScale ScaleType                -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
   | LabelURL EscString                  -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | LabelScheme LabelScheme             -- ^ /Valid for/: G; /Default/: @'NotEdgeLabel'@; /Notes/: sfdp only
   | LabelAngle Double                   -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
   | LabelDistance Double                -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
   | LabelFloat Bool                     -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -341,9 +343,11 @@ data Attribute
   | RepulsiveForce Double               -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
   | Root Root                           -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
   | Rotate Int                          -- ^ /Valid for/: G; /Default/: @0@
+  | Rotation Double                     -- ^ /Valid for/: G; /Default/: @0@; /Notes/: sfdp only
   | SameHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
   | SameTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
   | SamplePoints Int                    -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
+  | Scale DPoint                        -- ^ /Valid for/: G; /Notes/: twopi only
   | SearchSize Int                      -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
   | Sep DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
   | ShapeFile Text                      -- ^ /Valid for/: N; /Default/: @\"\"@
@@ -431,6 +435,7 @@ instance PrintDot Attribute where
   unqtDot (Image v)              = printField "image" v
   unqtDot (ImageScale v)         = printField "imagescale" v
   unqtDot (LabelURL v)           = printField "labelURL" v
+  unqtDot (LabelScheme v)        = printField "label_scheme" v
   unqtDot (LabelAngle v)         = printField "labelangle" v
   unqtDot (LabelDistance v)      = printField "labeldistance" v
   unqtDot (LabelFloat v)         = printField "labelfloat" v
@@ -493,9 +498,11 @@ instance PrintDot Attribute where
   unqtDot (RepulsiveForce v)     = printField "repulsiveforce" v
   unqtDot (Root v)               = printField "root" v
   unqtDot (Rotate v)             = printField "rotate" v
+  unqtDot (Rotation v)           = printField "rotation" v
   unqtDot (SameHead v)           = printField "samehead" v
   unqtDot (SameTail v)           = printField "sametail" v
   unqtDot (SamplePoints v)       = printField "samplepoints" v
+  unqtDot (Scale v)              = printField "scale" v
   unqtDot (SearchSize v)         = printField "searchsize" v
   unqtDot (Sep v)                = printField "sep" v
   unqtDot (ShapeFile v)          = printField "shapefile" v
@@ -579,6 +586,7 @@ instance ParseDot Attribute where
                                   , parseField Image "image"
                                   , parseFieldDef ImageScale UniformScale "imagescale"
                                   , parseFields LabelURL ["labelURL", "labelhref"]
+                                  , parseField LabelScheme "label_scheme"
                                   , parseField LabelAngle "labelangle"
                                   , parseField LabelDistance "labeldistance"
                                   , parseFieldBool LabelFloat "labelfloat"
@@ -641,9 +649,11 @@ instance ParseDot Attribute where
                                   , parseField RepulsiveForce "repulsiveforce"
                                   , parseFieldDef Root IsCentral "root"
                                   , parseField Rotate "rotate"
+                                  , parseField Rotation "rotation"
                                   , parseField SameHead "samehead"
                                   , parseField SameTail "sametail"
                                   , parseField SamplePoints "samplepoints"
+                                  , parseField Scale "scale"
                                   , parseField SearchSize "searchsize"
                                   , parseField Sep "sep"
                                   , parseField ShapeFile "shapefile"
@@ -708,6 +718,7 @@ usedByGraphs FontNames{}          = True
 usedByGraphs FontPath{}           = True
 usedByGraphs FontSize{}           = True
 usedByGraphs ID{}                 = True
+usedByGraphs LabelScheme{}        = True
 usedByGraphs LabelJust{}          = True
 usedByGraphs LabelLoc{}           = True
 usedByGraphs Label{}              = True
@@ -748,6 +759,8 @@ usedByGraphs ReMinCross{}         = True
 usedByGraphs RepulsiveForce{}     = True
 usedByGraphs Root{}               = True
 usedByGraphs Rotate{}             = True
+usedByGraphs Rotation{}           = True
+usedByGraphs Scale{}              = True
 usedByGraphs SearchSize{}         = True
 usedByGraphs Sep{}                = True
 usedByGraphs ShowBoxes{}          = True
@@ -955,6 +968,7 @@ sameAttribute ID{}                    ID{}                    = True
 sameAttribute Image{}                 Image{}                 = True
 sameAttribute ImageScale{}            ImageScale{}            = True
 sameAttribute LabelURL{}              LabelURL{}              = True
+sameAttribute LabelScheme{}           LabelScheme{}           = True
 sameAttribute LabelAngle{}            LabelAngle{}            = True
 sameAttribute LabelDistance{}         LabelDistance{}         = True
 sameAttribute LabelFloat{}            LabelFloat{}            = True
@@ -1017,9 +1031,11 @@ sameAttribute ReMinCross{}            ReMinCross{}            = True
 sameAttribute RepulsiveForce{}        RepulsiveForce{}        = True
 sameAttribute Root{}                  Root{}                  = True
 sameAttribute Rotate{}                Rotate{}                = True
+sameAttribute Rotation{}              Rotation{}              = True
 sameAttribute SameHead{}              SameHead{}              = True
 sameAttribute SameTail{}              SameTail{}              = True
 sameAttribute SamplePoints{}          SamplePoints{}          = True
+sameAttribute Scale{}                 Scale{}                 = True
 sameAttribute SearchSize{}            SearchSize{}            = True
 sameAttribute Sep{}                   Sep{}                   = True
 sameAttribute ShapeFile{}             ShapeFile{}             = True
@@ -1094,6 +1110,7 @@ defaultAttributeValue ID{}                 = Just $ ID (StrLabel "")
 defaultAttributeValue Image{}              = Just $ Image ""
 defaultAttributeValue ImageScale{}         = Just $ ImageScale NoScale
 defaultAttributeValue LabelURL{}           = Just $ LabelURL ""
+defaultAttributeValue LabelScheme{}        = Just $ LabelScheme NotEdgeLabel
 defaultAttributeValue LabelAngle{}         = Just $ LabelAngle (-25)
 defaultAttributeValue LabelDistance{}      = Just $ LabelDistance 1
 defaultAttributeValue LabelFloat{}         = Just $ LabelFloat False
@@ -1142,6 +1159,7 @@ defaultAttributeValue ReMinCross{}         = Just $ ReMinCross False
 defaultAttributeValue RepulsiveForce{}     = Just $ RepulsiveForce 1
 defaultAttributeValue Root{}               = Just $ Root (NodeName "")
 defaultAttributeValue Rotate{}             = Just $ Rotate 0
+defaultAttributeValue Rotation{}           = Just $ Rotation 0
 defaultAttributeValue SameHead{}           = Just $ SameHead ""
 defaultAttributeValue SameTail{}           = Just $ SameTail ""
 defaultAttributeValue SearchSize{}         = Just $ SearchSize 30
@@ -1228,6 +1246,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "imagescale"
                , "labelURL"
                , "labelhref"
+               , "label_scheme"
                , "labelangle"
                , "labeldistance"
                , "labelfloat"
@@ -1290,9 +1309,11 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "repulsiveforce"
                , "root"
                , "rotate"
+               , "rotation"
                , "samehead"
                , "sametail"
                , "samplepoints"
+               , "scale"
                , "searchsize"
                , "sep"
                , "shapefile"
@@ -1848,6 +1869,30 @@ unqtRecordString = unqtEscaped recordEscChars
 
 recordEscChars :: [Char]
 recordEscChars = ['{', '}', '|', ' ', '<', '>']
+
+-- -----------------------------------------------------------------------------
+
+-- | How to treat a node whose name is of the form @|edgelabel|*" as a
+--   special node representing an edge label.
+data LabelScheme = NotEdgeLabel        -- ^ No effect
+                 | CloseToCenter       -- ^ Make node close to center of neighbor
+                 | CloseToOldCenter    -- ^ Make node close to old center of neighbor
+                 | RemoveAndStraighten -- ^ Use a two-step process.
+                 deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot LabelScheme where
+  unqtDot NotEdgeLabel        = int 0
+  unqtDot CloseToCenter       = int 1
+  unqtDot CloseToOldCenter    = int 2
+  unqtDot RemoveAndStraighten = int 3
+
+instance ParseDot LabelScheme where
+  -- Use string-based parsing rather than parsing an integer just to make it easier
+  parseUnqt = stringValue [ ("0", NotEdgeLabel)
+                          , ("1", CloseToCenter)
+                          , ("2", CloseToOldCenter)
+                          , ("3", RemoveAndStraighten)
+                          ]
 
 -- -----------------------------------------------------------------------------
 

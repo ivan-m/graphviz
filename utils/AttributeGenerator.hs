@@ -498,6 +498,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Image" ["image"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "ImageScale" ["imagescale"] "N" (Cust "ScaleType") (Just "UniformScale") (Just "NoScale") (Just "@'NoScale'@") Nothing Nothing
              , makeAttr "LabelURL" ["labelURL", "labelhref"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
+             , makeAttr "LabelScheme" ["label_scheme"] "G" (Cust "LabelScheme") Nothing (Just "NotEdgeLabel") (Just "@'NotEdgeLabel'@") Nothing (Just "sfdp only")
              , makeAttr "LabelAngle" ["labelangle"] "E" Dbl Nothing (Just "(-25)") (Just "@-25.0@") (Just "@-180.0@") Nothing
              , makeAttr "LabelDistance" ["labeldistance"] "E" Dbl Nothing (Just "1") (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "LabelFloat" ["labelfloat"] "E" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
@@ -560,9 +561,11 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "RepulsiveForce" ["repulsiveforce"] "G" Dbl Nothing (Just "1") (Just "@1.0@") (Just "@0.0@") (Just "sfdp only")
              , makeAttr "Root" ["root"] "GN" (Cust "Root") (Just "IsCentral") (Just "(NodeName \"\")") (Just "@'NodeName' \\\"\\\"@ (graphs), @'NotCentral'@ (nodes)") Nothing (Just "circo, twopi only")
              , makeAttr "Rotate" ["rotate"] "G" Integ Nothing (Just "0") (Just "@0@") Nothing Nothing
+             , makeAttr "Rotation" ["rotation"] "G" Dbl Nothing (Just "0") (Just "@0@") Nothing (Just "sfdp only")
              , makeAttr "SameHead" ["samehead"] "E" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
              , makeAttr "SameTail" ["sametail"] "E" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
              , makeAttr "SamplePoints" ["samplepoints"] "N" Integ Nothing Nothing (Just "@8@ (output), @20@ (overlap and image maps)") Nothing Nothing
+             , makeAttr "Scale" ["scale"] "G" (Cust "DPoint") Nothing Nothing Nothing Nothing (Just "twopi only")
              , makeAttr "SearchSize" ["searchsize"] "G" Integ Nothing (Just "30") (Just "@30@") Nothing (Just "dot only")
              , makeAttr "Sep" ["sep"] "G" (Cust "DPoint") Nothing (Just "(DVal 4)") (Just "@'DVal' 4@") Nothing (Just "not dot")
              , makeAttr "ShapeFile" ["shapefile"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing

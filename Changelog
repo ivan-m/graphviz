@@ -12,9 +12,17 @@ Changes in 2999.13.0.0
 
 * Added support for the `osage` and `patchwork` visualisation tools.
 
-* Now uses Dot semantics as of Graphviz-2.28.0.  The only change is
-  when parsing the Attribute `overlap=false`; this is now equivalent
-  to `overlap=prism`.
+* Updated attributes as of Graphviz-2.28.0:
+
+    - `overlap=false` is now equivalent to `overlap=prism` and the
+      `RemoveOverlaps` option has been removed.
+
+    - `LabelScheme` and `Rotation` are new attributes for use with `sfdp`.
+
+    - `Scale` is a new attribute for use with `twopi`.
+
+    - Add new italics, bold, underline, superscript and subscript
+      options for HTML-like labels.
 
 * Use a specified data type for the `Ordering` attribute rather than
   an arbitrary `Text` value, and provide a documented wrapper in
