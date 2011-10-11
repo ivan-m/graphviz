@@ -142,6 +142,7 @@ module Data.GraphViz.Attributes.Complete
        , Model(..)
        , Overlap(..)
        , Root(..)
+       , Order(..)
        , OutputMode(..)
        , Pack(..)
        , PackMode(..)
@@ -313,7 +314,7 @@ data Attribute
   | Normalize Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: not dot
   | Nslimit1 Double                     -- ^ /Valid for/: G; /Notes/: dot only
   | Nslimit Double                      -- ^ /Valid for/: G; /Notes/: dot only
-  | Ordering Text                       -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: dot only
+  | Ordering Order                      -- ^ /Valid for/: GN; /Default/: none; /Notes/: dot only
   | Orientation Double                  -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
   | OutputOrder OutputMode              -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
   | OverlapScaling Double               -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
@@ -818,6 +819,7 @@ usedByNodes Label{}            = True
 usedByNodes Layer{}            = True
 usedByNodes Margin{}           = True
 usedByNodes NoJustify{}        = True
+usedByNodes Ordering{}         = True
 usedByNodes Orientation{}      = True
 usedByNodes PenWidth{}         = True
 usedByNodes Peripheries{}      = True
@@ -1120,7 +1122,6 @@ defaultAttributeValue Mosek{}              = Just $ Mosek False
 defaultAttributeValue NodeSep{}            = Just $ NodeSep 0.25
 defaultAttributeValue NoJustify{}          = Just $ NoJustify False
 defaultAttributeValue Normalize{}          = Just $ Normalize False
-defaultAttributeValue Ordering{}           = Just $ Ordering ""
 defaultAttributeValue Orientation{}        = Just $ Orientation 0
 defaultAttributeValue OutputOrder{}        = Just $ OutputOrder BreadthFirst
 defaultAttributeValue OverlapScaling{}     = Just $ OverlapScaling (-4)
@@ -2044,6 +2045,21 @@ instance ParseDot LayerList where
           liftM (LL . (:[]) . LRName) stringBlock
           `onFail`
           quotedParse (stringRep (LL []) "")
+
+-- -----------------------------------------------------------------------------
+
+data Order = OutEdges -- ^ Draw outgoing edges in order specified.
+           | InEdges  -- ^ Draw incoming edges in order specified.
+           deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot Order where
+  unqtDot OutEdges = text "out"
+  unqtDot InEdges  = text "in"
+
+instance ParseDot Order where
+  parseUnqt = oneOf [ stringRep OutEdges "out"
+                    , stringRep InEdges  "in"
+                    ]
 
 -- -----------------------------------------------------------------------------
 

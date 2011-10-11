@@ -533,7 +533,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Normalize" ["normalize"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "not dot")
              , makeAttr "Nslimit1" ["nslimit1"] "G" Dbl Nothing Nothing Nothing Nothing (Just "dot only")
              , makeAttr "Nslimit" ["nslimit"] "G" Dbl Nothing Nothing Nothing Nothing (Just "dot only")
-             , makeAttr "Ordering" ["ordering"] "G" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
+             , makeAttr "Ordering" ["ordering"] "GN" (Cust "Order") Nothing Nothing (Just "none") Nothing (Just "dot only")
              , makeAttr "Orientation" ["orientation"] "N" Dbl Nothing (Just "0") (Just "@0.0@") (Just "@360.0@") Nothing
              , makeAttr "OutputOrder" ["outputorder"] "G" (Cust "OutputMode") Nothing (Just "BreadthFirst") (Just "@'BreadthFirst'@") Nothing Nothing
              , makeAttr "OverlapScaling" ["overlap_scaling"] "G" Dbl Nothing (Just "(-4)") (Just "@-4@") (Just "@-1.0e10@") (Just "prism only")

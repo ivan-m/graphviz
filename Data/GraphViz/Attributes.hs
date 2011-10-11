@@ -76,6 +76,9 @@ module Data.GraphViz.Attributes
        , invODot
        , oBox
        , oDiamond
+         -- * Layout
+       , ordering
+       , Order(..)
        ) where
 
 import Data.GraphViz.Attributes.Complete
@@ -320,3 +323,13 @@ oBox = AType [(openMod, Box)]
 vee = AType [(noMods, Vee)]
 
 -- -----------------------------------------------------------------------------
+
+-- | Specify an ordering of edges of a node: either the outgoing or
+--   the incoming edges of a node must appear left-to-right in the
+--   same order in which they are defined in the input.
+--
+--   When specified as both a global graph or sub-graph level
+--   attribute, then it takes precedence over an attribute specified
+--   for an individual node.
+ordering :: Order -> Attribute
+ordering = Ordering

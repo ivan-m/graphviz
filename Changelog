@@ -16,6 +16,10 @@ Changes in 2999.13.0.0
   when parsing the Attribute `overlap=false`; this is now equivalent
   to `overlap=prism`.
 
+* Use a specified data type for the `Ordering` attribute rather than
+  an arbitrary `Text` value, and provide a documented wrapper in
+  `Data.GraphViz.Attributes`.
+
 * Fix up the TestParsing script to actually use the new type setup.
   It can also now take a single directory as an argument, and will try
   to parse all (non-recursive) files in that directory.

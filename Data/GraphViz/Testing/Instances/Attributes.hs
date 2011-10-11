@@ -510,6 +510,9 @@ instance Arbitrary LayerID where
 lrnameCheck :: Text -> Bool
 lrnameCheck = (/=) "all"
 
+instance Arbitrary Order where
+  arbitrary = arbBounded
+
 instance Arbitrary OutputMode where
   arbitrary = arbBounded
 
