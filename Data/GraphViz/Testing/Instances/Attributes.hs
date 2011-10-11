@@ -462,7 +462,6 @@ instance Arbitrary Overlap where
       -- Have to do this by hand since Overlap can't have Bounded and
       -- Enum instances
       simpleOverlap = elements [ KeepOverlaps
-                               , RemoveOverlaps
                                , ScaleOverlaps
                                , ScaleXYOverlaps
                                , CompressOverlap
