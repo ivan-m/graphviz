@@ -270,7 +270,7 @@ data Attribute
   | Group Text                          -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
   | HeadURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
   | HeadClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
-  | HeadLabel Label                     -- ^ /Valid for/: E; /Default/: 'StrLabel' @\"\"@
+  | HeadLabel Label                     -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
   | HeadPort PortPos                    -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
   | HeadTarget EscString                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
   | HeadTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
@@ -289,7 +289,7 @@ data Attribute
   | LabelLoc VerticalPlacement          -- ^ /Valid for/: GCN; /Default/: @'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)
   | LabelTarget EscString               -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
   | LabelTooltip EscString              -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-  | Label Label                         -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
+  | Label Label                         -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
   | Landscape Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | LayerSep LayerSep                   -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
   | Layers LayerList                    -- ^ /Valid for/: G; /Default/: @'LL' []@
@@ -320,7 +320,7 @@ data Attribute
   | OverlapScaling Double               -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
   | Overlap Overlap                     -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
   | PackMode PackMode                   -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
-  | Pack Pack                           -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
+  | Pack Pack                           -- ^ /Valid for/: G; /Default/: @'DontPack'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
   | Pad DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
   | PageDir PageDir                     -- ^ /Valid for/: G; /Default/: @'Bl'@
   | Page Point                          -- ^ /Valid for/: G

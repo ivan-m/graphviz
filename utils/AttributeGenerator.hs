@@ -489,7 +489,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Group" ["group"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
              , makeAttr "HeadURL" ["headURL", "headhref"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "HeadClip" ["headclip"] "E" Bl (Just "True") (Just "True") (Just "@'True'@") Nothing Nothing
-             , makeAttr "HeadLabel" ["headlabel"] "E" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "'StrLabel' @\\\"\\\"@") Nothing Nothing
+             , makeAttr "HeadLabel" ["headlabel"] "E" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\"@") Nothing Nothing
              , makeAttr "HeadPort" ["headport"] "E" (Cust "PortPos") Nothing (Just "(CompassPoint CenterPoint)") (Just "@'CompassPoint' 'CenterPoint'@") Nothing Nothing
              , makeAttr "HeadTarget" ["headtarget"] "E" EStrng Nothing (Just "\"\"") (Just "none") Nothing (Just "svg, map only")
              , makeAttr "HeadTooltip" ["headtooltip"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
@@ -508,7 +508,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "LabelLoc" ["labelloc"] "GCN" (Cust "VerticalPlacement") Nothing (Just "VTop") (Just "@'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)") Nothing Nothing
              , makeAttr "LabelTarget" ["labeltarget"] "E" EStrng Nothing (Just "\"\"") (Just "none") Nothing (Just "svg, map only")
              , makeAttr "LabelTooltip" ["labeltooltip"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
-             , makeAttr "Label" ["label"] "ENGC" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\N\\\"@ (nodes), @'StrLabel' \\\"\\\"@ (otherwise)") Nothing Nothing
+             , makeAttr "Label" ["label"] "ENGC" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\\N\\\"@ (nodes), @'StrLabel' \\\"\\\"@ (otherwise)") Nothing Nothing
              , makeAttr "Landscape" ["landscape"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "LayerSep" ["layersep"] "G" (Cust "LayerSep") Nothing (Just "(LSep \" :\\t\")") (Just "@'LSep' \\\" :\\t\\\"@") Nothing Nothing
              , makeAttr "Layers" ["layers"] "G" (Cust "LayerList") Nothing (Just "(LL [])")  (Just "@'LL' []@") Nothing Nothing
@@ -539,7 +539,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "OverlapScaling" ["overlap_scaling"] "G" Dbl Nothing (Just "(-4)") (Just "@-4@") (Just "@-1.0e10@") (Just "prism only")
              , makeAttr "Overlap" ["overlap"] "G" (Cust "Overlap") (Just "KeepOverlaps") (Just "KeepOverlaps") (Just "@'KeepOverlaps'@") Nothing (Just "not dot")
              , makeAttr "PackMode" ["packmode"] "G" (Cust "PackMode") Nothing (Just "PackNode") (Just "@'PackNode'@") Nothing (Just "not dot")
-             , makeAttr "Pack" ["pack"] "G" (Cust "Pack") (Just "DoPack") (Just "DontPack") (Just "@'False'@") Nothing (Just "not dot")
+             , makeAttr "Pack" ["pack"] "G" (Cust "Pack") (Just "DoPack") (Just "DontPack") (Just "@'DontPack'@") Nothing (Just "not dot")
              , makeAttr "Pad" ["pad"] "G" (Cust "DPoint") Nothing (Just "(DVal 0.0555)") (Just "@'DVal' 0.0555@ (4 points)") Nothing Nothing
              , makeAttr "PageDir" ["pagedir"] "G" (Cust "PageDir") Nothing (Just "Bl") (Just "@'Bl'@") Nothing Nothing
              , makeAttr "Page" ["page"] "G" (Cust "Point") Nothing Nothing Nothing Nothing Nothing
