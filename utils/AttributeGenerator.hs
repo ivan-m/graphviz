@@ -456,20 +456,20 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "ArrowSize" ["arrowsize"] "E" Dbl Nothing (Just "1") (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "ArrowTail" ["arrowtail"] "E" (Cust "ArrowType") Nothing (Just "normal") (Just "@'normal'@") Nothing Nothing
              , makeAttr "Aspect" ["aspect"] "G" (Cust "AspectType") Nothing Nothing Nothing Nothing (Just "dot only")
-             , makeAttr "Bb" ["bb"] "G" (Cust "Rect") Nothing Nothing Nothing Nothing (Just "write only")
+             , makeAttr "BoundingBox" ["bb"] "G" (Cust "Rect") Nothing Nothing Nothing Nothing (Just "write only")
              , makeAttr "BgColor" ["bgcolor"] "GC" (Cust "Color") Nothing (Just "(X11Color Transparent)") (Just "@'X11Color' 'Transparent'@") Nothing Nothing
              , makeAttr "Center" ["center"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "ClusterRank" ["clusterrank"] "G" (Cust "ClusterMode") Nothing (Just "Local") (Just "@'Local'@") Nothing (Just "dot only")
-             , makeAttr "ColorScheme" ["colorscheme"] "ENCG" (Cust "ColorScheme") Nothing (Just "X11") (Just "@'X11'@") Nothing Nothing
              , makeAttr "Color" ["color"] "ENC" (Cust "[Color]") Nothing (Just "[X11Color Black]") (Just "@['X11Color' 'Black']@") Nothing Nothing
+             , makeAttr "ColorScheme" ["colorscheme"] "ENCG" (Cust "ColorScheme") Nothing (Just "X11") (Just "@'X11'@") Nothing Nothing
              , makeAttr "Comment" ["comment"] "ENG" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "Compound" ["compound"] "G" Bl (Just "True") (Just "False")(Just "@'False'@") Nothing (Just "dot only")
              , makeAttr "Concentrate" ["concentrate"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "Constraint" ["constraint"] "E" Bl (Just "True") (Just "True") (Just "@'True'@") Nothing (Just "dot only")
              , makeAttr "Decorate" ["decorate"] "E" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
-             , makeAttr "DefaultDist" ["defaultdist"] "G" Dbl Nothing Nothing (Just "@1+(avg. len)*sqrt(|V|)@") (Just "@epsilon@") (Just "neato only")
-             , makeAttr "Dimen" ["dimen"] "G" Integ Nothing (Just "2") (Just "@2@") (Just "@2@") (Just "sfdp, fdp, neato only")
+             , makeAttr "DefaultDist" ["defaultdist"] "G" Dbl Nothing Nothing (Just "@1+(avg. len)*sqrt(|V|)@") (Just "@epsilon@") (Just "neato only, only if @'Pack' 'DontPack'")
              , makeAttr "Dim" ["dim"] "G" Integ Nothing (Just "2") (Just "@2@") (Just "@2@") (Just "sfdp, fdp, neato only")
+             , makeAttr "Dimen" ["dimen"] "G" Integ Nothing (Just "2") (Just "@2@") (Just "@2@") (Just "sfdp, fdp, neato only")
              , makeAttr "Dir" ["dir"] "E" (Cust "DirType") Nothing Nothing (Just "@'Forward'@ (directed), @'NoDir'@ (undirected)") Nothing Nothing
              , makeAttr "DirEdgeConstraints" ["diredgeconstraints"] "G" (Cust "DEConstraints") (Just "EdgeConstraints") (Just "NoConstraints") (Just "@'NoConstraints'@") Nothing (Just "neato only")
              , makeAttr "Distortion" ["distortion"] "N" Dbl Nothing (Just "0") (Just "@0.0@") (Just "@-100.0@") Nothing
@@ -486,6 +486,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "FontNames" ["fontnames"] "G" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg only")
              , makeAttr "FontPath" ["fontpath"] "G" Strng Nothing Nothing (Just "system dependent") Nothing Nothing
              , makeAttr "FontSize" ["fontsize"] "ENGC" Dbl Nothing (Just "14") (Just "@14.0@") (Just "@1.0@") Nothing
+             , makeAttr "ForceLabels" ["forcelabels"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "Only for 'XLabel' attributes")
              , makeAttr "Group" ["group"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
              , makeAttr "HeadURL" ["headURL", "headhref"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "HeadClip" ["headclip"] "E" Bl (Just "True") (Just "True") (Just "@'True'@") Nothing Nothing
@@ -497,8 +498,9 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "ID" ["id"] "GNE" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\"@") Nothing (Just "svg, postscript, map only")
              , makeAttr "Image" ["image"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "ImageScale" ["imagescale"] "N" (Cust "ScaleType") (Just "UniformScale") (Just "NoScale") (Just "@'NoScale'@") Nothing Nothing
+             , makeAttr "Label" ["label"] "ENGC" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\\N\\\"@ (nodes), @'StrLabel' \\\"\\\"@ (otherwise)") Nothing Nothing
              , makeAttr "LabelURL" ["labelURL", "labelhref"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
-             , makeAttr "LabelScheme" ["label_scheme"] "G" (Cust "LabelScheme") Nothing (Just "NotEdgeLabel") (Just "@'NotEdgeLabel'@") Nothing (Just "sfdp only")
+             , makeAttr "LabelScheme" ["label_scheme"] "G" (Cust "LabelScheme") Nothing (Just "NotEdgeLabel") (Just "@'NotEdgeLabel'@") Nothing (Just "sfdp only, requires Graphviz >= 2.28.0")
              , makeAttr "LabelAngle" ["labelangle"] "E" Dbl Nothing (Just "(-25)") (Just "@-25.0@") (Just "@-180.0@") Nothing
              , makeAttr "LabelDistance" ["labeldistance"] "E" Dbl Nothing (Just "1") (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "LabelFloat" ["labelfloat"] "E" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
@@ -509,41 +511,42 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "LabelLoc" ["labelloc"] "GCN" (Cust "VerticalPlacement") Nothing (Just "VTop") (Just "@'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)") Nothing Nothing
              , makeAttr "LabelTarget" ["labeltarget"] "E" EStrng Nothing (Just "\"\"") (Just "none") Nothing (Just "svg, map only")
              , makeAttr "LabelTooltip" ["labeltooltip"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
-             , makeAttr "Label" ["label"] "ENGC" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\\N\\\"@ (nodes), @'StrLabel' \\\"\\\"@ (otherwise)") Nothing Nothing
              , makeAttr "Landscape" ["landscape"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
-             , makeAttr "LayerSep" ["layersep"] "G" (Cust "LayerSep") Nothing (Just "(LSep \" :\\t\")") (Just "@'LSep' \\\" :\\t\\\"@") Nothing Nothing
-             , makeAttr "Layers" ["layers"] "G" (Cust "LayerList") Nothing (Just "(LL [])")  (Just "@'LL' []@") Nothing Nothing
              , makeAttr "Layer" ["layer"] "EN" (Cust "LayerRange") Nothing Nothing Nothing Nothing Nothing
+             , makeAttr "Layers" ["layers"] "G" (Cust "LayerList") Nothing (Just "(LL [])")  (Just "@'LL' []@") Nothing Nothing
+             , makeAttr "LayerSep" ["layersep"] "G" (Cust "LayerSep") Nothing (Just "(LSep \" :\\t\")") (Just "@'LSep' \\\" :\\t\\\"@") Nothing Nothing
              , makeAttr "Layout" ["layout"] "G" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "Len" ["len"] "E" Dbl Nothing Nothing (Just "@1.0@ (neato), @0.3@ (fdp)") Nothing (Just "fdp, neato only")
              , makeAttr "LevelsGap" ["levelsgap"] "G" Dbl Nothing (Just "0") (Just "@0.0@") Nothing (Just "neato only")
              , makeAttr "Levels" ["levels"] "G" Integ Nothing (Just "maxBound") (Just "@'maxBound'@") (Just "@0@") (Just "sfdp only")
              , makeAttr "LHead" ["lhead"] "E" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
+             , makeAttr "LHeight" ["LHeight"] "GC" Dbl Nothing Nothing Nothing Nothing (Just "write only, requires Graphviz >= 2.28.0")
              , makeAttr "LPos" ["lp"] "EGC" (Cust "Point") Nothing Nothing Nothing Nothing (Just "write only")
              , makeAttr "LTail" ["ltail"] "E" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
+             , makeAttr "LWidth" ["lwidth"] "GC" Dbl Nothing Nothing Nothing Nothing (Just "write only, requires Graphviz >= 2.28.0")
              , makeAttr "Margin" ["margin"] "NG" (Cust "DPoint") Nothing Nothing (Just "device dependent") Nothing Nothing
              , makeAttr "MaxIter" ["maxiter"] "G" Integ Nothing Nothing (Just "@100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp)") Nothing (Just "fdp, neato only")
              , makeAttr "MCLimit" ["mclimit"] "G" Dbl Nothing (Just "1") (Just "@1.0@") Nothing (Just "dot only")
              , makeAttr "MinDist" ["mindist"] "G" Dbl Nothing (Just "1") (Just "@1.0@") (Just "@0.0@") (Just "circo only")
              , makeAttr "MinLen" ["minlen"] "E" Integ Nothing (Just "1") (Just "@1@") (Just "@0@") (Just "dot only")
-             , makeAttr "Model" ["model"] "G" (Cust "Model") Nothing (Just "ShortPath") (Just "@'ShortPath'@") Nothing (Just "neato only")
              , makeAttr "Mode" ["mode"] "G" (Cust "ModeType") Nothing (Just "Major") (Just "@'Major'@") Nothing (Just "neato only")
+             , makeAttr "Model" ["model"] "G" (Cust "Model") Nothing (Just "ShortPath") (Just "@'ShortPath'@") Nothing (Just "neato only")
              , makeAttr "Mosek" ["mosek"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "neato only; requires the Mosek software")
              , makeAttr "NodeSep" ["nodesep"] "G" Dbl Nothing (Just "0.25") (Just "@0.25@") (Just "@0.02@") (Just "dot only")
              , makeAttr "NoJustify" ["nojustify"] "GCNE" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "Normalize" ["normalize"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "not dot")
-             , makeAttr "Nslimit1" ["nslimit1"] "G" Dbl Nothing Nothing Nothing Nothing (Just "dot only")
              , makeAttr "Nslimit" ["nslimit"] "G" Dbl Nothing Nothing Nothing Nothing (Just "dot only")
+             , makeAttr "Nslimit1" ["nslimit1"] "G" Dbl Nothing Nothing Nothing Nothing (Just "dot only")
              , makeAttr "Ordering" ["ordering"] "GN" (Cust "Order") Nothing Nothing (Just "none") Nothing (Just "dot only")
              , makeAttr "Orientation" ["orientation"] "N" Dbl Nothing (Just "0") (Just "@0.0@") (Just "@360.0@") Nothing
              , makeAttr "OutputOrder" ["outputorder"] "G" (Cust "OutputMode") Nothing (Just "BreadthFirst") (Just "@'BreadthFirst'@") Nothing Nothing
-             , makeAttr "OverlapScaling" ["overlap_scaling"] "G" Dbl Nothing (Just "(-4)") (Just "@-4@") (Just "@-1.0e10@") (Just "prism only")
              , makeAttr "Overlap" ["overlap"] "G" (Cust "Overlap") (Just "KeepOverlaps") (Just "KeepOverlaps") (Just "@'KeepOverlaps'@") Nothing (Just "not dot")
-             , makeAttr "PackMode" ["packmode"] "G" (Cust "PackMode") Nothing (Just "PackNode") (Just "@'PackNode'@") Nothing (Just "not dot")
+             , makeAttr "OverlapScaling" ["overlap_scaling"] "G" Dbl Nothing (Just "(-4)") (Just "@-4@") (Just "@-1.0e10@") (Just "prism only")
              , makeAttr "Pack" ["pack"] "G" (Cust "Pack") (Just "DoPack") (Just "DontPack") (Just "@'DontPack'@") Nothing (Just "not dot")
+             , makeAttr "PackMode" ["packmode"] "G" (Cust "PackMode") Nothing (Just "PackNode") (Just "@'PackNode'@") Nothing (Just "not dot")
              , makeAttr "Pad" ["pad"] "G" (Cust "DPoint") Nothing (Just "(DVal 0.0555)") (Just "@'DVal' 0.0555@ (4 points)") Nothing Nothing
-             , makeAttr "PageDir" ["pagedir"] "G" (Cust "PageDir") Nothing (Just "Bl") (Just "@'Bl'@") Nothing Nothing
              , makeAttr "Page" ["page"] "G" (Cust "Point") Nothing Nothing Nothing Nothing Nothing
+             , makeAttr "PageDir" ["pagedir"] "G" (Cust "PageDir") Nothing (Just "Bl") (Just "@'Bl'@") Nothing Nothing
              , makeAttr "PenColor" ["pencolor"] "C" (Cust "Color") Nothing (Just "(X11Color Black)") (Just "@'X11Color' 'Black'@") Nothing Nothing
              , makeAttr "PenWidth" ["penwidth"] "CNE" Dbl Nothing (Just "1") (Just "@1.0@") (Just "@0.0@") Nothing
              , makeAttr "Peripheries" ["peripheries"] "NC" Integ Nothing (Just "1") (Just "shape default (nodes), @1@ (clusters)") (Just "0") Nothing
@@ -551,9 +554,9 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Pos" ["pos"] "EN" (Cust "Pos") Nothing Nothing Nothing Nothing Nothing
              , makeAttr "QuadTree" ["quadtree"] "G" (Cust "QuadType") (Just "NormalQT") (Just "NormalQT") (Just "@'NormalQT'@") Nothing (Just "sfdp only")
              , makeAttr "Quantum" ["quantum"] "G" Dbl Nothing (Just "0") (Just "@0.0@") (Just "@0.0@") Nothing
+             , makeAttr "Rank" ["rank"] "S" (Cust "RankType") Nothing Nothing Nothing Nothing (Just "dot only")
              , makeAttr "RankDir" ["rankdir"] "G" (Cust "RankDir") Nothing (Just "FromTop") (Just "@'FromTop'@") Nothing (Just "dot only")
              , makeAttr "RankSep" ["ranksep"] "G" (Cust "[Double]") Nothing Nothing (Just "@[0.5]@ (dot), @[1.0]@ (twopi)") (Just "[0.02]") (Just "twopi, dot only")
-             , makeAttr "Rank" ["rank"] "S" (Cust "RankType") Nothing Nothing Nothing Nothing (Just "dot only")
              , makeAttr "Ratio" ["ratio"] "G" (Cust "Ratios") Nothing Nothing Nothing Nothing Nothing
              , makeAttr "Rects" ["rects"] "N" (Cust "[Rect]") Nothing Nothing Nothing Nothing (Just "write only")
              , makeAttr "Regular" ["regular"] "N" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
@@ -561,15 +564,15 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "RepulsiveForce" ["repulsiveforce"] "G" Dbl Nothing (Just "1") (Just "@1.0@") (Just "@0.0@") (Just "sfdp only")
              , makeAttr "Root" ["root"] "GN" (Cust "Root") (Just "IsCentral") (Just "(NodeName \"\")") (Just "@'NodeName' \\\"\\\"@ (graphs), @'NotCentral'@ (nodes)") Nothing (Just "circo, twopi only")
              , makeAttr "Rotate" ["rotate"] "G" Integ Nothing (Just "0") (Just "@0@") Nothing Nothing
-             , makeAttr "Rotation" ["rotation"] "G" Dbl Nothing (Just "0") (Just "@0@") Nothing (Just "sfdp only")
+             , makeAttr "Rotation" ["rotation"] "G" Dbl Nothing (Just "0") (Just "@0@") Nothing (Just "sfdp only, requires Graphviz >= 2.28.0")
              , makeAttr "SameHead" ["samehead"] "E" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
              , makeAttr "SameTail" ["sametail"] "E" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
              , makeAttr "SamplePoints" ["samplepoints"] "N" Integ Nothing Nothing (Just "@8@ (output), @20@ (overlap and image maps)") Nothing Nothing
-             , makeAttr "Scale" ["scale"] "G" (Cust "DPoint") Nothing Nothing Nothing Nothing (Just "twopi only")
+             , makeAttr "Scale" ["scale"] "G" (Cust "DPoint") Nothing Nothing Nothing Nothing (Just "twopi only, requires Graphviz >= 2.28.0")
              , makeAttr "SearchSize" ["searchsize"] "G" Integ Nothing (Just "30") (Just "@30@") Nothing (Just "dot only")
              , makeAttr "Sep" ["sep"] "G" (Cust "DPoint") Nothing (Just "(DVal 4)") (Just "@'DVal' 4@") Nothing (Just "not dot")
-             , makeAttr "ShapeFile" ["shapefile"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "Shape" ["shape"] "N" (Cust "Shape") Nothing (Just "Ellipse") (Just "@'Ellipse'@") Nothing Nothing
+             , makeAttr "ShapeFile" ["shapefile"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "ShowBoxes" ["showboxes"] "ENG" Integ Nothing (Just "0") (Just "@0@") (Just "@0@") (Just "dot only")
              , makeAttr "Sides" ["sides"] "N" Integ Nothing (Just "4") (Just "@4@") (Just "@0@") Nothing
              , makeAttr "Size" ["size"] "G" (Cust "Point") Nothing Nothing Nothing Nothing Nothing
@@ -578,8 +581,8 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "SortV" ["sortv"] "GCN" (Cust "Word16") Nothing (Just "0") (Just "@0@") (Just "@0@") Nothing
              , makeAttr "Splines" ["splines"] "G" (Cust "EdgeType") (Just "SplineEdges") (Just "SplineEdges") Nothing Nothing Nothing
              , makeAttr "Start" ["start"] "G" (Cust "StartType") Nothing Nothing Nothing Nothing (Just "fdp, neato only")
-             , makeAttr "StyleSheet" ["stylesheet"] "G" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg only")
              , makeAttr "Style" ["style"] "ENC" (Cust "[StyleItem]") Nothing Nothing Nothing Nothing Nothing
+             , makeAttr "StyleSheet" ["stylesheet"] "G" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg only")
              , makeAttr "TailURL" ["tailURL", "tailhref"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "TailClip" ["tailclip"] "E" Bl (Just "True") (Just "True") (Just "@'True'@") Nothing Nothing
              , makeAttr "TailLabel" ["taillabel"] "E" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\"@") Nothing Nothing
@@ -594,6 +597,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "VoroMargin" ["voro_margin"] "G" Dbl Nothing (Just "0.05") (Just "@0.05@") (Just "@0.0@") (Just "not dot")
              , makeAttr "Weight" ["weight"] "E" Dbl Nothing Nothing (Just "@1.0@") (Just "@0@ (dot), @1@ (neato,fdp,sfdp)") Nothing
              , makeAttr "Width" ["width"] "N" Dbl Nothing (Just "0.75") (Just "@0.75@") (Just "@0.01@") Nothing
+             , makeAttr "XLabel" ["xlabel"] "EN" (Cust "Label") Nothing (Just "(StrLabel \"\")")  (Just "@'StrLabel' \\\"\\\"@") Nothing Nothing
              , makeAttr "Z" ["z"] "N" Dbl Nothing (Just "0") (Just "@0.0@") (Just "@-MAXFLOAT@, @-1000@") Nothing
              ]
 

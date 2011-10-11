@@ -61,20 +61,20 @@ instance Arbitrary Attribute where
                     , liftM ArrowSize arbitrary
                     , liftM ArrowTail arbitrary
                     , liftM Aspect arbitrary
-                    , liftM Bb arbitrary
+                    , liftM BoundingBox arbitrary
                     , liftM BgColor arbitrary
                     , liftM Center arbitrary
                     , liftM ClusterRank arbitrary
-                    , liftM ColorScheme arbitrary
                     , liftM Color arbList
+                    , liftM ColorScheme arbitrary
                     , liftM Comment arbitrary
                     , liftM Compound arbitrary
                     , liftM Concentrate arbitrary
                     , liftM Constraint arbitrary
                     , liftM Decorate arbitrary
                     , liftM DefaultDist arbitrary
-                    , liftM Dimen arbitrary
                     , liftM Dim arbitrary
+                    , liftM Dimen arbitrary
                     , liftM Dir arbitrary
                     , liftM DirEdgeConstraints arbitrary
                     , liftM Distortion arbitrary
@@ -91,6 +91,7 @@ instance Arbitrary Attribute where
                     , liftM FontNames arbitrary
                     , liftM FontPath arbitrary
                     , liftM FontSize arbitrary
+                    , liftM ForceLabels arbitrary
                     , liftM Group arbitrary
                     , liftM HeadURL arbitrary
                     , liftM HeadClip arbitrary
@@ -102,6 +103,7 @@ instance Arbitrary Attribute where
                     , liftM ID arbitrary
                     , liftM Image arbitrary
                     , liftM ImageScale arbitrary
+                    , liftM Label arbitrary
                     , liftM LabelURL arbitrary
                     , liftM LabelScheme arbitrary
                     , liftM LabelAngle arbitrary
@@ -114,41 +116,42 @@ instance Arbitrary Attribute where
                     , liftM LabelLoc arbitrary
                     , liftM LabelTarget arbitrary
                     , liftM LabelTooltip arbitrary
-                    , liftM Label arbitrary
                     , liftM Landscape arbitrary
-                    , liftM LayerSep arbitrary
-                    , liftM Layers arbitrary
                     , liftM Layer arbitrary
+                    , liftM Layers arbitrary
+                    , liftM LayerSep arbitrary
                     , liftM Layout arbitrary
                     , liftM Len arbitrary
                     , liftM LevelsGap arbitrary
                     , liftM Levels arbitrary
                     , liftM LHead arbitrary
+                    , liftM LHeight arbitrary
                     , liftM LPos arbitrary
                     , liftM LTail arbitrary
+                    , liftM LWidth arbitrary
                     , liftM Margin arbitrary
                     , liftM MaxIter arbitrary
                     , liftM MCLimit arbitrary
                     , liftM MinDist arbitrary
                     , liftM MinLen arbitrary
-                    , liftM Model arbitrary
                     , liftM Mode arbitrary
+                    , liftM Model arbitrary
                     , liftM Mosek arbitrary
                     , liftM NodeSep arbitrary
                     , liftM NoJustify arbitrary
                     , liftM Normalize arbitrary
-                    , liftM Nslimit1 arbitrary
                     , liftM Nslimit arbitrary
+                    , liftM Nslimit1 arbitrary
                     , liftM Ordering arbitrary
                     , liftM Orientation arbitrary
                     , liftM OutputOrder arbitrary
-                    , liftM OverlapScaling arbitrary
                     , liftM Overlap arbitrary
-                    , liftM PackMode arbitrary
+                    , liftM OverlapScaling arbitrary
                     , liftM Pack arbitrary
+                    , liftM PackMode arbitrary
                     , liftM Pad arbitrary
-                    , liftM PageDir arbitrary
                     , liftM Page arbitrary
+                    , liftM PageDir arbitrary
                     , liftM PenColor arbitrary
                     , liftM PenWidth arbitrary
                     , liftM Peripheries arbitrary
@@ -156,9 +159,9 @@ instance Arbitrary Attribute where
                     , liftM Pos arbitrary
                     , liftM QuadTree arbitrary
                     , liftM Quantum arbitrary
+                    , liftM Rank arbitrary
                     , liftM RankDir arbitrary
                     , liftM RankSep arbList
-                    , liftM Rank arbitrary
                     , liftM Ratio arbitrary
                     , liftM Rects arbList
                     , liftM Regular arbitrary
@@ -173,8 +176,8 @@ instance Arbitrary Attribute where
                     , liftM Scale arbitrary
                     , liftM SearchSize arbitrary
                     , liftM Sep arbitrary
-                    , liftM ShapeFile arbitrary
                     , liftM Shape arbitrary
+                    , liftM ShapeFile arbitrary
                     , liftM ShowBoxes arbitrary
                     , liftM Sides arbitrary
                     , liftM Size arbitrary
@@ -183,8 +186,8 @@ instance Arbitrary Attribute where
                     , liftM SortV arbitrary
                     , liftM Splines arbitrary
                     , liftM Start arbitrary
-                    , liftM StyleSheet arbitrary
                     , liftM Style arbList
+                    , liftM StyleSheet arbitrary
                     , liftM TailURL arbitrary
                     , liftM TailClip arbitrary
                     , liftM TailLabel arbitrary
@@ -199,6 +202,7 @@ instance Arbitrary Attribute where
                     , liftM VoroMargin arbitrary
                     , liftM Weight arbitrary
                     , liftM Width arbitrary
+                    , liftM XLabel arbitrary
                     , liftM Z arbitrary
                     , liftM2 UnknownAttribute (suchThat arbIDString validUnknown) arbitrary
                     ]
@@ -210,20 +214,20 @@ instance Arbitrary Attribute where
   shrink (ArrowSize v)          = map ArrowSize           $ shrink v
   shrink (ArrowTail v)          = map ArrowTail           $ shrink v
   shrink (Aspect v)             = map Aspect              $ shrink v
-  shrink (Bb v)                 = map Bb                  $ shrink v
+  shrink (BoundingBox v)        = map BoundingBox         $ shrink v
   shrink (BgColor v)            = map BgColor             $ shrink v
   shrink (Center v)             = map Center              $ shrink v
   shrink (ClusterRank v)        = map ClusterRank         $ shrink v
-  shrink (ColorScheme v)        = map ColorScheme         $ shrink v
   shrink (Color v)              = map Color               $ nonEmptyShrinks v
+  shrink (ColorScheme v)        = map ColorScheme         $ shrink v
   shrink (Comment v)            = map Comment             $ shrink v
   shrink (Compound v)           = map Compound            $ shrink v
   shrink (Concentrate v)        = map Concentrate         $ shrink v
   shrink (Constraint v)         = map Constraint          $ shrink v
   shrink (Decorate v)           = map Decorate            $ shrink v
   shrink (DefaultDist v)        = map DefaultDist         $ shrink v
-  shrink (Dimen v)              = map Dimen               $ shrink v
   shrink (Dim v)                = map Dim                 $ shrink v
+  shrink (Dimen v)              = map Dimen               $ shrink v
   shrink (Dir v)                = map Dir                 $ shrink v
   shrink (DirEdgeConstraints v) = map DirEdgeConstraints  $ shrink v
   shrink (Distortion v)         = map Distortion          $ shrink v
@@ -240,6 +244,7 @@ instance Arbitrary Attribute where
   shrink (FontNames v)          = map FontNames           $ shrink v
   shrink (FontPath v)           = map FontPath            $ shrink v
   shrink (FontSize v)           = map FontSize            $ shrink v
+  shrink (ForceLabels v)        = map ForceLabels         $ shrink v
   shrink (Group v)              = map Group               $ shrink v
   shrink (HeadURL v)            = map HeadURL             $ shrink v
   shrink (HeadClip v)           = map HeadClip            $ shrink v
@@ -251,6 +256,7 @@ instance Arbitrary Attribute where
   shrink (ID v)                 = map ID                  $ shrink v
   shrink (Image v)              = map Image               $ shrink v
   shrink (ImageScale v)         = map ImageScale          $ shrink v
+  shrink (Label v)              = map Label               $ shrink v
   shrink (LabelURL v)           = map LabelURL            $ shrink v
   shrink (LabelScheme v)        = map LabelScheme         $ shrink v
   shrink (LabelAngle v)         = map LabelAngle          $ shrink v
@@ -263,41 +269,42 @@ instance Arbitrary Attribute where
   shrink (LabelLoc v)           = map LabelLoc            $ shrink v
   shrink (LabelTarget v)        = map LabelTarget         $ shrink v
   shrink (LabelTooltip v)       = map LabelTooltip        $ shrink v
-  shrink (Label v)              = map Label               $ shrink v
   shrink (Landscape v)          = map Landscape           $ shrink v
-  shrink (LayerSep v)           = map LayerSep            $ shrink v
-  shrink (Layers v)             = map Layers              $ shrink v
   shrink (Layer v)              = map Layer               $ shrink v
+  shrink (Layers v)             = map Layers              $ shrink v
+  shrink (LayerSep v)           = map LayerSep            $ shrink v
   shrink (Layout v)             = map Layout              $ shrink v
   shrink (Len v)                = map Len                 $ shrink v
   shrink (LevelsGap v)          = map LevelsGap           $ shrink v
   shrink (Levels v)             = map Levels              $ shrink v
   shrink (LHead v)              = map LHead               $ shrink v
+  shrink (LHeight v)            = map LHeight             $ shrink v
   shrink (LPos v)               = map LPos                $ shrink v
   shrink (LTail v)              = map LTail               $ shrink v
+  shrink (LWidth v)             = map LWidth              $ shrink v
   shrink (Margin v)             = map Margin              $ shrink v
   shrink (MaxIter v)            = map MaxIter             $ shrink v
   shrink (MCLimit v)            = map MCLimit             $ shrink v
   shrink (MinDist v)            = map MinDist             $ shrink v
   shrink (MinLen v)             = map MinLen              $ shrink v
-  shrink (Model v)              = map Model               $ shrink v
   shrink (Mode v)               = map Mode                $ shrink v
+  shrink (Model v)              = map Model               $ shrink v
   shrink (Mosek v)              = map Mosek               $ shrink v
   shrink (NodeSep v)            = map NodeSep             $ shrink v
   shrink (NoJustify v)          = map NoJustify           $ shrink v
   shrink (Normalize v)          = map Normalize           $ shrink v
-  shrink (Nslimit1 v)           = map Nslimit1            $ shrink v
   shrink (Nslimit v)            = map Nslimit             $ shrink v
+  shrink (Nslimit1 v)           = map Nslimit1            $ shrink v
   shrink (Ordering v)           = map Ordering            $ shrink v
   shrink (Orientation v)        = map Orientation         $ shrink v
   shrink (OutputOrder v)        = map OutputOrder         $ shrink v
-  shrink (OverlapScaling v)     = map OverlapScaling      $ shrink v
   shrink (Overlap v)            = map Overlap             $ shrink v
-  shrink (PackMode v)           = map PackMode            $ shrink v
+  shrink (OverlapScaling v)     = map OverlapScaling      $ shrink v
   shrink (Pack v)               = map Pack                $ shrink v
+  shrink (PackMode v)           = map PackMode            $ shrink v
   shrink (Pad v)                = map Pad                 $ shrink v
-  shrink (PageDir v)            = map PageDir             $ shrink v
   shrink (Page v)               = map Page                $ shrink v
+  shrink (PageDir v)            = map PageDir             $ shrink v
   shrink (PenColor v)           = map PenColor            $ shrink v
   shrink (PenWidth v)           = map PenWidth            $ shrink v
   shrink (Peripheries v)        = map Peripheries         $ shrink v
@@ -305,9 +312,9 @@ instance Arbitrary Attribute where
   shrink (Pos v)                = map Pos                 $ shrink v
   shrink (QuadTree v)           = map QuadTree            $ shrink v
   shrink (Quantum v)            = map Quantum             $ shrink v
+  shrink (Rank v)               = map Rank                $ shrink v
   shrink (RankDir v)            = map RankDir             $ shrink v
   shrink (RankSep v)            = map RankSep             $ nonEmptyShrinks v
-  shrink (Rank v)               = map Rank                $ shrink v
   shrink (Ratio v)              = map Ratio               $ shrink v
   shrink (Rects v)              = map Rects               $ nonEmptyShrinks v
   shrink (Regular v)            = map Regular             $ shrink v
@@ -322,8 +329,8 @@ instance Arbitrary Attribute where
   shrink (Scale v)              = map Scale               $ shrink v
   shrink (SearchSize v)         = map SearchSize          $ shrink v
   shrink (Sep v)                = map Sep                 $ shrink v
-  shrink (ShapeFile v)          = map ShapeFile           $ shrink v
   shrink (Shape v)              = map Shape               $ shrink v
+  shrink (ShapeFile v)          = map ShapeFile           $ shrink v
   shrink (ShowBoxes v)          = map ShowBoxes           $ shrink v
   shrink (Sides v)              = map Sides               $ shrink v
   shrink (Size v)               = map Size                $ shrink v
@@ -332,8 +339,8 @@ instance Arbitrary Attribute where
   shrink (SortV v)              = map SortV               $ shrink v
   shrink (Splines v)            = map Splines             $ shrink v
   shrink (Start v)              = map Start               $ shrink v
-  shrink (StyleSheet v)         = map StyleSheet          $ shrink v
   shrink (Style v)              = map Style               $ nonEmptyShrinks v
+  shrink (StyleSheet v)         = map StyleSheet          $ shrink v
   shrink (TailURL v)            = map TailURL             $ shrink v
   shrink (TailClip v)           = map TailClip            $ shrink v
   shrink (TailLabel v)          = map TailLabel           $ shrink v
@@ -348,6 +355,7 @@ instance Arbitrary Attribute where
   shrink (VoroMargin v)         = map VoroMargin          $ shrink v
   shrink (Weight v)             = map Weight              $ shrink v
   shrink (Width v)              = map Width               $ shrink v
+  shrink (XLabel v)             = map XLabel              $ shrink v
   shrink (Z v)                  = map Z                   $ shrink v
   shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrink a) (shrink v)
 {- delete to here -}
@@ -641,6 +649,7 @@ instance Arbitrary StyleName where
                                , Filled
                                , Diagonals
                                , Rounded
+                               , Tapered
                                ]
       notDefault = flip notElem [ "dashed"
                                 , "dotted"
@@ -650,6 +659,7 @@ instance Arbitrary StyleName where
                                 , "filled"
                                 , "diagonals"
                                 , "rounded"
+                                , "tapered"
                                 ]
 
 instance Arbitrary PortPos where

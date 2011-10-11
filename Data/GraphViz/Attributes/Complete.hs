@@ -238,20 +238,20 @@ data Attribute
   | ArrowSize Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
   | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
   | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
-  | Bb Rect                             -- ^ /Valid for/: G; /Notes/: write only
+  | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
   | BgColor Color                       -- ^ /Valid for/: GC; /Default/: @'X11Color' 'Transparent'@
   | Center Bool                         -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | ClusterRank ClusterMode             -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
-  | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
   | Color [Color]                       -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
+  | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
   | Comment Text                        -- ^ /Valid for/: ENG; /Default/: @\"\"@
   | Compound Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
   | Concentrate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | Constraint Bool                     -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
   | Decorate Bool                       -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(|V|)@; /Minimum/: @epsilon@; /Notes/: neato only
-  | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
+  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(|V|)@; /Minimum/: @epsilon@; /Notes/: neato only, only if @'Pack' 'DontPack'
   | Dim Int                             -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
+  | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
   | Dir DirType                         -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
   | DirEdgeConstraints DEConstraints    -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
   | Distortion Double                   -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
@@ -268,6 +268,7 @@ data Attribute
   | FontNames Text                      -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
   | FontPath Text                       -- ^ /Valid for/: G; /Default/: system dependent
   | FontSize Double                     -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
+  | ForceLabels Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: Only for 'XLabel' attributes
   | Group Text                          -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
   | HeadURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
   | HeadClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
@@ -279,8 +280,9 @@ data Attribute
   | ID Label                            -- ^ /Valid for/: GNE; /Default/: @'StrLabel' \"\"@; /Notes/: svg, postscript, map only
   | Image Text                          -- ^ /Valid for/: N; /Default/: @\"\"@
   | ImageScale ScaleType                -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
+  | Label Label                         -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
   | LabelURL EscString                  -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-  | LabelScheme LabelScheme             -- ^ /Valid for/: G; /Default/: @'NotEdgeLabel'@; /Notes/: sfdp only
+  | LabelScheme LabelScheme             -- ^ /Valid for/: G; /Default/: @'NotEdgeLabel'@; /Notes/: sfdp only, requires Graphviz >= 2.28.0
   | LabelAngle Double                   -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
   | LabelDistance Double                -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
   | LabelFloat Bool                     -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -291,41 +293,42 @@ data Attribute
   | LabelLoc VerticalPlacement          -- ^ /Valid for/: GCN; /Default/: @'VTop'@ (clusters), @'VBottom'@ (root graphs), @'VCenter'@ (nodes)
   | LabelTarget EscString               -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
   | LabelTooltip EscString              -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-  | Label Label                         -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
   | Landscape Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-  | LayerSep LayerSep                   -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
-  | Layers LayerList                    -- ^ /Valid for/: G; /Default/: @'LL' []@
   | Layer LayerRange                    -- ^ /Valid for/: EN
+  | Layers LayerList                    -- ^ /Valid for/: G; /Default/: @'LL' []@
+  | LayerSep LayerSep                   -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
   | Layout Text                         -- ^ /Valid for/: G; /Default/: @\"\"@
   | Len Double                          -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
   | LevelsGap Double                    -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
   | Levels Int                          -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
   | LHead Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | LHeight Double                      -- ^ /Valid for/: GC; /Notes/: write only, requires Graphviz >= 2.28.0
   | LPos Point                          -- ^ /Valid for/: EGC; /Notes/: write only
   | LTail Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | LWidth Double                       -- ^ /Valid for/: GC; /Notes/: write only, requires Graphviz >= 2.28.0
   | Margin DPoint                       -- ^ /Valid for/: NG; /Default/: device dependent
   | MaxIter Int                         -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp); /Notes/: fdp, neato only
   | MCLimit Double                      -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: dot only
   | MinDist Double                      -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: circo only
   | MinLen Int                          -- ^ /Valid for/: E; /Default/: @1@; /Minimum/: @0@; /Notes/: dot only
-  | Model Model                         -- ^ /Valid for/: G; /Default/: @'ShortPath'@; /Notes/: neato only
   | Mode ModeType                       -- ^ /Valid for/: G; /Default/: @'Major'@; /Notes/: neato only
+  | Model Model                         -- ^ /Valid for/: G; /Default/: @'ShortPath'@; /Notes/: neato only
   | Mosek Bool                          -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: neato only; requires the Mosek software
   | NodeSep Double                      -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@; /Notes/: dot only
   | NoJustify Bool                      -- ^ /Valid for/: GCNE; /Default/: @'False'@; /Parsing Default/: 'True'
   | Normalize Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: not dot
-  | Nslimit1 Double                     -- ^ /Valid for/: G; /Notes/: dot only
   | Nslimit Double                      -- ^ /Valid for/: G; /Notes/: dot only
+  | Nslimit1 Double                     -- ^ /Valid for/: G; /Notes/: dot only
   | Ordering Order                      -- ^ /Valid for/: GN; /Default/: none; /Notes/: dot only
   | Orientation Double                  -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
   | OutputOrder OutputMode              -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
-  | OverlapScaling Double               -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
   | Overlap Overlap                     -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
-  | PackMode PackMode                   -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
+  | OverlapScaling Double               -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
   | Pack Pack                           -- ^ /Valid for/: G; /Default/: @'DontPack'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
+  | PackMode PackMode                   -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
   | Pad DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
-  | PageDir PageDir                     -- ^ /Valid for/: G; /Default/: @'Bl'@
   | Page Point                          -- ^ /Valid for/: G
+  | PageDir PageDir                     -- ^ /Valid for/: G; /Default/: @'Bl'@
   | PenColor Color                      -- ^ /Valid for/: C; /Default/: @'X11Color' 'Black'@
   | PenWidth Double                     -- ^ /Valid for/: CNE; /Default/: @1.0@; /Minimum/: @0.0@
   | Peripheries Int                     -- ^ /Valid for/: NC; /Default/: shape default (nodes), @1@ (clusters); /Minimum/: 0
@@ -333,9 +336,9 @@ data Attribute
   | Pos Pos                             -- ^ /Valid for/: EN
   | QuadTree QuadType                   -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
   | Quantum Double                      -- ^ /Valid for/: G; /Default/: @0.0@; /Minimum/: @0.0@
+  | Rank RankType                       -- ^ /Valid for/: S; /Notes/: dot only
   | RankDir RankDir                     -- ^ /Valid for/: G; /Default/: @'FromTop'@; /Notes/: dot only
   | RankSep [Double]                    -- ^ /Valid for/: G; /Default/: @[0.5]@ (dot), @[1.0]@ (twopi); /Minimum/: [0.02]; /Notes/: twopi, dot only
-  | Rank RankType                       -- ^ /Valid for/: S; /Notes/: dot only
   | Ratio Ratios                        -- ^ /Valid for/: G
   | Rects [Rect]                        -- ^ /Valid for/: N; /Notes/: write only
   | Regular Bool                        -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -343,15 +346,15 @@ data Attribute
   | RepulsiveForce Double               -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
   | Root Root                           -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
   | Rotate Int                          -- ^ /Valid for/: G; /Default/: @0@
-  | Rotation Double                     -- ^ /Valid for/: G; /Default/: @0@; /Notes/: sfdp only
+  | Rotation Double                     -- ^ /Valid for/: G; /Default/: @0@; /Notes/: sfdp only, requires Graphviz >= 2.28.0
   | SameHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
   | SameTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
   | SamplePoints Int                    -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
-  | Scale DPoint                        -- ^ /Valid for/: G; /Notes/: twopi only
+  | Scale DPoint                        -- ^ /Valid for/: G; /Notes/: twopi only, requires Graphviz >= 2.28.0
   | SearchSize Int                      -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
   | Sep DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
-  | ShapeFile Text                      -- ^ /Valid for/: N; /Default/: @\"\"@
   | Shape Shape                         -- ^ /Valid for/: N; /Default/: @'Ellipse'@
+  | ShapeFile Text                      -- ^ /Valid for/: N; /Default/: @\"\"@
   | ShowBoxes Int                       -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
   | Sides Int                           -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
   | Size Point                          -- ^ /Valid for/: G
@@ -360,8 +363,8 @@ data Attribute
   | SortV Word16                        -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
   | Splines EdgeType                    -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
   | Start StartType                     -- ^ /Valid for/: G; /Notes/: fdp, neato only
-  | StyleSheet Text                     -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
   | Style [StyleItem]                   -- ^ /Valid for/: ENC
+  | StyleSheet Text                     -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
   | TailURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
   | TailClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
   | TailLabel Label                     -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
@@ -376,6 +379,7 @@ data Attribute
   | VoroMargin Double                   -- ^ /Valid for/: G; /Default/: @0.05@; /Minimum/: @0.0@; /Notes/: not dot
   | Weight Double                       -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
   | Width Double                        -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
+  | XLabel Label                        -- ^ /Valid for/: EN; /Default/: @'StrLabel' \"\"@
   | Z Double                            -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
   | UnknownAttribute AttributeName Text -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
   deriving (Eq, Ord, Show, Read)
@@ -393,20 +397,20 @@ instance PrintDot Attribute where
   unqtDot (ArrowSize v)          = printField "arrowsize" v
   unqtDot (ArrowTail v)          = printField "arrowtail" v
   unqtDot (Aspect v)             = printField "aspect" v
-  unqtDot (Bb v)                 = printField "bb" v
+  unqtDot (BoundingBox v)        = printField "bb" v
   unqtDot (BgColor v)            = printField "bgcolor" v
   unqtDot (Center v)             = printField "center" v
   unqtDot (ClusterRank v)        = printField "clusterrank" v
-  unqtDot (ColorScheme v)        = printField "colorscheme" v
   unqtDot (Color v)              = printField "color" v
+  unqtDot (ColorScheme v)        = printField "colorscheme" v
   unqtDot (Comment v)            = printField "comment" v
   unqtDot (Compound v)           = printField "compound" v
   unqtDot (Concentrate v)        = printField "concentrate" v
   unqtDot (Constraint v)         = printField "constraint" v
   unqtDot (Decorate v)           = printField "decorate" v
   unqtDot (DefaultDist v)        = printField "defaultdist" v
-  unqtDot (Dimen v)              = printField "dimen" v
   unqtDot (Dim v)                = printField "dim" v
+  unqtDot (Dimen v)              = printField "dimen" v
   unqtDot (Dir v)                = printField "dir" v
   unqtDot (DirEdgeConstraints v) = printField "diredgeconstraints" v
   unqtDot (Distortion v)         = printField "distortion" v
@@ -423,6 +427,7 @@ instance PrintDot Attribute where
   unqtDot (FontNames v)          = printField "fontnames" v
   unqtDot (FontPath v)           = printField "fontpath" v
   unqtDot (FontSize v)           = printField "fontsize" v
+  unqtDot (ForceLabels v)        = printField "forcelabels" v
   unqtDot (Group v)              = printField "group" v
   unqtDot (HeadURL v)            = printField "headURL" v
   unqtDot (HeadClip v)           = printField "headclip" v
@@ -434,6 +439,7 @@ instance PrintDot Attribute where
   unqtDot (ID v)                 = printField "id" v
   unqtDot (Image v)              = printField "image" v
   unqtDot (ImageScale v)         = printField "imagescale" v
+  unqtDot (Label v)              = printField "label" v
   unqtDot (LabelURL v)           = printField "labelURL" v
   unqtDot (LabelScheme v)        = printField "label_scheme" v
   unqtDot (LabelAngle v)         = printField "labelangle" v
@@ -446,41 +452,42 @@ instance PrintDot Attribute where
   unqtDot (LabelLoc v)           = printField "labelloc" v
   unqtDot (LabelTarget v)        = printField "labeltarget" v
   unqtDot (LabelTooltip v)       = printField "labeltooltip" v
-  unqtDot (Label v)              = printField "label" v
   unqtDot (Landscape v)          = printField "landscape" v
-  unqtDot (LayerSep v)           = printField "layersep" v
-  unqtDot (Layers v)             = printField "layers" v
   unqtDot (Layer v)              = printField "layer" v
+  unqtDot (Layers v)             = printField "layers" v
+  unqtDot (LayerSep v)           = printField "layersep" v
   unqtDot (Layout v)             = printField "layout" v
   unqtDot (Len v)                = printField "len" v
   unqtDot (LevelsGap v)          = printField "levelsgap" v
   unqtDot (Levels v)             = printField "levels" v
   unqtDot (LHead v)              = printField "lhead" v
+  unqtDot (LHeight v)            = printField "LHeight" v
   unqtDot (LPos v)               = printField "lp" v
   unqtDot (LTail v)              = printField "ltail" v
+  unqtDot (LWidth v)             = printField "lwidth" v
   unqtDot (Margin v)             = printField "margin" v
   unqtDot (MaxIter v)            = printField "maxiter" v
   unqtDot (MCLimit v)            = printField "mclimit" v
   unqtDot (MinDist v)            = printField "mindist" v
   unqtDot (MinLen v)             = printField "minlen" v
-  unqtDot (Model v)              = printField "model" v
   unqtDot (Mode v)               = printField "mode" v
+  unqtDot (Model v)              = printField "model" v
   unqtDot (Mosek v)              = printField "mosek" v
   unqtDot (NodeSep v)            = printField "nodesep" v
   unqtDot (NoJustify v)          = printField "nojustify" v
   unqtDot (Normalize v)          = printField "normalize" v
-  unqtDot (Nslimit1 v)           = printField "nslimit1" v
   unqtDot (Nslimit v)            = printField "nslimit" v
+  unqtDot (Nslimit1 v)           = printField "nslimit1" v
   unqtDot (Ordering v)           = printField "ordering" v
   unqtDot (Orientation v)        = printField "orientation" v
   unqtDot (OutputOrder v)        = printField "outputorder" v
-  unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
   unqtDot (Overlap v)            = printField "overlap" v
-  unqtDot (PackMode v)           = printField "packmode" v
+  unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
   unqtDot (Pack v)               = printField "pack" v
+  unqtDot (PackMode v)           = printField "packmode" v
   unqtDot (Pad v)                = printField "pad" v
-  unqtDot (PageDir v)            = printField "pagedir" v
   unqtDot (Page v)               = printField "page" v
+  unqtDot (PageDir v)            = printField "pagedir" v
   unqtDot (PenColor v)           = printField "pencolor" v
   unqtDot (PenWidth v)           = printField "penwidth" v
   unqtDot (Peripheries v)        = printField "peripheries" v
@@ -488,9 +495,9 @@ instance PrintDot Attribute where
   unqtDot (Pos v)                = printField "pos" v
   unqtDot (QuadTree v)           = printField "quadtree" v
   unqtDot (Quantum v)            = printField "quantum" v
+  unqtDot (Rank v)               = printField "rank" v
   unqtDot (RankDir v)            = printField "rankdir" v
   unqtDot (RankSep v)            = printField "ranksep" v
-  unqtDot (Rank v)               = printField "rank" v
   unqtDot (Ratio v)              = printField "ratio" v
   unqtDot (Rects v)              = printField "rects" v
   unqtDot (Regular v)            = printField "regular" v
@@ -505,8 +512,8 @@ instance PrintDot Attribute where
   unqtDot (Scale v)              = printField "scale" v
   unqtDot (SearchSize v)         = printField "searchsize" v
   unqtDot (Sep v)                = printField "sep" v
-  unqtDot (ShapeFile v)          = printField "shapefile" v
   unqtDot (Shape v)              = printField "shape" v
+  unqtDot (ShapeFile v)          = printField "shapefile" v
   unqtDot (ShowBoxes v)          = printField "showboxes" v
   unqtDot (Sides v)              = printField "sides" v
   unqtDot (Size v)               = printField "size" v
@@ -515,8 +522,8 @@ instance PrintDot Attribute where
   unqtDot (SortV v)              = printField "sortv" v
   unqtDot (Splines v)            = printField "splines" v
   unqtDot (Start v)              = printField "start" v
-  unqtDot (StyleSheet v)         = printField "stylesheet" v
   unqtDot (Style v)              = printField "style" v
+  unqtDot (StyleSheet v)         = printField "stylesheet" v
   unqtDot (TailURL v)            = printField "tailURL" v
   unqtDot (TailClip v)           = printField "tailclip" v
   unqtDot (TailLabel v)          = printField "taillabel" v
@@ -531,6 +538,7 @@ instance PrintDot Attribute where
   unqtDot (VoroMargin v)         = printField "voro_margin" v
   unqtDot (Weight v)             = printField "weight" v
   unqtDot (Width v)              = printField "width" v
+  unqtDot (XLabel v)             = printField "xlabel" v
   unqtDot (Z v)                  = printField "z" v
   unqtDot (UnknownAttribute a v) = toDot a <> equals <> toDot v
 
@@ -544,20 +552,20 @@ instance ParseDot Attribute where
                                   , parseField ArrowSize "arrowsize"
                                   , parseField ArrowTail "arrowtail"
                                   , parseField Aspect "aspect"
-                                  , parseField Bb "bb"
+                                  , parseField BoundingBox "bb"
                                   , parseField BgColor "bgcolor"
                                   , parseFieldBool Center "center"
                                   , parseField ClusterRank "clusterrank"
-                                  , parseField ColorScheme "colorscheme"
                                   , parseField Color "color"
+                                  , parseField ColorScheme "colorscheme"
                                   , parseField Comment "comment"
                                   , parseFieldBool Compound "compound"
                                   , parseFieldBool Concentrate "concentrate"
                                   , parseFieldBool Constraint "constraint"
                                   , parseFieldBool Decorate "decorate"
                                   , parseField DefaultDist "defaultdist"
-                                  , parseField Dimen "dimen"
                                   , parseField Dim "dim"
+                                  , parseField Dimen "dimen"
                                   , parseField Dir "dir"
                                   , parseFieldDef DirEdgeConstraints EdgeConstraints "diredgeconstraints"
                                   , parseField Distortion "distortion"
@@ -574,6 +582,7 @@ instance ParseDot Attribute where
                                   , parseField FontNames "fontnames"
                                   , parseField FontPath "fontpath"
                                   , parseField FontSize "fontsize"
+                                  , parseFieldBool ForceLabels "forcelabels"
                                   , parseField Group "group"
                                   , parseFields HeadURL ["headURL", "headhref"]
                                   , parseFieldBool HeadClip "headclip"
@@ -585,6 +594,7 @@ instance ParseDot Attribute where
                                   , parseField ID "id"
                                   , parseField Image "image"
                                   , parseFieldDef ImageScale UniformScale "imagescale"
+                                  , parseField Label "label"
                                   , parseFields LabelURL ["labelURL", "labelhref"]
                                   , parseField LabelScheme "label_scheme"
                                   , parseField LabelAngle "labelangle"
@@ -597,41 +607,42 @@ instance ParseDot Attribute where
                                   , parseField LabelLoc "labelloc"
                                   , parseField LabelTarget "labeltarget"
                                   , parseField LabelTooltip "labeltooltip"
-                                  , parseField Label "label"
                                   , parseFieldBool Landscape "landscape"
-                                  , parseField LayerSep "layersep"
-                                  , parseField Layers "layers"
                                   , parseField Layer "layer"
+                                  , parseField Layers "layers"
+                                  , parseField LayerSep "layersep"
                                   , parseField Layout "layout"
                                   , parseField Len "len"
                                   , parseField LevelsGap "levelsgap"
                                   , parseField Levels "levels"
                                   , parseField LHead "lhead"
+                                  , parseField LHeight "LHeight"
                                   , parseField LPos "lp"
                                   , parseField LTail "ltail"
+                                  , parseField LWidth "lwidth"
                                   , parseField Margin "margin"
                                   , parseField MaxIter "maxiter"
                                   , parseField MCLimit "mclimit"
                                   , parseField MinDist "mindist"
                                   , parseField MinLen "minlen"
-                                  , parseField Model "model"
                                   , parseField Mode "mode"
+                                  , parseField Model "model"
                                   , parseFieldBool Mosek "mosek"
                                   , parseField NodeSep "nodesep"
                                   , parseFieldBool NoJustify "nojustify"
                                   , parseFieldBool Normalize "normalize"
-                                  , parseField Nslimit1 "nslimit1"
                                   , parseField Nslimit "nslimit"
+                                  , parseField Nslimit1 "nslimit1"
                                   , parseField Ordering "ordering"
                                   , parseField Orientation "orientation"
                                   , parseField OutputOrder "outputorder"
-                                  , parseField OverlapScaling "overlap_scaling"
                                   , parseFieldDef Overlap KeepOverlaps "overlap"
-                                  , parseField PackMode "packmode"
+                                  , parseField OverlapScaling "overlap_scaling"
                                   , parseFieldDef Pack DoPack "pack"
+                                  , parseField PackMode "packmode"
                                   , parseField Pad "pad"
-                                  , parseField PageDir "pagedir"
                                   , parseField Page "page"
+                                  , parseField PageDir "pagedir"
                                   , parseField PenColor "pencolor"
                                   , parseField PenWidth "penwidth"
                                   , parseField Peripheries "peripheries"
@@ -639,9 +650,9 @@ instance ParseDot Attribute where
                                   , parseField Pos "pos"
                                   , parseFieldDef QuadTree NormalQT "quadtree"
                                   , parseField Quantum "quantum"
+                                  , parseField Rank "rank"
                                   , parseField RankDir "rankdir"
                                   , parseField RankSep "ranksep"
-                                  , parseField Rank "rank"
                                   , parseField Ratio "ratio"
                                   , parseField Rects "rects"
                                   , parseFieldBool Regular "regular"
@@ -656,8 +667,8 @@ instance ParseDot Attribute where
                                   , parseField Scale "scale"
                                   , parseField SearchSize "searchsize"
                                   , parseField Sep "sep"
-                                  , parseField ShapeFile "shapefile"
                                   , parseField Shape "shape"
+                                  , parseField ShapeFile "shapefile"
                                   , parseField ShowBoxes "showboxes"
                                   , parseField Sides "sides"
                                   , parseField Size "size"
@@ -666,8 +677,8 @@ instance ParseDot Attribute where
                                   , parseField SortV "sortv"
                                   , parseFieldDef Splines SplineEdges "splines"
                                   , parseField Start "start"
-                                  , parseField StyleSheet "stylesheet"
                                   , parseField Style "style"
+                                  , parseField StyleSheet "stylesheet"
                                   , parseFields TailURL ["tailURL", "tailhref"]
                                   , parseFieldBool TailClip "tailclip"
                                   , parseField TailLabel "taillabel"
@@ -682,6 +693,7 @@ instance ParseDot Attribute where
                                   , parseField VoroMargin "voro_margin"
                                   , parseField Weight "weight"
                                   , parseField Width "width"
+                                  , parseField XLabel "xlabel"
                                   , parseField Z "z"
                                   ])
               `onFail`
@@ -697,7 +709,7 @@ usedByGraphs Damping{}            = True
 usedByGraphs K{}                  = True
 usedByGraphs URL{}                = True
 usedByGraphs Aspect{}             = True
-usedByGraphs Bb{}                 = True
+usedByGraphs BoundingBox{}        = True
 usedByGraphs BgColor{}            = True
 usedByGraphs Center{}             = True
 usedByGraphs ClusterRank{}        = True
@@ -706,8 +718,8 @@ usedByGraphs Comment{}            = True
 usedByGraphs Compound{}           = True
 usedByGraphs Concentrate{}        = True
 usedByGraphs DefaultDist{}        = True
-usedByGraphs Dimen{}              = True
 usedByGraphs Dim{}                = True
+usedByGraphs Dimen{}              = True
 usedByGraphs DirEdgeConstraints{} = True
 usedByGraphs DPI{}                = True
 usedByGraphs Epsilon{}            = True
@@ -717,39 +729,42 @@ usedByGraphs FontName{}           = True
 usedByGraphs FontNames{}          = True
 usedByGraphs FontPath{}           = True
 usedByGraphs FontSize{}           = True
+usedByGraphs ForceLabels{}        = True
 usedByGraphs ID{}                 = True
+usedByGraphs Label{}              = True
 usedByGraphs LabelScheme{}        = True
 usedByGraphs LabelJust{}          = True
 usedByGraphs LabelLoc{}           = True
-usedByGraphs Label{}              = True
 usedByGraphs Landscape{}          = True
-usedByGraphs LayerSep{}           = True
 usedByGraphs Layers{}             = True
+usedByGraphs LayerSep{}           = True
 usedByGraphs Layout{}             = True
 usedByGraphs LevelsGap{}          = True
 usedByGraphs Levels{}             = True
+usedByGraphs LHeight{}            = True
 usedByGraphs LPos{}               = True
+usedByGraphs LWidth{}             = True
 usedByGraphs Margin{}             = True
 usedByGraphs MaxIter{}            = True
 usedByGraphs MCLimit{}            = True
 usedByGraphs MinDist{}            = True
-usedByGraphs Model{}              = True
 usedByGraphs Mode{}               = True
+usedByGraphs Model{}              = True
 usedByGraphs Mosek{}              = True
 usedByGraphs NodeSep{}            = True
 usedByGraphs NoJustify{}          = True
 usedByGraphs Normalize{}          = True
-usedByGraphs Nslimit1{}           = True
 usedByGraphs Nslimit{}            = True
+usedByGraphs Nslimit1{}           = True
 usedByGraphs Ordering{}           = True
 usedByGraphs OutputOrder{}        = True
-usedByGraphs OverlapScaling{}     = True
 usedByGraphs Overlap{}            = True
-usedByGraphs PackMode{}           = True
+usedByGraphs OverlapScaling{}     = True
 usedByGraphs Pack{}               = True
+usedByGraphs PackMode{}           = True
 usedByGraphs Pad{}                = True
-usedByGraphs PageDir{}            = True
 usedByGraphs Page{}               = True
+usedByGraphs PageDir{}            = True
 usedByGraphs QuadTree{}           = True
 usedByGraphs Quantum{}            = True
 usedByGraphs RankDir{}            = True
@@ -782,16 +797,18 @@ usedByClusters                    :: Attribute -> Bool
 usedByClusters K{}                = True
 usedByClusters URL{}              = True
 usedByClusters BgColor{}          = True
-usedByClusters ColorScheme{}      = True
 usedByClusters Color{}            = True
+usedByClusters ColorScheme{}      = True
 usedByClusters FillColor{}        = True
 usedByClusters FontColor{}        = True
 usedByClusters FontName{}         = True
 usedByClusters FontSize{}         = True
+usedByClusters Label{}            = True
 usedByClusters LabelJust{}        = True
 usedByClusters LabelLoc{}         = True
-usedByClusters Label{}            = True
+usedByClusters LHeight{}          = True
 usedByClusters LPos{}             = True
+usedByClusters LWidth{}           = True
 usedByClusters NoJustify{}        = True
 usedByClusters PenColor{}         = True
 usedByClusters PenWidth{}         = True
@@ -813,8 +830,8 @@ usedBySubGraphs _                  = False
 -- | Determine if this 'Attribute' is valid for use with Nodes.
 usedByNodes                    :: Attribute -> Bool
 usedByNodes URL{}              = True
-usedByNodes ColorScheme{}      = True
 usedByNodes Color{}            = True
+usedByNodes ColorScheme{}      = True
 usedByNodes Comment{}          = True
 usedByNodes Distortion{}       = True
 usedByNodes FillColor{}        = True
@@ -827,8 +844,8 @@ usedByNodes Height{}           = True
 usedByNodes ID{}               = True
 usedByNodes Image{}            = True
 usedByNodes ImageScale{}       = True
-usedByNodes LabelLoc{}         = True
 usedByNodes Label{}            = True
+usedByNodes LabelLoc{}         = True
 usedByNodes Layer{}            = True
 usedByNodes Margin{}           = True
 usedByNodes NoJustify{}        = True
@@ -842,8 +859,8 @@ usedByNodes Rects{}            = True
 usedByNodes Regular{}          = True
 usedByNodes Root{}             = True
 usedByNodes SamplePoints{}     = True
-usedByNodes ShapeFile{}        = True
 usedByNodes Shape{}            = True
+usedByNodes ShapeFile{}        = True
 usedByNodes ShowBoxes{}        = True
 usedByNodes Sides{}            = True
 usedByNodes Skew{}             = True
@@ -853,6 +870,7 @@ usedByNodes Target{}           = True
 usedByNodes Tooltip{}          = True
 usedByNodes Vertices{}         = True
 usedByNodes Width{}            = True
+usedByNodes XLabel{}           = True
 usedByNodes Z{}                = True
 usedByNodes UnknownAttribute{} = True
 usedByNodes _                  = False
@@ -863,8 +881,8 @@ usedByEdges URL{}              = True
 usedByEdges ArrowHead{}        = True
 usedByEdges ArrowSize{}        = True
 usedByEdges ArrowTail{}        = True
-usedByEdges ColorScheme{}      = True
 usedByEdges Color{}            = True
+usedByEdges ColorScheme{}      = True
 usedByEdges Comment{}          = True
 usedByEdges Constraint{}       = True
 usedByEdges Decorate{}         = True
@@ -882,6 +900,7 @@ usedByEdges HeadPort{}         = True
 usedByEdges HeadTarget{}       = True
 usedByEdges HeadTooltip{}      = True
 usedByEdges ID{}               = True
+usedByEdges Label{}            = True
 usedByEdges LabelURL{}         = True
 usedByEdges LabelAngle{}       = True
 usedByEdges LabelDistance{}    = True
@@ -891,7 +910,6 @@ usedByEdges LabelFontName{}    = True
 usedByEdges LabelFontSize{}    = True
 usedByEdges LabelTarget{}      = True
 usedByEdges LabelTooltip{}     = True
-usedByEdges Label{}            = True
 usedByEdges Layer{}            = True
 usedByEdges Len{}              = True
 usedByEdges LHead{}            = True
@@ -914,6 +932,7 @@ usedByEdges TailTooltip{}      = True
 usedByEdges Target{}           = True
 usedByEdges Tooltip{}          = True
 usedByEdges Weight{}           = True
+usedByEdges XLabel{}           = True
 usedByEdges UnknownAttribute{} = True
 usedByEdges _                  = False
 
@@ -926,20 +945,20 @@ sameAttribute ArrowHead{}             ArrowHead{}             = True
 sameAttribute ArrowSize{}             ArrowSize{}             = True
 sameAttribute ArrowTail{}             ArrowTail{}             = True
 sameAttribute Aspect{}                Aspect{}                = True
-sameAttribute Bb{}                    Bb{}                    = True
+sameAttribute BoundingBox{}           BoundingBox{}           = True
 sameAttribute BgColor{}               BgColor{}               = True
 sameAttribute Center{}                Center{}                = True
 sameAttribute ClusterRank{}           ClusterRank{}           = True
-sameAttribute ColorScheme{}           ColorScheme{}           = True
 sameAttribute Color{}                 Color{}                 = True
+sameAttribute ColorScheme{}           ColorScheme{}           = True
 sameAttribute Comment{}               Comment{}               = True
 sameAttribute Compound{}              Compound{}              = True
 sameAttribute Concentrate{}           Concentrate{}           = True
 sameAttribute Constraint{}            Constraint{}            = True
 sameAttribute Decorate{}              Decorate{}              = True
 sameAttribute DefaultDist{}           DefaultDist{}           = True
-sameAttribute Dimen{}                 Dimen{}                 = True
 sameAttribute Dim{}                   Dim{}                   = True
+sameAttribute Dimen{}                 Dimen{}                 = True
 sameAttribute Dir{}                   Dir{}                   = True
 sameAttribute DirEdgeConstraints{}    DirEdgeConstraints{}    = True
 sameAttribute Distortion{}            Distortion{}            = True
@@ -956,6 +975,7 @@ sameAttribute FontName{}              FontName{}              = True
 sameAttribute FontNames{}             FontNames{}             = True
 sameAttribute FontPath{}              FontPath{}              = True
 sameAttribute FontSize{}              FontSize{}              = True
+sameAttribute ForceLabels{}           ForceLabels{}           = True
 sameAttribute Group{}                 Group{}                 = True
 sameAttribute HeadURL{}               HeadURL{}               = True
 sameAttribute HeadClip{}              HeadClip{}              = True
@@ -967,6 +987,7 @@ sameAttribute Height{}                Height{}                = True
 sameAttribute ID{}                    ID{}                    = True
 sameAttribute Image{}                 Image{}                 = True
 sameAttribute ImageScale{}            ImageScale{}            = True
+sameAttribute Label{}                 Label{}                 = True
 sameAttribute LabelURL{}              LabelURL{}              = True
 sameAttribute LabelScheme{}           LabelScheme{}           = True
 sameAttribute LabelAngle{}            LabelAngle{}            = True
@@ -979,41 +1000,42 @@ sameAttribute LabelJust{}             LabelJust{}             = True
 sameAttribute LabelLoc{}              LabelLoc{}              = True
 sameAttribute LabelTarget{}           LabelTarget{}           = True
 sameAttribute LabelTooltip{}          LabelTooltip{}          = True
-sameAttribute Label{}                 Label{}                 = True
 sameAttribute Landscape{}             Landscape{}             = True
-sameAttribute LayerSep{}              LayerSep{}              = True
-sameAttribute Layers{}                Layers{}                = True
 sameAttribute Layer{}                 Layer{}                 = True
+sameAttribute Layers{}                Layers{}                = True
+sameAttribute LayerSep{}              LayerSep{}              = True
 sameAttribute Layout{}                Layout{}                = True
 sameAttribute Len{}                   Len{}                   = True
 sameAttribute LevelsGap{}             LevelsGap{}             = True
 sameAttribute Levels{}                Levels{}                = True
 sameAttribute LHead{}                 LHead{}                 = True
+sameAttribute LHeight{}               LHeight{}               = True
 sameAttribute LPos{}                  LPos{}                  = True
 sameAttribute LTail{}                 LTail{}                 = True
+sameAttribute LWidth{}                LWidth{}                = True
 sameAttribute Margin{}                Margin{}                = True
 sameAttribute MaxIter{}               MaxIter{}               = True
 sameAttribute MCLimit{}               MCLimit{}               = True
 sameAttribute MinDist{}               MinDist{}               = True
 sameAttribute MinLen{}                MinLen{}                = True
-sameAttribute Model{}                 Model{}                 = True
 sameAttribute Mode{}                  Mode{}                  = True
+sameAttribute Model{}                 Model{}                 = True
 sameAttribute Mosek{}                 Mosek{}                 = True
 sameAttribute NodeSep{}               NodeSep{}               = True
 sameAttribute NoJustify{}             NoJustify{}             = True
 sameAttribute Normalize{}             Normalize{}             = True
-sameAttribute Nslimit1{}              Nslimit1{}              = True
 sameAttribute Nslimit{}               Nslimit{}               = True
+sameAttribute Nslimit1{}              Nslimit1{}              = True
 sameAttribute Ordering{}              Ordering{}              = True
 sameAttribute Orientation{}           Orientation{}           = True
 sameAttribute OutputOrder{}           OutputOrder{}           = True
-sameAttribute OverlapScaling{}        OverlapScaling{}        = True
 sameAttribute Overlap{}               Overlap{}               = True
-sameAttribute PackMode{}              PackMode{}              = True
+sameAttribute OverlapScaling{}        OverlapScaling{}        = True
 sameAttribute Pack{}                  Pack{}                  = True
+sameAttribute PackMode{}              PackMode{}              = True
 sameAttribute Pad{}                   Pad{}                   = True
-sameAttribute PageDir{}               PageDir{}               = True
 sameAttribute Page{}                  Page{}                  = True
+sameAttribute PageDir{}               PageDir{}               = True
 sameAttribute PenColor{}              PenColor{}              = True
 sameAttribute PenWidth{}              PenWidth{}              = True
 sameAttribute Peripheries{}           Peripheries{}           = True
@@ -1021,9 +1043,9 @@ sameAttribute Pin{}                   Pin{}                   = True
 sameAttribute Pos{}                   Pos{}                   = True
 sameAttribute QuadTree{}              QuadTree{}              = True
 sameAttribute Quantum{}               Quantum{}               = True
+sameAttribute Rank{}                  Rank{}                  = True
 sameAttribute RankDir{}               RankDir{}               = True
 sameAttribute RankSep{}               RankSep{}               = True
-sameAttribute Rank{}                  Rank{}                  = True
 sameAttribute Ratio{}                 Ratio{}                 = True
 sameAttribute Rects{}                 Rects{}                 = True
 sameAttribute Regular{}               Regular{}               = True
@@ -1038,8 +1060,8 @@ sameAttribute SamplePoints{}          SamplePoints{}          = True
 sameAttribute Scale{}                 Scale{}                 = True
 sameAttribute SearchSize{}            SearchSize{}            = True
 sameAttribute Sep{}                   Sep{}                   = True
-sameAttribute ShapeFile{}             ShapeFile{}             = True
 sameAttribute Shape{}                 Shape{}                 = True
+sameAttribute ShapeFile{}             ShapeFile{}             = True
 sameAttribute ShowBoxes{}             ShowBoxes{}             = True
 sameAttribute Sides{}                 Sides{}                 = True
 sameAttribute Size{}                  Size{}                  = True
@@ -1048,8 +1070,8 @@ sameAttribute Smoothing{}             Smoothing{}             = True
 sameAttribute SortV{}                 SortV{}                 = True
 sameAttribute Splines{}               Splines{}               = True
 sameAttribute Start{}                 Start{}                 = True
-sameAttribute StyleSheet{}            StyleSheet{}            = True
 sameAttribute Style{}                 Style{}                 = True
+sameAttribute StyleSheet{}            StyleSheet{}            = True
 sameAttribute TailURL{}               TailURL{}               = True
 sameAttribute TailClip{}              TailClip{}              = True
 sameAttribute TailLabel{}             TailLabel{}             = True
@@ -1064,6 +1086,7 @@ sameAttribute ViewPort{}              ViewPort{}              = True
 sameAttribute VoroMargin{}            VoroMargin{}            = True
 sameAttribute Weight{}                Weight{}                = True
 sameAttribute Width{}                 Width{}                 = True
+sameAttribute XLabel{}                XLabel{}                = True
 sameAttribute Z{}                     Z{}                     = True
 sameAttribute (UnknownAttribute a1 _) (UnknownAttribute a2 _) = a1 == a2
 sameAttribute _                       _                       = False
@@ -1079,15 +1102,15 @@ defaultAttributeValue ArrowTail{}          = Just $ ArrowTail normal
 defaultAttributeValue BgColor{}            = Just $ BgColor (X11Color Transparent)
 defaultAttributeValue Center{}             = Just $ Center False
 defaultAttributeValue ClusterRank{}        = Just $ ClusterRank Local
-defaultAttributeValue ColorScheme{}        = Just $ ColorScheme X11
 defaultAttributeValue Color{}              = Just $ Color [X11Color Black]
+defaultAttributeValue ColorScheme{}        = Just $ ColorScheme X11
 defaultAttributeValue Comment{}            = Just $ Comment ""
 defaultAttributeValue Compound{}           = Just $ Compound False
 defaultAttributeValue Concentrate{}        = Just $ Concentrate False
 defaultAttributeValue Constraint{}         = Just $ Constraint True
 defaultAttributeValue Decorate{}           = Just $ Decorate False
-defaultAttributeValue Dimen{}              = Just $ Dimen 2
 defaultAttributeValue Dim{}                = Just $ Dim 2
+defaultAttributeValue Dimen{}              = Just $ Dimen 2
 defaultAttributeValue DirEdgeConstraints{} = Just $ DirEdgeConstraints NoConstraints
 defaultAttributeValue Distortion{}         = Just $ Distortion 0
 defaultAttributeValue EdgeURL{}            = Just $ EdgeURL ""
@@ -1098,6 +1121,7 @@ defaultAttributeValue FontColor{}          = Just $ FontColor (X11Color Black)
 defaultAttributeValue FontName{}           = Just $ FontName "Times-Roman"
 defaultAttributeValue FontNames{}          = Just $ FontNames ""
 defaultAttributeValue FontSize{}           = Just $ FontSize 14
+defaultAttributeValue ForceLabels{}        = Just $ ForceLabels False
 defaultAttributeValue Group{}              = Just $ Group ""
 defaultAttributeValue HeadURL{}            = Just $ HeadURL ""
 defaultAttributeValue HeadClip{}           = Just $ HeadClip True
@@ -1109,6 +1133,7 @@ defaultAttributeValue Height{}             = Just $ Height 0.5
 defaultAttributeValue ID{}                 = Just $ ID (StrLabel "")
 defaultAttributeValue Image{}              = Just $ Image ""
 defaultAttributeValue ImageScale{}         = Just $ ImageScale NoScale
+defaultAttributeValue Label{}              = Just $ Label (StrLabel "")
 defaultAttributeValue LabelURL{}           = Just $ LabelURL ""
 defaultAttributeValue LabelScheme{}        = Just $ LabelScheme NotEdgeLabel
 defaultAttributeValue LabelAngle{}         = Just $ LabelAngle (-25)
@@ -1121,10 +1146,9 @@ defaultAttributeValue LabelJust{}          = Just $ LabelJust JCenter
 defaultAttributeValue LabelLoc{}           = Just $ LabelLoc VTop
 defaultAttributeValue LabelTarget{}        = Just $ LabelTarget ""
 defaultAttributeValue LabelTooltip{}       = Just $ LabelTooltip ""
-defaultAttributeValue Label{}              = Just $ Label (StrLabel "")
 defaultAttributeValue Landscape{}          = Just $ Landscape False
-defaultAttributeValue LayerSep{}           = Just $ LayerSep (LSep " :\t")
 defaultAttributeValue Layers{}             = Just $ Layers (LL [])
+defaultAttributeValue LayerSep{}           = Just $ LayerSep (LSep " :\t")
 defaultAttributeValue Layout{}             = Just $ Layout ""
 defaultAttributeValue LevelsGap{}          = Just $ LevelsGap 0
 defaultAttributeValue Levels{}             = Just $ Levels maxBound
@@ -1133,18 +1157,18 @@ defaultAttributeValue LTail{}              = Just $ LTail ""
 defaultAttributeValue MCLimit{}            = Just $ MCLimit 1
 defaultAttributeValue MinDist{}            = Just $ MinDist 1
 defaultAttributeValue MinLen{}             = Just $ MinLen 1
-defaultAttributeValue Model{}              = Just $ Model ShortPath
 defaultAttributeValue Mode{}               = Just $ Mode Major
+defaultAttributeValue Model{}              = Just $ Model ShortPath
 defaultAttributeValue Mosek{}              = Just $ Mosek False
 defaultAttributeValue NodeSep{}            = Just $ NodeSep 0.25
 defaultAttributeValue NoJustify{}          = Just $ NoJustify False
 defaultAttributeValue Normalize{}          = Just $ Normalize False
 defaultAttributeValue Orientation{}        = Just $ Orientation 0
 defaultAttributeValue OutputOrder{}        = Just $ OutputOrder BreadthFirst
-defaultAttributeValue OverlapScaling{}     = Just $ OverlapScaling (-4)
 defaultAttributeValue Overlap{}            = Just $ Overlap KeepOverlaps
-defaultAttributeValue PackMode{}           = Just $ PackMode PackNode
+defaultAttributeValue OverlapScaling{}     = Just $ OverlapScaling (-4)
 defaultAttributeValue Pack{}               = Just $ Pack DontPack
+defaultAttributeValue PackMode{}           = Just $ PackMode PackNode
 defaultAttributeValue Pad{}                = Just $ Pad (DVal 0.0555)
 defaultAttributeValue PageDir{}            = Just $ PageDir Bl
 defaultAttributeValue PenColor{}           = Just $ PenColor (X11Color Black)
@@ -1164,8 +1188,8 @@ defaultAttributeValue SameHead{}           = Just $ SameHead ""
 defaultAttributeValue SameTail{}           = Just $ SameTail ""
 defaultAttributeValue SearchSize{}         = Just $ SearchSize 30
 defaultAttributeValue Sep{}                = Just $ Sep (DVal 4)
-defaultAttributeValue ShapeFile{}          = Just $ ShapeFile ""
 defaultAttributeValue Shape{}              = Just $ Shape Ellipse
+defaultAttributeValue ShapeFile{}          = Just $ ShapeFile ""
 defaultAttributeValue ShowBoxes{}          = Just $ ShowBoxes 0
 defaultAttributeValue Sides{}              = Just $ Sides 4
 defaultAttributeValue Skew{}               = Just $ Skew 0
@@ -1183,6 +1207,7 @@ defaultAttributeValue Target{}             = Just $ Target ""
 defaultAttributeValue Tooltip{}            = Just $ Tooltip ""
 defaultAttributeValue VoroMargin{}         = Just $ VoroMargin 0.05
 defaultAttributeValue Width{}              = Just $ Width 0.75
+defaultAttributeValue XLabel{}             = Just $ XLabel (StrLabel "")
 defaultAttributeValue Z{}                  = Just $ Z 0
 defaultAttributeValue _                    = Nothing
 
@@ -1204,16 +1229,16 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "bgcolor"
                , "center"
                , "clusterrank"
-               , "colorscheme"
                , "color"
+               , "colorscheme"
                , "comment"
                , "compound"
                , "concentrate"
                , "constraint"
                , "decorate"
                , "defaultdist"
-               , "dimen"
                , "dim"
+               , "dimen"
                , "dir"
                , "diredgeconstraints"
                , "distortion"
@@ -1232,6 +1257,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "fontnames"
                , "fontpath"
                , "fontsize"
+               , "forcelabels"
                , "group"
                , "headURL"
                , "headhref"
@@ -1244,6 +1270,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "id"
                , "image"
                , "imagescale"
+               , "label"
                , "labelURL"
                , "labelhref"
                , "label_scheme"
@@ -1257,41 +1284,42 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "labelloc"
                , "labeltarget"
                , "labeltooltip"
-               , "label"
                , "landscape"
-               , "layersep"
-               , "layers"
                , "layer"
+               , "layers"
+               , "layersep"
                , "layout"
                , "len"
                , "levelsgap"
                , "levels"
                , "lhead"
+               , "LHeight"
                , "lp"
                , "ltail"
+               , "lwidth"
                , "margin"
                , "maxiter"
                , "mclimit"
                , "mindist"
                , "minlen"
-               , "model"
                , "mode"
+               , "model"
                , "mosek"
                , "nodesep"
                , "nojustify"
                , "normalize"
-               , "nslimit1"
                , "nslimit"
+               , "nslimit1"
                , "ordering"
                , "orientation"
                , "outputorder"
-               , "overlap_scaling"
                , "overlap"
-               , "packmode"
+               , "overlap_scaling"
                , "pack"
+               , "packmode"
                , "pad"
-               , "pagedir"
                , "page"
+               , "pagedir"
                , "pencolor"
                , "penwidth"
                , "peripheries"
@@ -1299,9 +1327,9 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "pos"
                , "quadtree"
                , "quantum"
+               , "rank"
                , "rankdir"
                , "ranksep"
-               , "rank"
                , "ratio"
                , "rects"
                , "regular"
@@ -1316,8 +1344,8 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "scale"
                , "searchsize"
                , "sep"
-               , "shapefile"
                , "shape"
+               , "shapefile"
                , "showboxes"
                , "sides"
                , "size"
@@ -1326,8 +1354,8 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "sortv"
                , "splines"
                , "start"
-               , "stylesheet"
                , "style"
+               , "stylesheet"
                , "tailURL"
                , "tailhref"
                , "tailclip"
@@ -1343,6 +1371,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "voro_margin"
                , "weight"
                , "width"
+               , "xlabel"
                , "z"
                , "charset" -- Defined upstream, just not used here.
                ])
@@ -2628,6 +2657,8 @@ data StyleName = Dashed    -- ^ Nodes and Edges
                | Filled    -- ^ Nodes and Clusters
                | Diagonals -- ^ Nodes only
                | Rounded   -- ^ Nodes and Clusters
+               | Tapered   -- ^ Edges only; currently only in the 2.29
+                           --   development branch.
                | DD Text   -- ^ Device Dependent
                deriving (Eq, Ord, Show, Read)
 
@@ -2640,6 +2671,7 @@ instance PrintDot StyleName where
   unqtDot Filled    = text "filled"
   unqtDot Diagonals = text "diagonals"
   unqtDot Rounded   = text "rounded"
+  unqtDot Tapered   = text "tapered"
   unqtDot (DD nm)   = unqtDot nm
 
   toDot (DD nm) = toDot nm
@@ -2662,6 +2694,7 @@ checkDD str = case T.toLower str of
                 "filled"    -> Filled
                 "diagonals" -> Diagonals
                 "rounded"   -> Rounded
+                "tapered"   -> Tapered
                 _           -> DD str
 
 parseStyleName :: Parse Text

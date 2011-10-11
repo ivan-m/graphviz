@@ -125,6 +125,7 @@ data HtmlTextItem = HtmlStr Text
                     --   printing/parsing.
                   | HtmlNewline HtmlAttributes
                   | HtmlFont HtmlAttributes HtmlText
+                    -- | Only available in Graphviz >= 2.28.0.
                   | HtmlFormat HtmlFormat HtmlText
                   deriving (Eq, Ord, Show, Read)
 

@@ -25,6 +25,9 @@ module Data.GraphViz.Attributes
          -- $labels
        , toLabel
        , textLabel
+       , xLabel
+       , xTextLabel
+       , forceLabels
        , textLabelValue
        , Labellable(..)
          -- * Colors
@@ -49,6 +52,7 @@ module Data.GraphViz.Attributes
        , filled
        , diagonals
        , rounded
+       , tapered
          -- * Node shapes
        , shape
        , Shape(..)
@@ -127,12 +131,25 @@ class Labellable a where
 toLabel :: (Labellable a) => a -> Attribute
 toLabel = Label . toLabelValue
 
--- | An alias for 'toLabel' for use with the OverloadedStrings
+-- | An alias for 'toLabel' for use with the @OverloadedStrings@
 --   extension.
 textLabel :: Text -> Attribute
 textLabel = toLabel
 
--- | An alias for 'toLabelValue' for use with the OverloadedStrings
+-- | Create a label /outside/ of a node\/edge.  Currently only in the
+-- | Graphviz development branch (2.29.*).
+xLabel :: (Labellable a) => a -> Attribute
+xLabel = XLabel . toLabelValue
+
+-- | An alias for 'xLabel' for use with the @OverloadedStrings@ extension.
+xTextLabel :: Text -> Attribute
+xTextLabel = xLabel
+
+-- | Force the positioning of 'xLabel's, even when it will cause overlaps.
+forceLabels :: Attribute
+forceLabels = ForceLabels True
+
+-- | An alias for 'toLabelValue' for use with the @OverloadedStrings@
 --   extension.
 textLabelValue :: Text -> Label
 textLabelValue = toLabelValue
@@ -225,9 +242,9 @@ color = Color . (:[]) . X11Color
 
 {- $styles
 
-   Various stylistic attributes to customise how items are drawn.  All
-   'Style's are available for nodes; those specified also can be used
-   for edges and clusters.
+   Various stylistic attributes to customise how items are drawn.
+   Unless specified otherwise, all 'Style's are available for nodes;
+   those specified also can be used for edges and clusters.
 
  -}
 
@@ -272,6 +289,12 @@ rounded = SItem Rounded []
 diagonals :: Style
 diagonals = SItem Diagonals []
 
+-- | Only available for edges; creates a tapered edge between the two
+--   nodes.  Currently only available in the development branch of
+--   Graphviz (2.29.*).
+tapered :: Style
+tapered = SItem Tapered []
+
 -- | Specify the width of lines.  Valid for clusters, nodes and edges.
 penWidth :: Double -> Attribute
 penWidth = PenWidth
@@ -300,7 +323,7 @@ arrowFrom = ArrowTail
 
 -- | Specify where to place arrows on an edge.
 edgeEnds :: DirType -> Attribute
-edgeEnds = Dir
+edgeEnds = Direction
 
 box, crow, diamond, dotArrow, inv, noArrow, normal, tee, vee :: Arrow
 oDot, invDot, invODot, oBox, oDiamond :: Arrow

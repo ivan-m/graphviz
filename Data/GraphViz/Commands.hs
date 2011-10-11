@@ -70,9 +70,10 @@ data GraphvizCommand = Dot       -- ^ For hierachical graphs (ideal for
                      | TwoPi     -- ^ For radial layout of graphs.
                      | Circo     -- ^ For circular layout of graphs.
                      | Fdp       -- ^ For symmetric layout of graphs.
-                     | Osage     -- ^ Filter for drawing clustered graphs.
-                     | Patchwork -- ^ Draw clustered graphs as
-                                 --   treemaps.
+                     | Osage     -- ^ Filter for drawing clustered graphs,
+                                 --   requires Graphviz >= 2.28.0.
+                     | Patchwork -- ^ Draw clustered graphs as treemaps,
+                                 --   requires Graphviz >= 2.28.0.
                      deriving (Eq, Ord, Show, Read)
 
 showCmd           :: GraphvizCommand -> String
