@@ -55,6 +55,11 @@ Changes in 2999.13.0.0
   with an error in his code (which took a while to diagnose as a
   problem with the node type).
 
+* Made more clear to people looking in `Data.GraphViz` who want to
+  create Dot graphs by hand to look in `Data.GraphViz.Types` (came
+  about when **Rustom Mody** stated he got confused trying to work out
+  how to do this).
+
 Changes in 2999.12.0.3
 ----------------------
 

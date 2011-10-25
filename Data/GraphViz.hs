@@ -12,6 +12,11 @@
    /Dot/ language used by the /Graphviz/ suite of programs (as well as
    a limited ability to perform the reverse operation).
 
+   If you wish to construct a Haskell representation of a Dot graph
+   yourself rather than using the conversion functions here, please
+   see the "Data.GraphViz.Types" module as a starting point for how to
+   do so.
+
    Information about Graphviz and the Dot language can be found at:
    <http://graphviz.org/>
 
