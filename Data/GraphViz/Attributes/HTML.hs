@@ -300,17 +300,17 @@ data HtmlAttribute = HtmlAlign HtmlAlign   -- ^ Valid for:  'HtmlTable', 'HtmlCe
                    | HtmlCellSpacing Word8 -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @2@; maximum is @127@.
                    | HtmlColor Color       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlColSpan Word16    -- ^ Valid for: 'HtmlCell'.  Default is @1@.
-                   | HtmlFace Text       -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
+                   | HtmlFace Text         -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
                    | HtmlFixedSize Bool    -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @'False'@.
                    | HtmlHeight Word16     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlHRef Text       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
+                   | HtmlHRef Text         -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlPointSize Double  -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
                    | HtmlPort PortName     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlRowSpan Word16    -- ^ Valid for: 'HtmlCell'.
                    | HtmlScale HtmlScale   -- ^ Valid for: 'HtmlImg'.
                    | HtmlSrc FilePath      -- ^ Valid for: 'HtmlImg'.
-                   | HtmlTarget Text     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlTitle Text      -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Has an alias of @TOOLTIP@.
+                   | HtmlTarget Text       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
+                   | HtmlTitle Text        -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Has an alias of @TOOLTIP@.
                    | HtmlVAlign HtmlVAlign -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    | HtmlWidth Word16      -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
                    deriving (Eq, Ord, Show, Read)

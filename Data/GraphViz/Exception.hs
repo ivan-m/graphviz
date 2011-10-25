@@ -20,7 +20,7 @@ import Data.Typeable
 
 -- -----------------------------------------------------------------------------
 
--- | Exceptions that arise from using this library fall into three
+-- | Exceptions that arise from using this library fall into four
 --   categories:
 --
 --   * Unable to parse provided Dot code.
