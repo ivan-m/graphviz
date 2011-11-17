@@ -25,9 +25,8 @@ Changes in 2999.13.0.0
     - Add new italics, bold, underline, superscript and subscript
       options for HTML-like labels.
 
-* Fix up the TestParsing script to actually use the new type setup.
-  It can also now take a single directory as an argument, and will try
-  to parse all (non-recursive) files in that directory.
+Changes in 2999.12.0.4
+----------------------
 
 * Parsing error messages have been cleared up, especially when parsing
   Dot graphs.  This came about from trying to help **Uri J. Braun**
