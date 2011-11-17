@@ -25,27 +25,6 @@ Changes in 2999.13.0.0
     - Add new italics, bold, underline, superscript and subscript
       options for HTML-like labels.
 
-    - `LHeight` and `LWidth` for getting the height and width of the
-      root graph and clusters.
-
-* Updated attributes from the development branch of Graphviz
-  (i.e. 2.29.*).  Please note that these will probably not work yet,
-  but are implemented now for future-proofing.
-
-    - A new style for edges: `Tapered`.
-
-    - `XLabel` allows you to specify labels external to a node or
-      edge.  `ForceLabels` allow you to specify that these should be
-      drawn even when they will cause overlaps.
-
-* Other attribute changes:
-
-    - Use a specified data type for the `Ordering` attribute rather than
-      an arbitrary `Text` value, and provide a documented wrapper in
-      `Data.GraphViz.Attributes`.
-
-    - `Bb` has been renamed `BoundingBox`.
-
 * Fix up the TestParsing script to actually use the new type setup.
   It can also now take a single directory as an argument, and will try
   to parse all (non-recursive) files in that directory.
@@ -59,6 +38,10 @@ Changes in 2999.13.0.0
   create Dot graphs by hand to look in `Data.GraphViz.Types` (came
   about when **Rustom Mody** stated he got confused trying to work out
   how to do this).
+
+* Fix up the TestParsing script to actually use the new type setup.
+  It can also now take a single directory as an argument, and will try
+  to parse all (non-recursive) files in that directory.
 
 Changes in 2999.12.0.3
 ----------------------
@@ -549,4 +532,3 @@ between versions is unknown.
      mode:markdown
      End:
   -->
-
