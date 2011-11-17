@@ -28,7 +28,7 @@ import Data.GraphViz.Algorithms
 import Test.QuickCheck
 
 import Data.Graph.Inductive( Graph, DynGraph
-                           , equal, nmap, emap, labEdges, nodes, edges)
+                           , equal, nmap, emap, labNodes, labEdges, nodes, edges)
 import Data.List(nub, sort)
 import Data.Function(on)
 import qualified Data.Map as Map
@@ -77,6 +77,16 @@ prop_dotizeAugment g = equal g (unAugment g')
     g' = setDirectedness dotizeGraph nonClusteredParams g
     unAugment = nmap snd . emap snd
 
+-- | After augmentation, each node and edge should have a non-empty
+-- | list of 'Attributes'.
+prop_dotizeHasAugment   :: (DynGraph g, Ord e) => g n e -> Bool
+prop_dotizeHasAugment g = all (not . null) nodeAugments
+                          && all (not . null) edgeAugments
+  where
+    g' = setDirectedness dotizeGraph nonClusteredParams g
+    nodeAugments = map (fst . snd) $ labNodes g'
+    edgeAugments = map (fst . \(_,_,l) -> l) $ labEdges g'
+
 -- | When a graph with multiple edges is augmented, then all edges
 --   should have unique 'Attributes' (namely the positions).  Note
 --   that this may not hold true with custom supplied 'Attributes'
@@ -88,6 +98,7 @@ prop_dotizeAugmentUniq g = all uniqLs lss
     les = map (\(f,t,l) -> ((f,t),l)) $ labEdges g'
     lss = map (map snd) . filter (not . isSingle)
           $ groupSortBy fst les
+    uniqLs [] = False -- Needs to have at least /one/ Attribute!
     uniqLs ls = ls == nub ls
 
 -- | Ensure that the definition of 'nodeInformation' for a DotRepr

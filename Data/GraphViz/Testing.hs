@@ -162,6 +162,7 @@ defaultTests = [ test_printParseID_Attributes
                , test_printParseID
                , test_preProcessingID
                , test_dotizeAugment
+               , test_dotizeHasAugment
                , test_dotizeAugmentUniq
                , test_findAllNodes
                , test_findAllNodesE
@@ -250,6 +251,21 @@ test_dotizeAugment
            \only _augment_ the graph labels and not change the graphs\n\
            \themselves.  This test compares the original graphs to these\n\
            \augmented graphs and verifies that they are the same."
+
+test_dotizeHasAugment :: Test
+test_dotizeHasAugment
+  = Test { name       = "Ensuring augmentation of FGL Graphs"
+         , lookupName = "hasaugment"
+         , desc       = dsc
+         , tests      = [qCheck prop]
+         }
+  where
+    prop :: Gr Char Double -> Bool
+    prop = prop_dotizeHasAugment
+
+    dsc = "The various Graph to Graph functions in Data.GraphViz should\n\
+           \actually agument the graph labels; this ensures that all labels\n\
+           \actually have attached Attributes after augmentation."
 
 test_dotizeAugmentUniq :: Test
 test_dotizeAugmentUniq
