@@ -440,7 +440,7 @@ dotAttributes isDir gr dot
   = liftM (augmentGraph gr . parseDG)
     $ graphvizWithHandle command dot DotOutput hGetDot
   where
-    parseDG = asTypeOf dot
+    parseDG = (`asTypeOf` dot)
     command = if isDir then dirCommand else undirCommand
 
 -- | Use the 'Attributes' in the provided 'DotGraph' to augment the
