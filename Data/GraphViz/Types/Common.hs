@@ -76,7 +76,7 @@ numericValue (Dbl x)   = Just $ round x
 --   entire graph/sub-graph.  Note that 'GraphAttrs' also applies to
 --   'DotSubGraph's.
 --
---   Note that Dot allows a single 'Attribute' to be listen on a line;
+--   Note that Dot allows a single 'Attribute' to be listed on a line;
 --   if this is the case then when parsing, the type of 'Attribute' it
 --   is determined and that type of 'GlobalAttribute' is created.
 data GlobalAttributes = GraphAttrs { attrs :: Attributes }
