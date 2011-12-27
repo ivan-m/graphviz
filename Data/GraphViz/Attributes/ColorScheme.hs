@@ -21,7 +21,7 @@ data ColorScheme = X11
                  | Brewer BrewerScheme
                  deriving (Eq, Ord, Show, Read)
 
--- | Specify which colour pallete and how many colours it has.  Note
+-- | Specify which colour palette and how many colours it has.  Note
 --   the allowed values for the different 'BrewerName's.
 data BrewerScheme = BScheme BrewerName Word8
                   deriving (Eq, Ord, Show, Read)
