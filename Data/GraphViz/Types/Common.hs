@@ -15,6 +15,7 @@ module Data.GraphViz.Types.Common where
 
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
+import Data.GraphViz.State
 import Data.GraphViz.Util
 import Data.GraphViz.Attributes.Complete( Attributes, Attribute(HeadPort, TailPort)
                                         , usedByGraphs, usedByClusters
@@ -85,9 +86,9 @@ data GlobalAttributes = GraphAttrs { attrs :: Attributes }
                       deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GlobalAttributes where
-  unqtDot = printAttrBased True printGlobAttrType attrs
+  unqtDot = printAttrBased True printGlobAttrType globAttrType attrs
 
-  unqtListToDot = printAttrBasedList True printGlobAttrType attrs
+  unqtListToDot = printAttrBasedList True printGlobAttrType globAttrType attrs
 
   listToDot = unqtListToDot
 
@@ -109,7 +110,16 @@ instance ParseDot GlobalAttributes where
   -- Not using parseAttrBased here because we want to force usage of
   -- Attributes.
   parseUnqt = do gat <- parseGlobAttrType
+
+                 -- Determine if we need to set the attribute type.
+                 let mtp = globAttrType $ gat [] -- Only need the constructor
+                 oldTp <- getAttributeType
+                 maybe (return ()) setAttributeType mtp
+
                  as <- whitespace' >> parse
+
+                 -- Safe to set back even if not changed.
+                 setAttributeType oldTp
                  return $ gat as
               `onFail`
               liftM determineType parse
@@ -119,9 +129,16 @@ instance ParseDot GlobalAttributes where
           ("Not a valid listing of global attributes\n\t"++)
 
   -- Have to do this manually because of the special case
-  parseUnqtList = parseStatements parse
+  parseUnqtList = parseStatements parseUnqt
 
   parseList = parseUnqtList
+
+-- Cheat: rather than determine whether it's a graph, cluster or
+-- sub-graph just don't set it.
+globAttrType :: GlobalAttributes -> Maybe AttributeType
+globAttrType NodeAttrs{} = Just NodeAttribute
+globAttrType EdgeAttrs{} = Just EdgeAttribute
+globAttrType _           = Nothing
 
 parseGlobAttrType :: Parse (Attributes -> GlobalAttributes)
 parseGlobAttrType = oneOf [ stringRep GraphAttrs "graph"
@@ -147,9 +164,11 @@ data DotNode n = DotNode { nodeID :: n
                deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot n) => PrintDot (DotNode n) where
-  unqtDot = printAttrBased False printNodeID nodeAttributes
+  unqtDot = printAttrBased False printNodeID
+                           (const $ Just NodeAttribute) nodeAttributes
 
-  unqtListToDot = printAttrBasedList False printNodeID nodeAttributes
+  unqtListToDot = printAttrBasedList False printNodeID
+                                     (const $ Just NodeAttribute) nodeAttributes
 
   listToDot = unqtListToDot
 
@@ -157,11 +176,11 @@ printNodeID :: (PrintDot n) => DotNode n -> DotCode
 printNodeID = toDot . nodeID
 
 instance (ParseDot n) => ParseDot (DotNode n) where
-  parseUnqt = parseAttrBased parseNodeID
+  parseUnqt = parseAttrBased NodeAttribute False parseNodeID
 
   parse = parseUnqt -- Don't want the option of quoting
 
-  parseUnqtList = parseAttrBasedList parseNodeID
+  parseUnqtList = parseAttrBasedList NodeAttribute False parseNodeID
 
   parseList = parseUnqtList
 
@@ -193,9 +212,11 @@ data DotEdge n = DotEdge { fromNode       :: n
                deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot n) => PrintDot (DotEdge n) where
-  unqtDot = printAttrBased False printEdgeID edgeAttributes
+  unqtDot = printAttrBased False printEdgeID
+                           (const $ Just EdgeAttribute) edgeAttributes
 
-  unqtListToDot = printAttrBasedList False printEdgeID edgeAttributes
+  unqtListToDot = printAttrBasedList False printEdgeID
+                                     (const $ Just EdgeAttribute) edgeAttributes
 
   listToDot = unqtListToDot
 
@@ -207,7 +228,7 @@ printEdgeID e = do isDir <- getDirectedness
 
 
 instance (ParseDot n) => ParseDot (DotEdge n) where
-  parseUnqt = parseAttrBased parseEdgeID
+  parseUnqt = parseAttrBased EdgeAttribute True parseEdgeID
 
   parse = parseUnqt -- Don't want the option of quoting
 
@@ -265,7 +286,7 @@ parseEdgeLine = do n1 <- parseEdgeNodes
                    let ens' = n1 : ens
                        efs = zipWith mkEdges ens' (tail ens')
                        ef = return $ \ as -> concatMap ($as) efs
-                   parseAttrBased ef
+                   parseAttrBased EdgeAttribute True ef
 
 instance Functor DotEdge where
   fmap f e = e { fromNode = f $ fromNode e
@@ -341,19 +362,19 @@ parseGraphID f = do allWhitespace'
                     gID <- optional $ parseAndSpace parse
                     return $ f str dir gID
 
-printStmtBased          :: (a -> DotCode) -> (a -> b) -> (b -> DotCode)
-                           -> a -> DotCode
-printStmtBased f r dr a = do gs <- getsGS id
-                             dc <- printBracesBased (f a) (dr $ r a)
-                             modifyGS (const gs)
-                             return dc
+printStmtBased              :: (a -> DotCode) -> (a -> AttributeType)
+                               -> (a -> stmts) -> (stmts -> DotCode)
+                               -> a -> DotCode
+printStmtBased f ftp r dr a = do gs <- getsGS id
+                                 setAttributeType $ ftp a
+                                 dc <- printBracesBased (f a) (dr $ r a)
+                                 modifyGS (const gs)
+                                 return dc
 
-printStmtBasedList        :: (a -> DotCode) -> (a -> b) -> (b -> DotCode)
-                             -> [a] -> DotCode
-printStmtBasedList f r dr = vcat . mapM (printStmtBased f r dr)
-
-parseStmtBased :: Parse stmt -> Parse (stmt -> a) -> Parse a
-parseStmtBased = flip apply . parseBracesBased
+printStmtBasedList            :: (a -> DotCode) -> (a -> AttributeType)
+                                 -> (a -> stmts) -> (stmts -> DotCode)
+                                 -> [a] -> DotCode
+printStmtBasedList f ftp r dr = vcat . mapM (printStmtBased f ftp r dr)
 
 -- Can't use the 'braces' combinator here because we want the closing
 -- brace lined up with the h value, which due to indentation might not
@@ -367,13 +388,14 @@ printBracesBased h i = vcat $ sequence [ h <+> lbrace
     ind = indent 4
 
 -- | This /must/ only be used for sub-graphs, etc.
-parseBracesBased   :: Parse a -> Parse a
-parseBracesBased p = do gs <- getsGS id
-                        a <- whitespace' >> parseBraced (wrapWhitespace p)
-                        modifyGS (const gs)
-                        return a
-                     `adjustErr`
-                     ("Not a valid value wrapped in braces.\n\t"++)
+parseBracesBased      :: AttributeType -> Parse a -> Parse a
+parseBracesBased tp p = do gs <- getsGS id
+                           setAttributeType tp
+                           a <- whitespace' >> parseBraced (wrapWhitespace p)
+                           modifyGS (const gs)
+                           return a
+                        `adjustErr`
+                        ("Not a valid value wrapped in braces.\n\t"++)
 
 printSubGraphID     :: (a -> (Bool, Maybe GraphID)) -> a -> DotCode
 printSubGraphID f a = sGraph'
@@ -394,10 +416,16 @@ printSGID isCl sID = bool noClust addClust isCl
     mkDot (Str str) = text str -- Quotes will be escaped later
     mkDot gid       = unqtDot gid
 
-parseSubGraphID   :: (Bool -> Maybe GraphID -> c) -> Parse c
+parseSubGraph         :: (Bool -> Maybe GraphID -> stmt -> c) -> Parse stmt -> Parse c
+parseSubGraph pid pst = do (isC, fID) <- parseSubGraphID pid
+                           let tp = bool SubGraphAttribute ClusterAttribute isC
+                           liftM fID $ parseBracesBased tp pst
+
+parseSubGraphID   :: (Bool -> Maybe GraphID -> c) -> Parse (Bool,c)
 parseSubGraphID f = do string sGraph
                        whitespace
-                       liftM (uncurry f) parseSGID
+                       (isC,mid) <- parseSGID
+                       return (isC, f isC mid)
 
 parseSGID :: Parse (Bool, Maybe GraphID)
 parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
@@ -441,30 +469,42 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
                return (isCl, sID)
 -}
 
--- The Bool indicates whether or not to print empty lists
-printAttrBased                :: Bool -> (a -> DotCode) -> (a -> Attributes)
-                                 -> a -> DotCode
-printAttrBased prEmp ff fas a = dc <> semi
+-- The Bool is True for global, False for local.
+printAttrBased                    :: Bool -> (a -> DotCode) -> (a -> Maybe AttributeType)
+                                     -> (a -> Attributes) -> a -> DotCode
+printAttrBased prEmp ff ftp fas a = do oldType <- getAttributeType
+                                       maybe (return ()) setAttributeType mtp
+                                       oldCS <- getColorScheme
+                                       (dc <> semi) <* setAttributeType oldType
+                                                    <* when prEmp (setColorScheme oldCS)
   where
+    mtp = ftp a
     f = ff a
     dc = case fas a of
            [] | not prEmp -> f
            as -> f <+> toDot as
 
--- The Bool indicates whether or not to print empty lists
-printAttrBasedList              :: Bool -> (a -> DotCode) -> (a -> Attributes)
-                                   -> [a] -> DotCode
-printAttrBasedList prEmp ff fas = vcat . mapM (printAttrBased prEmp ff fas)
+-- The Bool is True for global, False for local.
+printAttrBasedList                    :: Bool -> (a -> DotCode) -> (a -> Maybe AttributeType)
+                                         -> (a -> Attributes) -> [a] -> DotCode
+printAttrBasedList prEmp ff ftp fas = vcat . mapM (printAttrBased prEmp ff ftp fas)
 
-parseAttrBased   :: Parse (Attributes -> a) -> Parse a
-parseAttrBased p = do f <- p
-                      atts <- tryParseList' (whitespace' >> parse)
-                      return $ f atts
-                   `adjustErr`
-                   ("Not a valid attribute-based structure\n\t"++)
+-- The Bool is True for global, False for local.
+parseAttrBased         :: AttributeType -> Bool -> Parse (Attributes -> a) -> Parse a
+parseAttrBased tp lc p = do oldType <- getAttributeType
+                            setAttributeType tp
+                            oldCS <- getColorScheme
+                            f <- p
+                            atts <- tryParseList' (whitespace' >> parse)
+                            when lc $ setColorScheme oldCS
+                            when (tp /= oldType) $ setAttributeType oldType
+                            return $ f atts
+                         `adjustErr`
+                         ("Not a valid attribute-based structure\n\t"++)
 
-parseAttrBasedList :: Parse (Attributes -> a) -> Parse [a]
-parseAttrBasedList = parseStatements . parseAttrBased
+-- The Bool is True for global, False for local.
+parseAttrBasedList       :: AttributeType -> Bool -> Parse (Attributes -> a) -> Parse [a]
+parseAttrBasedList tp lc = parseStatements . parseAttrBased tp lc
 
 -- | Parse the separator (and any other whitespace present) between statements.
 statementEnd :: Parse ()

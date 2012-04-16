@@ -66,6 +66,7 @@ import Data.GraphViz.Types.Common
 import Data.GraphViz.Types.State
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
+import Data.GraphViz.State(AttributeType(..))
 import Data.GraphViz.Util(bool)
 
 import qualified Data.Sequence as Seq
@@ -120,12 +121,14 @@ instance (Ord n, ParseDot n) => ParseDotRepr DotGraph n
 instance (Ord n, PrintDot n, ParseDot n) => PPDotRepr DotGraph n
 
 instance (PrintDot n) => PrintDot (DotGraph n) where
-  unqtDot = printStmtBased printGraphID' graphStatements printGStmts
+  unqtDot = printStmtBased printGraphID' (const GraphAttribute)
+                           graphStatements printGStmts
     where
       printGraphID' = printGraphID strictGraph directedGraph graphID
 
 instance (ParseDot n) => ParseDot (DotGraph n) where
-  parseUnqt = parseStmtBased parseGStmts (parseGraphID DotGraph)
+  parseUnqt = parseGraphID DotGraph
+              <*> parseBracesBased GraphAttribute parseGStmts
 
   parse = parseUnqt -- Don't want the option of quoting
 
@@ -241,20 +244,26 @@ data DotSubGraph n = DotSG { isCluster     :: Bool
                    deriving (Eq, Ord, Show, Read)
 
 instance (PrintDot n) => PrintDot (DotSubGraph n) where
-  unqtDot = printStmtBased printSubGraphID' subGraphStmts printGStmts
+  unqtDot = printStmtBased printSubGraphID' subGraphAttrType
+                           subGraphStmts printGStmts
 
-  unqtListToDot = printStmtBasedList printSubGraphID' subGraphStmts printGStmts
+  unqtListToDot = printStmtBasedList printSubGraphID' subGraphAttrType
+                                     subGraphStmts printGStmts
 
   listToDot = unqtListToDot
+
+subGraphAttrType :: DotSubGraph n -> AttributeType
+subGraphAttrType = bool SubGraphAttribute ClusterAttribute . isCluster
 
 printSubGraphID' :: DotSubGraph n -> DotCode
 printSubGraphID' = printSubGraphID (isCluster &&& subGraphID)
 
 instance (ParseDot n) => ParseDot (DotSubGraph n) where
-  parseUnqt = parseStmtBased parseGStmts (parseSubGraphID DotSG)
+  parseUnqt = parseSubGraph DotSG parseGStmts
               `onFail`
               -- Take anonymous DotSubGraphs into account
-              liftM (DotSG False Nothing) (parseBracesBased parseGStmts)
+              liftM (DotSG False Nothing)
+                    (parseBracesBased SubGraphAttribute parseGStmts)
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
