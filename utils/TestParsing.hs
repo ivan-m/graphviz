@@ -18,7 +18,7 @@ module Main where
 
 import Data.GraphViz
 import qualified Data.GraphViz.Types.Generalised as G
-import Data.GraphViz.Parsing(runParser, parse)
+import Data.GraphViz.Parsing(runParser)
 import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Commands.IO(hGetStrict, toUTF8)
 import Data.GraphViz.Exception
@@ -26,7 +26,7 @@ import Data.GraphViz.Exception
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString.Lazy as B
-import Control.Exception.Extensible(try, IOException)
+import Control.Exception.Extensible(try, evaluate, SomeException)
 import Control.Monad(liftM, filterM)
 import System.Directory
 import System.FilePath
@@ -58,27 +58,30 @@ getDContents fp = (filterM doesFileExist . map (fp </>)) =<< getDirectoryContent
 
 withParse :: (PPDotRepr dg n) => (a -> IO Text) -> (dg n -> IO ())
              -> (ErrMsg -> String) -> a -> IO ()
-withParse toStr withDG cmbErr a = do dc <- toStr a
-                                     edg <- tryParse dc
-                                     case edg of
-                                       (Right dg) -> withDG dg
-                                       (Left err) -> do putStrLn "Parsing problem!"
-                                                        putStrLn $ cmbErr err
-                                                        putStrLn  ""
+withParse toStr withDG cmbErr a = do dc <- liftM getMsg . try $ toStr a
+                                     case dc of
+                                       Right dc' -> do edg <- tryParse dc'
+                                                       case edg of
+                                                         (Right dg) -> withDG dg
+                                                         (Left err) -> do putStrLn "Parsing problem!"
+                                                                          putStrLn $ cmbErr err
+                                                                          putStrLn  ""
+                                       Left err  -> do putStrLn "IO problem!"
+                                                       putStrLn err
+                                                       putStrLn ""
+  where
+    getMsg :: Either SomeException Text -> Either ErrMsg Text
+    getMsg = either (Left . show) Right
 
 type DG = DotGraph Text
 type GDG = G.DotGraph Text
 type ErrMsg = String
 
 tryParseFile    :: FilePath -> IO ()
-tryParseFile fp = readFile' fp >>= maybeParse
-  where
-    maybeParse (Left err)  = putStrLn $ "Error parsing \"" ++ fp ++ "\":\n\t"
-                                        ++ err ++ "\n"
-    maybeParse (Right dot) = withParse (const $ return dot)
-                                       (tryParseCanon fp)
-                                       ("Cannot parse as a G.DotGraph: "++)
-                                       fp
+tryParseFile fp = withParse readFile'
+                            (tryParseCanon fp)
+                            ("Cannot parse as a G.DotGraph: "++)
+                            fp
 
 tryParseCanon    :: FilePath -> GDG -> IO ()
 tryParseCanon fp = withParse prettyPrint
@@ -95,16 +98,16 @@ tryParse dc = handle getErr
               $ let (dg, rst) = runParser parse $ preProcess dc
                 in T.length rst `seq` return dg
   where
-    getErr :: GraphvizException -> IO (Either ErrMsg a)
+    getErr :: SomeException -> IO (Either ErrMsg a)
     getErr = return . Left . show
 
-readFile' :: FilePath -> IO (Either ErrMsg Text)
+readFile' :: FilePath -> IO Text
 readFile' fp = do putStr fp
                   putStr " - "
-                  liftM getMsg . try $ readUTF8File fp
-  where
-    getMsg :: Either IOException Text -> Either ErrMsg Text
-    getMsg = either (Left . show) Right
+                  readUTF8File fp
 
-readUTF8File :: FilePath -> IO Text
-readUTF8File = liftM toUTF8 . B.readFile
+-- Force any encoding errors into the IO section rather than when parsing.
+readUTF8File    :: FilePath -> IO Text
+readUTF8File fp = do cnts <- liftM toUTF8 $ B.readFile fp
+                     _ <- evaluate $ T.length cnts
+                     return cnts
