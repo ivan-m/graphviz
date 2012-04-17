@@ -1,4 +1,4 @@
-% graphviz - Haskell bindings to the Graphviz toolkit
+% Haskell bindings to the Graphviz toolkit
 % Ivan Lazar Miljenovic
 
 The graphviz Library
@@ -62,4 +62,3 @@ For more information, feel free to
      mode:markdown
      End:
   -->
-
