@@ -35,14 +35,14 @@ available out of all of them:
 
 * There are [four different representations] of Dot graphs:
 
-    1. Canonical, which matches the layout of `dot -Tcanon`.
-    2. Generalised, which allows statements to be in any order.
-    3. A graph-based one that allows manipulation of the Dot graph.
-    4. A monadic interface for embedding graphs in Haskell.
+       1. Canonical, which matches the layout of `dot -Tcanon`.
+       2. Generalised, which allows statements to be in any order.
+       3. A graph-based one that allows manipulation of the Dot graph.
+       4. A monadic interface for embedding graphs in Haskell.
 
-  There are also conversion functions between them.
+    There are also conversion functions between them.
 
-  [four different representations](#whats-the-difference-between-the-different-dotgraph-types)
+ [four different representations]: #whats-the-difference-between-the-different-dotgraph-types
 
 * The ability to parse and generate most aspects of Dot [syntax] and
   [attributes].  This includes taking into account escaping and
@@ -134,20 +134,18 @@ _aren't_ covered:
 * `colorscheme` attributes _are_ parsed, but the behaviour is not
   quite the same: consider the following minimal Dot graph:
 
-  ~~~~~ {.dot}
+    ~~~~~ {.dot}
+    digraph {
+        a [ style=filled, fillcolor=gray, colorscheme=svg ]
+    }
+    ~~~~~
 
-  digraph {
-      a [ style=filled, fillcolor=gray, colorscheme=svg ]
-  }
-
-  ~~~~~
-
-  Despite the fact that the color is specified before the colorscheme,
-  Graphviz will use that colorscheme to parse the color (as an SVG
-  gray differs from the X11 gray); _graphviz_, however, will use the
-  default colorscheme of `x11` to parse the color, and **then** set
-  the colorscheme to be `svg` (despite it not being used after it is
-  set).
+    Despite the fact that the color is specified before the colorscheme,
+    Graphviz will use that colorscheme to parse the color (as an SVG
+    gray differs from the X11 gray); _graphviz_, however, will use the
+    default colorscheme of `x11` to parse the color, and **then** set
+    the colorscheme to be `svg` (despite it not being used after it is
+    set).
 
 #### Available items of note ####
 
@@ -232,10 +230,9 @@ From its [home page].
 
 ### Are there any tutorials on how to use _graphviz_? ###
 
-There will be soon.  The current stumbling block is that each time I
-sit down to write a tutorial, I find that it would be even better if
-_graphviz_ had some extra features in it first, so the tutorial has to
-wait until I have finished that feature...
+A basic tutorial on
+[how to visualise graph-like data](http://ivanmiljenovic.wordpress.com/2011/10/16/graphviz-in-vacuum/)
+is available; more will come if people ask for it.
 
 ### What other packages use _graphviz_? ###
 
@@ -281,7 +278,7 @@ use before you use _graphviz_.
 ### Do I need to have Graphviz installed to use _graphviz_? ###
 
 Technically, no if you're only dealing with the Dot language aspects.
-However, usage of the functions in the Commands module, or the
+However, usage of the functions in the `Commands` module, or the
 augmentation of pretty-printing functions in the GraphViz module _do_
 require Graphviz to be installed.
 
@@ -304,30 +301,30 @@ _graphviz_ has four different "implementations" of Dot code:
 
 **Canonical:**
 
-: matches the output of `dot -Tcanon`.  Recommended for use when
-  converting existing data into Dot (especially with the
-  `graphElemsToDot` function in `Data.GraphViz`).
+:   matches the output of `dot -Tcanon`.  Recommended for use when
+    converting existing data into Dot (especially with the
+    `graphElemsToDot` function in `Data.GraphViz`).
 
 **Generalised:**
 
-: most closely matches the layout of actual Dot code, as such this is
-  preferred when parsing in arbitrary Dot graphs.  Also useful in
-  cases where you want to use the common Graphviz "hack" of specifying
-  global attributes that don't apply to sub-graphs _after_ the
-  sub-graphs in question.
+:   most closely matches the layout of actual Dot code, as such this is
+    preferred when parsing in arbitrary Dot graphs.  Also useful in
+    cases where you want to use the common Graphviz "hack" of specifying
+    global attributes that don't apply to sub-graphs _after_ the
+    sub-graphs in question.
 
 **Graph:**
 
-: provides common graph operations on Dot graphs, based upon those
-  found in the [FGL].
+:   provides common graph operations on Dot graphs, based upon those
+    found in the [FGL].
 
 **Monadic:**
 
-: a nicer way of defining relatively static Dot graphs to embed within
-  Haskell code, etc.  Loosely based (with permission!) upon Andy
-  Gill's [dotgen] library.
+:   a nicer way of defining relatively static Dot graphs to embed within
+    Haskell code, etc.  Loosely based (with permission!) upon Andy
+    Gill's [dotgen] library.
 
-  [dotgen]: http://hackage.haskell.org/package/dotgen
+[dotgen]: http://hackage.haskell.org/package/dotgen
 
 ### What's the best way to parse Dot code? ###
 
