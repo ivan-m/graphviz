@@ -106,8 +106,6 @@ import Data.GraphViz.Attributes.Complete(Attributes)
 import Data.GraphViz.Util(groupSortBy, groupSortCollectBy)
 import Data.GraphViz.Algorithms(CanonicaliseOptions(..), canonicaliseOptions)
 import Data.GraphViz.Algorithms.Clustering
-import Data.GraphViz.Printing(PrintDot(..))
-import Data.GraphViz.Parsing(ParseDot(..))
 
 import Data.List(foldl', delete, unfoldr)
 import qualified Data.Foldable as F

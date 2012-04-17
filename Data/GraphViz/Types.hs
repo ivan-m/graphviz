@@ -87,6 +87,8 @@
 -}
 module Data.GraphViz.Types
        ( DotRepr(..)
+       , PrintDot(..)
+       , ParseDot(..)
        , PrintDotRepr
        , ParseDotRepr
        , PPDotRepr
@@ -115,9 +117,9 @@ import Data.GraphViz.Types.Common( GraphID(..), GlobalAttributes(..)
                                  , DotNode(..), DotEdge(..), numericValue)
 import Data.GraphViz.Types.State
 import Data.GraphViz.Util(bool)
-import Data.GraphViz.Parsing(ParseDot, runParser, checkValidParse, parse, adjustErr)
+import Data.GraphViz.Parsing(ParseDot(..), runParser, checkValidParse, parse, adjustErr)
 import Data.GraphViz.PreProcessing(preProcess)
-import Data.GraphViz.Printing(PrintDot, printIt)
+import Data.GraphViz.Printing(PrintDot(..), printIt)
 
 import Data.Text.Lazy(Text)
 import Control.Arrow(first)

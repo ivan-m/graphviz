@@ -64,6 +64,7 @@ module Data.GraphViz.Testing
          -- * Debugging parsing
        , ParseDot(..)
        , parseIt
+       , parseIt'
        , runParser
        , preProcess
        ) where
@@ -74,9 +75,9 @@ import Data.GraphViz.Testing.Instances()
 import Data.GraphViz.Testing.Properties
 
 import Data.GraphViz
-import Data.GraphViz.Parsing(ParseDot(..), parseIt, runParser)
+import Data.GraphViz.Parsing(parseIt, parseIt', runParser)
 import Data.GraphViz.PreProcessing(preProcess)
-import Data.GraphViz.Printing(PrintDot(..), printIt, renderDot)
+import Data.GraphViz.Printing(printIt, renderDot)
 import qualified Data.GraphViz.Types.Generalised as G
 import qualified Data.GraphViz.Types.Graph as Gr
 -- Can't use PatriciaTree because a Show instance is needed.
