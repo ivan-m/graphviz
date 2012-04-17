@@ -83,6 +83,8 @@ module Data.GraphViz.Attributes
          -- * Layout
        , ordering
        , Order(..)
+       , rank
+       , RankType(..)
        ) where
 
 import Data.GraphViz.Attributes.Complete
@@ -362,3 +364,10 @@ vee = AType [(noMods, Vee)]
 --   for an individual node.
 ordering :: Order -> Attribute
 ordering = Ordering
+
+-- -----------------------------------------------------------------------------
+
+-- | When using @dot@, this allows you to control relative placement
+--   of sub-graphs and clusters.
+rank :: RankType -> Attribute
+rank = Rank
