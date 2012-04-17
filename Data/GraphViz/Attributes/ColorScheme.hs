@@ -18,6 +18,7 @@ import Data.Word(Word8)
 
 -- | This represents the color schemes that Graphviz accepts.
 data ColorScheme = X11
+                 | SVG
                  | Brewer BrewerScheme
                  deriving (Eq, Ord, Show, Read)
 

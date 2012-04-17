@@ -60,6 +60,7 @@ module Data.GraphViz.Printing
     , printField
     , angled
     , fslash
+    , printColorScheme
     ) where
 
 import Data.GraphViz.Util
@@ -85,7 +86,7 @@ import Data.Text.Lazy(Text)
 import Data.Char(toLower)
 import qualified Data.Set as Set
 import Data.Word(Word8, Word16)
-import Control.Monad(ap)
+import Control.Monad(ap, when)
 import Control.Monad.Trans.State
 
 -- -----------------------------------------------------------------------------
@@ -274,10 +275,14 @@ fslash = char '/'
 -- These instances are defined here to avoid cyclic imports and orphan instances
 
 instance PrintDot ColorScheme where
-  unqtDot cs = do setColorScheme cs
-                  case cs of
-                    X11       -> unqtText "X11"
-                    Brewer bs -> unqtDot bs
+  unqtDot = printColorScheme True
+
+printColorScheme        :: Bool -> ColorScheme -> DotCode
+printColorScheme scs cs = do when scs $ setColorScheme cs
+                             case cs of
+                               X11       -> unqtText "X11"
+                               SVG       -> unqtText "svg"
+                               Brewer bs -> unqtDot bs
 
 instance PrintDot BrewerScheme where
   unqtDot (BScheme n l) = unqtDot n <> unqtDot l

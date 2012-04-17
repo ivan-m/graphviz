@@ -79,6 +79,7 @@ module Data.GraphViz.Parsing
     , stringValue
     , parseAngled
     , parseBraced
+    , parseColorScheme
     ) where
 
 import Data.GraphViz.Util
@@ -483,11 +484,15 @@ parseBraced = bracket (character '{') (character '}')
 -- These instances are defined here to avoid cyclic imports and orphan instances
 
 instance ParseDot ColorScheme where
-    parseUnqt = do cs <- stringRep X11 "X11"
-                          `onFail`
-                          liftM Brewer parseUnqt
-                   setColorScheme cs
-                   return cs
+  parseUnqt = parseColorScheme True
+
+parseColorScheme     :: Bool -> Parse ColorScheme
+parseColorScheme scs = do cs <- oneOf [ stringRep X11 "X11"
+                                      , stringRep SVG "svg"
+                                      , liftM Brewer parseUnqt
+                                      ]
+                          when scs $ setColorScheme cs
+                          return cs
 
 instance ParseDot BrewerScheme where
   parseUnqt = liftM2 BScheme parseUnqt parseUnqt

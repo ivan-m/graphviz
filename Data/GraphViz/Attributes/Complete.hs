@@ -65,6 +65,12 @@
      supports UTF-8 encoding (as it is not currently feasible nor needed to
      also support Latin1 encoding).
 
+   * In Graphviz, when a node or edge has a list of attributes, the
+     colorscheme which is used to identify a color can be set /after/
+     that color (e.g. @[colorscheme=x11,color=grey,colorscheme=svg]@
+     uses the svg colorscheme's definition of grey, which is different
+     from the x11 one.  Instead, graphviz parses them in order.
+
  -}
 module Data.GraphViz.Attributes.Complete
        ( -- * The actual /Dot/ attributes.
@@ -174,6 +180,7 @@ module Data.GraphViz.Attributes.Complete
        ) where
 
 import Data.GraphViz.Attributes.Colors
+import Data.GraphViz.Attributes.Colors.X11(X11Color(Transparent, Black))
 import Data.GraphViz.Attributes.HTML
 import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Util

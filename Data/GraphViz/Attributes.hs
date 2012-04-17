@@ -86,6 +86,7 @@ module Data.GraphViz.Attributes
        ) where
 
 import Data.GraphViz.Attributes.Complete
+import Data.GraphViz.Attributes.Colors.X11
 
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
@@ -203,24 +204,29 @@ instance Labellable (PortName, EscString) where
    named 'X11Color's rather than explicitly specifying RGB, RGBA or HSV
    colors.
 
+   These functions also allow you to use SVG and Brewer colors, but
+   X11 colors are generally preferable.  If you wish to use SVG
+   colors, either import this module hiding 'X11Color' or import the
+   SVG module qualified.
+
  -}
 
 -- | Specify the background color of a graph or cluster.  Requires
 --   @'style' 'filled'@.
-bgColor :: X11Color -> Attribute
-bgColor = BgColor . X11Color
+bgColor :: (NamedColor nc) => nc -> Attribute
+bgColor = BgColor . toColor
 
 -- | Specify the fill color of a node.  Requires @'style' 'filled'@.
-fillColor :: X11Color -> Attribute
-fillColor = FillColor . X11Color
+fillColor :: (NamedColor nc) => nc -> Attribute
+fillColor = FillColor . toColor
 
 -- | Specify the color of text.
-fontColor :: X11Color -> Attribute
-fontColor = FontColor . X11Color
+fontColor :: (NamedColor nc) => nc -> Attribute
+fontColor = FontColor . toColor
 
 -- | Specify the color of the bounding box of a cluster.
-penColor :: X11Color -> Attribute
-penColor = PenColor . X11Color
+penColor :: (NamedColor nc) => nc -> Attribute
+penColor = PenColor . toColor
 
 -- | The @color@ attribute serves several purposes.  As such care must
 --   be taken when using it, and it is preferable to use those
@@ -235,8 +241,8 @@ penColor = PenColor . X11Color
 --   * If the 'filled' 'Style' is set, then it defines the
 --     background color of nodes and clusters unless 'fillColor' or
 --     'bgColor' respectively is set.
-color :: X11Color -> Attribute
-color = Color . (:[]) . X11Color
+color :: (NamedColor nc) => nc -> Attribute
+color = Color . (:[]) . toColor
 
 -- -----------------------------------------------------------------------------
 

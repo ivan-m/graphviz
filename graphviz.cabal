@@ -83,6 +83,9 @@ Library {
                            Data.GraphViz.Attributes
                            Data.GraphViz.Attributes.Complete
                            Data.GraphViz.Attributes.Colors
+                           Data.GraphViz.Attributes.Colors.X11
+                           Data.GraphViz.Attributes.Colors.Brewer
+                           Data.GraphViz.Attributes.Colors.SVG
                            Data.GraphViz.Attributes.HTML
                            Data.GraphViz.PreProcessing
                            Data.GraphViz.Exception

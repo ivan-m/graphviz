@@ -131,6 +131,24 @@ _aren't_ covered:
   graphs need to be parsed then you shall need to do all I/O for them
   by hand.
 
+* `colorscheme` attributes _are_ parsed, but the behaviour is not
+  quite the same: consider the following minimal Dot graph:
+
+  ~~~~~ {.dot}
+
+  digraph {
+      a [ style=filled, fillcolor=gray, colorscheme=svg ]
+  }
+
+  ~~~~~
+
+  Despite the fact that the color is specified before the colorscheme,
+  Graphviz will use that colorscheme to parse the color (as an SVG
+  gray differs from the X11 gray); _graphviz_, however, will use the
+  default colorscheme of `x11` to parse the color, and **then** set
+  the colorscheme to be `svg` (despite it not being used after it is
+  set).
+
 #### Available items of note ####
 
 There are a few items of note that are available that are worthy of
@@ -191,7 +209,7 @@ break one patch into several smaller patches).
 ### How is _graphviz_ licensed? ###
 
 _graphviz_ is licensed under a [3-Clause BSD License] (note that the
-ColorBrewer Color Schemes found in `Data.GraphViz.Attributes.Colors`
+ColorBrewer Color Schemes found in `Data.GraphViz.Attributes.Colors.Brewer`
 are covered under
 [their own license](http://graphviz.org/doc/info/colors.html#brewer_license)).
 

@@ -20,6 +20,9 @@ module Data.GraphViz.Testing.Instances.Attributes
 import Data.GraphViz.Testing.Instances.Helpers
 
 import Data.GraphViz.Attributes.Complete
+import Data.GraphViz.Attributes.Colors.Brewer
+import Data.GraphViz.Attributes.Colors.X11(X11Color)
+import Data.GraphViz.Attributes.Colors.SVG(SVGColor)
 import Data.GraphViz.Attributes.Internal(compassLookup)
 import Data.GraphViz.State(initialState, layerSep)
 import Data.GraphViz.Util(bool)
@@ -739,29 +742,37 @@ instance Arbitrary Color where
                     , liftM4 RGBA arbitrary arbitrary arbitrary arbitrary
                     , liftM3 HSV  zeroOne zeroOne zeroOne
                     , liftM X11Color arbitrary
-                      -- Not quite right as the values can get too
-                      -- high/low, but should suffice for
-                      -- printing/parsing purposes.
-                    , liftM2 BrewerColor arbitrary arbitrary
+                    , liftM SVGColor arbitrary
+                    , liftM BrewerColor arbitrary
                     ]
     where
       zeroOne = choose (0,1)
 
-  shrink (RGB r g b)       = do rs <- shrink r
+  shrink (RGB r g b)     = do rs <- shrink r
+                              gs <- shrink g
+                              bs <- shrink b
+                              return $ RGB rs gs bs
+  shrink (RGBA r g b a)  = RGB r g b
+                           : do rs <- shrink r
                                 gs <- shrink g
                                 bs <- shrink b
-                                return $ RGB rs gs bs
-  shrink (RGBA r g b a)    = RGB r g b
-                             : do rs <- shrink r
-                                  gs <- shrink g
-                                  bs <- shrink b
-                                  as <- shrink a
-                                  return $ RGBA rs gs bs as
-  shrink (BrewerColor s c) = map (BrewerColor s) $ shrink c
-  shrink _                 = [] -- Shrinking 0<=h,s,v<=1 does nothing
+                                as <- shrink a
+                                return $ RGBA rs gs bs as
+  shrink (BrewerColor c) = map BrewerColor $ shrink c
+  shrink _               = [] -- Shrinking 0<=h,s,v<=1 does nothing
 
 instance Arbitrary X11Color where
   arbitrary = arbBounded
+
+instance Arbitrary SVGColor where
+  arbitrary = arbBounded
+
+-- | Not quite right as the values can get too high/low, but should
+--   suffice for printing/parsing purposes.
+instance Arbitrary BrewerColor where
+  arbitrary = liftM2 BC arbitrary arbitrary
+
+  shrink (BC s c) = map (BC s) $ shrink c
 
 instance Arbitrary HtmlLabel where
   arbitrary = sized $ arbHtml True
