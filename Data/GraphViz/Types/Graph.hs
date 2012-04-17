@@ -599,15 +599,17 @@ fromDotRepr = unsafeFromCanonical . canonicaliseOptions cOptions . unAnonymise
 --     be used to make sure all clusters /have/ an identifier, but it
 --     doesn't ensure uniqueness).
 --
---   * All nodes are assumed to be explicitly listed precisely once
+--   * All nodes are assumed to be explicitly listed precisely once.
 --
 --   * Only edges found in the root graph are considered.
 --
 --   If this isn't the case, use 'fromCanonical' instead.
 --
---   The 'graphToDot' and 'graphElemsToDot' functions from
---   "Data.GraphViz" produces output suitable for this function
---   (assuming all clusters are provided with a unique identifier).
+--   The 'graphToDot' function from "Data.GraphViz" produces output
+--   suitable for this function (assuming all clusters are provided
+--   with a unique identifier); 'graphElemsToDot' is suitable if all
+--   nodes are specified in the input list (rather than just the
+--   edges).
 unsafeFromCanonical :: (Ord n) => C.DotGraph n -> DotGraph n
 unsafeFromCanonical dg = DG { strictGraph   = C.strictGraph dg
                             , directedGraph = dirGraph

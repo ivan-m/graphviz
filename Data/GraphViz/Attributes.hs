@@ -200,7 +200,7 @@ instance Labellable (PortName, EscString) where
 {- $colors
 
    The recommended way of dealing with colors in Dot graphs is to use the
-   named 'X11Colors' rather than explicitly specifying RGB, RGBA or HSV
+   named 'X11Color's rather than explicitly specifying RGB, RGBA or HSV
    colors.
 
  -}
