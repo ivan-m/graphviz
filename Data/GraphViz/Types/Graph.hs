@@ -582,6 +582,8 @@ instance (Ord n, ParseDot n) => ParseDot (DotGraph n) where
       -- fromGDot :: G.DotGraph n -> DotGraph n
       fromGDot = fromDotRepr . flip asTypeOf (undefined :: G.DotGraph n)
 
+  parse = parseUnqt -- Don't want the option of quoting
+
 cOptions :: CanonicaliseOptions
 cOptions = COpts { edgesInClusters = False
                  , groupAttributes = True
