@@ -349,63 +349,19 @@ the current working directory) then use the `GDotGraph` type.
 
 ### There are too many attributes!!! Which ones should I use? ###
 
-The following attributes are easy to use and recommended:
+The `Data.GraphViz.Attributes` module contains a cut-down list of
+recommended and commonly used attributes.
 
-* `ArrowHead` and `ArrowTail` (for directed graphs) to set the styles
-  of the ends of edges: note that in Graphviz parlance, "Head" refers
-  to the end node and "Tail" refers to the start node of the edge (see
-  below).
-
-* When wanting to use different colours, use the following criteria to
-  pick the correct attribute.  Note: for the first two, you should
-  also have `SItem Filled []` set as one of the `Style` values for
-  that item.
-
-    - `BgColor` to set the background colour of a graph/cluster.
-
-    - `FillColor` to set the background colour for a node.
-
-    - `Color` to set the colour of an edge; if you supply more than
-      one value then the edge is drawn using parallel splines/lines
-      (one per colour in the list).  This can also be used to set the
-      border colour for a node, but if a filled style is used and
-      `FillColor` isn't set then this will also set the background
-      colour.
-
-    - `PenColor` to set the colour of the bounding box for a cluster.
-
-        When choosing a `Color` value for one of the above, it is
-        better to use one of the `X11Color` values (note: these
-        colours slightly differ from the standard X11 colours) or - if
-        you have to - one of the manual colours over a `BrewerColor`,
-        as they come under a different license and have no real
-        standard on what the values are.
-
-* For labels, use the `Labellable` class to more easily construct
-  labels.  In most cases, a `String`-based label will suffice; for
-  more fine-grained control over layout, colours, etc. use either a
-  `RecordFields` or an `HtmlLabel`.
-
-* `Rank`: this lets you control relative placement of sub-graphs and
-  clusters.
-
-* `Shape`: Use `Record` and `MRecord` for `RecordFields`-based labels;
-  feel free to use any other ones at any time (though you probably
-  want to use `PlainText` for `HtmlLabel` labels).
-
-* `Style`: use this to set line types, etc. for nodes and edges.  You
-  should **not** use a `DD` (device-dependent) value.
-
-The following attributes are **not** recommended for use:
+The entire list of attributes can be found in
+`Data.GraphViz.Attributes.Complete`.  In particular, the following
+attributes are **not** recommended for use:
 
 * `Color` for anything except edge colours (and if you must, the
   border colour for a node).
 
 * `ColorScheme`: just stick with X11 colours.
 
-* `Comment`: pretty useless, but will interfere with the augmentation
-  functions (since they use the `Comment` attribute to distinguish
-  between multiple edges).
+* `Comment`: pretty useless.  Enough said.
 
 ### Can I use any attribute wherever I want? ###
 
@@ -416,11 +372,9 @@ suitable where.
 
 ### How can I use _graphviz_ to visualise non-FGL graphs? ###
 
-At the moment, you unfortunately have to write your own manual
-conversion functions (see `graphToDot`, etc. in the GraphViz module
-for ideas on how to do this).  In future, it should be possible to
-convert any graph-like datatype into a `DotGraph` (this requires me to
-go write another library first...).
+The `graphElemsToDot` function allows you to visualise any graph for
+which you can specify a list of labelled nodes and a list of labelled
+edges.
 
 ### How can I use/process multiple graphs like Graphviz does? ###
 
@@ -494,7 +448,7 @@ the nodes "from" and "to" are defined with either `RecordLabel` or
 from the "a" section of the "from" node to the "b" section of the "to"
 node.
 
-Whilst _graphviz_ can parse this, you can't define this yourself:
+Whilst _graphviz_ can parse this, you can't define this yourself;
 instead, do it the manual way:
 
 ~~~~~~~~~~~~~~~~~~~~ {.haskell}
