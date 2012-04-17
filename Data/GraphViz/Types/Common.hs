@@ -21,7 +21,6 @@ import Data.GraphViz.Attributes.Complete( Attributes, Attribute(HeadPort, TailPo
                                         , usedByGraphs, usedByClusters
                                         , usedByNodes)
 import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
-import Data.GraphViz.State(setDirectedness, getDirectedness, getsGS, modifyGS)
 
 import Data.Maybe(isJust)
 import qualified Data.Text.Lazy as T
