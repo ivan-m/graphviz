@@ -150,7 +150,7 @@ instance ParseDot HtmlTextItem where
 
   parse = parseUnqt
 
-  parseUnqtList = many1 parseUnqt -- sepBy1 parseUnqt allWhitespace'
+  parseUnqtList = many1 parseUnqt -- sepBy1 parseUnqt whitespace
 
   parseList = parseUnqtList
 
@@ -234,7 +234,7 @@ instance ParseDot HtmlRow where
 
   parse = parseUnqt
 
-  parseUnqtList = wrapWhitespace $ sepBy1 parseUnqt allWhitespace'
+  parseUnqtList = wrapWhitespace $ sepBy1 parseUnqt whitespace
 
   parseList = parseUnqtList
 
@@ -266,7 +266,7 @@ instance ParseDot HtmlCell where
 
   parse = parseUnqt
 
-  parseUnqtList = wrapWhitespace $ sepBy1 parseUnqt allWhitespace'
+  parseUnqtList = wrapWhitespace $ sepBy1 parseUnqt whitespace
 
   parseList = parseUnqtList
 
@@ -381,7 +381,7 @@ instance ParseDot HtmlAttribute where
 
   parse = parseUnqt
 
-  parseUnqtList = sepBy parseUnqt allWhitespace -- needs at least one whitespace char
+  parseUnqtList = sepBy parseUnqt whitespace1 -- needs at least one whitespace char
 
   parseList = parseUnqtList
 
@@ -602,19 +602,19 @@ parseHtmlTag        :: (HtmlAttributes -> val -> tag) -> String
                        -> Parse val -> Parse tag
 parseHtmlTag c t pv = do as <- parseAngled openingTag
                          v <- pv
-                         parseAngled $ character '/' >> t' >> allWhitespace'
+                         parseAngled $ character '/' >> t' >> whitespace
                          return $ c as v
   where
     t' = string t
     openingTag = do t'
-                    as <- tryParseList' $ allWhitespace >> parse
-                    allWhitespace'
+                    as <- tryParseList' $ whitespace1 >> parse
+                    whitespace
                     return as
 
 parseHtmlTagRep :: (tagName -> val -> tag) -> Parse tagName -> Parse val -> Parse tag
-parseHtmlTagRep c pt pv = do tn <- parseAngled (pt `discard` allWhitespace')
+parseHtmlTagRep c pt pv = do tn <- parseAngled (pt `discard` whitespace)
                              v <- pv
-                             parseAngled $ character '/' >> pt >> allWhitespace'
+                             parseAngled $ character '/' >> pt >> whitespace
                              return $ c tn v
 
 parseHtmlFontTag :: (HtmlAttributes -> val -> tag) -> Parse val -> Parse tag
@@ -624,8 +624,8 @@ parseHtmlFontTag = flip parseHtmlTag "FONT"
 parseHtmlEmptyTag     :: (HtmlAttributes -> tag) -> String -> Parse tag
 parseHtmlEmptyTag c t = parseAngled
                         ( do string t
-                             as <- tryParseList' $ allWhitespace >> parse
-                             allWhitespace'
+                             as <- tryParseList' $ whitespace1 >> parse
+                             whitespace
                              character '/'
                              return $ c as
                         )

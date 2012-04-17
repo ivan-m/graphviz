@@ -323,4 +323,3 @@ instance PrintDot BrewerName where
   unqtDot Ylgnbu   = unqtText "ylgnbu"
   unqtDot Ylorbr   = unqtText "ylorbr"
   unqtDot Ylorrd   = unqtText "ylorrd"
-

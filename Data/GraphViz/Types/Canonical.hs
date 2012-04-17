@@ -189,7 +189,7 @@ instance (ParseDot n) => ParseDot (DotSubGraph n) where
           `adjustErr`
           ("Not a valid Sub Graph\n\t"++)
 
-  parseUnqtList = sepBy (whitespace' >> parseUnqt) newline'
+  parseUnqtList = sepBy (whitespace >> parseUnqt) newline'
 
   parseList = parseUnqtList
 

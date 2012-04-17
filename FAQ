@@ -402,7 +402,7 @@ instance PrintDot MyType where
 instance ParseDot MyType where
   parseUnqt = do i <- parseUnqt
                  character ':'
-                 whitespace
+                 whitespace1
                  s <- parseUnqt
                  return $ MyType s i
 
@@ -425,11 +425,9 @@ Things to note from this example:
 
 * Be as liberal as you can when parsing, especially with whitespace:
   when printing only one space is used, yet when parsing we use the
-  `whitespace` parsing combinator that will parse all whitespace
+  `whitespace1` parsing combinator that will parse all whitespace
   characters (but it must consume _at least_ one; there is a variant
-  that does not need to parse any).  However, we're not being so
-  liberal as to allow parsing of newline characters (for which there
-  is a separate parsing combinator).
+  that does not need to parse any).
 
 ### When parsing Dot code, do I have to worry about the case? ###
 

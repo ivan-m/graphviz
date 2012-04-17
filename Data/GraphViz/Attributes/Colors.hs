@@ -139,7 +139,7 @@ instance ParseDot Color where
                     v <- parse
                     return $ HSV h s v
       parseSep = oneOf [ string ","
-                       , whitespace
+                       , whitespace1
                        ]
       parse2Hex = do c1 <- satisfy isHexDigit
                      c2 <- satisfy isHexDigit

@@ -118,7 +118,7 @@ parseConcatStrings = liftM (wrapQuotes . mconcat)
                  `onFail`
                  liftM B.singleton (satisfy (quoteChar /=))
     parseConcat = parseSep >> character '+' >> parseSep
-    parseSep = many $ allWhitespace `onFail` parseUnwanted
+    parseSep = many $ whitespace1 `onFail` parseUnwanted
     wrapQuotes str = qc `mappend` str `mappend` qc
     qc = B.singleton '"'
 

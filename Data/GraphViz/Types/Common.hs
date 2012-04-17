@@ -115,7 +115,7 @@ instance ParseDot GlobalAttributes where
                  oldTp <- getAttributeType
                  maybe (return ()) setAttributeType mtp
 
-                 as <- whitespace' >> parse
+                 as <- whitespace >> parse
 
                  -- Safe to set back even if not changed.
                  setAttributeType oldTp
@@ -350,7 +350,7 @@ printGraphID str isDir mID g = do setDirectedness isDir'
     isDir' = isDir g
 
 parseGraphID   :: (Bool -> Bool -> Maybe GraphID -> a) -> Parse a
-parseGraphID f = do allWhitespace'
+parseGraphID f = do whitespace
                     str <- liftM isJust
                            $ optional (parseAndSpace $ string strGraph)
                     dir <- parseAndSpace ( stringRep True dirGraph
@@ -390,7 +390,7 @@ printBracesBased h i = vcat $ sequence [ h <+> lbrace
 parseBracesBased      :: AttributeType -> Parse a -> Parse a
 parseBracesBased tp p = do gs <- getsGS id
                            setAttributeType tp
-                           a <- whitespace' >> parseBraced (wrapWhitespace p)
+                           a <- whitespace >> parseBraced (wrapWhitespace p)
                            modifyGS (const gs)
                            return a
                         `adjustErr`
@@ -422,7 +422,7 @@ parseSubGraph pid pst = do (isC, fID) <- parseSubGraphID pid
 
 parseSubGraphID   :: (Bool -> Maybe GraphID -> c) -> Parse (Bool,c)
 parseSubGraphID f = do string sGraph
-                       whitespace
+                       whitespace1
                        (isC,mid) <- parseSGID
                        return (isC, f isC mid)
 
@@ -464,7 +464,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
                sID <- optional $ do when isCl
                                       $ optional (character '_') >> return ()
                                     parseUnqt
-               when (isCl || isJust sID) $ whitespace >> return ()
+               when (isCl || isJust sID) $ whitespace1 >> return ()
                return (isCl, sID)
 -}
 
@@ -494,7 +494,7 @@ parseAttrBased tp lc p = do oldType <- getAttributeType
                             setAttributeType tp
                             oldCS <- getColorScheme
                             f <- p
-                            atts <- tryParseList' (whitespace' >> parse)
+                            atts <- tryParseList' (whitespace >> parse)
                             when lc $ setColorScheme oldCS
                             when (tp /= oldType) $ setAttributeType oldType
                             return $ f atts
@@ -505,18 +505,18 @@ parseAttrBased tp lc p = do oldType <- getAttributeType
 parseAttrBasedList       :: AttributeType -> Bool -> Parse (Attributes -> a) -> Parse [a]
 parseAttrBasedList tp lc = parseStatements . parseAttrBased tp lc
 
--- | Parse the separator (and any other whitespace present) between statements.
+-- | Parse the separator (and any other whitespace1 present) between statements.
 statementEnd :: Parse ()
 statementEnd = parseSplit >> newline'
   where
-    parseSplit = (whitespace' >> oneOf [ character ';' >> return ()
+    parseSplit = (whitespace >> oneOf [ character ';' >> return ()
                                        , newline
                                        ]
                  )
                  `onFail`
-                 whitespace
+                 whitespace1
 
 parseStatements   :: Parse a -> Parse [a]
-parseStatements p = sepBy (whitespace' >> p) statementEnd
+parseStatements p = sepBy (whitespace >> p) statementEnd
                     `discard`
                     optional statementEnd

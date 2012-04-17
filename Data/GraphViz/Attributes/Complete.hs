@@ -1672,7 +1672,7 @@ instance ParseDot Rect where
 
   parse = quotedParse parseUnqt
 
-  parseUnqtList = sepBy1 parseUnqt whitespace
+  parseUnqtList = sepBy1 parseUnqt whitespace1
 
 -- -----------------------------------------------------------------------------
 
@@ -1869,7 +1869,7 @@ instance PrintDot RecordField where
 
 instance ParseDot RecordField where
   parseUnqt = do t <- liftM PN $ parseAngled parseRecord
-                 ml <- optional (whitespace >> parseRecord)
+                 ml <- optional (whitespace1 >> parseRecord)
                  return $ maybe (PortName t)
                                 (LabelledTarget t)
                                 ml
@@ -1968,7 +1968,7 @@ instance ParseDot Point where
 
   parse = quotedParse parseUnqt
 
-  parseUnqtList = sepBy1 parseUnqt whitespace
+  parseUnqtList = sepBy1 parseUnqt whitespace1
 
 -- -----------------------------------------------------------------------------
 
@@ -2332,12 +2332,12 @@ instance PrintDot Spline where
 instance ParseDot Spline where
   parseUnqt = do ms <- parseP 's'
                  me <- parseP 'e'
-                 ps <- sepBy1 parseUnqt whitespace
+                 ps <- sepBy1 parseUnqt whitespace1
                  return $ Spline ms me ps
       where
         parseP t = optional $ do character t
                                  parseComma
-                                 parseUnqt `discard` whitespace
+                                 parseUnqt `discard` whitespace1
 
   parse = quotedParse parseUnqt
 

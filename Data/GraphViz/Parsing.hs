@@ -47,10 +47,8 @@ module Data.GraphViz.Parsing
     , character
     , parseStrictFloat
     , noneOf
+    , whitespace1
     , whitespace
-    , whitespace'
-    , allWhitespace
-    , allWhitespace'
     , wrapWhitespace
     , optionalQuotedString
     , optionalQuoted
@@ -124,7 +122,7 @@ runParser p t = let (r,_,t') = P.runParser p initialState t
 runParser'   :: Parse a -> Text -> a
 runParser' p = checkValidParse . fst . runParser p'
   where
-    p' = p `discard` (allWhitespace' >> eof)
+    p' = p `discard` (whitespace >> eof)
 
 class ParseDot a where
   parseUnqt :: Parse a
@@ -136,9 +134,9 @@ class ParseDot a where
   parseUnqtList = bracketSep (parseAndSpace $ character '[')
                              ( wrapWhitespace parseComma
                                `onFail`
-                               allWhitespace
+                               whitespace1
                              )
-                             (allWhitespace' >> character ']')
+                             (whitespace >> character ']')
                              parseUnqt
 
   parseList :: Parse [a]
@@ -311,7 +309,7 @@ bracket open close pa = do open `adjustErr` ("Missing opening bracket:\n\t"++)
                               `adjustErr` ("Missing closing bracket:\n\t"++))
 
 parseAndSpace   :: Parse a -> Parse a
-parseAndSpace p = p `discard` allWhitespace'
+parseAndSpace p = p `discard` whitespace
 
 string :: String -> Parse ()
 string = mapM_ character
@@ -350,21 +348,17 @@ character c = satisfy parseC
 noneOf   :: [Char] -> Parse Char
 noneOf t = satisfy (\x -> all (/= x) t)
 
+-- | Parses at least one whitespace character.
+whitespace1 :: Parse ()
+whitespace1 = many1Satisfy isSpace >> return ()
+
+-- | Parses zero or more whitespace characters.
 whitespace :: Parse ()
-whitespace = many1Satisfy isSpace >> return ()
-
-whitespace' :: Parse ()
-whitespace' = manySatisfy isSpace >> return ()
-
-allWhitespace :: Parse ()
-allWhitespace = (whitespace `onFail` newline) >> allWhitespace'
-
-allWhitespace' :: Parse ()
-allWhitespace' = newline' >> whitespace'
+whitespace = manySatisfy isSpace >> return ()
 
 -- | Parse and discard optional whitespace.
 wrapWhitespace :: Parse a -> Parse a
-wrapWhitespace = bracket allWhitespace' allWhitespace'
+wrapWhitespace = bracket whitespace whitespace
 
 optionalQuotedString :: String -> Parse ()
 optionalQuotedString = optionalQuoted . string
@@ -407,6 +401,7 @@ parseEscaped empt cs bnd = liftM T.pack . lots $ qPrs `onFail` oth
               return $ fromMaybe slash mE
     oth = satisfy (`Set.notMember` bndSet)
 
+-- | Parses a newline.
 newline :: Parse ()
 newline = strings ["\r\n", "\n", "\r"]
 
@@ -414,7 +409,7 @@ newline = strings ["\r\n", "\n", "\r"]
 --   non-whitespace is reached.  The whitespace on that line is
 --   not consumed.
 newline' :: Parse ()
-newline' = many (whitespace' >> newline) >> return ()
+newline' = many (whitespace >> newline) >> return ()
 
 -- | Parses and returns all characters up till the end of the line,
 --   but does not touch the newline characters.
@@ -459,9 +454,7 @@ commaSepUnqt = commaSep' parseUnqt parseUnqt
 
 commaSep'       :: Parse a -> Parse b -> Parse (a,b)
 commaSep' pa pb = do a <- pa
-                     whitespace'
-                     parseComma
-                     whitespace'
+                     wrapWhitespace parseComma
                      b <- pb
                      return (a,b)
 
