@@ -285,7 +285,7 @@ data Attribute
   | HeadTarget EscString                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
   | HeadTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
   | Height Double                       -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
-  | ID Label                            -- ^ /Valid for/: GNE; /Default/: @'StrLabel' \"\"@; /Notes/: svg, postscript, map only
+  | ID EscString                        -- ^ /Valid for/: GNE; /Default/: @\"\"; /Notes/: svg, postscript, map only
   | Image Text                          -- ^ /Valid for/: N; /Default/: @\"\"@
   | ImagePath Paths                     -- ^ /Valid for/: G; /Default/: @'Paths' []@; /Notes/: Printing and parsing is OS-specific, requires Graphviz >= 2.29.0
   | ImageScale ScaleType                -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
@@ -1143,7 +1143,7 @@ defaultAttributeValue HeadPort{}           = Just $ HeadPort (CompassPoint Cente
 defaultAttributeValue HeadTarget{}         = Just $ HeadTarget ""
 defaultAttributeValue HeadTooltip{}        = Just $ HeadTooltip ""
 defaultAttributeValue Height{}             = Just $ Height 0.5
-defaultAttributeValue ID{}                 = Just $ ID (StrLabel "")
+defaultAttributeValue ID{}                 = Just $ ID ""
 defaultAttributeValue Image{}              = Just $ Image ""
 defaultAttributeValue ImagePath{}          = Just $ ImagePath (Paths [])
 defaultAttributeValue ImageScale{}         = Just $ ImageScale NoScale
