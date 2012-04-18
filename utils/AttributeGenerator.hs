@@ -488,7 +488,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "FontNames" ["fontnames"] "G" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg only")
              , makeAttr "FontPath" ["fontpath"] "G" Strng Nothing Nothing (Just "system dependent") Nothing Nothing
              , makeAttr "FontSize" ["fontsize"] "ENGC" Dbl Nothing (Just "14") (Just "@14.0@") (Just "@1.0@") Nothing
-             , makeAttr "ForceLabels" ["forcelabels"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "Only for 'XLabel' attributes")
+             , makeAttr "ForceLabels" ["forcelabels"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "Only for 'XLabel' attributes, requires Graphviz >= 2.29.0")
              , makeAttr "GradientAngle" ["gradientangle"] "NCG" Integ Nothing (Just "0") (Just "0") Nothing (Just "requires Graphviz >= 2.29.0")
              , makeAttr "Group" ["group"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
              , makeAttr "HeadURL" ["headURL", "headhref"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only")

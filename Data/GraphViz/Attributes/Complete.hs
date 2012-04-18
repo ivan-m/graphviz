@@ -278,7 +278,7 @@ data Attribute
   | FontNames Text                      -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
   | FontPath Text                       -- ^ /Valid for/: G; /Default/: system dependent
   | FontSize Double                     -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
-  | ForceLabels Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: Only for 'XLabel' attributes
+  | ForceLabels Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: Only for 'XLabel' attributes, requires Graphviz >= 2.29.0
   | GradientAngle Int                   -- ^ /Valid for/: NCG; /Default/: 0; /Notes/: requires Graphviz >= 2.29.0
   | Group Text                          -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
   | HeadURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
