@@ -45,7 +45,7 @@ import System.IO(Handle, IOMode(ReadMode,WriteMode)
                 , hClose, hGetContents, hSetBinaryMode)
 import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
-import Control.Exception.Extensible(IOException, evaluate)
+import Control.Exception(IOException, evaluate)
 import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
 
 -- -----------------------------------------------------------------------------

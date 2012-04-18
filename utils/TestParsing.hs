@@ -26,7 +26,7 @@ import Data.GraphViz.Exception
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import qualified Data.ByteString.Lazy as B
-import Control.Exception.Extensible(try, evaluate, SomeException)
+import Control.Exception(try, evaluate, SomeException)
 import Control.Monad(liftM, filterM)
 import System.Directory
 import System.FilePath

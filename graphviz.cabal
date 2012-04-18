@@ -57,8 +57,7 @@ Flag test
 Library {
         Default-Language:  Haskell2010
 
-        Build-Depends:     base >= 3 && < 5,
-                           extensible-exceptions,
+        Build-Depends:     base == 4.*,
                            containers,
                            process,
                            fgl == 5.4.*,

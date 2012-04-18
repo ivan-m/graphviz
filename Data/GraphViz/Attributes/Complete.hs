@@ -198,7 +198,7 @@ import qualified Data.Set as S
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2)
-import System.FilePath(FilePath, searchPathSeparator, splitSearchPath)
+import System.FilePath(searchPathSeparator, splitSearchPath)
 
 -- -----------------------------------------------------------------------------
 

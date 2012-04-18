@@ -15,7 +15,7 @@ module Data.GraphViz.Exception
        , bracket
        ) where
 
-import Control.Exception.Extensible
+import Control.Exception
 import Data.Typeable
 
 -- -----------------------------------------------------------------------------
