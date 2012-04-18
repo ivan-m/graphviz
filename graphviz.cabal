@@ -38,7 +38,7 @@ Copyright:          Matthew Sackman, Ivan Lazar Miljenovic
 Author:             Matthew Sackman, Ivan Lazar Miljenovic
 Maintainer:         Ivan.Miljenovic+graphviz@gmail.com
 Build-Type:         Simple
-Cabal-Version:      >= 1.6
+Cabal-Version:      >= 1.14
 Extra-Source-Files: TODO
                     Changelog
                     README
@@ -55,6 +55,8 @@ Flag test
      Default: False
 
 Library {
+        Default-Language:  Haskell2010
+
         Build-Depends:     base >= 3 && < 5,
                            extensible-exceptions,
                            containers,
@@ -123,13 +125,20 @@ Library {
 }
 
 Executable graphviz-testsuite {
+        Default-Language:  Haskell2010
 
         if flag(test)
            Buildable: True
         else
            Buildable: False
 
+        hs-Source-Dirs:    utils
+
         Main-Is:           RunTests.hs
+
+        Build-Depends:     graphviz,
+                           base,
+                           containers
 
         if True
            Ghc-Options: -O -Wall
