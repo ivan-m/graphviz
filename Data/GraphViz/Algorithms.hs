@@ -118,11 +118,16 @@ createCanonical opts gas cl nl es
                        , EdgeAttrs topEAs
                        ]
     nUnlook (n,(p,as)) = (F.toList p, DotNode n as)
+    -- DotNodes paired and sorted by their paths
     ns = sortBy (compLists `on` fst) . map nUnlook $ Map.toList nl
+    -- nodes in clusters vs top-level
     (clustNs, topNs) = thisLevel ns
+    -- edges in clusters vs top-level
     (clustEL, topEs) = if edgesInClusters opts
                        then edgeClusters nl es
                        else (Map.empty, es)
+
+    -- The global attributes that are also applicable to clusters.
     topClustAs = filter usedByClusters $ attrs gas
     topClustAs' = toSAttr topClustAs
 
@@ -140,41 +145,62 @@ createCanonical opts gas cl nl es
                                         . groupBy ((==) `on` (listToMaybe . fst))
 
     -- Create a new cluster.
+    -- oAs - outer cluster attributes
+    -- nAs - outer node attributes
+    -- eAs - outer edge attributes
+    -- (*S variants are same thing but as sets; premature optimisation?)
+    -- cns - nodes in this cluster
     toClust oAs oAsS nAs nAsS eAs eAsS cns
       = DotSG { isCluster     = True
               , subGraphID    = cID
               , subGraphStmts = stmts
               }
       where
+        -- Find the ID for this cluster.
         cID = head . fst $ head cns
+
+        -- Get the nodes that are deeper and the ones that belong
+        -- here.
         (nested, here) = thisLevel $ map (first tail) cns
+
+
         stmts = DotStmts { attrStmts = sgAs
                          , subGraphs = subSGs
                          , nodeStmts = here'
                          , edgeStmts = edges'
                          }
 
+        -- Starting global attributes
         sgAs = nonEmptyGAs [ GraphAttrs as'
                            , NodeAttrs nas'
                            , EdgeAttrs eas'
                            ]
 
+        -- Sub-clusters
         subSGs = clusts as asS nas nasS eas easS nested
 
+        -- The attributes attached to this cluster ID in the original.
         as = attrs . snd $ cl Map.! cID
         asS = toSAttr as
-        as' = innerAttributes oAs oAsS as
 
+        -- Get the global attributes that apply to this cluster,
+        -- ignoring ones set globally.
+        as' = fst $ innerAttributes oAs oAsS as
+
+        -- The node attributes that can be stated globally.
         nas = mCommon nodeAttributes here
         nasS = toSAttr nas
-        nas' = innerAttributes nAs nAsS nas
-        here' = map (\dn -> dn {nodeAttributes = nodeAttributes dn \\ nas}) here
+        (nas',nOv) = innerAttributes nAs nAsS nas
+
+        -- The nodes that belong here, with updated attributes.
+        here' = map (\dn -> dn {nodeAttributes = nodeAttributes dn \\ (nas ++ nOv)}) here
 
         eas = mCommon edgeAttributes edges
         easS = toSAttr eas
-        eas' = innerAttributes eAs eAsS eas
-        edges' = map (\de -> de {edgeAttributes = edgeAttributes de \\ eas}) edges
+        (eas',eOv) = innerAttributes eAs eAsS eas
+        edges' = map (\de -> de {edgeAttributes = edgeAttributes de \\ (eas ++ eOv)}) edges
 
+        -- Find edges that belong here
         edges = fromMaybe [] $ cID `Map.lookup` clustEL
 
     thisLevel = second (map snd) . span (not . null . fst)
@@ -218,10 +244,10 @@ edgeClusters nl = (toM *** map snd) . partition (not . null . fst)
           . map (last *** DList.singleton)
 
 -- Return only those attributes that are required within the inner
--- sub-graph.
+-- sub-graph.  Also returns the overrides.
 innerAttributes                    :: Attributes -> SAttrs
-                                      -> Attributes -> Attributes
-innerAttributes outer outerS inner = sort $ inner' ++ override
+                                      -> Attributes -> (Attributes, Attributes)
+innerAttributes outer outerS inner = (sort $ inner' ++ override, override)
   where
     -- Remove all Attributes that are also defined in the outer cluster
     inner' = inner \\ outer
@@ -391,4 +417,3 @@ traverse t n = do setMark True
                              let n' = toNode e
                              unless (isMarked m n' || t' `Set.member` delSet)
                                $ traverse t' n'
-
