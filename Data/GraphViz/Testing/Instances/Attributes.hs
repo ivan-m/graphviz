@@ -35,6 +35,7 @@ import qualified Data.Map as Map
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2, liftM3, liftM4)
+import System.FilePath(searchPathSeparator)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for Attributes
@@ -106,6 +107,7 @@ instance Arbitrary Attribute where
                     , liftM Height arbitrary
                     , liftM ID arbitrary
                     , liftM Image arbitrary
+                    , liftM ImagePath arbitrary
                     , liftM ImageScale arbitrary
                     , liftM Label arbitrary
                     , liftM LabelURL arbitrary
@@ -259,6 +261,7 @@ instance Arbitrary Attribute where
   shrink (Height v)             = map Height              $ shrink v
   shrink (ID v)                 = map ID                  $ shrink v
   shrink (Image v)              = map Image               $ shrink v
+  shrink (ImagePath v)          = map ImagePath           $ shrink v
   shrink (ImageScale v)         = map ImageScale          $ shrink v
   shrink (Label v)              = map Label               $ shrink v
   shrink (LabelURL v)           = map LabelURL            $ shrink v
@@ -700,6 +703,14 @@ instance Arbitrary FocusType where
 
 instance Arbitrary VerticalPlacement where
   arbitrary = arbBounded
+
+instance Arbitrary Paths where
+  arbitrary = liftM Paths $ listOf1 arbFilePath
+
+  shrink (Paths ps) = map Paths $ nonEmptyShrinks' ps
+
+arbFilePath :: Gen FilePath
+arbFilePath = suchThat arbString (searchPathSeparator `notElem`)
 
 instance Arbitrary ScaleType where
   arbitrary = arbBounded

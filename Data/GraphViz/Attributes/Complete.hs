@@ -116,6 +116,7 @@ module Data.GraphViz.Attributes.Complete
 
          -- ** Nodes
        , Shape(..)
+       , Paths(..)
        , ScaleType(..)
 
          -- ** Edges
@@ -188,13 +189,14 @@ import Data.GraphViz.Printing
 import Data.GraphViz.State(getLayerSep, setLayerSep)
 import Data.GraphViz.Exception(GraphvizException(NotCustomAttr), throw)
 
-import Data.List(partition)
+import Data.List(partition, intercalate)
 import Data.Maybe(isJust)
 import Data.Word(Word16)
 import qualified Data.Set as S
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2)
+import System.FilePath(FilePath, searchPathSeparator, splitSearchPath)
 
 -- -----------------------------------------------------------------------------
 
@@ -285,6 +287,7 @@ data Attribute
   | Height Double                       -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
   | ID Label                            -- ^ /Valid for/: GNE; /Default/: @'StrLabel' \"\"@; /Notes/: svg, postscript, map only
   | Image Text                          -- ^ /Valid for/: N; /Default/: @\"\"@
+  | ImagePath Paths                     -- ^ /Valid for/: G; /Default/: @'Paths' []@; /Notes/: Printing and parsing is OS-specific, requires Graphviz >= 2.29.0
   | ImageScale ScaleType                -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
   | Label Label                         -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
   | LabelURL EscString                  -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
@@ -444,6 +447,7 @@ instance PrintDot Attribute where
   unqtDot (Height v)             = printField "height" v
   unqtDot (ID v)                 = printField "id" v
   unqtDot (Image v)              = printField "image" v
+  unqtDot (ImagePath v)          = printField "imagepath" v
   unqtDot (ImageScale v)         = printField "imagescale" v
   unqtDot (Label v)              = printField "label" v
   unqtDot (LabelURL v)           = printField "labelURL" v
@@ -599,6 +603,7 @@ instance ParseDot Attribute where
                                   , parseField Height "height"
                                   , parseField ID "id"
                                   , parseField Image "image"
+                                  , parseField ImagePath "imagepath"
                                   , parseFieldDef ImageScale UniformScale "imagescale"
                                   , parseField Label "label"
                                   , parseFields LabelURL ["labelURL", "labelhref"]
@@ -737,6 +742,7 @@ usedByGraphs FontPath{}           = True
 usedByGraphs FontSize{}           = True
 usedByGraphs ForceLabels{}        = True
 usedByGraphs ID{}                 = True
+usedByGraphs ImagePath{}          = True
 usedByGraphs Label{}              = True
 usedByGraphs LabelScheme{}        = True
 usedByGraphs LabelJust{}          = True
@@ -992,6 +998,7 @@ sameAttribute HeadTooltip{}           HeadTooltip{}           = True
 sameAttribute Height{}                Height{}                = True
 sameAttribute ID{}                    ID{}                    = True
 sameAttribute Image{}                 Image{}                 = True
+sameAttribute ImagePath{}             ImagePath{}             = True
 sameAttribute ImageScale{}            ImageScale{}            = True
 sameAttribute Label{}                 Label{}                 = True
 sameAttribute LabelURL{}              LabelURL{}              = True
@@ -1138,6 +1145,7 @@ defaultAttributeValue HeadTooltip{}        = Just $ HeadTooltip ""
 defaultAttributeValue Height{}             = Just $ Height 0.5
 defaultAttributeValue ID{}                 = Just $ ID (StrLabel "")
 defaultAttributeValue Image{}              = Just $ Image ""
+defaultAttributeValue ImagePath{}          = Just $ ImagePath (Paths [])
 defaultAttributeValue ImageScale{}         = Just $ ImageScale NoScale
 defaultAttributeValue Label{}              = Just $ Label (StrLabel "")
 defaultAttributeValue LabelURL{}           = Just $ LabelURL ""
@@ -1275,6 +1283,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "height"
                , "id"
                , "image"
+               , "imagepath"
                , "imagescale"
                , "label"
                , "labelURL"
@@ -2780,6 +2789,24 @@ instance ParseDot VerticalPlacement where
                     , stringRep VCenter "c"
                     , stringRep VBottom "b"
                     ]
+
+-- -----------------------------------------------------------------------------
+
+newtype Paths = Paths { paths :: [FilePath] }
+    deriving (Eq, Ord, Show, Read)
+
+instance PrintDot Paths where
+    unqtDot = unqtDot . intercalate [searchPathSeparator] . paths
+
+    toDot (Paths [p]) = toDot p
+    toDot ps          = dquotes $ unqtDot ps
+
+instance ParseDot Paths where
+    parseUnqt = liftM (Paths . splitSearchPath) parseUnqt
+
+    parse = quotedParse parseUnqt
+            `onFail`
+            liftM (Paths . (:[]) . T.unpack) quotelessString
 
 -- -----------------------------------------------------------------------------
 

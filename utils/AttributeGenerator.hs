@@ -497,6 +497,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Height" ["height"] "N" Dbl Nothing (Just "0.5") (Just "@0.5@") (Just "@0.02@") Nothing
              , makeAttr "ID" ["id"] "GNE" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\"@") Nothing (Just "svg, postscript, map only")
              , makeAttr "Image" ["image"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing
+             , makeAttr "ImagePath" ["imagepath"] "G" (Cust "Paths") Nothing (Just "(Paths [])") (Just "@'Paths' []@") Nothing (Just "Printing and parsing is OS-specific, requires Graphviz >= 2.29.0")
              , makeAttr "ImageScale" ["imagescale"] "N" (Cust "ScaleType") (Just "UniformScale") (Just "NoScale") (Just "@'NoScale'@") Nothing Nothing
              , makeAttr "Label" ["label"] "ENGC" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\\N\\\"@ (nodes), @'StrLabel' \\\"\\\"@ (otherwise)") Nothing Nothing
              , makeAttr "LabelURL" ["labelURL", "labelhref"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
