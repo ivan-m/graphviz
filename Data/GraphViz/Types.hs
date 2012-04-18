@@ -94,6 +94,8 @@ module Data.GraphViz.Types
        , PPDotRepr
          -- * Common sub-types
        , GraphID(..)
+       , ToGraphID(..)
+       , textGraphID
        , GlobalAttributes(..)
        , DotNode(..)
        , DotEdge(..)
@@ -121,6 +123,7 @@ import Data.GraphViz.Parsing(ParseDot(..), runParser, checkValidParse, parse, ad
 import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Printing(PrintDot(..), printIt)
 
+import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
 import Control.Arrow(first)
 import Control.Monad.Trans.State(get, put, modify, execState, evalState)
@@ -321,6 +324,37 @@ maxSGInt dg = execState (stInt $ graphStatements dg)
     stInt = mapM_ sgInt . subGraphs
     sgInt sg = do modify (check $ subGraphID sg)
                   stInt $ subGraphStmts sg
+
+-- -----------------------------------------------------------------------------
+
+-- | A convenience class to make it easier to convert data types to
+--   'GraphID' values, e.g. for cluster identifiers.
+class ToGraphID a where
+  toGraphID :: a -> GraphID
+
+-- | An alias for 'toGraphID' for use with the @OverloadedStrings@
+--   extension.
+textGraphID :: Text -> GraphID
+textGraphID = toGraphID
+
+instance ToGraphID Text where
+  toGraphID = Str
+
+instance ToGraphID String where
+  toGraphID = toGraphID . T.pack
+
+instance ToGraphID Char where
+  toGraphID = toGraphID . T.singleton
+
+instance ToGraphID Int where
+  toGraphID = Int
+
+-- | This instance loses precision by going via 'Int'.
+instance ToGraphID Integer where
+  toGraphID = Int . fromInteger
+
+instance ToGraphID Double where
+  toGraphID = Dbl
 
 -- -----------------------------------------------------------------------------
 
