@@ -108,11 +108,11 @@ instance ParseDot Label where
   parse = parseUnqt
 
 -- | Represents a textual component of an HTML-like label.  It is
---   assumed that an 'Text' list is non-empty.  It is preferable
+--   assumed that a 'Text' list is non-empty.  It is preferable
 --   to \"group\" 'Str' values together rather than have
 --   individual ones.  Note that when printing, the individual values
 --   are concatenated together without spaces, and when parsing
---   anything that isn't a tag is assumed to be an 'Str': that is,
+--   anything that isn't a tag is assumed to be a 'Str': that is,
 --   something like \"@\<BR\/\> \<BR\/\>@\" is parsed as:
 --
 --  > [Newline [], Str " ", Newline []]
@@ -211,15 +211,16 @@ instance ParseDot Table where
 
   parse = parseUnqt
 
--- | A row in an 'Table'.  The list of 'Cell' values is
+-- | A row in a 'Table'.  The list of 'Cell' values is
 --   assumed to be non-empty.
-newtype Row = Row [Cell]
-            deriving (Eq, Ord, Show, Read)
+data Row = Cells [Cell]
+         | HorizontalRule -- ^ Should be between 'Cells' values,
+                          --   requires Graphviz >= 2.29.0
+         deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Row where
-  unqtDot (Row cs) = printTag tr [] $ unqtDot cs
-    where
-      tr = text "TR"
+  unqtDot (Cells cs)     = printTag (text "TR") [] $ unqtDot cs
+  unqtDot HorizontalRule = printEmptyTag (text "HR") []
 
   unqtListToDot = align . cat . mapM unqtDot
 
@@ -228,7 +229,9 @@ instance PrintDot Row where
 instance ParseDot Row where
   -- To save doing it manually, use 'parseTag' and ignore any
   -- 'Attributes' that it might accidentally parse.
-  parseUnqt = wrapWhitespace $ parseTag (const Row) "TR" parseUnqt
+  parseUnqt = wrapWhitespace $ parseTag (const Cells) "TR" parseUnqt
+              `onFail`
+              parseEmptyTag (const HorizontalRule) "HR"
               `adjustErr`
               ("Can't parse Html.Row\n\t"++)
 
@@ -242,11 +245,15 @@ instance ParseDot Row where
 --   path to an image file.
 data Cell = LabelCell Attributes Label
           | ImgCell Attributes Img
+          | VerticalRule -- ^ Should be between 'LabelCell' or
+                         --   'ImgCell' values, requires Graphviz >=
+                         --   2.29.0
           deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Cell where
   unqtDot (LabelCell as l) = printCell as $ unqtDot l
   unqtDot (ImgCell as img) = printCell as $ unqtDot img
+  unqtDot VerticalRule     = printEmptyTag (text "VR") []
 
   unqtListToDot = hsep . mapM unqtDot
 
@@ -258,6 +265,7 @@ printCell = printTag (text "TD")
 instance ParseDot Cell where
   parseUnqt = oneOf [ parseCell LabelCell parse
                     , parseCell ImgCell $ wrapWhitespace parseUnqt
+                    , parseEmptyTag (const VerticalRule) "VR"
                     ]
               `adjustErr`
               ("Can't parse Html.Cell\n\t"++)
@@ -304,6 +312,7 @@ data Attribute = Align Align       -- ^ Valid for:  'Table', 'Cell', 'Newline'.
                | FixedSize Bool    -- ^ Valid for: 'Table', 'Cell'.  Default is @'False'@.
                | Height Word16     -- ^ Valid for: 'Table', 'Cell'.
                | HRef T.Text       -- ^ Valid for: 'Table', 'Cell'.
+               | ID T.Text         -- ^ Valid for: 'Table', 'Cell'.  Requires Graphviz >= 2.29.0
                | PointSize Double  -- ^ Valid for: 'tableFontAttrs', 'Font'.
                | Port PortName     -- ^ Valid for: 'Table', 'Cell'.
                | RowSpan Word16    -- ^ Valid for: 'Cell'.
@@ -329,6 +338,7 @@ instance PrintDot Attribute where
   unqtDot (FixedSize v)   = printHtmlField' "FIXEDSIZE" $ printBoolHtml v
   unqtDot (Height v)      = printHtmlField  "HEIGHT" v
   unqtDot (HRef v)        = printHtmlField' "HREF" $ escapeAttribute v
+  unqtDot (ID v)          = printHtmlField' "ID" $ escapeAttribute v
   unqtDot (PointSize v)   = printHtmlField  "POINT-SIZE" v
   unqtDot (Port v)        = printHtmlField' "PORT" . escapeAttribute $ portName v
   unqtDot (RowSpan v)     = printHtmlField  "ROWSPAN" v
@@ -366,6 +376,7 @@ instance ParseDot Attribute where
                     , parseHtmlField' FixedSize "FIXEDSIZE" parseBoolHtml
                     , parseHtmlField  Height "HEIGHT"
                     , parseHtmlField' HRef "HREF" unescapeAttribute
+                    , parseHtmlField' ID "ID" unescapeAttribute
                     , parseHtmlField  PointSize "POINT-SIZE"
                     , parseHtmlField' (Port . PN) "PORT" unescapeAttribute
                     , parseHtmlField  RowSpan "ROWSPAN"

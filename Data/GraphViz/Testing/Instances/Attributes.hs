@@ -854,19 +854,24 @@ instance Arbitrary Html.Table where
   shrink (Html.HTable fas as rs) = map (Html.HTable fas as) $ shrinkL rs
 
 instance Arbitrary Html.Row where
-  arbitrary = liftM Html.Row arbList
+  arbitrary = frequency [ (5, liftM Html.Cells arbList)
+                        , (1, return Html.HorizontalRule)
+                        ]
 
-  shrink hr@(Html.Row cs) = delete hr . map Html.Row $ shrinkL cs
+  shrink hr@(Html.Cells cs) = delete hr . map Html.Cells $ shrinkL cs
+  shrink _                  = []
 
 instance Arbitrary Html.Cell where
-  arbitrary = oneof [ liftM2 Html.LabelCell arbitrary . sized $ arbHtml False
-                    , liftM2 Html.ImgCell arbitrary arbitrary
-                    ]
+  arbitrary = frequency [ (5, liftM2 Html.LabelCell arbitrary . sized $ arbHtml False)
+                        , (3, liftM2 Html.ImgCell arbitrary arbitrary)
+                        , (1, return Html.VerticalRule)
+                        ]
 
   shrink lc@(Html.LabelCell as h) = do as' <- shrink as
                                        h' <- shrink h
                                        returnCheck lc $ Html.LabelCell as' h'
   shrink (Html.ImgCell as ic) = map (Html.ImgCell as) $ shrink ic
+  shrink _                    = []
 
 instance Arbitrary Html.Img where
   arbitrary = liftM Html.Img arbitrary
@@ -885,6 +890,7 @@ instance Arbitrary Html.Attribute where
                     , liftM Html.FixedSize arbitrary
                     , liftM Html.Height arbitrary
                     , liftM Html.HRef arbitrary
+                    , liftM Html.ID arbitrary
                     , liftM Html.PointSize arbitrary
                     , liftM Html.Port arbitrary
                     , liftM Html.RowSpan arbitrary
@@ -909,6 +915,7 @@ instance Arbitrary Html.Attribute where
   shrink (Html.FixedSize v)   = map Html.FixedSize   $ shrink v
   shrink (Html.Height v)      = map Html.Height      $ shrink v
   shrink (Html.HRef v)        = map Html.HRef        $ shrink v
+  shrink (Html.ID v)          = map Html.ID          $ shrink v
   shrink (Html.PointSize v)   = map Html.PointSize   $ shrink v
   shrink (Html.Port v)        = map Html.Port        $ shrink v
   shrink (Html.RowSpan v)     = map Html.RowSpan     $ shrink v
