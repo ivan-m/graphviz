@@ -167,6 +167,8 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                     | WBmp      -- ^ Wireless BitMap format;
                                 --   monochrome format usually used
                                 --   for mobile computing devices.
+                    | WebP      -- ^ Google's WebP format; requires
+                                --   Graphviz >= 2.29.0.
                     deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance GraphvizResult GraphvizOutput where
@@ -198,6 +200,7 @@ instance GraphvizResult GraphvizOutput where
   outputCall VmlZ      = "vmlz"
   outputCall Vrml      = "vrml"
   outputCall WBmp      = "wbmp"
+  outputCall WebP      = "webp"
 
 -- | A default file extension for each 'GraphvizOutput'.
 defaultExtension           :: GraphvizOutput -> String
@@ -229,6 +232,7 @@ defaultExtension Vml       = "vml"
 defaultExtension VmlZ      = "vmlz"
 defaultExtension Vrml      = "vrml"
 defaultExtension WBmp      = "wbmp"
+defaultExtension WebP      = "webp"
 
 -- | Unlike 'GraphvizOutput', these items do not produce an output
 --   file; instead, they directly draw a canvas (i.e. a window) with
