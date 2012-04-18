@@ -598,7 +598,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "VoroMargin" ["voro_margin"] "G" Dbl Nothing (Just "0.05") (Just "@0.05@") (Just "@0.0@") (Just "not dot")
              , makeAttr "Weight" ["weight"] "E" Dbl Nothing Nothing (Just "@1.0@") (Just "@0@ (dot), @1@ (neato,fdp,sfdp)") Nothing
              , makeAttr "Width" ["width"] "N" Dbl Nothing (Just "0.75") (Just "@0.75@") (Just "@0.01@") Nothing
-             , makeAttr "XLabel" ["xlabel"] "EN" (Cust "Label") Nothing (Just "(StrLabel \"\")")  (Just "@'StrLabel' \\\"\\\"@") Nothing Nothing
+             , makeAttr "XLabel" ["xlabel"] "EN" (Cust "Label") Nothing (Just "(StrLabel \"\")")  (Just "@'StrLabel' \\\"\\\"@") Nothing (Just "requires Graphviz >= 2.29.0")
              , makeAttr "Z" ["z"] "N" Dbl Nothing (Just "0") (Just "@0.0@") (Just "@-MAXFLOAT@, @-1000@") Nothing
              ]
 
