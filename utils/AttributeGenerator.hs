@@ -448,6 +448,8 @@ dot = char '.'
 
 -- The actual attributes
 
+-- ColorScheme is put earlier so that when sorting, it comes before the various *Color attributes.
+
 attributes :: [Attribute]
 attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Just "@0.99@") (Just "@0.0@") (Just "neato only")
              , makeAttr "K" ["K"] "GC" Dbl Nothing (Just "0.3") (Just "@0.3@") (Just "@0@") (Just "sfdp, fdp only")
@@ -457,11 +459,11 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "ArrowTail" ["arrowtail"] "E" (Cust "ArrowType") Nothing (Just "normal") (Just "@'normal'@") Nothing Nothing
              , makeAttr "Aspect" ["aspect"] "G" (Cust "AspectType") Nothing Nothing Nothing Nothing (Just "dot only")
              , makeAttr "BoundingBox" ["bb"] "G" (Cust "Rect") Nothing Nothing Nothing Nothing (Just "write only")
+             , makeAttr "ColorScheme" ["colorscheme"] "ENCG" (Cust "ColorScheme") Nothing (Just "X11") (Just "@'X11'@") Nothing Nothing
              , makeAttr "BgColor" ["bgcolor"] "GC" (Cust "Color") Nothing (Just "(X11Color Transparent)") (Just "@'X11Color' 'Transparent'@") Nothing Nothing
              , makeAttr "Center" ["center"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "ClusterRank" ["clusterrank"] "G" (Cust "ClusterMode") Nothing (Just "Local") (Just "@'Local'@") Nothing (Just "dot only")
              , makeAttr "Color" ["color"] "ENC" (Cust "[Color]") Nothing (Just "[X11Color Black]") (Just "@['X11Color' 'Black']@") Nothing Nothing
-             , makeAttr "ColorScheme" ["colorscheme"] "ENCG" (Cust "ColorScheme") Nothing (Just "X11") (Just "@'X11'@") Nothing Nothing
              , makeAttr "Comment" ["comment"] "ENG" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing
              , makeAttr "Compound" ["compound"] "G" Bl (Just "True") (Just "False")(Just "@'False'@") Nothing (Just "dot only")
              , makeAttr "Concentrate" ["concentrate"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing

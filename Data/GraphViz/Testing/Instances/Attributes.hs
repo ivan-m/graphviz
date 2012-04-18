@@ -67,11 +67,11 @@ instance Arbitrary Attribute where
                     , liftM ArrowTail arbitrary
                     , liftM Aspect arbitrary
                     , liftM BoundingBox arbitrary
+                    , liftM ColorScheme arbitrary
                     , liftM BgColor arbitrary
                     , liftM Center arbitrary
                     , liftM ClusterRank arbitrary
                     , liftM Color arbList
-                    , liftM ColorScheme arbitrary
                     , liftM Comment arbitrary
                     , liftM Compound arbitrary
                     , liftM Concentrate arbitrary
@@ -221,11 +221,11 @@ instance Arbitrary Attribute where
   shrink (ArrowTail v)          = map ArrowTail           $ shrink v
   shrink (Aspect v)             = map Aspect              $ shrink v
   shrink (BoundingBox v)        = map BoundingBox         $ shrink v
+  shrink (ColorScheme v)        = map ColorScheme         $ shrink v
   shrink (BgColor v)            = map BgColor             $ shrink v
   shrink (Center v)             = map Center              $ shrink v
   shrink (ClusterRank v)        = map ClusterRank         $ shrink v
   shrink (Color v)              = map Color               $ nonEmptyShrinks v
-  shrink (ColorScheme v)        = map ColorScheme         $ shrink v
   shrink (Comment v)            = map Comment             $ shrink v
   shrink (Compound v)           = map Compound            $ shrink v
   shrink (Concentrate v)        = map Concentrate         $ shrink v

@@ -247,11 +247,11 @@ data Attribute
   | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
   | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
   | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
+  | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
   | BgColor Color                       -- ^ /Valid for/: GC; /Default/: @'X11Color' 'Transparent'@
   | Center Bool                         -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | ClusterRank ClusterMode             -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
   | Color [Color]                       -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
-  | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
   | Comment Text                        -- ^ /Valid for/: ENG; /Default/: @\"\"@
   | Compound Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
   | Concentrate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -407,11 +407,11 @@ instance PrintDot Attribute where
   unqtDot (ArrowTail v)          = printField "arrowtail" v
   unqtDot (Aspect v)             = printField "aspect" v
   unqtDot (BoundingBox v)        = printField "bb" v
+  unqtDot (ColorScheme v)        = printField "colorscheme" v
   unqtDot (BgColor v)            = printField "bgcolor" v
   unqtDot (Center v)             = printField "center" v
   unqtDot (ClusterRank v)        = printField "clusterrank" v
   unqtDot (Color v)              = printField "color" v
-  unqtDot (ColorScheme v)        = printField "colorscheme" v
   unqtDot (Comment v)            = printField "comment" v
   unqtDot (Compound v)           = printField "compound" v
   unqtDot (Concentrate v)        = printField "concentrate" v
@@ -563,11 +563,11 @@ instance ParseDot Attribute where
                                   , parseField ArrowTail "arrowtail"
                                   , parseField Aspect "aspect"
                                   , parseField BoundingBox "bb"
+                                  , parseField ColorScheme "colorscheme"
                                   , parseField BgColor "bgcolor"
                                   , parseFieldBool Center "center"
                                   , parseField ClusterRank "clusterrank"
                                   , parseField Color "color"
-                                  , parseField ColorScheme "colorscheme"
                                   , parseField Comment "comment"
                                   , parseFieldBool Compound "compound"
                                   , parseFieldBool Concentrate "concentrate"
@@ -721,10 +721,10 @@ usedByGraphs K{}                  = True
 usedByGraphs URL{}                = True
 usedByGraphs Aspect{}             = True
 usedByGraphs BoundingBox{}        = True
+usedByGraphs ColorScheme{}        = True
 usedByGraphs BgColor{}            = True
 usedByGraphs Center{}             = True
 usedByGraphs ClusterRank{}        = True
-usedByGraphs ColorScheme{}        = True
 usedByGraphs Comment{}            = True
 usedByGraphs Compound{}           = True
 usedByGraphs Concentrate{}        = True
@@ -808,9 +808,9 @@ usedByGraphs _                    = False
 usedByClusters                    :: Attribute -> Bool
 usedByClusters K{}                = True
 usedByClusters URL{}              = True
+usedByClusters ColorScheme{}      = True
 usedByClusters BgColor{}          = True
 usedByClusters Color{}            = True
-usedByClusters ColorScheme{}      = True
 usedByClusters FillColor{}        = True
 usedByClusters FontColor{}        = True
 usedByClusters FontName{}         = True
@@ -842,8 +842,8 @@ usedBySubGraphs _                  = False
 -- | Determine if this 'Attribute' is valid for use with Nodes.
 usedByNodes                    :: Attribute -> Bool
 usedByNodes URL{}              = True
-usedByNodes Color{}            = True
 usedByNodes ColorScheme{}      = True
+usedByNodes Color{}            = True
 usedByNodes Comment{}          = True
 usedByNodes Distortion{}       = True
 usedByNodes FillColor{}        = True
@@ -893,8 +893,8 @@ usedByEdges URL{}              = True
 usedByEdges ArrowHead{}        = True
 usedByEdges ArrowSize{}        = True
 usedByEdges ArrowTail{}        = True
-usedByEdges Color{}            = True
 usedByEdges ColorScheme{}      = True
+usedByEdges Color{}            = True
 usedByEdges Comment{}          = True
 usedByEdges Constraint{}       = True
 usedByEdges Decorate{}         = True
@@ -958,11 +958,11 @@ sameAttribute ArrowSize{}             ArrowSize{}             = True
 sameAttribute ArrowTail{}             ArrowTail{}             = True
 sameAttribute Aspect{}                Aspect{}                = True
 sameAttribute BoundingBox{}           BoundingBox{}           = True
+sameAttribute ColorScheme{}           ColorScheme{}           = True
 sameAttribute BgColor{}               BgColor{}               = True
 sameAttribute Center{}                Center{}                = True
 sameAttribute ClusterRank{}           ClusterRank{}           = True
 sameAttribute Color{}                 Color{}                 = True
-sameAttribute ColorScheme{}           ColorScheme{}           = True
 sameAttribute Comment{}               Comment{}               = True
 sameAttribute Compound{}              Compound{}              = True
 sameAttribute Concentrate{}           Concentrate{}           = True
@@ -1112,11 +1112,11 @@ defaultAttributeValue URL{}                = Just $ URL ""
 defaultAttributeValue ArrowHead{}          = Just $ ArrowHead normal
 defaultAttributeValue ArrowSize{}          = Just $ ArrowSize 1
 defaultAttributeValue ArrowTail{}          = Just $ ArrowTail normal
+defaultAttributeValue ColorScheme{}        = Just $ ColorScheme X11
 defaultAttributeValue BgColor{}            = Just $ BgColor (X11Color Transparent)
 defaultAttributeValue Center{}             = Just $ Center False
 defaultAttributeValue ClusterRank{}        = Just $ ClusterRank Local
 defaultAttributeValue Color{}              = Just $ Color [X11Color Black]
-defaultAttributeValue ColorScheme{}        = Just $ ColorScheme X11
 defaultAttributeValue Comment{}            = Just $ Comment ""
 defaultAttributeValue Compound{}           = Just $ Compound False
 defaultAttributeValue Concentrate{}        = Just $ Concentrate False
@@ -1240,11 +1240,11 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "arrowtail"
                , "aspect"
                , "bb"
+               , "colorscheme"
                , "bgcolor"
                , "center"
                , "clusterrank"
                , "color"
-               , "colorscheme"
                , "comment"
                , "compound"
                , "concentrate"
