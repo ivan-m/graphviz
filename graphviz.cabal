@@ -77,7 +77,6 @@ Library {
                            Data.GraphViz.Types.Monadic
                            Data.GraphViz.Parsing
                            Data.GraphViz.Printing
-                           Data.GraphViz.State
                            Data.GraphViz.Commands
                            Data.GraphViz.Commands.IO
                            Data.GraphViz.Attributes
@@ -98,6 +97,7 @@ Library {
                            Data.GraphViz.Types.Common
                            Data.GraphViz.Types.State
                            Data.GraphViz.Util
+                           Data.GraphViz.State
         if flag(test)
            Build-Depends:       QuickCheck >= 2.3 && < 2.5
 
