@@ -383,5 +383,5 @@ maxSGInt dg = execState (stInt $ graphStatements dg)
      'graphNodes' will return both \"definitions\").  @canonicalise@ from
      "Data.GraphViz.Algorithms" can be used to fix this.
 
-   See "Data.GraphViz.Attributes" for more limitations.
+   See "Data.GraphViz.Attributes.Complete" for more limitations.
  -}
