@@ -108,7 +108,6 @@ module Data.GraphViz.Attributes.Complete
        , Label(..)
        , VerticalPlacement(..)
        , LabelScheme(..)
-       , module Data.GraphViz.Attributes.HTML
          -- *** Types representing the Dot grammar for records.
        , RecordFields
        , RecordField(..)
@@ -181,7 +180,7 @@ module Data.GraphViz.Attributes.Complete
 
 import Data.GraphViz.Attributes.Colors
 import Data.GraphViz.Attributes.Colors.X11(X11Color(Transparent, Black))
-import Data.GraphViz.Attributes.HTML
+import qualified Data.GraphViz.Attributes.HTML as Html
 import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
@@ -1800,12 +1799,12 @@ instance ParseDot Model where
 -- -----------------------------------------------------------------------------
 
 data Label = StrLabel EscString
-           | HtmlLabel HtmlLabel -- ^ If 'PlainText' is used, the
-                                 --   'HtmlLabel' value is the entire
-                                 --   \"shape\"; if anything else
-                                 --   except 'PointShape' is used then
-                                 --   the 'HtmlLabel' is embedded
-                                 --   within the shape.
+           | HtmlLabel Html.Label -- ^ If 'PlainText' is used, the
+                                  --   'Html.Label' value is the entire
+                                  --   \"shape\"; if anything else
+                                  --   except 'PointShape' is used then
+                                  --   the 'Html.Label' is embedded
+                                  --   within the shape.
            | RecordLabel RecordFields -- ^ For nodes only; requires
                                       --   either 'Record' or
                                       --   'MRecord' as the shape.

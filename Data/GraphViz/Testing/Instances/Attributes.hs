@@ -20,6 +20,7 @@ module Data.GraphViz.Testing.Instances.Attributes
 import Data.GraphViz.Testing.Instances.Helpers
 
 import Data.GraphViz.Attributes.Complete
+import qualified Data.GraphViz.Attributes.HTML as Html
 import Data.GraphViz.Attributes.Colors.Brewer
 import Data.GraphViz.Attributes.Colors.X11(X11Color)
 import Data.GraphViz.Attributes.Colors.SVG(SVGColor)
@@ -774,17 +775,17 @@ instance Arbitrary BrewerColor where
 
   shrink (BC s c) = map (BC s) $ shrink c
 
-instance Arbitrary HtmlLabel where
+instance Arbitrary Html.Label where
   arbitrary = sized $ arbHtml True
 
-  shrink ht@(HtmlText txts) = delete ht . map HtmlText $ shrinkL txts
-  shrink (HtmlTable tbl)    = map HtmlTable $ shrink tbl
+  shrink ht@(Html.Text txts) = delete ht . map Html.Text $ shrinkL txts
+  shrink (Html.Table tbl)    = map Html.Table $ shrink tbl
 
--- Note: for the most part, HtmlLabel values are very repetitive (and
+-- Note: for the most part, Html.Label values are very repetitive (and
 -- furthermore, they end up chewing a large amount of memory).  As
--- such, use resize to limit how large the actual HtmlLabel values
+-- such, use resize to limit how large the actual Html.Label values
 -- become.
-arbHtml         :: Bool -> Int -> Gen HtmlLabel
+arbHtml         :: Bool -> Int -> Gen Html.Label
 arbHtml table s = resize' $ frequency options
   where
     s' = min 2 s
@@ -794,10 +795,10 @@ arbHtml table s = resize' $ frequency options
     allowTable = if table
                  then (:) (1, arbTbl)
                  else id
-    arbTbl = liftM HtmlTable arbitrary
-    options = allowTable [ (20, liftM HtmlText . sized $ arbHtmlTexts table) ]
+    arbTbl = liftM Html.Table arbitrary
+    options = allowTable [ (20, liftM Html.Text . sized $ arbHtmlTexts table) ]
 
-arbHtmlTexts       :: Bool -> Int -> Gen HtmlText
+arbHtmlTexts       :: Bool -> Int -> Gen Html.Text
 arbHtmlTexts fnt s = liftM simplifyHtmlText
                      . resize s'
                      . listOf1
@@ -808,26 +809,26 @@ arbHtmlTexts fnt s = liftM simplifyHtmlText
 
 -- When parsing, all textual characters are parsed together; thus,
 -- make sure we generate them like that.
-simplifyHtmlText :: HtmlText -> HtmlText
+simplifyHtmlText :: Html.Text -> Html.Text
 simplifyHtmlText = map head . groupBy sameType
   where
-    sameType HtmlStr{}           HtmlStr{}           = True
-    sameType HtmlNewline{}       HtmlNewline{}       = True
-    sameType HtmlFont{}          HtmlFont{}          = True
-    sameType (HtmlFormat fmt1 _) (HtmlFormat fmt2 _) = fmt1 == fmt2
-    sameType _                   _                   = False
+    sameType Html.Str{}           Html.Str{}           = True
+    sameType Html.Newline{}       Html.Newline{}       = True
+    sameType Html.Font{}          Html.Font{}          = True
+    sameType (Html.Format fmt1 _) (Html.Format fmt2 _) = fmt1 == fmt2
+    sameType _                    _                    = False
 
-instance Arbitrary HtmlTextItem where
+instance Arbitrary Html.TextItem where
   arbitrary = sized $ arbHtmlText True
 
-  shrink (HtmlStr str)        = map HtmlStr $ shrink str
-  shrink (HtmlNewline as)     = map HtmlNewline $ shrink as
-  shrink hf@(HtmlFont as txt) = do as' <- shrink as
-                                   txt' <- shrinkL txt
-                                   returnCheck hf $ HtmlFont as' txt'
-  shrink (HtmlFormat _ txt)   = txt
+  shrink (Html.Str str)        = map Html.Str $ shrink str
+  shrink (Html.Newline as)     = map Html.Newline $ shrink as
+  shrink hf@(Html.Font as txt) = do as' <- shrink as
+                                    txt' <- shrinkL txt
+                                    returnCheck hf $ Html.Font as' txt'
+  shrink (Html.Format _ txt)   = txt
 
-arbHtmlText        :: Bool -> Int -> Gen HtmlTextItem
+arbHtmlText        :: Bool -> Int -> Gen Html.TextItem
 arbHtmlText font s = frequency options
   where
     allowFonts = if font
@@ -835,96 +836,96 @@ arbHtmlText font s = frequency options
                  else id
     s' = min 2 s
     arbRec = resize s' . sized $ arbHtmlTexts False
-    recHtmlText = [ (1, liftM2 HtmlFont arbitrary arbRec)
-                  , (3, liftM2 HtmlFormat arbitrary arbRec)
+    recHtmlText = [ (1, liftM2 Html.Font arbitrary arbRec)
+                  , (3, liftM2 Html.Format arbitrary arbRec)
                   ]
-    options = allowFonts [ (10, liftM HtmlStr arbitrary)
-                         , (10, liftM HtmlNewline arbitrary)
+    options = allowFonts [ (10, liftM Html.Str arbitrary)
+                         , (10, liftM Html.Newline arbitrary)
                          ]
 
-instance Arbitrary HtmlFormat where
+instance Arbitrary Html.Format where
   arbitrary = arbBounded
 
-instance Arbitrary HtmlTable where
-  arbitrary = liftM3 HTable arbitrary arbitrary (sized arbRows)
+instance Arbitrary Html.Table where
+  arbitrary = liftM3 Html.HTable arbitrary arbitrary (sized arbRows)
     where
       arbRows s = resize (min s 10) arbList
 
-  shrink (HTable fas as rs) = map (HTable fas as) $ shrinkL rs
+  shrink (Html.HTable fas as rs) = map (Html.HTable fas as) $ shrinkL rs
 
-instance Arbitrary HtmlRow where
-  arbitrary = liftM HtmlRow arbList
+instance Arbitrary Html.Row where
+  arbitrary = liftM Html.Row arbList
 
-  shrink hr@(HtmlRow cs) = delete hr . map HtmlRow $ shrinkL cs
+  shrink hr@(Html.Row cs) = delete hr . map Html.Row $ shrinkL cs
 
-instance Arbitrary HtmlCell where
-  arbitrary = oneof [ liftM2 HtmlLabelCell arbitrary . sized $ arbHtml False
-                    , liftM2 HtmlImgCell arbitrary arbitrary
+instance Arbitrary Html.Cell where
+  arbitrary = oneof [ liftM2 Html.LabelCell arbitrary . sized $ arbHtml False
+                    , liftM2 Html.ImgCell arbitrary arbitrary
                     ]
 
-  shrink lc@(HtmlLabelCell as h) = do as' <- shrink as
-                                      h' <- shrink h
-                                      returnCheck lc $ HtmlLabelCell as' h'
-  shrink (HtmlImgCell as ic) = map (HtmlImgCell as) $ shrink ic
+  shrink lc@(Html.LabelCell as h) = do as' <- shrink as
+                                       h' <- shrink h
+                                       returnCheck lc $ Html.LabelCell as' h'
+  shrink (Html.ImgCell as ic) = map (Html.ImgCell as) $ shrink ic
 
-instance Arbitrary HtmlImg where
-  arbitrary = liftM HtmlImg arbitrary
+instance Arbitrary Html.Img where
+  arbitrary = liftM Html.Img arbitrary
 
-instance Arbitrary HtmlAttribute where
-  arbitrary = oneof [ liftM HtmlAlign arbitrary
-                    , liftM HtmlBAlign arbitrary
-                    , liftM HtmlBGColor arbitrary
-                    , liftM HtmlBorder arbitrary
-                    , liftM HtmlCellBorder arbitrary
-                    , liftM HtmlCellPadding arbitrary
-                    , liftM HtmlCellSpacing arbitrary
-                    , liftM HtmlColor arbitrary
-                    , liftM HtmlColSpan arbitrary
-                    , liftM HtmlFace arbitrary
-                    , liftM HtmlFixedSize arbitrary
-                    , liftM HtmlHeight arbitrary
-                    , liftM HtmlHRef arbitrary
-                    , liftM HtmlPointSize arbitrary
-                    , liftM HtmlPort arbitrary
-                    , liftM HtmlRowSpan arbitrary
-                    , liftM HtmlScale arbitrary
-                    , liftM HtmlSrc arbString
-                    , liftM HtmlTarget arbitrary
-                    , liftM HtmlTitle arbitrary
-                    , liftM HtmlVAlign arbitrary
-                    , liftM HtmlWidth arbitrary
+instance Arbitrary Html.Attribute where
+  arbitrary = oneof [ liftM Html.Align arbitrary
+                    , liftM Html.BAlign arbitrary
+                    , liftM Html.BGColor arbitrary
+                    , liftM Html.Border arbitrary
+                    , liftM Html.CellBorder arbitrary
+                    , liftM Html.CellPadding arbitrary
+                    , liftM Html.CellSpacing arbitrary
+                    , liftM Html.Color arbitrary
+                    , liftM Html.ColSpan arbitrary
+                    , liftM Html.Face arbitrary
+                    , liftM Html.FixedSize arbitrary
+                    , liftM Html.Height arbitrary
+                    , liftM Html.HRef arbitrary
+                    , liftM Html.PointSize arbitrary
+                    , liftM Html.Port arbitrary
+                    , liftM Html.RowSpan arbitrary
+                    , liftM Html.Scale arbitrary
+                    , liftM Html.Src arbString
+                    , liftM Html.Target arbitrary
+                    , liftM Html.Title arbitrary
+                    , liftM Html.VAlign arbitrary
+                    , liftM Html.Width arbitrary
                     ]
 
-  shrink (HtmlAlign v)       = map HtmlAlign       $ shrink v
-  shrink (HtmlBAlign v)      = map HtmlBAlign      $ shrink v
-  shrink (HtmlBGColor v)     = map HtmlBGColor     $ shrink v
-  shrink (HtmlBorder v)      = map HtmlBorder      $ shrink v
-  shrink (HtmlCellBorder v)  = map HtmlCellBorder  $ shrink v
-  shrink (HtmlCellPadding v) = map HtmlCellPadding $ shrink v
-  shrink (HtmlCellSpacing v) = map HtmlCellSpacing $ shrink v
-  shrink (HtmlColor v)       = map HtmlColor       $ shrink v
-  shrink (HtmlColSpan v)     = map HtmlColSpan     $ shrink v
-  shrink (HtmlFace v)        = map HtmlFace        $ shrink v
-  shrink (HtmlFixedSize v)   = map HtmlFixedSize   $ shrink v
-  shrink (HtmlHeight v)      = map HtmlHeight      $ shrink v
-  shrink (HtmlHRef v)        = map HtmlHRef        $ shrink v
-  shrink (HtmlPointSize v)   = map HtmlPointSize   $ shrink v
-  shrink (HtmlPort v)        = map HtmlPort        $ shrink v
-  shrink (HtmlRowSpan v)     = map HtmlRowSpan     $ shrink v
-  shrink (HtmlScale v)       = map HtmlScale       $ shrink v
-  shrink (HtmlSrc v)         = map HtmlSrc         $ shrinkString v
-  shrink (HtmlTarget v)      = map HtmlTarget      $ shrink v
-  shrink (HtmlTitle v)       = map HtmlTitle       $ shrink v
-  shrink (HtmlVAlign v)      = map HtmlVAlign      $ shrink v
-  shrink (HtmlWidth v)       = map HtmlWidth       $ shrink v
+  shrink (Html.Align v)       = map Html.Align       $ shrink v
+  shrink (Html.BAlign v)      = map Html.BAlign      $ shrink v
+  shrink (Html.BGColor v)     = map Html.BGColor     $ shrink v
+  shrink (Html.Border v)      = map Html.Border      $ shrink v
+  shrink (Html.CellBorder v)  = map Html.CellBorder  $ shrink v
+  shrink (Html.CellPadding v) = map Html.CellPadding $ shrink v
+  shrink (Html.CellSpacing v) = map Html.CellSpacing $ shrink v
+  shrink (Html.Color v)       = map Html.Color       $ shrink v
+  shrink (Html.ColSpan v)     = map Html.ColSpan     $ shrink v
+  shrink (Html.Face v)        = map Html.Face        $ shrink v
+  shrink (Html.FixedSize v)   = map Html.FixedSize   $ shrink v
+  shrink (Html.Height v)      = map Html.Height      $ shrink v
+  shrink (Html.HRef v)        = map Html.HRef        $ shrink v
+  shrink (Html.PointSize v)   = map Html.PointSize   $ shrink v
+  shrink (Html.Port v)        = map Html.Port        $ shrink v
+  shrink (Html.RowSpan v)     = map Html.RowSpan     $ shrink v
+  shrink (Html.Scale v)       = map Html.Scale       $ shrink v
+  shrink (Html.Src v)         = map Html.Src         $ shrinkString v
+  shrink (Html.Target v)      = map Html.Target      $ shrink v
+  shrink (Html.Title v)       = map Html.Title       $ shrink v
+  shrink (Html.VAlign v)      = map Html.VAlign      $ shrink v
+  shrink (Html.Width v)       = map Html.Width       $ shrink v
 
-instance Arbitrary HtmlScale where
+instance Arbitrary Html.Scale where
   arbitrary = arbBounded
 
-instance Arbitrary HtmlAlign where
+instance Arbitrary Html.Align where
   arbitrary = arbBounded
 
-instance Arbitrary HtmlVAlign where
+instance Arbitrary Html.VAlign where
   arbitrary = arbBounded
 
 instance Arbitrary PortName where

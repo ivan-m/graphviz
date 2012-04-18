@@ -89,6 +89,7 @@ module Data.GraphViz.Attributes
 
 import Data.GraphViz.Attributes.Complete
 import Data.GraphViz.Attributes.Colors.X11
+import qualified Data.GraphViz.Attributes.HTML as Html
 
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
@@ -175,14 +176,14 @@ instance Labellable Double where
 instance Labellable Bool where
   toLabelValue = toLabelValue . show
 
-instance Labellable HtmlLabel where
+instance Labellable Html.Label where
   toLabelValue = HtmlLabel
 
-instance Labellable HtmlText where
-  toLabelValue = toLabelValue . HtmlText
+instance Labellable Html.Text where
+  toLabelValue = toLabelValue . Html.Text
 
-instance Labellable HtmlTable where
-  toLabelValue = toLabelValue . HtmlTable
+instance Labellable Html.Table where
+  toLabelValue = toLabelValue . Html.Table
 
 instance Labellable RecordFields where
   toLabelValue = RecordLabel

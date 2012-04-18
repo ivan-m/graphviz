@@ -7,11 +7,12 @@
    License     : 3-Clause BSD-style
    Maintainer  : Ivan.Miljenovic@gmail.com
 
-   This module defines the syntax for HTML-like values for use in
-   Graphviz.  Please note that these values are /not/ really HTML, but
-   the term \"HTML\" is used throughout as it is less cumbersome than
-   \"HTML-like\".  To be able to use this, the version of Graphviz must
-   be at least 1.10.  For more information, please see:
+   This module is written to be imported qualified.  It defines the
+   syntax for HTML-like values for use in Graphviz.  Please note that
+   these values are /not/ really HTML, but the term \"HTML\" is used
+   throughout as it is less cumbersome than \"HTML-like\".  To be able
+   to use this, the version of Graphviz must be at least 1.10.  For
+   more information, please see:
        <http://graphviz.org/doc/info/shapes.html#html>
 
    The actual definition of the syntax specifies that these types must
@@ -51,19 +52,19 @@
 
 -}
 module Data.GraphViz.Attributes.HTML
-       ( HtmlLabel(..)
-       , HtmlText
-       , HtmlTextItem(..)
-       , HtmlFormat(..)
-       , HtmlTable(..)
-       , HtmlRow(..)
-       , HtmlCell(..)
-       , HtmlImg(..)
-       , HtmlAttributes
-       , HtmlAttribute(..)
-       , HtmlAlign(..)
-       , HtmlVAlign(..)
-       , HtmlScale(..)
+       ( Label(..)
+       , Text
+       , TextItem(..)
+       , Format(..)
+       , Table(..)
+       , Row(..)
+       , Cell(..)
+       , Img(..)
+       , Attributes
+       , Attribute(..)
+       , Align(..)
+       , VAlign(..)
+       , Scale(..)
        ) where
 
 import Data.GraphViz.Parsing
@@ -80,73 +81,72 @@ import Data.Maybe(catMaybes, listToMaybe)
 import Data.Word(Word8, Word16)
 import qualified Data.Map as Map
 import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
 import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
 
 -- | The overall type for HTML-like labels.  Fundamentally, HTML-like
 --   values in Graphviz are either textual (i.e. a single element with
---   formatting) or a table.  Note that 'HtmlLabel' values can be
---   nested via 'HtmlLabelCell'.
-data HtmlLabel = HtmlText HtmlText
-               | HtmlTable HtmlTable
-               deriving (Eq, Ord, Show, Read)
+--   formatting) or a table.  Note that 'Label' values can be
+--   nested via 'LabelCell'.
+data Label = Text  Text
+           | Table Table
+           deriving (Eq, Ord, Show, Read)
 
-instance PrintDot HtmlLabel where
-  unqtDot (HtmlText txt)  = unqtDot txt
-  unqtDot (HtmlTable tbl) = unqtDot tbl
+instance PrintDot Label where
+  unqtDot (Text txt)  = unqtDot txt
+  unqtDot (Table tbl) = unqtDot tbl
 
-instance ParseDot HtmlLabel where
-  -- Try parsing HtmlTable first in case of a FONT tag being used.
-  parseUnqt = liftM HtmlTable parseUnqt
+instance ParseDot Label where
+  -- Try parsing Table first in case of a FONT tag being used.
+  parseUnqt = liftM Table parseUnqt
               `onFail`
-              liftM HtmlText parseUnqt
+              liftM Text parseUnqt
               `adjustErr`
-              ("Can't parse HtmlLabel\n\t"++)
+              ("Can't parse Html.Label\n\t"++)
 
   parse = parseUnqt
 
 -- | Represents a textual component of an HTML-like label.  It is
---   assumed that an 'HtmlText' list is non-empty.  It is preferable
---   to \"group\" 'HtmlStr' values together rather than have
+--   assumed that an 'Text' list is non-empty.  It is preferable
+--   to \"group\" 'Str' values together rather than have
 --   individual ones.  Note that when printing, the individual values
 --   are concatenated together without spaces, and when parsing
---   anything that isn't a tag is assumed to be an 'HtmlStr': that is,
+--   anything that isn't a tag is assumed to be an 'Str': that is,
 --   something like \"@\<BR\/\> \<BR\/\>@\" is parsed as:
 --
---  > [HtmlNewline [], HtmlStr " ", HtmlNewline []]
-type HtmlText = [HtmlTextItem]
+--  > [Newline [], Str " ", Newline []]
+type Text = [TextItem]
 
 -- | Textual items in HTML-like labels.
-data HtmlTextItem = HtmlStr Text
-                    -- | Only accepts an optional 'HtmlAlign'
-                    --   'HtmlAttribute'; defined this way for ease of
-                    --   printing/parsing.
-                  | HtmlNewline HtmlAttributes
-                  | HtmlFont HtmlAttributes HtmlText
-                    -- | Only available in Graphviz >= 2.28.0.
-                  | HtmlFormat HtmlFormat HtmlText
-                  deriving (Eq, Ord, Show, Read)
+data TextItem = Str T.Text
+                -- | Only accepts an optional 'Align'
+                --   'Attribute'; defined this way for ease of
+                --   printing/parsing.
+              | Newline Attributes
+              | Font Attributes Text
+                -- | Only available in Graphviz >= 2.28.0.
+              | Format Format Text
+              deriving (Eq, Ord, Show, Read)
 
-instance PrintDot HtmlTextItem where
-  unqtDot (HtmlStr str)        = escapeValue str
-  unqtDot (HtmlNewline as)     = printHtmlEmptyTag (text "BR") as
-  unqtDot (HtmlFont as txt)    = printHtmlFontTag as $ unqtDot txt
-  unqtDot (HtmlFormat fmt txt) = printHtmlTag (unqtDot fmt) [] $ unqtDot txt
+instance PrintDot TextItem where
+  unqtDot (Str str)        = escapeValue str
+  unqtDot (Newline as)     = printEmptyTag (text "BR") as
+  unqtDot (Font as txt)    = printFontTag as $ unqtDot txt
+  unqtDot (Format fmt txt) = printTag (unqtDot fmt) [] $ unqtDot txt
 
   unqtListToDot = hcat . mapM unqtDot
 
   listToDot = unqtListToDot
 
-instance ParseDot HtmlTextItem where
-  parseUnqt = oneOf [ liftM HtmlStr unescapeValue
-                    , parseHtmlEmptyTag HtmlNewline "BR"
-                    , parseHtmlFontTag HtmlFont parseUnqt
-                    , parseHtmlTagRep HtmlFormat parseUnqt parseUnqt
+instance ParseDot TextItem where
+  parseUnqt = oneOf [ liftM Str unescapeValue
+                    , parseEmptyTag Newline "BR"
+                    , parseFontTag Font parseUnqt
+                    , parseTagRep Format parseUnqt parseUnqt
                     ]
               `adjustErr`
-              ("Can't parse HtmlTextItem\n\t"++)
+              ("Can't parse Html.TextItem\n\t"++)
 
   parse = parseUnqt
 
@@ -154,70 +154,70 @@ instance ParseDot HtmlTextItem where
 
   parseList = parseUnqtList
 
-data HtmlFormat = HtmlItalics
-                | HtmlBold
-                | HtmlUnderline
-                | HtmlSubscript
-                | HtmlSuperscript
+data Format = Italics
+                | Bold
+                | Underline
+                | Subscript
+                | Superscript
                 deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
-instance PrintDot HtmlFormat where
-  unqtDot HtmlItalics     = text "I"
-  unqtDot HtmlBold        = text "B"
-  unqtDot HtmlUnderline   = text "U"
-  unqtDot HtmlSubscript   = text "SUB"
-  unqtDot HtmlSuperscript = text "SUP"
+instance PrintDot Format where
+  unqtDot Italics     = text "I"
+  unqtDot Bold        = text "B"
+  unqtDot Underline   = text "U"
+  unqtDot Subscript   = text "SUB"
+  unqtDot Superscript = text "SUP"
 
-instance ParseDot HtmlFormat where
-  parseUnqt = stringValue [ ("I", HtmlItalics)
-                          , ("B", HtmlBold)
-                          , ("U", HtmlUnderline)
-                          , ("SUB", HtmlSubscript)
-                          , ("SUP", HtmlSuperscript)
+instance ParseDot Format where
+  parseUnqt = stringValue [ ("I", Italics)
+                          , ("B", Bold)
+                          , ("U", Underline)
+                          , ("SUB", Subscript)
+                          , ("SUP", Superscript)
                           ]
 
 -- | A table in HTML-like labels.  Tables are optionally wrapped in
 --   overall @FONT@ tags.
-data HtmlTable = HTable { -- | Optional @FONT@ attributes.  @'Just'
-                          --   []@ denotes empty @FONT@ tags;
-                          --   @'Nothing'@ denotes no such tags.
-                          tableFontAttrs :: Maybe HtmlAttributes
-                        , tableAttrs     :: HtmlAttributes
-                          -- | This list is assumed to be non-empty.
-                        , tableRows      :: [HtmlRow]
-                        }
+data Table = HTable { -- | Optional @FONT@ attributes.  @'Just'
+                      --   []@ denotes empty @FONT@ tags;
+                      --   @'Nothing'@ denotes no such tags.
+                      tableFontAttrs :: Maybe Attributes
+                    , tableAttrs     :: Attributes
+                      -- | This list is assumed to be non-empty.
+                    , tableRows      :: [Row]
+                    }
                deriving (Eq, Ord, Show, Read)
 
-instance PrintDot HtmlTable where
+instance PrintDot Table where
   unqtDot tbl = case tableFontAttrs tbl of
-                  (Just as) -> printHtmlFontTag as tbl'
+                  (Just as) -> printFontTag as tbl'
                   Nothing   -> tbl'
     where
-      tbl' = printHtmlTag (text "TABLE")
+      tbl' = printTag (text "TABLE")
                           (tableAttrs tbl)
                           (toDot $ tableRows tbl)
 
-instance ParseDot HtmlTable where
-  parseUnqt = wrapWhitespace (parseHtmlFontTag addFontAttrs pTbl)
+instance ParseDot Table where
+  parseUnqt = wrapWhitespace (parseFontTag addFontAttrs pTbl)
               `onFail`
               pTbl
               `adjustErr`
-              ("Can't parse HtmlTable\n\t"++)
+              ("Can't parse Html.Table\n\t"++)
     where
-      pTbl = wrapWhitespace $ parseHtmlTag (HTable Nothing)
-                                           "TABLE"
-                                           (wrapWhitespace parseUnqt)
+      pTbl = wrapWhitespace $ parseTag (HTable Nothing)
+                                       "TABLE"
+                                       (wrapWhitespace parseUnqt)
       addFontAttrs fas tbl = tbl { tableFontAttrs = Just fas }
 
   parse = parseUnqt
 
--- | A row in an 'HtmlTable'.  The list of 'HtmlCell' values is
+-- | A row in an 'Table'.  The list of 'Cell' values is
 --   assumed to be non-empty.
-newtype HtmlRow = HtmlRow [HtmlCell]
-                deriving (Eq, Ord, Show, Read)
+newtype Row = Row [Cell]
+            deriving (Eq, Ord, Show, Read)
 
-instance PrintDot HtmlRow where
-  unqtDot (HtmlRow cs) = printHtmlTag tr [] $ unqtDot cs
+instance PrintDot Row where
+  unqtDot (Row cs) = printTag tr [] $ unqtDot cs
     where
       tr = text "TR"
 
@@ -225,12 +225,12 @@ instance PrintDot HtmlRow where
 
   listToDot = unqtListToDot
 
-instance ParseDot HtmlRow where
-  -- To save doing it manually, use 'parseHtmlTag' and ignore any
-  -- 'HtmlAttributes' that it might accidentally parse.
-  parseUnqt = wrapWhitespace $ parseHtmlTag (const HtmlRow) "TR" parseUnqt
+instance ParseDot Row where
+  -- To save doing it manually, use 'parseTag' and ignore any
+  -- 'Attributes' that it might accidentally parse.
+  parseUnqt = wrapWhitespace $ parseTag (const Row) "TR" parseUnqt
               `adjustErr`
-              ("Can't parse HtmlRow\n\t"++)
+              ("Can't parse Html.Row\n\t"++)
 
   parse = parseUnqt
 
@@ -238,31 +238,31 @@ instance ParseDot HtmlRow where
 
   parseList = parseUnqtList
 
--- | Cells either recursively contain another 'HtmlLabel' or else a
+-- | Cells either recursively contain another 'Label' or else a
 --   path to an image file.
-data HtmlCell = HtmlLabelCell HtmlAttributes HtmlLabel
-              | HtmlImgCell HtmlAttributes HtmlImg
-              deriving (Eq, Ord, Show, Read)
+data Cell = LabelCell Attributes Label
+          | ImgCell Attributes Img
+          deriving (Eq, Ord, Show, Read)
 
-instance PrintDot HtmlCell where
-  unqtDot (HtmlLabelCell as l) = printCell as $ unqtDot l
-  unqtDot (HtmlImgCell as img) = printCell as $ unqtDot img
+instance PrintDot Cell where
+  unqtDot (LabelCell as l) = printCell as $ unqtDot l
+  unqtDot (ImgCell as img) = printCell as $ unqtDot img
 
   unqtListToDot = hsep . mapM unqtDot
 
   listToDot = unqtListToDot
 
-printCell :: HtmlAttributes -> DotCode -> DotCode
-printCell = printHtmlTag (text "TD")
+printCell :: Attributes -> DotCode -> DotCode
+printCell = printTag (text "TD")
 
-instance ParseDot HtmlCell where
-  parseUnqt = oneOf [ parseCell HtmlLabelCell parse
-                    , parseCell HtmlImgCell $ wrapWhitespace parseUnqt
+instance ParseDot Cell where
+  parseUnqt = oneOf [ parseCell LabelCell parse
+                    , parseCell ImgCell $ wrapWhitespace parseUnqt
                     ]
               `adjustErr`
-              ("Can't parse HtmlCell\n\t"++)
+              ("Can't parse Html.Cell\n\t"++)
     where
-      parseCell = flip parseHtmlTag "TD"
+      parseCell = flip parseTag "TD"
 
   parse = parseUnqt
 
@@ -270,113 +270,113 @@ instance ParseDot HtmlCell where
 
   parseList = parseUnqtList
 
--- | The path to an image; accepted 'HtmlAttributes' are 'HtmlScale' and 'HtmlSrc'.
-newtype HtmlImg = HtmlImg HtmlAttributes
-             deriving (Eq, Ord, Show, Read)
+-- | The path to an image; accepted 'Attributes' are 'Scale' and 'Src'.
+newtype Img = Img Attributes
+            deriving (Eq, Ord, Show, Read)
 
-instance PrintDot HtmlImg where
-  unqtDot (HtmlImg as) = printHtmlEmptyTag (text "IMG") as
+instance PrintDot Img where
+  unqtDot (Img as) = printEmptyTag (text "IMG") as
 
-instance ParseDot HtmlImg where
-  parseUnqt = wrapWhitespace (parseHtmlEmptyTag HtmlImg "IMG")
+instance ParseDot Img where
+  parseUnqt = wrapWhitespace (parseEmptyTag Img "IMG")
               `adjustErr`
-              ("Can't parse HtmlImg\n\t"++)
+              ("Can't parse Html.Img\n\t"++)
 
   parse = parseUnqt
 
 -- -----------------------------------------------------------------------------
 
 -- | The various HTML-like label-specific attributes being used.
-type HtmlAttributes = [HtmlAttribute]
+type Attributes = [Attribute]
 
--- | Note that not all 'HtmlAttribute' values are valid everywhere:
+-- | Note that not all 'Attribute' values are valid everywhere:
 --   see the comments for each one on where it is valid.
-data HtmlAttribute = HtmlAlign HtmlAlign   -- ^ Valid for:  'HtmlTable', 'HtmlCell', 'HtmlNewline'.
-                   | HtmlBAlign HtmlAlign  -- ^ Valid for: 'HtmlCell'.
-                   | HtmlBGColor Color     -- ^ Valid for: 'HtmlTable' (including 'tableFontAttrs'), 'HtmlCell', 'HtmlFont'.
-                   | HtmlBorder Word8      -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @1@; @0@ represents no border.
-                   | HtmlCellBorder Word8  -- ^ Valid for: 'HtmlTable'.  Default is @1@; @0@ represents no border.
-                   | HtmlCellPadding Word8 -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @2@.
-                   | HtmlCellSpacing Word8 -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @2@; maximum is @127@.
-                   | HtmlColor Color       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlColSpan Word16    -- ^ Valid for: 'HtmlCell'.  Default is @1@.
-                   | HtmlFace Text         -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
-                   | HtmlFixedSize Bool    -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Default is @'False'@.
-                   | HtmlHeight Word16     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlHRef Text         -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlPointSize Double  -- ^ Valid for: 'tableFontAttrs', 'HtmlFont'.
-                   | HtmlPort PortName     -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlRowSpan Word16    -- ^ Valid for: 'HtmlCell'.
-                   | HtmlScale HtmlScale   -- ^ Valid for: 'HtmlImg'.
-                   | HtmlSrc FilePath      -- ^ Valid for: 'HtmlImg'.
-                   | HtmlTarget Text       -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlTitle Text        -- ^ Valid for: 'HtmlTable', 'HtmlCell'.  Has an alias of @TOOLTIP@.
-                   | HtmlVAlign HtmlVAlign -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   | HtmlWidth Word16      -- ^ Valid for: 'HtmlTable', 'HtmlCell'.
-                   deriving (Eq, Ord, Show, Read)
+data Attribute = Align Align       -- ^ Valid for:  'Table', 'Cell', 'Newline'.
+               | BAlign Align      -- ^ Valid for: 'Cell'.
+               | BGColor Color     -- ^ Valid for: 'Table' (including 'tableFontAttrs'), 'Cell', 'Font'.
+               | Border Word8      -- ^ Valid for: 'Table', 'Cell'.  Default is @1@; @0@ represents no border.
+               | CellBorder Word8  -- ^ Valid for: 'Table'.  Default is @1@; @0@ represents no border.
+               | CellPadding Word8 -- ^ Valid for: 'Table', 'Cell'.  Default is @2@.
+               | CellSpacing Word8 -- ^ Valid for: 'Table', 'Cell'.  Default is @2@; maximum is @127@.
+               | Color Color       -- ^ Valid for: 'Table', 'Cell'.
+               | ColSpan Word16    -- ^ Valid for: 'Cell'.  Default is @1@.
+               | Face T.Text       -- ^ Valid for: 'tableFontAttrs', 'Font'.
+               | FixedSize Bool    -- ^ Valid for: 'Table', 'Cell'.  Default is @'False'@.
+               | Height Word16     -- ^ Valid for: 'Table', 'Cell'.
+               | HRef T.Text       -- ^ Valid for: 'Table', 'Cell'.
+               | PointSize Double  -- ^ Valid for: 'tableFontAttrs', 'Font'.
+               | Port PortName     -- ^ Valid for: 'Table', 'Cell'.
+               | RowSpan Word16    -- ^ Valid for: 'Cell'.
+               | Scale Scale       -- ^ Valid for: 'Img'.
+               | Src FilePath      -- ^ Valid for: 'Img'.
+               | Target T.Text     -- ^ Valid for: 'Table', 'Cell'.
+               | Title T.Text      -- ^ Valid for: 'Table', 'Cell'.  Has an alias of @TOOLTIP@.
+               | VAlign VAlign     -- ^ Valid for: 'Table', 'Cell'.
+               | Width Word16      -- ^ Valid for: 'Table', 'Cell'.
+               deriving (Eq, Ord, Show, Read)
 
-instance PrintDot HtmlAttribute where
-  unqtDot (HtmlAlign v)       = printHtmlField  "ALIGN" v
-  unqtDot (HtmlBAlign v)      = printHtmlField  "BALIGN" v
-  unqtDot (HtmlBGColor v)     = printHtmlField  "BGCOLOR" v
-  unqtDot (HtmlBorder v)      = printHtmlField  "BORDER" v
-  unqtDot (HtmlCellBorder v)  = printHtmlField  "CELLBORDER" v
-  unqtDot (HtmlCellPadding v) = printHtmlField  "CELLPADDING" v
-  unqtDot (HtmlCellSpacing v) = printHtmlField  "CELLSPACING" v
-  unqtDot (HtmlColor v)       = printHtmlField  "COLOR" v
-  unqtDot (HtmlColSpan v)     = printHtmlField  "COLSPAN" v
-  unqtDot (HtmlFace v)        = printHtmlField' "FACE" $ escapeAttribute v
-  unqtDot (HtmlFixedSize v)   = printHtmlField' "FIXEDSIZE" $ printBoolHtml v
-  unqtDot (HtmlHeight v)      = printHtmlField  "HEIGHT" v
-  unqtDot (HtmlHRef v)        = printHtmlField' "HREF" $ escapeAttribute v
-  unqtDot (HtmlPointSize v)   = printHtmlField  "POINT-SIZE" v
-  unqtDot (HtmlPort v)        = printHtmlField' "PORT" . escapeAttribute $ portName v
-  unqtDot (HtmlRowSpan v)     = printHtmlField  "ROWSPAN" v
-  unqtDot (HtmlScale v)       = printHtmlField  "SCALE" v
-  unqtDot (HtmlSrc v)         = printHtmlField' "SRC" . escapeAttribute $ T.pack v
-  unqtDot (HtmlTarget v)      = printHtmlField' "TARGET" $ escapeAttribute v
-  unqtDot (HtmlTitle v)       = printHtmlField' "TITLE" $ escapeAttribute v
-  unqtDot (HtmlVAlign v)      = printHtmlField  "VALIGN" v
-  unqtDot (HtmlWidth v)       = printHtmlField  "WIDTH" v
+instance PrintDot Attribute where
+  unqtDot (Align v)       = printHtmlField  "ALIGN" v
+  unqtDot (BAlign v)      = printHtmlField  "BALIGN" v
+  unqtDot (BGColor v)     = printHtmlField  "BGCOLOR" v
+  unqtDot (Border v)      = printHtmlField  "BORDER" v
+  unqtDot (CellBorder v)  = printHtmlField  "CELLBORDER" v
+  unqtDot (CellPadding v) = printHtmlField  "CELLPADDING" v
+  unqtDot (CellSpacing v) = printHtmlField  "CELLSPACING" v
+  unqtDot (Color v)       = printHtmlField  "COLOR" v
+  unqtDot (ColSpan v)     = printHtmlField  "COLSPAN" v
+  unqtDot (Face v)        = printHtmlField' "FACE" $ escapeAttribute v
+  unqtDot (FixedSize v)   = printHtmlField' "FIXEDSIZE" $ printBoolHtml v
+  unqtDot (Height v)      = printHtmlField  "HEIGHT" v
+  unqtDot (HRef v)        = printHtmlField' "HREF" $ escapeAttribute v
+  unqtDot (PointSize v)   = printHtmlField  "POINT-SIZE" v
+  unqtDot (Port v)        = printHtmlField' "PORT" . escapeAttribute $ portName v
+  unqtDot (RowSpan v)     = printHtmlField  "ROWSPAN" v
+  unqtDot (Scale v)       = printHtmlField  "SCALE" v
+  unqtDot (Src v)         = printHtmlField' "SRC" . escapeAttribute $ T.pack v
+  unqtDot (Target v)      = printHtmlField' "TARGET" $ escapeAttribute v
+  unqtDot (Title v)       = printHtmlField' "TITLE" $ escapeAttribute v
+  unqtDot (VAlign v)      = printHtmlField  "VALIGN" v
+  unqtDot (Width v)       = printHtmlField  "WIDTH" v
 
   unqtListToDot = hsep . mapM unqtDot
 
   listToDot = unqtListToDot
 
 -- | Only to be used when the 'PrintDot' instance of @a@ matches the
---   HTML syntax (i.e. numbers and @Html*@ values; 'Color' values also
+--   HTML syntax (i.e. numbers and @Html.*@ values; 'Color' values also
 --   seem to work).
-printHtmlField   :: (PrintDot a) => Text -> a -> DotCode
+printHtmlField   :: (PrintDot a) => T.Text -> a -> DotCode
 printHtmlField f = printHtmlField' f . unqtDot
 
-printHtmlField'     :: Text -> DotCode -> DotCode
+printHtmlField'     :: T.Text -> DotCode -> DotCode
 printHtmlField' f v = text f <> equals <> dquotes v
 
-instance ParseDot HtmlAttribute where
-  parseUnqt = oneOf [ parseHtmlField  HtmlAlign "ALIGN"
-                    , parseHtmlField  HtmlBAlign "BALIGN"
-                    , parseHtmlField  HtmlBGColor "BGCOLOR"
-                    , parseHtmlField  HtmlBorder "BORDER"
-                    , parseHtmlField  HtmlCellBorder "CELLBORDER"
-                    , parseHtmlField  HtmlCellPadding "CELLPADDING"
-                    , parseHtmlField  HtmlCellSpacing "CELLSPACING"
-                    , parseHtmlField  HtmlColor "COLOR"
-                    , parseHtmlField  HtmlColSpan "COLSPAN"
-                    , parseHtmlField' HtmlFace "FACE" unescapeAttribute
-                    , parseHtmlField' HtmlFixedSize "FIXEDSIZE" parseBoolHtml
-                    , parseHtmlField  HtmlHeight "HEIGHT"
-                    , parseHtmlField' HtmlHRef "HREF" unescapeAttribute
-                    , parseHtmlField  HtmlPointSize "POINT-SIZE"
-                    , parseHtmlField' (HtmlPort . PN) "PORT" unescapeAttribute
-                    , parseHtmlField  HtmlRowSpan "ROWSPAN"
-                    , parseHtmlField  HtmlScale "SCALE"
-                    , parseHtmlField' HtmlSrc "SRC" $ liftM T.unpack unescapeAttribute
-                    , parseHtmlField' HtmlTarget "TARGET" unescapeAttribute
-                    , parseHtmlField' HtmlTitle "TITLE" unescapeAttribute
+instance ParseDot Attribute where
+  parseUnqt = oneOf [ parseHtmlField  Align "ALIGN"
+                    , parseHtmlField  BAlign "BALIGN"
+                    , parseHtmlField  BGColor "BGCOLOR"
+                    , parseHtmlField  Border "BORDER"
+                    , parseHtmlField  CellBorder "CELLBORDER"
+                    , parseHtmlField  CellPadding "CELLPADDING"
+                    , parseHtmlField  CellSpacing "CELLSPACING"
+                    , parseHtmlField  Color "COLOR"
+                    , parseHtmlField  ColSpan "COLSPAN"
+                    , parseHtmlField' Face "FACE" unescapeAttribute
+                    , parseHtmlField' FixedSize "FIXEDSIZE" parseBoolHtml
+                    , parseHtmlField  Height "HEIGHT"
+                    , parseHtmlField' HRef "HREF" unescapeAttribute
+                    , parseHtmlField  PointSize "POINT-SIZE"
+                    , parseHtmlField' (Port . PN) "PORT" unescapeAttribute
+                    , parseHtmlField  RowSpan "ROWSPAN"
+                    , parseHtmlField  Scale "SCALE"
+                    , parseHtmlField' Src "SRC" $ liftM T.unpack unescapeAttribute
+                    , parseHtmlField' Target "TARGET" unescapeAttribute
+                    , parseHtmlField' Title "TITLE" unescapeAttribute
                       `onFail`
-                      parseHtmlField' HtmlTitle "TOOLTIP" unescapeAttribute
-                    , parseHtmlField  HtmlVAlign "VALIGN"
-                    , parseHtmlField  HtmlWidth "WIDTH"
+                      parseHtmlField' Title "TOOLTIP" unescapeAttribute
+                    , parseHtmlField  VAlign "VALIGN"
+                    , parseHtmlField  Width "WIDTH"
                     ]
 
   parse = parseUnqt
@@ -387,12 +387,12 @@ instance ParseDot HtmlAttribute where
 
 
 
-parseHtmlField     :: (ParseDot a) => (a -> HtmlAttribute) -> String
-                      -> Parse HtmlAttribute
+parseHtmlField     :: (ParseDot a) => (a -> Attribute) -> String
+                  -> Parse Attribute
 parseHtmlField c f = parseHtmlField' c f parseUnqt
 
-parseHtmlField'       :: (a -> HtmlAttribute) -> String -> Parse a
-                         -> Parse HtmlAttribute
+parseHtmlField'       :: (a -> Attribute) -> String -> Parse a
+                     -> Parse Attribute
 parseHtmlField' c f p = do string f
                            parseEq
                            liftM c $ quotedParse p
@@ -400,23 +400,22 @@ parseHtmlField' c f p = do string f
 -- | Specifies horizontal placement. When an object is allocated more
 --   space than required, this value determines where the extra space
 --   is placed left and right of the object.
-data HtmlAlign = HLeft
-               | HCenter -- ^ Default value.
-               | HRight
-               | HText -- ^ 'HtmlLabelCell' values only; aligns lines
-                       --   of text using the full cell width. The
-                       --   alignment of a line is determined by its
-                       --   (possibly implicit) associated
-                       --   'HtmlNewline' element.
-               deriving (Eq, Ord, Bounded, Enum, Show, Read)
+data Align = HLeft
+           | HCenter -- ^ Default value.
+           | HRight
+           | HText -- ^ 'LabelCell' values only; aligns lines of text
+                   --   using the full cell width. The alignment of a
+                   --   line is determined by its (possibly implicit)
+                   --   associated 'Newline' element.
+           deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
-instance PrintDot HtmlAlign where
+instance PrintDot Align where
   unqtDot HLeft   = text "LEFT"
   unqtDot HCenter = text "CENTER"
   unqtDot HRight  = text "RIGHT"
   unqtDot HText   = text "TEXT"
 
-instance ParseDot HtmlAlign where
+instance ParseDot Align where
   parseUnqt = oneOf [ stringRep HLeft "LEFT"
                     , stringRep HCenter "CENTER"
                     , stringRep HRight "RIGHT"
@@ -428,17 +427,17 @@ instance ParseDot HtmlAlign where
 -- | Specifies vertical placement. When an object is allocated more
 --   space than required, this value determines where the extra space
 --   is placed above and below the object.
-data HtmlVAlign = HTop
-                | HMiddle -- ^ Default value.
-                | HBottom
-                deriving (Eq, Ord, Bounded, Enum, Show, Read)
+data VAlign = HTop
+            | HMiddle -- ^ Default value.
+            | HBottom
+            deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
-instance PrintDot HtmlVAlign where
+instance PrintDot VAlign where
   unqtDot HTop    = text "TOP"
   unqtDot HMiddle = text "MIDDLE"
   unqtDot HBottom = text "BOTTOM"
 
-instance ParseDot HtmlVAlign where
+instance ParseDot VAlign where
   parseUnqt = oneOf [ stringRep HTop "TOP"
                     , stringRep HMiddle "MIDDLE"
                     , stringRep HBottom "BOTTOM"
@@ -449,39 +448,39 @@ instance ParseDot HtmlVAlign where
 -- | Specifies how an image will use any extra space available in its
 --   cell.  If undefined, the image inherits the value of the
 --   @ImageScale@ attribute.
-data HtmlScale = HtmlNaturalSize -- ^ Default value.
-               | HtmlScaleUniformly
-               | HtmlExpandWidth
-               | HtmlExpandHeight
-               | HtmlExpandBoth
+data Scale = NaturalSize -- ^ Default value.
+               | ScaleUniformly
+               | ExpandWidth
+               | ExpandHeight
+               | ExpandBoth
                deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
-instance PrintDot HtmlScale where
-  unqtDot HtmlNaturalSize    = text "FALSE"
-  unqtDot HtmlScaleUniformly = text "TRUE"
-  unqtDot HtmlExpandWidth    = text "WIDTH"
-  unqtDot HtmlExpandHeight   = text "HEIGHT"
-  unqtDot HtmlExpandBoth     = text "BOTH"
+instance PrintDot Scale where
+  unqtDot NaturalSize    = text "FALSE"
+  unqtDot ScaleUniformly = text "TRUE"
+  unqtDot ExpandWidth    = text "WIDTH"
+  unqtDot ExpandHeight   = text "HEIGHT"
+  unqtDot ExpandBoth     = text "BOTH"
 
-instance ParseDot HtmlScale where
-  parseUnqt = oneOf [ stringRep HtmlNaturalSize "FALSE"
-                    , stringRep HtmlScaleUniformly "TRUE"
-                    , stringRep HtmlExpandWidth "WIDTH"
-                    , stringRep HtmlExpandHeight "HEIGHT"
-                    , stringRep HtmlExpandBoth "BOTH"
+instance ParseDot Scale where
+  parseUnqt = oneOf [ stringRep NaturalSize "FALSE"
+                    , stringRep ScaleUniformly "TRUE"
+                    , stringRep ExpandWidth "WIDTH"
+                    , stringRep ExpandHeight "HEIGHT"
+                    , stringRep ExpandBoth "BOTH"
                     ]
 
   parse = parseUnqt
 
 -- -----------------------------------------------------------------------------
 
-escapeAttribute :: Text -> DotCode
+escapeAttribute :: T.Text -> DotCode
 escapeAttribute = escapeHtml False
 
-escapeValue :: Text -> DotCode
+escapeValue :: T.Text -> DotCode
 escapeValue = escapeHtml True
 
-escapeHtml               :: Bool -> Text -> DotCode
+escapeHtml               :: Bool -> T.Text -> DotCode
 escapeHtml quotesAllowed = hcat . liftM concat
                            . mapM (escapeSegment . T.unpack)
                            . T.groupBy ((==) `on` isSpace)
@@ -503,16 +502,16 @@ escapeHtml quotesAllowed = hcat . liftM concat
     escape' e = char '&' <> e <> char ';'
     escape = escape' . text
 
-unescapeAttribute :: Parse Text
+unescapeAttribute :: Parse T.Text
 unescapeAttribute = unescapeHtml False
 
-unescapeValue :: Parse Text
+unescapeValue :: Parse T.Text
 unescapeValue = unescapeHtml True
 
 -- | Parses an HTML-compatible 'String', de-escaping known characters.
 --   Note: this /will/ fail if an unknown non-numeric HTML-escape is
 --   used.
-unescapeHtml               :: Bool -> Parse Text
+unescapeHtml               :: Bool -> Parse T.Text
 unescapeHtml quotesAllowed = liftM (T.pack . catMaybes)
                              . many1 . oneOf $ [ parseEscpd
                                                , validChars
@@ -546,7 +545,7 @@ unescapeHtml quotesAllowed = liftM (T.pack . catMaybes)
 
 -- | The characters that need to be escaped and what they need to be
 --   replaced with (sans @'&'@).
-htmlEscapes :: [(Char, Text)]
+htmlEscapes :: [(Char, T.Text)]
 htmlEscapes = [ ('"', "quot")
               , ('<', "lt")
               , ('>', "gt")
@@ -559,7 +558,7 @@ htmlEscapes = [ ('"', "quot")
 -- | Flip the order and add extra values that might be escaped.  More
 --   specifically, provide the escape code for spaces (@\"nbsp\"@) and
 --   apostrophes (@\"apos\"@) since they aren't used for escaping.
-htmlUnescapes :: [(Text, Char)]
+htmlUnescapes :: [(T.Text, Char)]
 htmlUnescapes = maybeEscaped
                 ++
                 map (uncurry (flip (,))) htmlEscapes
@@ -577,33 +576,33 @@ parseBoolHtml = stringRep True "TRUE"
 -- -----------------------------------------------------------------------------
 
 -- | Print something like @<FOO ATTR=\"ATTR_VALUE\">value<\/FOO>@
-printHtmlTag        :: DotCode -> HtmlAttributes -> DotCode -> DotCode
-printHtmlTag t as v = angled (t <+> toDot as)
+printTag        :: DotCode -> Attributes -> DotCode -> DotCode
+printTag t as v = angled (t <+> toDot as)
                       <> v
                       <> angled (fslash <> t)
 
-printHtmlFontTag :: HtmlAttributes -> DotCode -> DotCode
-printHtmlFontTag = printHtmlTag (text "FONT")
+printFontTag :: Attributes -> DotCode -> DotCode
+printFontTag = printTag (text "FONT")
 
 -- | Print something like @<FOO ATTR=\"ATTR_VALUE\"\/>@
-printHtmlEmptyTag      :: DotCode -> HtmlAttributes -> DotCode
-printHtmlEmptyTag t as = angled $ t <+> toDot as <> fslash
+printEmptyTag      :: DotCode -> Attributes -> DotCode
+printEmptyTag t as = angled $ t <+> toDot as <> fslash
 
 -- -----------------------------------------------------------------------------
 
 -- Note: can't use bracket here because we're not completely
 -- discarding everything from the opening bracket.
 
--- Not using parseHtmlTagRep for parseHtmlTag because open/close case
+-- Not using parseTagRep for parseTag because open/close case
 -- is different; worth fixing?
 
 -- | Parse something like @<FOO ATTR=\"ATTR_VALUE\">value<\/FOO>@
-parseHtmlTag        :: (HtmlAttributes -> val -> tag) -> String
+parseTag        :: (Attributes -> val -> tag) -> String
                        -> Parse val -> Parse tag
-parseHtmlTag c t pv = do as <- parseAngled openingTag
-                         v <- pv
-                         parseAngled $ character '/' >> t' >> whitespace
-                         return $ c as v
+parseTag c t pv = do as <- parseAngled openingTag
+                     v <- pv
+                     parseAngled $ character '/' >> t' >> whitespace
+                     return $ c as v
   where
     t' = string t
     openingTag = do t'
@@ -611,18 +610,18 @@ parseHtmlTag c t pv = do as <- parseAngled openingTag
                     whitespace
                     return as
 
-parseHtmlTagRep :: (tagName -> val -> tag) -> Parse tagName -> Parse val -> Parse tag
-parseHtmlTagRep c pt pv = do tn <- parseAngled (pt `discard` whitespace)
-                             v <- pv
-                             parseAngled $ character '/' >> pt >> whitespace
-                             return $ c tn v
+parseTagRep :: (tagName -> val -> tag) -> Parse tagName -> Parse val -> Parse tag
+parseTagRep c pt pv = do tn <- parseAngled (pt `discard` whitespace)
+                         v <- pv
+                         parseAngled $ character '/' >> pt >> whitespace
+                         return $ c tn v
 
-parseHtmlFontTag :: (HtmlAttributes -> val -> tag) -> Parse val -> Parse tag
-parseHtmlFontTag = flip parseHtmlTag "FONT"
+parseFontTag :: (Attributes -> val -> tag) -> Parse val -> Parse tag
+parseFontTag = flip parseTag "FONT"
 
 -- | Parse something like @<FOO ATTR=\"ATTR_VALUE\"\/>@
-parseHtmlEmptyTag     :: (HtmlAttributes -> tag) -> String -> Parse tag
-parseHtmlEmptyTag c t = parseAngled
+parseEmptyTag     :: (Attributes -> tag) -> String -> Parse tag
+parseEmptyTag c t = parseAngled
                         ( do string t
                              as <- tryParseList' $ whitespace1 >> parse
                              whitespace

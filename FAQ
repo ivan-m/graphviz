@@ -439,7 +439,7 @@ performance when the wrong case is used.
 
 Graphviz allows you to specify edges such as `from:a -> to:b` where
 the nodes "from" and "to" are defined with either `RecordLabel` or
-`HtmlLabel` labels and have different sections; the edge is then drawn
+`Html.Label` labels and have different sections; the edge is then drawn
 from the "a" section of the "from" node to the "b" section of the "to"
 node.
 
