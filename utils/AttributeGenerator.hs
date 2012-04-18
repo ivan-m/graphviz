@@ -460,7 +460,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Aspect" ["aspect"] "G" (Cust "AspectType") Nothing Nothing Nothing Nothing (Just "dot only")
              , makeAttr "BoundingBox" ["bb"] "G" (Cust "Rect") Nothing Nothing Nothing Nothing (Just "write only")
              , makeAttr "ColorScheme" ["colorscheme"] "ENCG" (Cust "ColorScheme") Nothing (Just "X11") (Just "@'X11'@") Nothing Nothing
-             , makeAttr "BgColor" ["bgcolor"] "GC" (Cust "Color") Nothing (Just "(X11Color Transparent)") (Just "@'X11Color' 'Transparent'@") Nothing Nothing
+             , makeAttr "BgColor" ["bgcolor"] "GC" (Cust "[Color]") Nothing (Just "[X11Color Transparent]") (Just "@['X11Color' 'Transparent']@") Nothing Nothing
              , makeAttr "Center" ["center"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "ClusterRank" ["clusterrank"] "G" (Cust "ClusterMode") Nothing (Just "Local") (Just "@'Local'@") Nothing (Just "dot only")
              , makeAttr "Color" ["color"] "ENC" (Cust "[Color]") Nothing (Just "[X11Color Black]") (Just "@['X11Color' 'Black']@") Nothing Nothing
@@ -481,7 +481,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "EdgeTooltip" ["edgetooltip"] "E" EStrng Nothing Nothing (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only")
              , makeAttr "Epsilon" ["epsilon"] "G" Dbl Nothing Nothing (Just "@.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@)") Nothing (Just "neato only")
              , makeAttr "ESep" ["esep"] "G" (Cust "DPoint") Nothing (Just "(DVal 3)") (Just "@'DVal' 3@") Nothing (Just "not dot")
-             , makeAttr "FillColor" ["fillcolor"] "NC" (Cust "Color") Nothing (Just "(X11Color Black)")(Just "@'X11Color' 'LightGray'@ (nodes), @'X11Color' 'Black'@ (clusters)") Nothing Nothing
+             , makeAttr "FillColor" ["fillcolor"] "NEC" (Cust "[Color]") Nothing (Just "[X11Color Black]")(Just "@['X11Color' 'LightGray']@ (nodes), @['X11Color' 'Black']@ (clusters)") Nothing Nothing
              , makeAttr "FixedSize" ["fixedsize"] "N" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "FontColor" ["fontcolor"] "ENGC" (Cust "Color") Nothing (Just "(X11Color Black)") (Just "@'X11Color' 'Black'@") Nothing Nothing
              , makeAttr "FontName" ["fontname"] "ENGC" Strng Nothing (Just "\"Times-Roman\"") (Just "@\\\"Times-Roman\\\"@") Nothing Nothing
@@ -489,6 +489,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "FontPath" ["fontpath"] "G" Strng Nothing Nothing (Just "system dependent") Nothing Nothing
              , makeAttr "FontSize" ["fontsize"] "ENGC" Dbl Nothing (Just "14") (Just "@14.0@") (Just "@1.0@") Nothing
              , makeAttr "ForceLabels" ["forcelabels"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "Only for 'XLabel' attributes")
+             , makeAttr "GradientAngle" ["gradientangle"] "NCG" Integ Nothing (Just "0") (Just "0") Nothing (Just "requires Graphviz >= 2.29.0")
              , makeAttr "Group" ["group"] "N" Strng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only")
              , makeAttr "HeadURL" ["headURL", "headhref"] "E" EStrng Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only")
              , makeAttr "HeadClip" ["headclip"] "E" Bl (Just "True") (Just "True") (Just "@'True'@") Nothing Nothing

@@ -68,7 +68,7 @@ instance Arbitrary Attribute where
                     , liftM Aspect arbitrary
                     , liftM BoundingBox arbitrary
                     , liftM ColorScheme arbitrary
-                    , liftM BgColor arbitrary
+                    , liftM BgColor arbList
                     , liftM Center arbitrary
                     , liftM ClusterRank arbitrary
                     , liftM Color arbList
@@ -89,7 +89,7 @@ instance Arbitrary Attribute where
                     , liftM EdgeTooltip arbitrary
                     , liftM Epsilon arbitrary
                     , liftM ESep arbitrary
-                    , liftM FillColor arbitrary
+                    , liftM FillColor arbList
                     , liftM FixedSize arbitrary
                     , liftM FontColor arbitrary
                     , liftM FontName arbitrary
@@ -97,6 +97,7 @@ instance Arbitrary Attribute where
                     , liftM FontPath arbitrary
                     , liftM FontSize arbitrary
                     , liftM ForceLabels arbitrary
+                    , liftM GradientAngle arbitrary
                     , liftM Group arbitrary
                     , liftM HeadURL arbitrary
                     , liftM HeadClip arbitrary
@@ -222,7 +223,7 @@ instance Arbitrary Attribute where
   shrink (Aspect v)             = map Aspect              $ shrink v
   shrink (BoundingBox v)        = map BoundingBox         $ shrink v
   shrink (ColorScheme v)        = map ColorScheme         $ shrink v
-  shrink (BgColor v)            = map BgColor             $ shrink v
+  shrink (BgColor v)            = map BgColor             $ nonEmptyShrinks v
   shrink (Center v)             = map Center              $ shrink v
   shrink (ClusterRank v)        = map ClusterRank         $ shrink v
   shrink (Color v)              = map Color               $ nonEmptyShrinks v
@@ -243,7 +244,7 @@ instance Arbitrary Attribute where
   shrink (EdgeTooltip v)        = map EdgeTooltip         $ shrink v
   shrink (Epsilon v)            = map Epsilon             $ shrink v
   shrink (ESep v)               = map ESep                $ shrink v
-  shrink (FillColor v)          = map FillColor           $ shrink v
+  shrink (FillColor v)          = map FillColor           $ nonEmptyShrinks v
   shrink (FixedSize v)          = map FixedSize           $ shrink v
   shrink (FontColor v)          = map FontColor           $ shrink v
   shrink (FontName v)           = map FontName            $ shrink v
@@ -251,6 +252,7 @@ instance Arbitrary Attribute where
   shrink (FontPath v)           = map FontPath            $ shrink v
   shrink (FontSize v)           = map FontSize            $ shrink v
   shrink (ForceLabels v)        = map ForceLabels         $ shrink v
+  shrink (GradientAngle v)      = map GradientAngle       $ shrink v
   shrink (Group v)              = map Group               $ shrink v
   shrink (HeadURL v)            = map HeadURL             $ shrink v
   shrink (HeadClip v)           = map HeadClip            $ shrink v
@@ -657,6 +659,7 @@ instance Arbitrary StyleName where
                                , Diagonals
                                , Rounded
                                , Tapered
+                               , Radial
                                ]
       notDefault = flip notElem [ "dashed"
                                 , "dotted"
@@ -667,6 +670,7 @@ instance Arbitrary StyleName where
                                 , "diagonals"
                                 , "rounded"
                                 , "tapered"
+                                , "radial"
                                 ]
 
 instance Arbitrary PortPos where

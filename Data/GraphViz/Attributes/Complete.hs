@@ -26,11 +26,13 @@
 
    * @ColorList@, @DoubleList@ and @PointfList@ are defined as actual
      lists (@'LayerList'@ needs a newtype for other reasons).  All of these
-     are assumed to be non-empty lists.  Note that for the @Color@
-     'Attribute' for node values, only a single Color is valid; edges are
-     allowed multiple colors with one spline/arrow per color in the list
-     (but you must have at least one 'Color' in the list).  This might be
-     changed in future.
+     are assumed to be non-empty lists.
+
+   * For the various @*Color@ attributes that take in a list of
+     'Color' values, usually only one color is used.  The @Color@
+     attribute for edges allows multiple values; for other attributes,
+     two values are supported for gradient fills in Graphviz >=
+     2.29.0.
 
    * Style is implemented as a list of 'StyleItem' values; note that
      empty lists are not allowed.
@@ -248,7 +250,7 @@ data Attribute
   | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
   | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
   | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
-  | BgColor Color                       -- ^ /Valid for/: GC; /Default/: @'X11Color' 'Transparent'@
+  | BgColor [Color]                     -- ^ /Valid for/: GC; /Default/: @['X11Color' 'Transparent']@
   | Center Bool                         -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | ClusterRank ClusterMode             -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
   | Color [Color]                       -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
@@ -269,7 +271,7 @@ data Attribute
   | EdgeTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
   | Epsilon Double                      -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
   | ESep DPoint                         -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not dot
-  | FillColor Color                     -- ^ /Valid for/: NC; /Default/: @'X11Color' 'LightGray'@ (nodes), @'X11Color' 'Black'@ (clusters)
+  | FillColor [Color]                   -- ^ /Valid for/: NEC; /Default/: @['X11Color' 'LightGray']@ (nodes), @['X11Color' 'Black']@ (clusters)
   | FixedSize Bool                      -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
   | FontColor Color                     -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
   | FontName Text                       -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
@@ -277,6 +279,7 @@ data Attribute
   | FontPath Text                       -- ^ /Valid for/: G; /Default/: system dependent
   | FontSize Double                     -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
   | ForceLabels Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: Only for 'XLabel' attributes
+  | GradientAngle Int                   -- ^ /Valid for/: NCG; /Default/: 0; /Notes/: requires Graphviz >= 2.29.0
   | Group Text                          -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
   | HeadURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
   | HeadClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
@@ -437,6 +440,7 @@ instance PrintDot Attribute where
   unqtDot (FontPath v)           = printField "fontpath" v
   unqtDot (FontSize v)           = printField "fontsize" v
   unqtDot (ForceLabels v)        = printField "forcelabels" v
+  unqtDot (GradientAngle v)      = printField "gradientangle" v
   unqtDot (Group v)              = printField "group" v
   unqtDot (HeadURL v)            = printField "headURL" v
   unqtDot (HeadClip v)           = printField "headclip" v
@@ -593,6 +597,7 @@ instance ParseDot Attribute where
                                   , parseField FontPath "fontpath"
                                   , parseField FontSize "fontsize"
                                   , parseFieldBool ForceLabels "forcelabels"
+                                  , parseField GradientAngle "gradientangle"
                                   , parseField Group "group"
                                   , parseFields HeadURL ["headURL", "headhref"]
                                   , parseFieldBool HeadClip "headclip"
@@ -741,6 +746,7 @@ usedByGraphs FontNames{}          = True
 usedByGraphs FontPath{}           = True
 usedByGraphs FontSize{}           = True
 usedByGraphs ForceLabels{}        = True
+usedByGraphs GradientAngle{}      = True
 usedByGraphs ID{}                 = True
 usedByGraphs ImagePath{}          = True
 usedByGraphs Label{}              = True
@@ -815,6 +821,7 @@ usedByClusters FillColor{}        = True
 usedByClusters FontColor{}        = True
 usedByClusters FontName{}         = True
 usedByClusters FontSize{}         = True
+usedByClusters GradientAngle{}    = True
 usedByClusters Label{}            = True
 usedByClusters LabelJust{}        = True
 usedByClusters LabelLoc{}         = True
@@ -851,6 +858,7 @@ usedByNodes FixedSize{}        = True
 usedByNodes FontColor{}        = True
 usedByNodes FontName{}         = True
 usedByNodes FontSize{}         = True
+usedByNodes GradientAngle{}    = True
 usedByNodes Group{}            = True
 usedByNodes Height{}           = True
 usedByNodes ID{}               = True
@@ -902,6 +910,7 @@ usedByEdges Dir{}              = True
 usedByEdges EdgeURL{}          = True
 usedByEdges EdgeTarget{}       = True
 usedByEdges EdgeTooltip{}      = True
+usedByEdges FillColor{}        = True
 usedByEdges FontColor{}        = True
 usedByEdges FontName{}         = True
 usedByEdges FontSize{}         = True
@@ -988,6 +997,7 @@ sameAttribute FontNames{}             FontNames{}             = True
 sameAttribute FontPath{}              FontPath{}              = True
 sameAttribute FontSize{}              FontSize{}              = True
 sameAttribute ForceLabels{}           ForceLabels{}           = True
+sameAttribute GradientAngle{}         GradientAngle{}         = True
 sameAttribute Group{}                 Group{}                 = True
 sameAttribute HeadURL{}               HeadURL{}               = True
 sameAttribute HeadClip{}              HeadClip{}              = True
@@ -1113,7 +1123,7 @@ defaultAttributeValue ArrowHead{}          = Just $ ArrowHead normal
 defaultAttributeValue ArrowSize{}          = Just $ ArrowSize 1
 defaultAttributeValue ArrowTail{}          = Just $ ArrowTail normal
 defaultAttributeValue ColorScheme{}        = Just $ ColorScheme X11
-defaultAttributeValue BgColor{}            = Just $ BgColor (X11Color Transparent)
+defaultAttributeValue BgColor{}            = Just $ BgColor [X11Color Transparent]
 defaultAttributeValue Center{}             = Just $ Center False
 defaultAttributeValue ClusterRank{}        = Just $ ClusterRank Local
 defaultAttributeValue Color{}              = Just $ Color [X11Color Black]
@@ -1128,13 +1138,14 @@ defaultAttributeValue DirEdgeConstraints{} = Just $ DirEdgeConstraints NoConstra
 defaultAttributeValue Distortion{}         = Just $ Distortion 0
 defaultAttributeValue EdgeURL{}            = Just $ EdgeURL ""
 defaultAttributeValue ESep{}               = Just $ ESep (DVal 3)
-defaultAttributeValue FillColor{}          = Just $ FillColor (X11Color Black)
+defaultAttributeValue FillColor{}          = Just $ FillColor [X11Color Black]
 defaultAttributeValue FixedSize{}          = Just $ FixedSize False
 defaultAttributeValue FontColor{}          = Just $ FontColor (X11Color Black)
 defaultAttributeValue FontName{}           = Just $ FontName "Times-Roman"
 defaultAttributeValue FontNames{}          = Just $ FontNames ""
 defaultAttributeValue FontSize{}           = Just $ FontSize 14
 defaultAttributeValue ForceLabels{}        = Just $ ForceLabels False
+defaultAttributeValue GradientAngle{}      = Just $ GradientAngle 0
 defaultAttributeValue Group{}              = Just $ Group ""
 defaultAttributeValue HeadURL{}            = Just $ HeadURL ""
 defaultAttributeValue HeadClip{}           = Just $ HeadClip True
@@ -1272,6 +1283,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "fontpath"
                , "fontsize"
                , "forcelabels"
+               , "gradientangle"
                , "group"
                , "headURL"
                , "headhref"
@@ -2672,8 +2684,11 @@ data StyleName = Dashed    -- ^ Nodes and Edges
                | Filled    -- ^ Nodes and Clusters
                | Diagonals -- ^ Nodes only
                | Rounded   -- ^ Nodes and Clusters
-               | Tapered   -- ^ Edges only; currently only in the 2.29
-                           --   development branch.
+               | Tapered   -- ^ Edges only; requires Graphviz >=
+                           --   2.29.0.
+               | Radial    -- ^ Nodes, Clusters and Graphs, for use
+                           --   with 'GradientAngle'; requires
+                           --   Graphviz >= 2.29.0.
                | DD Text   -- ^ Device Dependent
                deriving (Eq, Ord, Show, Read)
 
@@ -2687,6 +2702,7 @@ instance PrintDot StyleName where
   unqtDot Diagonals = text "diagonals"
   unqtDot Rounded   = text "rounded"
   unqtDot Tapered   = text "tapered"
+  unqtDot Radial    = text "radial"
   unqtDot (DD nm)   = unqtDot nm
 
   toDot (DD nm) = toDot nm
@@ -2710,6 +2726,7 @@ checkDD str = case T.toLower str of
                 "diagonals" -> Diagonals
                 "rounded"   -> Rounded
                 "tapered"   -> Tapered
+                "radial"    -> Radial
                 _           -> DD str
 
 parseStyleName :: Parse Text

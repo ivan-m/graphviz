@@ -353,8 +353,9 @@ The entire list of attributes can be found in
 `Data.GraphViz.Attributes.Complete`.  In particular, the following
 attributes are **not** recommended for use:
 
-* `Color` for anything except edge colours (and if you must, the
-  border colour for a node).
+* `Color` for anything except edge colours or gradients for nodes,
+  clusters and graphs when using Graphviz >= 2.29.0 (and if you must,
+  the border colour for a node).
 
 * `ColorScheme`: just stick with X11 colours.
 

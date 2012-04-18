@@ -34,13 +34,16 @@ module Data.GraphViz.Attributes
          -- $colors
        , X11Color(..)
        , bgColor
+       , bgColors
        , fillColor
+       , fillColors
        , fontColor
        , penColor
        , color
          -- * Stylistic attributes
          -- $styles
        , penWidth
+       , gradientAngle
        , style
        , styles
        , Style
@@ -53,6 +56,7 @@ module Data.GraphViz.Attributes
        , diagonals
        , rounded
        , tapered
+       , radial
          -- * Node shapes
        , shape
        , Shape(..)
@@ -214,14 +218,28 @@ instance Labellable (PortName, EscString) where
 
  -}
 
--- | Specify the background color of a graph or cluster.  Requires
---   @'style' 'filled'@.
+-- | Specify the background color of a graph or cluster.  For
+--   clusters, if @'style' 'filled'@ is used, then 'fillColor' will
+--   override it.
 bgColor :: (NamedColor nc) => nc -> Attribute
-bgColor = BgColor . toColor
+bgColor = BgColor . (:[]) . toColor
 
--- | Specify the fill color of a node.  Requires @'style' 'filled'@.
+-- | As with 'bgColor', but add a second color to create a gradient
+--   effect.  Requires Graphviz >= 2.29.0.
+bgColors       :: (NamedColor nc) => nc -> nc -> Attribute
+bgColors c1 c2 = BgColor $ map toColor [c1,c2]
+
+-- | Specify the fill color of a node, cluster or arrowhead.  Requires
+--   @'style' 'filled'@ for nodes and clusters.  For nodes and edges,
+--   if this isn't set then the 'color' value is used instead; for
+--   clusters, 'bgColor' is used.
 fillColor :: (NamedColor nc) => nc -> Attribute
-fillColor = FillColor . toColor
+fillColor = FillColor . (:[]) . toColor
+
+-- | As with 'fillColor', but add a second color to create a gradient
+--   effect.  Requires Graphviz >= 2.29.0.
+fillColors       :: (NamedColor nc) => nc -> nc -> Attribute
+fillColors c1 c2 = FillColor $ map toColor [c1,c2]
 
 -- | Specify the color of text.
 fontColor :: (NamedColor nc) => nc -> Attribute
@@ -299,14 +317,24 @@ diagonals :: Style
 diagonals = SItem Diagonals []
 
 -- | Only available for edges; creates a tapered edge between the two
---   nodes.  Currently only available in the development branch of
---   Graphviz (2.29.*).
+--   nodes.  Requires Graphviz >= 2.29.0.
 tapered :: Style
 tapered = SItem Tapered []
+
+-- | Available for nodes, clusters and edges.  When using
+--   'gradientAngle', indicates that a radial gradient should be used.
+--   Requires Graphviz >= 2.29.0.
+radial :: Style
+radial = SItem Radial []
 
 -- | Specify the width of lines.  Valid for clusters, nodes and edges.
 penWidth :: Double -> Attribute
 penWidth = PenWidth
+
+-- | Specify the angle at which gradient fills are drawn; for use with
+--   'bgColors' and 'fillColors'.  Requires Graphviz >= 2.29.0.
+gradientAngle :: Int -> Attribute
+gradientAngle = GradientAngle
 
 -- -----------------------------------------------------------------------------
 
