@@ -15,15 +15,86 @@ Changes in 2999.13.0.0
 
 * Updated attributes as of Graphviz-2.28.0:
 
+    - `SVG` colors are now supported, and the support for different
+      colors has been revamped.
+
     - `overlap=false` is now equivalent to `overlap=prism` and the
       `RemoveOverlaps` option has been removed.
 
-    - `LabelScheme` and `Rotation` are new attributes for use with `sfdp`.
+    - `LabelScheme` and `Rotation` are new attributes for use with
+      `sfdp`.
 
     - `Scale` is a new attribute for use with `twopi`.
 
     - Add new italics, bold, underline, superscript and subscript
       options for HTML-like labels.
+
+    - `LHeight` and `LWidth` for getting the height and width of the
+      root graph and clusters.
+
+* Updated attributes from the current development branch of Graphviz
+  (i.e. 2.29.*).  Please note that these will probably not work yet,
+  but are implemented now for future-proofing.
+
+    - A new style for edges: `Tapered`.
+
+    - `XLabel` allows you to specify labels external to a node or
+      edge.  `ForceLabels` allow you to specify that these should be
+      drawn even when they will cause overlaps.
+
+    - `ImagePath` allows you to specify where to search for images.
+
+    - HTML-like labels now support `ID` values as well as horizontal
+      and vertical rules.
+
+    - `BgColor` and `FillColor` now take a list of colors: this allows
+      gradient fills for graphs, clusters and nodes.  The `Radial`
+      style and `GradientAngle` are also used for this purpose.
+
+    - `FillColor` is now used by edges to set the color of any arrows.
+
+    - [WebP](http://en.wikipedia.org/wiki/WebP) output support added.
+
+* Other attribute changes:
+
+    - Use a specified data type for the `Ordering` attribute rather
+      than an arbitrary `Text` value, and provide a documented wrapper
+      in `Data.GraphViz.Attributes`.
+
+    - `Bb` has been renamed `BoundingBox`.
+
+    - `ID` now only takes `EscString` (a type alias for `Text`) values
+      rather than arbitrary `Label`s.
+
+    - The `Data.GraphViz.Attributes.HTML` module has had all values
+      re-named and is now meant to be imported qualified.  It is also
+      no longer re-exported from `Data.GraphViz.Attributes.Complete`.
+
+* The `ToGraphID` class provides a common wrapper to help create
+  cluster identifiers, etc.
+
+* Cabal's `Test-Suite` functionality is now used.  As part of this,
+  the `Data.GraphViz.Testing` module and sub-modules are no longer
+  exported by the library.
+
+* The new `Benchmark` support in Cabal-1.14 is now used for the
+  benchmark script.
+
+* Dropped support for base-3.
+
+* The `Data.GraphViz.State` module is no longer exposed, as there's no
+  need for users to use it.
+
+* Bugfixes:
+
+    - Some corner cases in canonicalisation prevented it from being
+      idempotent.
+
+    - The `TestParsing` script will no longer crash and refuse to
+      continue if an IO-based error (e.g. unable to successfully call
+      `dot`) occurs.
+
+    - A typo was spotted by **Gabor Greif**.
 
 Changes in 2999.12.0.4
 ----------------------
