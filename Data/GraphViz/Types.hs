@@ -329,6 +329,9 @@ maxSGInt dg = execState (stInt $ graphStatements dg)
 
 -- | A convenience class to make it easier to convert data types to
 --   'GraphID' values, e.g. for cluster identifiers.
+--
+--   In most cases, conversion would be via the 'Text' or 'String'
+--   instances (e.g. using 'show').
 class ToGraphID a where
   toGraphID :: a -> GraphID
 
