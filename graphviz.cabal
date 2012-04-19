@@ -149,3 +149,27 @@ Test-Suite graphviz-testsuite {
 
         GHC-Prof-Options: -auto-all -caf-all -rtsopts
 }
+
+Benchmark graphviz-printparse {
+        Default-Language: Haskell98
+
+        Type:             exitcode-stdio-1.0
+
+        Build-Depends:    base,
+                          deepseq,
+                          text,
+                          graphviz,
+                          criterion >= 0.5 && < 0.7
+
+        hs-Source-Dirs:   utils
+
+        Main-Is:          Benchmark.hs
+
+        if True
+           Ghc-Options: -O -Wall
+
+        if impl(ghc >= 6.12.1)
+           Ghc-Options: -fno-warn-unused-do-bind
+
+        GHC-Prof-Options: -auto-all -caf-all -rtsopts
+}
