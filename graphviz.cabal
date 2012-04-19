@@ -51,7 +51,7 @@ Source-Repository head
     Location:     http://code.haskell.org/graphviz
 
 Library {
-        Default-Language:  Haskell2010
+        Default-Language:  Haskell98
 
         Build-Depends:     base == 4.*,
                            containers,
@@ -106,7 +106,7 @@ Library {
 }
 
 Test-Suite graphviz-testsuite {
-        Default-Language:  Haskell2010
+        Default-Language:  Haskell98
 
         Type:              exitcode-stdio-1.0
 
