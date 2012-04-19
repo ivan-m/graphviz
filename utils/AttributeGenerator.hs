@@ -469,7 +469,7 @@ attributes = [ makeAttr "Damping" ["Damping"] "G" Dbl Nothing (Just "0.99") (Jus
              , makeAttr "Concentrate" ["concentrate"] "G" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
              , makeAttr "Constraint" ["constraint"] "E" Bl (Just "True") (Just "True") (Just "@'True'@") Nothing (Just "dot only")
              , makeAttr "Decorate" ["decorate"] "E" Bl (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing
-             , makeAttr "DefaultDist" ["defaultdist"] "G" Dbl Nothing Nothing (Just "@1+(avg. len)*sqrt(|V|)@") (Just "@epsilon@") (Just "neato only, only if @'Pack' 'DontPack'")
+             , makeAttr "DefaultDist" ["defaultdist"] "G" Dbl Nothing Nothing (Just "@1+(avg. len)*sqrt(|V|)@") (Just "@epsilon@") (Just "neato only, only if @'Pack' 'DontPack'@")
              , makeAttr "Dim" ["dim"] "G" Integ Nothing (Just "2") (Just "@2@") (Just "@2@") (Just "sfdp, fdp, neato only")
              , makeAttr "Dimen" ["dimen"] "G" Integ Nothing (Just "2") (Just "@2@") (Just "@2@") (Just "sfdp, fdp, neato only")
              , makeAttr "Dir" ["dir"] "E" (Cust "DirType") Nothing Nothing (Just "@'Forward'@ (directed), @'NoDir'@ (undirected)") Nothing Nothing

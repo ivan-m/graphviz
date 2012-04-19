@@ -244,9 +244,9 @@ data Attribute
   = Damping Double                      -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
   | K Double                            -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
   | URL EscString                       -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
-  | ArrowHead ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
+  | ArrowHead ArrowType                 -- ^ /Valid for/: E; /Default/: @'AType' [('noMods', 'Normal')]@
   | ArrowSize Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
-  | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
+  | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'AType' [('noMods', 'Normal')]@
   | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
   | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
   | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
@@ -259,7 +259,7 @@ data Attribute
   | Concentrate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | Constraint Bool                     -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
   | Decorate Bool                       -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(|V|)@; /Minimum/: @epsilon@; /Notes/: neato only, only if @'Pack' 'DontPack'
+  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(|V|)@; /Minimum/: @epsilon@; /Notes/: neato only, only if @'Pack' 'DontPack'@
   | Dim Int                             -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
   | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
   | Dir DirType                         -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
@@ -288,7 +288,7 @@ data Attribute
   | HeadTarget EscString                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
   | HeadTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
   | Height Double                       -- ^ /Valid for/: N; /Default/: @0.5@; /Minimum/: @0.02@
-  | ID EscString                        -- ^ /Valid for/: GNE; /Default/: @\"\"; /Notes/: svg, postscript, map only
+  | ID EscString                        -- ^ /Valid for/: GNE; /Default/: @\"\"@; /Notes/: svg, postscript, map only
   | Image Text                          -- ^ /Valid for/: N; /Default/: @\"\"@
   | ImagePath Paths                     -- ^ /Valid for/: G; /Default/: @'Paths' []@; /Notes/: Printing and parsing is OS-specific, requires Graphviz >= 2.29.0
   | ImageScale ScaleType                -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
@@ -1928,7 +1928,7 @@ recordEscChars = ['{', '}', '|', ' ', '<', '>']
 
 -- -----------------------------------------------------------------------------
 
--- | How to treat a node whose name is of the form @|edgelabel|*" as a
+-- | How to treat a node whose name is of the form @|edgelabel|*@" as a
 --   special node representing an edge label.
 data LabelScheme = NotEdgeLabel        -- ^ No effect
                  | CloseToCenter       -- ^ Make node close to center of neighbor
