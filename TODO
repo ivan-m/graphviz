@@ -6,7 +6,8 @@ Future Plans for graphviz
 
 This is a list of planned feature improvements to graphviz along with
 an indication of when it's likely to be implemented (note that these
-time scales are in relation to releases, not actual time).
+time scales are in relation to releases, not actual time; however, it
+is quite possible that the order will not be adhered to).
 
 Short term
 ----------
@@ -16,10 +17,6 @@ Short term
 
 * Add nicer syntax for record labels, and specifying ports in Monadic
   Dot graphs.
-
-* Add convenience functions for creating GraphIDs (ala Labellable).
-
-* Add support for SVG colors.
 
 * Define new classes to distinguish between printing/parsing Attribute
   values and other values (as only the former requires quoted
@@ -55,4 +52,3 @@ Long term
      mode:markdown
      End:
   -->
-
