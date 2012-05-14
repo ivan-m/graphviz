@@ -1,7 +1,5 @@
 #!/usr/bin/runhaskell
 
-{-# LANGUAGE ScopedTypeVariables #-}
-
 {- |
    Module      : TestParsing
    Description : Check if the graphviz parser can parse "real world" Dot code.
