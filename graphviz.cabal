@@ -61,7 +61,7 @@ Library {
                            polyparse >= 1.7 && < 1.9,
                            bytestring == 0.9.*,
                            colour == 2.3.*,
-                           transformers == 0.2.*,
+                           transformers >= 0.2 && < 0.4,
                            text,
                            wl-pprint-text,
                            dlist == 0.5.*
