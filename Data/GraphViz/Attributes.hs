@@ -97,6 +97,7 @@ import qualified Data.GraphViz.Attributes.HTML as Html
 
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
+import qualified Data.Text as ST
 
 -- -----------------------------------------------------------------------------
 
@@ -164,6 +165,9 @@ textLabelValue = toLabelValue
 
 instance Labellable Text where
   toLabelValue = StrLabel
+
+instance Labellable ST.Text where
+  toLabelValue = toLabelValue . T.fromStrict
 
 instance Labellable Char where
   toLabelValue = toLabelValue . T.singleton

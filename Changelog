@@ -7,6 +7,12 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.14.0.0
+----------------------
+
+* Added an instance of `Labellable` for strict `Text` values, as
+  requested by **Erik Rantapaa**.
+
 Changes in 2999.13.0.3
 ----------------------
 
