@@ -146,7 +146,7 @@ textLabel :: Text -> Attribute
 textLabel = toLabel
 
 -- | Create a label /outside/ of a node\/edge.  Currently only in the
--- | Graphviz development branch (2.29.*).
+--   Graphviz development branch (2.29.*).
 xLabel :: (Labellable a) => a -> Attribute
 xLabel = XLabel . toLabelValue
 
