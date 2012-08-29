@@ -7,6 +7,14 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.14.1.0
+----------------------
+
+* Add `isGraphvizInstalled` and `quitWithoutGraphviz` for programs to
+  test whether Graphviz has been installed (as previous attempts at
+  doing so via actual calls to dot, neato, etc. weren't working and
+  would be too verbose anyway).
+
 Changes in 2999.14.0.0
 ----------------------
 

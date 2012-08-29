@@ -40,6 +40,9 @@ module Data.GraphViz.Commands
     , runGraphvizCanvas
     , runGraphvizCanvas'
     , graphvizWithHandle
+      -- * Testing if Graphviz is installed
+    , isGraphvizInstalled
+    , quitWithoutGraphviz
     ) where
 
 -- Want to use the extensible-exception version
@@ -52,9 +55,12 @@ import Data.GraphViz.Commands.IO(runCommand)
 import Data.GraphViz.Exception
 
 import qualified Data.ByteString as SB
-import System.IO(Handle, hSetBinaryMode)
-import Control.Monad(liftM)
+import Data.Maybe(isJust)
+import System.IO(Handle, hSetBinaryMode, hPutStrLn, stderr)
+import Control.Monad(liftM, unless)
 import System.FilePath((<.>))
+import System.Directory(findExecutable)
+import System.Exit(ExitCode(..), exitWith)
 
 -- -----------------------------------------------------------------------------
 
@@ -316,3 +322,17 @@ runGraphvizCanvas cmd gr c = graphvizWithHandle' cmd gr c nullHandle
 --   using the given canvas type.
 runGraphvizCanvas'   :: (PrintDotRepr dg n) => dg n -> GraphvizCanvas -> IO ()
 runGraphvizCanvas' d = runGraphvizCanvas (commandFor d) d
+
+-- -----------------------------------------------------------------------------
+
+-- | Is the Graphviz suite of tools installed?  This is determined by
+--   whether @dot@ is available in the @PATH@.
+isGraphvizInstalled :: IO Bool
+isGraphvizInstalled = liftM isJust . findExecutable $ showCmd Dot
+
+-- | If Graphviz does not seem to be available, print the provided
+--   error message and then exit fatally.
+quitWithoutGraphviz     :: String -> IO ()
+quitWithoutGraphviz err = do hasGraphviz <- isGraphvizInstalled
+                             unless hasGraphviz
+                               $ hPutStrLn stderr err >> exitWith (ExitFailure 1)
