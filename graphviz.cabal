@@ -115,6 +115,7 @@ Test-Suite graphviz-testsuite {
         Build-Depends:     base,
                            containers,
                            process,
+                           directory,
                            fgl,
                            filepath,
                            polyparse,
