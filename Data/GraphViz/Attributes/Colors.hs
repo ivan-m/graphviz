@@ -122,6 +122,8 @@ instance ParseDot Color where
                     , parseNC (undefined :: SVGColor) False
                     , parseX11Color False
                     ]
+              `onFail`
+              fail "Could not parse Color"
     where
       parseHexBased
           = do character '#'
@@ -152,8 +154,14 @@ instance ParseDot Color where
                 , parseNC (undefined :: SVGColor) True
                 , parseX11Color True
                 ]
+          `onFail`
+          fail "Could not parse Color"
 
   parseUnqtList = sepBy1 parseUnqt (character ':')
+                  `onFail`
+                  do cs <- getColorScheme
+                     failBad $ "Error parsing list of Colors with color scheme of "
+                               ++ show cs
 
   parseList = liftM (:[])
               -- Unquoted single color
@@ -164,6 +172,10 @@ instance ParseDot Color where
               )
               `onFail`
               quotedParse parseUnqtList
+              `onFail`
+              do cs <- getColorScheme
+                 failBad $ "Error parsing list of Colors with color scheme of "
+                           ++ show cs
 
 -- -----------------------------------------------------------------------------
 
@@ -175,6 +187,7 @@ class NamedColor nc where
 
     printNC :: Bool -> nc -> DotCode
 
+    -- | Bool is for whether quoting is needed.
     parseNC' :: Bool -> Parse nc
 
 -- First value just used for type
