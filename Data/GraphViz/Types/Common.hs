@@ -26,7 +26,7 @@ import Data.Maybe(isJust)
 import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Read as T
 import Data.Text.Lazy(Text)
-import Control.Monad(liftM, liftM2, when)
+import Control.Monad(liftM, liftM2, when, unless)
 
 -- -----------------------------------------------------------------------------
 -- This is re-exported by Data.GraphViz.Types
@@ -227,7 +227,7 @@ printEdgeID e = do isDir <- getDirectedness
 
 
 instance (ParseDot n) => ParseDot (DotEdge n) where
-  parseUnqt = parseAttrBased EdgeAttribute True parseEdgeID
+  parseUnqt = parseAttrBased EdgeAttribute False parseEdgeID
 
   parse = parseUnqt -- Don't want the option of quoting
 
@@ -285,7 +285,7 @@ parseEdgeLine = do n1 <- parseEdgeNodes
                    let ens' = n1 : ens
                        efs = zipWith mkEdges ens' (tail ens')
                        ef = return $ \ as -> concatMap ($as) efs
-                   parseAttrBased EdgeAttribute True ef
+                   parseAttrBased EdgeAttribute False ef
 
 instance Functor DotEdge where
   fmap f e = e { fromNode = f $ fromNode e
@@ -474,8 +474,8 @@ printAttrBased                    :: Bool -> (a -> DotCode) -> (a -> Maybe Attri
 printAttrBased prEmp ff ftp fas a = do oldType <- getAttributeType
                                        maybe (return ()) setAttributeType mtp
                                        oldCS <- getColorScheme
-                                       (dc <> semi) <* setAttributeType oldType
-                                                    <* when prEmp (setColorScheme oldCS)
+                                       (dc <> semi) <* unless prEmp (setColorScheme oldCS)
+                                                    <* setAttributeType oldType
   where
     mtp = ftp a
     f = ff a
@@ -495,7 +495,7 @@ parseAttrBased tp lc p = do oldType <- getAttributeType
                             oldCS <- getColorScheme
                             f <- p
                             atts <- tryParseList' (whitespace >> parse)
-                            when lc $ setColorScheme oldCS
+                            unless lc $ setColorScheme oldCS
                             when (tp /= oldType) $ setAttributeType oldType
                             return $ f atts
                          `adjustErr`
