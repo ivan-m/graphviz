@@ -462,11 +462,11 @@ instance ParseDot VAlign where
 --   cell.  If undefined, the image inherits the value of the
 --   @ImageScale@ attribute.
 data Scale = NaturalSize -- ^ Default value.
-               | ScaleUniformly
-               | ExpandWidth
-               | ExpandHeight
-               | ExpandBoth
-               deriving (Eq, Ord, Bounded, Enum, Show, Read)
+           | ScaleUniformly
+           | ExpandWidth
+           | ExpandHeight
+           | ExpandBoth
+           deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot Scale where
   unqtDot NaturalSize    = text "FALSE"
