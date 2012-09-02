@@ -407,6 +407,8 @@ parseHtmlField'       :: (a -> Attribute) -> String -> Parse a
 parseHtmlField' c f p = do string f
                            parseEq
                            liftM c $ quotedParse p
+-- Can't use liftEqParse, etc. here because it causes backtracking
+-- problems when the attributes could apply to multiple constructors.
 
 -- | Specifies horizontal placement. When an object is allocated more
 --   space than required, this value determines where the extra space
