@@ -199,7 +199,7 @@ instance (ParseDot n) => ParseDot (DotStatement n) where
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
-          (++ "Not a valid statement")
+          ("Not a valid statement\n\t"++)
 
   parseUnqtList = liftM concat . wrapWhitespace
                   $ parseStatements p
@@ -267,7 +267,7 @@ instance (ParseDot n) => ParseDot (DotSubGraph n) where
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
-          (++ "\n\nNot a valid Sub Graph")
+          ("Not a valid Sub Graph\n\t"++)
 
   parseUnqtList = sepBy (whitespace >> parseUnqt) newline'
 
