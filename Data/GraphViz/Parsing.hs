@@ -68,6 +68,8 @@ module Data.GraphViz.Parsing
     , parseFieldsBool
     , parseFieldDef
     , parseFieldsDef
+    , liftEqParse
+    , liftEqParse'
     , commaSep
     , commaSepUnqt
     , commaSep'
@@ -420,7 +422,7 @@ parseEq :: Parse ()
 parseEq = wrapWhitespace (character '=') >> return ()
 
 parseField       :: (ParseDot a) => (a -> b) -> String -> [(String, Parse b)]
-parseField c fld = [(fld, parseEq >> liftM c parse)]
+parseField c fld = [(fld, liftEqParse' fld c)]
 
 parseFields   :: (ParseDot a) => (a -> b) -> [String] -> [(String, Parse b)]
 parseFields c = concatMap (parseField c)
@@ -436,7 +438,7 @@ parseFieldsBool c = concatMap (parseFieldBool c)
 parseFieldDef         :: (ParseDot a) => (a -> b) -> a -> String -> [(String, Parse b)]
 parseFieldDef c d fld = [(fld, p)]
   where
-    p = (parseEq >> liftM c parse)
+    p = liftEqParse' fld c
         `onFail`
         do nxt <- optional $ satisfy restIDString
            bool (fail "Not actually the field you were after")
@@ -445,6 +447,21 @@ parseFieldDef c d fld = [(fld, p)]
 
 parseFieldsDef     :: (ParseDot a) => (a -> b) -> a -> [String] -> [(String, Parse b)]
 parseFieldsDef c d = concatMap (parseFieldDef c d)
+
+-- | 'liftEqParse'' using 'parse' as the parser.
+liftEqParse' :: (ParseDot a) => String -> (a -> b) -> Parse b
+liftEqParse' = liftEqParse parse
+
+-- | Attempt to parse the @\"=value\"@ part of a @key=value@ pair.  If
+--   there is an equal sign but the @value@ part doesn't parse, throw
+--   an un-recoverable error.
+liftEqParse :: Parse a -> String -> (a -> b) -> Parse b
+liftEqParse p k c = parseEq
+                    >> liftM c ( p
+                                 `adjustErrBad`
+                                 (("Unable to parse key=value with key of " ++ k
+                                   ++ "\n\t") ++)
+                               )
 
 commaSep :: (ParseDot a, ParseDot b) => Parse (a, b)
 commaSep = commaSep' parse parse

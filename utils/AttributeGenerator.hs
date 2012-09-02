@@ -236,8 +236,17 @@ parseInstance att = hdr $+$ nest tab fns
       parseAttr a = case map doubleQuotes $ parseNames a of
                       [n] -> pType False a <+> n
                       ns  -> pType True  a <+> docList ns
-      pUnknown = text "liftM2" <+> unknownAttr <+> text "stringBlock"
-                 <+> parens (text "parseEq >> parse")
+      unknownName = text "attrName"
+      pUnknown = text "do"
+                 <+> (   (unknownName <+> text "<- stringBlock")
+                      $$ (text "liftEqParse'"
+                          <+> (parens (text "\"" <> unknownAttr <+> text "(\""
+                                       <+> text "++ T.unpack" <+> unknownName
+                                       <+> text "++ \")\"")
+                               $$ parens (unknownAttr <+> unknownName)
+                               )
+                         )
+                     )
 
 arbitraryInstance     :: Atts -> Code
 arbitraryInstance att = hdr $+$ fns

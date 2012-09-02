@@ -713,7 +713,9 @@ instance ParseDot Attribute where
                                   , parseField Z "z"
                                   ])
               `onFail`
-              liftM2 UnknownAttribute stringBlock (parseEq >> parse)
+              do attrName <- stringBlock
+                 liftEqParse' ("UnknownAttribute (" ++ T.unpack attrName ++ ")")
+                              (UnknownAttribute attrName)
 
   parse = parseUnqt
 
