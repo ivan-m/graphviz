@@ -107,7 +107,7 @@ import qualified Data.Text.Lazy.Read as T
 import Data.Text.Lazy(Text)
 import Data.Word(Word8, Word16)
 import Control.Arrow(first, second)
-import Control.Monad(liftM, liftM2, when)
+import Control.Monad(when)
 
 -- -----------------------------------------------------------------------------
 -- Based off code from Text.Parse in the polyparse library
@@ -125,7 +125,7 @@ runParser p t = let (r,_,t') = P.runParser p initialState t
 runParser'   :: Parse a -> Text -> a
 runParser' p = checkValidParse . fst . runParser p'
   where
-    p' = p `discard` (whitespace >> eof)
+    p' = p `discard` (whitespace *> eof)
 
 class ParseDot a where
   parseUnqt :: Parse a
@@ -139,7 +139,7 @@ class ParseDot a where
                                `onFail`
                                whitespace1
                              )
-                             (whitespace >> character ']')
+                             (whitespace *> character ']')
                              parseUnqt
 
   parseList :: Parse [a]
@@ -180,12 +180,12 @@ instance ParseDot Double where
 
   parseList = quotedParse parseUnqtList
               `onFail`
-              liftM return parse
+              fmap (:[]) parse
 
 instance ParseDot Bool where
   parseUnqt = onlyBool
               `onFail`
-              liftM (zero /=) parseInt'
+              fmap (zero /=) parseInt'
     where
       zero :: Int
       zero = 0
@@ -204,9 +204,9 @@ instance ParseDot Char where
           `onFail`
           quotedParse parseUnqt
 
-  parseUnqtList = liftM T.unpack parseUnqt
+  parseUnqtList = T.unpack <$> parseUnqt
 
-  parseList = liftM T.unpack parse
+  parseList = T.unpack <$> parse
 
 instance ParseDot Text where
   -- Too many problems with using this within other parsers where
@@ -230,24 +230,22 @@ quotelessString :: Parse Text
 quotelessString = numString `onFail` stringBlock
 
 numString :: Parse Text
-numString = liftM tShow parseStrictFloat
+numString = fmap tShow parseStrictFloat
             `onFail`
-            liftM tShow parseInt'
+            fmap tShow parseInt'
   where
     tShow :: (Show a) => a -> Text
     tShow = T.pack . show
 
 stringBlock :: Parse Text
-stringBlock = do frst <- satisfy frstIDString
-                 rest <- manySatisfy restIDString
-                 return $ frst `T.cons` rest
+stringBlock = liftA2 T.cons (satisfy frstIDString) (manySatisfy restIDString)
 
 -- | Used when quotes are explicitly required;
 quotedString :: Parse Text
 quotedString = parseEscaped True [] []
 
 parseSigned :: (Num a) => Parse a -> Parse a
-parseSigned p = (character '-' >> liftM negate p)
+parseSigned p = (character '-' *> fmap negate p)
                 `onFail`
                 p
 
@@ -268,9 +266,7 @@ parseStrictFloat = parseSigned parseFloat
 
 parseFloat :: (RealFrac a) => Parse a
 parseFloat = do ds   <- manySatisfy isDigit
-                frac <- optional
-                        $ do character '.'
-                             manySatisfy isDigit
+                frac <- optional $ character '.' *> manySatisfy isDigit
                 when (T.null ds && noDec frac)
                   (fail "No actual digits in floating point number!")
                 expn  <- optional parseExp
@@ -283,8 +279,8 @@ parseFloat = do ds   <- manySatisfy isDigit
              `onFail`
              fail "Expected a floating point number"
   where
-    parseExp = do character 'e'
-                  ((character '+' >> parseInt)
+    parseExp = character 'e'
+               *> ((character '+' *> parseInt)
                    `onFail`
                    parseInt')
     noDec = maybe True T.null
@@ -292,7 +288,7 @@ parseFloat = do ds   <- manySatisfy isDigit
 parseFloat' :: Parse Double
 parseFloat' = parseSigned ( parseFloat
                             `onFail`
-                            liftM fI parseInt
+                            fmap fI parseInt
                           )
   where
     fI :: Integer -> Double
@@ -306,10 +302,9 @@ parseFloat' = parseSigned ( parseFloat
 --   'adjustErrBad' and thus doesn't allow backtracking and trying the
 --   next possible parser.  This is a version of @bracket@ that does.
 bracket               :: Parse bra -> Parse ket -> Parse a -> Parse a
-bracket open close pa = do open `adjustErr` ("Missing opening bracket:\n\t"++)
-                           pa `discard`
-                             (close
-                              `adjustErr` ("Missing closing bracket:\n\t"++))
+bracket open close pa = (open `adjustErr` ("Missing opening bracket:\n\t"++))
+                        *> pa
+                        <* (close `adjustErr` ("Missing closing bracket:\n\t"++))
 
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` whitespace
@@ -321,7 +316,7 @@ stringRep   :: a -> String -> Parse a
 stringRep v = stringReps v . return
 
 stringReps      :: a -> [String] -> Parse a
-stringReps v ss = oneOf (map string ss) >> return v
+stringReps v ss = oneOf (map string ss) *> return v
 
 stringParse :: [(String, Parse a)] -> Parse a
 stringParse = toPM . sortBy (flip compare `on` fst)
@@ -329,8 +324,8 @@ stringParse = toPM . sortBy (flip compare `on` fst)
     toPM = oneOf . map mkPM . groupBy ((==) `on` (listToMaybe . fst))
 
     mkPM [("",p)] = p
-    mkPM [(str,p)] = string str >> p
-    mkPM kv = character (head . fst $ head kv) >> toPM (map (first tail) kv)
+    mkPM [(str,p)] = string str *> p
+    mkPM kv = character (head . fst $ head kv) *> toPM (map (first tail) kv)
 
 stringValue :: [(String, a)] -> Parse a
 stringValue = stringParse . map (second return)
@@ -353,11 +348,11 @@ noneOf t = satisfy (\x -> all (/= x) t)
 
 -- | Parses at least one whitespace character.
 whitespace1 :: Parse ()
-whitespace1 = many1Satisfy isSpace >> return ()
+whitespace1 = many1Satisfy isSpace *> return ()
 
 -- | Parses zero or more whitespace characters.
 whitespace :: Parse ()
-whitespace = manySatisfy isSpace >> return ()
+whitespace = manySatisfy isSpace *> return ()
 
 -- | Parse and discard optional whitespace.
 wrapWhitespace :: Parse a -> Parse a
@@ -391,7 +386,7 @@ quoteChar = '"'
 --   'Bool' value indicates whether empty 'String's are allowed or
 --   not.
 parseEscaped             :: Bool -> [Char] -> [Char] -> Parse Text
-parseEscaped empt cs bnd = liftM T.pack . lots $ qPrs `onFail` oth
+parseEscaped empt cs bnd = fmap T.pack . lots $ qPrs `onFail` oth
   where
     lots = if empt then many else many1
     cs' = quoteChar : slash : cs
@@ -399,9 +394,10 @@ parseEscaped empt cs bnd = liftM T.pack . lots $ qPrs `onFail` oth
     bndSet = Set.fromList bnd `Set.union` csSet
     slash = '\\'
     -- Have to allow standard slashes
-    qPrs = do character slash
-              mE <- optional $ oneOf (map character cs')
-              return $ fromMaybe slash mE
+    qPrs = fromMaybe slash
+           <$> (character slash
+                *> optional (oneOf $ map character cs')
+               )
     oth = satisfy (`Set.notMember` bndSet)
 
 -- | Parses a newline.
@@ -412,7 +408,7 @@ newline = strings ["\r\n", "\n", "\r"]
 --   non-whitespace is reached.  The whitespace on that line is
 --   not consumed.
 newline' :: Parse ()
-newline' = many (whitespace >> newline) >> return ()
+newline' = many (whitespace *> newline) *> return ()
 
 -- | Parses and returns all characters up till the end of the line,
 --   but does not touch the newline characters.
@@ -420,7 +416,7 @@ consumeLine :: Parse Text
 consumeLine = manySatisfy (`notElem` ['\n','\r'])
 
 parseEq :: Parse ()
-parseEq = wrapWhitespace (character '=') >> return ()
+parseEq = wrapWhitespace (character '=') *> return ()
 
 parseField       :: (ParseDot a) => (a -> b) -> String -> [(String, Parse b)]
 parseField c fld = [(fld, liftEqParse' fld c)]
@@ -458,11 +454,11 @@ liftEqParse' = liftEqParse parse
 --   an un-recoverable error.
 liftEqParse :: Parse a -> String -> (a -> b) -> Parse b
 liftEqParse p k c = parseEq
-                    >> liftM c ( p
-                                 `adjustErrBad`
-                                 (("Unable to parse key=value with key of " ++ k
-                                   ++ "\n\t") ++)
-                               )
+                    *> ( fmap c p
+                         `adjustErrBad`
+                         (("Unable to parse key=value with key of " ++ k
+                           ++ "\n\t") ++)
+                       )
 
 ignoreSep :: (a -> b -> c) -> Parse a -> Parse sep -> Parse b -> Parse c
 ignoreSep f pa sep pb = f <$> pa <* sep <*> pb
@@ -477,13 +473,13 @@ commaSep'       :: Parse a -> Parse b -> Parse (a,b)
 commaSep' pa pb = ignoreSep (,) pa (wrapWhitespace parseComma) pb
 
 parseComma :: Parse ()
-parseComma = character ',' >> return ()
+parseComma = character ',' *> return ()
 
 tryParseList :: (ParseDot a) => Parse [a]
 tryParseList = tryParseList' parse
 
 tryParseList' :: Parse [a] -> Parse [a]
-tryParseList' = liftM (fromMaybe []) . optional
+tryParseList' = fmap (fromMaybe []) . optional
 
 parseAngled :: Parse a -> Parse a
 parseAngled = bracket (character '<') (character '>')
@@ -500,13 +496,13 @@ instance ParseDot ColorScheme where
 parseColorScheme     :: Bool -> Parse ColorScheme
 parseColorScheme scs = do cs <- oneOf [ stringRep X11 "X11"
                                       , stringRep SVG "svg"
-                                      , liftM Brewer parseUnqt
+                                      , Brewer <$> parseUnqt
                                       ]
                           when scs $ setColorScheme cs
                           return cs
 
 instance ParseDot BrewerScheme where
-  parseUnqt = liftM2 BScheme parseUnqt parseUnqt
+  parseUnqt = liftA2 BScheme parseUnqt parseUnqt
 
 instance ParseDot BrewerName where
   -- The order is different from above to make sure longer names are
