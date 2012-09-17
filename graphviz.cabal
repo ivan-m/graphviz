@@ -37,6 +37,7 @@ License-File:       LICENSE
 Copyright:          Matthew Sackman, Ivan Lazar Miljenovic
 Author:             Matthew Sackman, Ivan Lazar Miljenovic
 Maintainer:         Ivan.Miljenovic+graphviz@gmail.com
+Bug-Reports:        http://hub.darcs.net/ivanm/graphviz/issues
 Build-Type:         Simple
 Cabal-Version:      >= 1.14
 Extra-Source-Files: TODO
