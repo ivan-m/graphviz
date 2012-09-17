@@ -33,6 +33,7 @@ module Data.GraphViz.Parsing
     , checkValidParse
       -- * Convenience parsing combinators.
     , bracket
+    , ignoreSep
     , onlyBool
     , quotelessString
     , stringBlock
@@ -463,6 +464,9 @@ liftEqParse p k c = parseEq
                                    ++ "\n\t") ++)
                                )
 
+ignoreSep :: (a -> b -> c) -> Parse a -> Parse sep -> Parse b -> Parse c
+ignoreSep f pa sep pb = f <$> pa <* sep <*> pb
+
 commaSep :: (ParseDot a, ParseDot b) => Parse (a, b)
 commaSep = commaSep' parse parse
 
@@ -470,10 +474,7 @@ commaSepUnqt :: (ParseDot a, ParseDot b) => Parse (a, b)
 commaSepUnqt = commaSep' parseUnqt parseUnqt
 
 commaSep'       :: Parse a -> Parse b -> Parse (a,b)
-commaSep' pa pb = do a <- pa
-                     wrapWhitespace parseComma
-                     b <- pb
-                     return (a,b)
+commaSep' pa pb = ignoreSep (,) pa (wrapWhitespace parseComma) pb
 
 parseComma :: Parse ()
 parseComma = character ',' >> return ()
