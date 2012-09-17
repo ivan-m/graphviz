@@ -81,7 +81,6 @@ import Data.Maybe(catMaybes, listToMaybe)
 import Data.Word(Word8, Word16)
 import qualified Data.Map as Map
 import qualified Data.Text.Lazy as T
-import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
 
@@ -99,9 +98,9 @@ instance PrintDot Label where
 
 instance ParseDot Label where
   -- Try parsing Table first in case of a FONT tag being used.
-  parseUnqt = liftM Table parseUnqt
+  parseUnqt = fmap Table parseUnqt
               `onFail`
-              liftM Text parseUnqt
+              fmap Text parseUnqt
               `adjustErr`
               ("Can't parse Html.Label\n\t"++)
 
@@ -140,7 +139,7 @@ instance PrintDot TextItem where
   listToDot = unqtListToDot
 
 instance ParseDot TextItem where
-  parseUnqt = oneOf [ liftM Str unescapeValue
+  parseUnqt = oneOf [ fmap Str unescapeValue
                     , parseEmptyTag Newline "BR"
                     , parseFontTag Font parseUnqt
                     , parseTagRep Format parseUnqt parseUnqt
@@ -381,7 +380,7 @@ instance ParseDot Attribute where
                     , parseHtmlField' (Port . PN) "PORT" unescapeAttribute
                     , parseHtmlField  RowSpan "ROWSPAN"
                     , parseHtmlField  Scale "SCALE"
-                    , parseHtmlField' Src "SRC" $ liftM T.unpack unescapeAttribute
+                    , parseHtmlField' Src "SRC" $ fmap T.unpack unescapeAttribute
                     , parseHtmlField' Target "TARGET" unescapeAttribute
                     , parseHtmlField' Title "TITLE" unescapeAttribute
                       `onFail`
@@ -404,9 +403,13 @@ parseHtmlField c f = parseHtmlField' c f parseUnqt
 
 parseHtmlField'       :: (a -> Attribute) -> String -> Parse a
                      -> Parse Attribute
-parseHtmlField' c f p = do string f
-                           parseEq
-                           liftM c $ quotedParse p
+parseHtmlField' c f p = string f
+                        *> parseEq
+                        *> ( c <$> ( quotedParse p
+                                      `adjustErr`
+                                      (("Can't parse HTML.Attribute." ++ f ++ "\n\t")++)
+                                   )
+                           )
 -- Can't use liftEqParse, etc. here because it causes backtracking
 -- problems when the attributes could apply to multiple constructors.
 
@@ -494,14 +497,14 @@ escapeValue :: T.Text -> DotCode
 escapeValue = escapeHtml True
 
 escapeHtml               :: Bool -> T.Text -> DotCode
-escapeHtml quotesAllowed = hcat . liftM concat
+escapeHtml quotesAllowed = hcat . fmap concat
                            . mapM (escapeSegment . T.unpack)
                            . T.groupBy ((==) `on` isSpace)
   where
     -- Note: use numeric version of space rather than nbsp, since this
     -- matches what Graphviz does (since Inkscape apparently can't
     -- cope with nbsp).
-    escapeSegment (s:sps) | isSpace s = liftM2 (:) (char s) $ mapM numEscape sps
+    escapeSegment (s:sps) | isSpace s = liftA2 (:) (char s) $ mapM numEscape sps
     escapeSegment txt                 = mapM xmlChar txt
 
     allowQuotes = if quotesAllowed
@@ -525,7 +528,7 @@ unescapeValue = unescapeHtml True
 --   Note: this /will/ fail if an unknown non-numeric HTML-escape is
 --   used.
 unescapeHtml               :: Bool -> Parse T.Text
-unescapeHtml quotesAllowed = liftM (T.pack . catMaybes)
+unescapeHtml quotesAllowed = fmap (T.pack . catMaybes)
                              . many1 . oneOf $ [ parseEscpd
                                                , validChars
                                                ]
@@ -553,7 +556,7 @@ unescapeHtml quotesAllowed = liftM (T.pack . catMaybes)
 
     escMap = Map.fromList htmlUnescapes
 
-    validChars = liftM Just $ satisfy (`notElem` needEscaping)
+    validChars = fmap Just $ satisfy (`notElem` needEscaping)
     needEscaping = allowQuotes $ map fst htmlEscapes
 
 -- | The characters that need to be escaped and what they need to be
@@ -612,32 +615,38 @@ printEmptyTag t as = angled $ t <+> toDot as <> fslash
 -- | Parse something like @<FOO ATTR=\"ATTR_VALUE\">value<\/FOO>@
 parseTag        :: (Attributes -> val -> tag) -> String
                        -> Parse val -> Parse tag
-parseTag c t pv = do as <- parseAngled openingTag
-                     v <- pv
-                     parseAngled $ character '/' >> t' >> whitespace
-                     return $ c as v
+parseTag c t pv = c <$> parseAngled openingTag
+                    <*> pv
+                    <* parseAngled (character '/' *> t' *> whitespace)
+                  `adjustErr`
+                  (("Can't parse Html tag: " ++ t ++ "\n\t")++)
   where
     t' = string t
-    openingTag = do t'
-                    as <- tryParseList' $ whitespace1 >> parse
-                    whitespace
-                    return as
-
-parseTagRep :: (tagName -> val -> tag) -> Parse tagName -> Parse val -> Parse tag
-parseTagRep c pt pv = do tn <- parseAngled (pt `discard` whitespace)
-                         v <- pv
-                         parseAngled $ character '/' >> pt >> whitespace
-                         return $ c tn v
+    openingTag :: Parse Attributes
+    openingTag = t'
+                 *> tryParseList' (whitespace1 >> parse)
+                 <* whitespace
 
 parseFontTag :: (Attributes -> val -> tag) -> Parse val -> Parse tag
 parseFontTag = flip parseTag "FONT"
 
+-- Should this just be specialised for tagName ~ Format ?
+
+-- | Parse something like @<FOO>value<\/FOO>@.
+parseTagRep :: (tagName -> val -> tag) -> Parse tagName -> Parse val -> Parse tag
+parseTagRep c pt pv = c <$> parseAngled (pt `discard` whitespace)
+                        <*> pv
+                        <* parseAngled (character '/' *> pt *> whitespace)
+                    `adjustErr`
+                    ("Can't parse attribute-less Html tag\n\t"++)
+
 -- | Parse something like @<FOO ATTR=\"ATTR_VALUE\"\/>@
 parseEmptyTag     :: (Attributes -> tag) -> String -> Parse tag
-parseEmptyTag c t = parseAngled
-                        ( do string t
-                             as <- tryParseList' $ whitespace1 >> parse
-                             whitespace
-                             character '/'
-                             return $ c as
+parseEmptyTag c t = c <$> parseAngled
+                        ( string t
+                          *> tryParseList' (whitespace1 *> parse)
+                          <* whitespace
+                          <* character '/'
                         )
+                    `adjustErr`
+                    (("Can't parse empty Html tag: " ++ t ++ "\n\t")++)
