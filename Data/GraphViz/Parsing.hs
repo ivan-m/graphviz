@@ -354,7 +354,7 @@ whitespace1 = many1Satisfy isSpace *> return ()
 whitespace :: Parse ()
 whitespace = manySatisfy isSpace *> return ()
 
--- | Parse and discard optional whitespace.
+-- | Parse and discard optional surrounding whitespace.
 wrapWhitespace :: Parse a -> Parse a
 wrapWhitespace = bracket whitespace whitespace
 
@@ -369,8 +369,8 @@ optionalQuoted p = quotedParse p
 quotedParse :: Parse a -> Parse a
 quotedParse = bracket parseQuote parseQuote
 
-parseQuote :: Parse Char
-parseQuote = character quoteChar
+parseQuote :: Parse ()
+parseQuote = character quoteChar *> return ()
 
 orQuote   :: Parse Char -> Parse Char
 orQuote p = stringRep quoteChar "\\\""
@@ -460,6 +460,7 @@ liftEqParse p k c = parseEq
                            ++ "\n\t") ++)
                        )
 
+-- | The opposite of 'bracket'.
 ignoreSep :: (a -> b -> c) -> Parse a -> Parse sep -> Parse b -> Parse c
 ignoreSep f pa sep pb = f <$> pa <* sep <*> pb
 
@@ -475,9 +476,12 @@ commaSep' pa pb = ignoreSep (,) pa (wrapWhitespace parseComma) pb
 parseComma :: Parse ()
 parseComma = character ',' *> return ()
 
+-- | Try to parse a list of the specified type; returns an empty list
+--   if parsing fails.
 tryParseList :: (ParseDot a) => Parse [a]
 tryParseList = tryParseList' parse
 
+-- | Return an empty list if parsing a list fails.
 tryParseList' :: Parse [a] -> Parse [a]
 tryParseList' = fmap (fromMaybe []) . optional
 
