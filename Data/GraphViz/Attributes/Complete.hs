@@ -197,7 +197,6 @@ import Data.Word(Word16)
 import qualified Data.Set as S
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
-import Control.Monad(liftM, liftM2)
 import System.FilePath(searchPathSeparator, splitSearchPath)
 
 -- -----------------------------------------------------------------------------
@@ -1547,10 +1546,7 @@ instance PrintDot ArrowType where
 instance ParseDot ArrowType where
   parseUnqt = specialArrowParse
               `onFail`
-              do mas <- many1 $ do m <- parseUnqt
-                                   a <- parseUnqt
-                                   return (m,a)
-                 return $ AType mas
+              (AType <$> many1 (liftA2 (,) parseUnqt parseUnqt))
 
 specialArrowParse :: Parse ArrowType
 specialArrowParse = stringValue [ ("ediamond", eDiamond)
@@ -1612,9 +1608,7 @@ instance PrintDot ArrowModifier where
   unqtDot (ArrMod f s) = unqtDot f <> unqtDot s
 
 instance ParseDot ArrowModifier where
-  parseUnqt = do f <- parseUnqt
-                 s <- parseUnqt
-                 return $ ArrMod f s
+  parseUnqt = liftA2 ArrMod parseUnqt parseUnqt
 
 data ArrowFill = OpenArrow
                | FilledArrow
@@ -1625,8 +1619,7 @@ instance PrintDot ArrowFill where
   unqtDot FilledArrow = empty
 
 instance ParseDot ArrowFill where
-  parseUnqt = liftM (bool FilledArrow OpenArrow . isJust)
-              $ optional (character 'o')
+  parseUnqt = bool FilledArrow OpenArrow . isJust <$> optional (character 'o')
 
   -- Not used individually
   parse = parseUnqt
@@ -1644,8 +1637,7 @@ instance PrintDot ArrowSide where
   unqtDot BothSides = empty
 
 instance ParseDot ArrowSide where
-  parseUnqt = liftM getSideType
-              $ optional (oneOf $ map character ['l', 'r'])
+  parseUnqt = getSideType <$> optional (oneOf $ map character ['l', 'r'])
     where
       getSideType = maybe BothSides
                           (bool RightSide LeftSide . (==) 'l')
@@ -1667,14 +1659,14 @@ instance PrintDot AspectType where
   toDot at@RatioPassCount{} = dquotes $ unqtDot at
 
 instance ParseDot AspectType where
-  parseUnqt = liftM (uncurry RatioPassCount) commaSepUnqt
+  parseUnqt = fmap (uncurry RatioPassCount) commaSepUnqt
               `onFail`
-              liftM RatioOnly parseUnqt
+              fmap RatioOnly parseUnqt
 
 
-  parse = quotedParse (liftM (uncurry RatioPassCount) commaSepUnqt)
+  parse = quotedParse (uncurry RatioPassCount <$> commaSepUnqt)
           `onFail`
-          liftM RatioOnly parse
+          fmap RatioOnly parse
 
 -- -----------------------------------------------------------------------------
 
@@ -1690,7 +1682,7 @@ instance PrintDot Rect where
   unqtListToDot = hsep . mapM unqtDot
 
 instance ParseDot Rect where
-  parseUnqt = liftM (uncurry Rect) $ commaSep' parsePoint2D parsePoint2D
+  parseUnqt = uncurry Rect <$> commaSep' parsePoint2D parsePoint2D
 
   parse = quotedParse parseUnqt
 
@@ -1752,7 +1744,7 @@ instance PrintDot DEConstraints where
   unqtDot HierConstraints = text "hier"
 
 instance ParseDot DEConstraints where
-  parseUnqt = liftM (bool NoConstraints EdgeConstraints) parse
+  parseUnqt = fmap (bool NoConstraints EdgeConstraints) parse
               `onFail`
               stringRep HierConstraints "hier"
 
@@ -1772,13 +1764,13 @@ instance PrintDot DPoint where
   toDot (PVal p) = toDot p
 
 instance ParseDot DPoint where
-  parseUnqt = liftM PVal parsePoint2D
+  parseUnqt = fmap PVal parsePoint2D
               `onFail`
-              liftM DVal parseUnqt
+              fmap DVal parseUnqt
 
   parse = quotedParse parseUnqt
           `onFail`
-          liftM DVal parseUnqt
+          fmap DVal parseUnqt
 
 -- -----------------------------------------------------------------------------
 
@@ -1847,14 +1839,14 @@ instance ParseDot Label where
   -- between an HtmlLabel and a RecordLabel starting with a PortPos,
   -- since the latter will be in quotes and the former won't.
 
-  parseUnqt = oneOf [ liftM HtmlLabel $ parseAngled parseUnqt
-                    , liftM RecordLabel parseUnqt
-                    , liftM StrLabel parseUnqt
+  parseUnqt = oneOf [ HtmlLabel <$> parseAngled parseUnqt
+                    , RecordLabel <$> parseUnqt
+                    , StrLabel <$> parseUnqt
                     ]
 
-  parse = oneOf [ liftM HtmlLabel $ parseAngled parse
-                , liftM RecordLabel parse
-                , liftM StrLabel parse
+  parse = oneOf [ HtmlLabel <$> parseAngled parse
+                , RecordLabel <$> parse
+                , StrLabel <$> parse
                 ]
 
 -- -----------------------------------------------------------------------------
@@ -1890,15 +1882,16 @@ instance PrintDot RecordField where
   listToDot fs  = dquotes $ unqtListToDot fs
 
 instance ParseDot RecordField where
-  parseUnqt = do t <- liftM PN $ parseAngled parseRecord
-                 ml <- optional (whitespace1 >> parseRecord)
-                 return $ maybe (PortName t)
-                                (LabelledTarget t)
-                                ml
+  parseUnqt = (liftA2 maybe PortName LabelledTarget
+                <$> (PN <$> parseAngled parseRecord)
+                <*> optional (whitespace1 *> parseRecord)
+              )
               `onFail`
-              liftM FieldLabel parseRecord
+              fmap FieldLabel parseRecord
               `onFail`
-              liftM FlipFields (parseBraced parseUnqt)
+              fmap FlipFields (parseBraced parseUnqt)
+              `onFail`
+              fail "Unable to parse RecordField"
 
   parse = quotedParse parseUnqt
 
@@ -1969,7 +1962,7 @@ createPoint     :: Double -> Double -> Point
 createPoint x y = Point x y Nothing False
 
 parsePoint2D :: Parse Point
-parsePoint2D = liftM (uncurry createPoint) commaSepUnqt
+parsePoint2D = uncurry createPoint <$> commaSepUnqt
 
 instance PrintDot Point where
   unqtDot (Point x y mz frs) = bool id (<> char '!') frs
@@ -1983,10 +1976,10 @@ instance PrintDot Point where
   listToDot = dquotes . unqtListToDot
 
 instance ParseDot Point where
-  parseUnqt = do (x,y) <- commaSepUnqt
-                 mz <- optional $ parseComma >> parseUnqt
-                 bng <- liftM isJust . optional $ character '!'
-                 return $ Point x y mz bng
+  parseUnqt = uncurry Point
+                <$> commaSepUnqt
+                <*> optional (parseComma *> parseUnqt)
+                <*> (isJust <$> optional (character '!'))
 
   parse = quotedParse parseUnqt
 
@@ -2019,7 +2012,7 @@ instance ParseDot Overlap where
   parseUnqt = oneOf [ stringRep KeepOverlaps "true"
                     , stringRep ScaleXYOverlaps "scalexy"
                     , stringRep ScaleOverlaps "scale"
-                    , string "prism" >> liftM PrismOverlap (optional parse)
+                    , string "prism" *> fmap PrismOverlap (optional parse)
                     , stringRep (PrismOverlap Nothing) "false"
                     , stringRep CompressOverlap "compress"
                     , stringRep VpscOverlap "vpsc"
@@ -2032,11 +2025,9 @@ newtype LayerSep = LSep Text
                  deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerSep where
-  unqtDot (LSep ls) = do setLayerSep $ T.unpack ls
-                         unqtDot ls
+  unqtDot (LSep ls) = setLayerSep (T.unpack ls) *> unqtDot ls
 
-  toDot (LSep ls) = do setLayerSep $ T.unpack ls
-                       toDot ls
+  toDot (LSep ls) = setLayerSep (T.unpack ls) *> toDot ls
 
 instance ParseDot LayerSep where
   parseUnqt = do ls <- parseUnqt
@@ -2061,26 +2052,18 @@ instance PrintDot LayerRange where
   toDot lrs        = dquotes $ unqtDot lrs
 
 instance ParseDot LayerRange where
-  parseUnqt = do id1 <- parseUnqt
-                 _   <- parseLayerSep
-                 id2 <- parseUnqt
-                 return $ LRS id1 id2
+  parseUnqt = ignoreSep LRS parseUnqt parseLayerSep parseUnqt
               `onFail`
-              liftM LRID parseUnqt
+              fmap LRID parseUnqt
 
 
-  parse = quotedParse ( do id1 <- parseUnqt
-                           _   <- parseLayerSep
-                           id2 <- parseUnqt
-                           return $ LRS id1 id2
-                      )
+  parse = quotedParse (ignoreSep LRS parseUnqt parseLayerSep parseUnqt)
           `onFail`
-          liftM LRID parse
+          fmap LRID parse
 
 parseLayerSep :: Parse ()
 parseLayerSep = do ls <- getLayerSep
-                   many1Satisfy (`elem` ls)
-                   return ()
+                   many1Satisfy (`elem` ls) *> return ()
 
 parseLayerName :: Parse Text
 parseLayerName = parseEscaped False [] =<< getLayerSep
@@ -2116,10 +2099,10 @@ instance PrintDot LayerID where
   listToDot ll  = dquotes $ unqtDot ll
 
 instance ParseDot LayerID where
-  parseUnqt = liftM checkLayerName parseLayerName -- tests for Int and All
+  parseUnqt = checkLayerName <$> parseLayerName -- tests for Int and All
 
-  parse = oneOf [ liftM checkLayerName parseLayerName'
-                , liftM LRInt parse -- Mainly for unquoted case.
+  parse = oneOf [ checkLayerName <$> parseLayerName'
+                , LRInt <$> parse -- Mainly for unquoted case.
                 ]
 
 checkLayerName     :: Text -> LayerID
@@ -2141,11 +2124,11 @@ instance PrintDot LayerList where
   toDot (LL ll) = toDot ll
 
 instance ParseDot LayerList where
-  parseUnqt = liftM LL $ sepBy1 parseUnqt parseLayerSep
+  parseUnqt = LL <$> sepBy1 parseUnqt parseLayerSep
 
   parse = quotedParse parseUnqt
           `onFail`
-          liftM (LL . (:[]) . LRName) stringBlock
+          fmap (LL . (:[]) . LRName) stringBlock
           `onFail`
           quotedParse (stringRep (LL []) "")
 
@@ -2194,8 +2177,8 @@ instance PrintDot Pack where
 
 instance ParseDot Pack where
   -- What happens if it parses 0?  It's non-negative, but parses as False
-  parseUnqt = oneOf [ liftM PackMargin parseUnqt
-                    , liftM (bool DontPack DoPack) onlyBool
+  parseUnqt = oneOf [ PackMargin <$> parseUnqt
+                    , bool DontPack DoPack <$> onlyBool
                     ]
 
 -- -----------------------------------------------------------------------------
@@ -2231,8 +2214,7 @@ instance ParseDot PackMode where
                     , stringRep PackClust "clust"
                     , stringRep PackGraph "graph"
                     , do string "array"
-                         mcu <- optional $ do character '_'
-                                              many1 $ satisfy isCU
+                         mcu <- optional $ character '_' *> many1 (satisfy isCU)
                          let c = hasCharacter mcu 'c'
                              u = hasCharacter mcu 'u'
                          mi <- optional parseUnqt
@@ -2290,7 +2272,7 @@ instance PrintDot EdgeType where
 
 instance ParseDot EdgeType where
   -- Can't parse NoEdges without quotes.
-  parseUnqt = oneOf [ liftM (bool LineEdges SplineEdges) parse
+  parseUnqt = oneOf [ bool LineEdges SplineEdges <$> parse
                     , stringRep SplineEdges "spline"
                     , stringRep LineEdges "line"
                     , stringRep PolyLine "polyline"
@@ -2352,14 +2334,10 @@ instance PrintDot Spline where
   listToDot = dquotes . unqtListToDot
 
 instance ParseDot Spline where
-  parseUnqt = do ms <- parseP 's'
-                 me <- parseP 'e'
-                 ps <- sepBy1 parseUnqt whitespace1
-                 return $ Spline ms me ps
+  parseUnqt = Spline <$> parseP 's' <*> parseP 'e'
+                     <*> sepBy1 parseUnqt whitespace1
       where
-        parseP t = optional $ do character t
-                                 parseComma
-                                 parseUnqt `discard` whitespace1
+        parseP t = optional (character t *> parseComma *> parseUnqt <* whitespace1)
 
   parse = quotedParse parseUnqt
 
@@ -2383,8 +2361,8 @@ instance ParseDot QuadType where
   parseUnqt = oneOf [ stringRep NormalQT "normal"
                     , stringRep FastQT "fast"
                     , stringRep NoQT "none"
-                    , character '2'   >> return FastQT -- weird bool
-                    , liftM (bool NoQT NormalQT) parse
+                    , character '2' *> return FastQT -- weird bool
+                    , bool NoQT NormalQT <$> parse
                     ]
 
 -- -----------------------------------------------------------------------------
@@ -2404,13 +2382,13 @@ instance PrintDot Root where
   toDot r            = unqtDot r
 
 instance ParseDot Root where
-  parseUnqt = liftM (bool NotCentral IsCentral) onlyBool
+  parseUnqt = fmap (bool NotCentral IsCentral) onlyBool
               `onFail`
-              liftM NodeName parseUnqt
+              fmap NodeName parseUnqt
 
-  parse = optionalQuoted (liftM (bool NotCentral IsCentral) onlyBool)
+  parse = optionalQuoted (bool NotCentral IsCentral <$> onlyBool)
           `onFail`
-          liftM NodeName parse
+          fmap NodeName parse
 
 -- -----------------------------------------------------------------------------
 
@@ -2609,11 +2587,9 @@ instance PrintDot StartType where
   unqtDot (StartStyleSeed ss s) = unqtDot ss <> unqtDot s
 
 instance ParseDot StartType where
-  parseUnqt = oneOf [ do ss <- parseUnqt
-                         s  <- parseUnqt
-                         return $ StartStyleSeed ss s
-                    , liftM StartStyle parseUnqt
-                    , liftM StartSeed parseUnqt
+  parseUnqt = oneOf [ liftA2 StartStyleSeed parseUnqt parseUnqt
+                    , StartStyle <$> parseUnqt
+                    , StartSeed <$> parseUnqt
                     ]
 
 data STStyle = RegularStyle
@@ -2657,20 +2633,18 @@ instance PrintDot StyleItem where
   listToDot sis           = dquotes $ unqtListToDot sis
 
 instance ParseDot StyleItem where
-  parseUnqt = do nm <- parseUnqt
-                 args <- tryParseList' parseArgs
-                 return $ SItem nm args
+  parseUnqt = liftA2 SItem parseUnqt (tryParseList' parseArgs)
 
-  parse = quotedParse (liftM2 SItem parseUnqt parseArgs)
+  parse = quotedParse (liftA2 SItem parseUnqt parseArgs)
           `onFail`
-          liftM (flip SItem []) parse
+          fmap (flip SItem []) parse
 
   parseUnqtList = sepBy1 parseUnqt parseComma
 
   parseList = quotedParse parseUnqtList
               `onFail`
               -- Might not necessarily need to be quoted if a singleton...
-              liftM return parse
+              fmap return parse
 
 parseArgs :: Parse [Text]
 parseArgs = bracketSep (character '(')
@@ -2711,11 +2685,11 @@ instance PrintDot StyleName where
   toDot sn      = unqtDot sn
 
 instance ParseDot StyleName where
-  parseUnqt = liftM checkDD parseStyleName
+  parseUnqt = checkDD <$> parseStyleName
 
   parse = quotedParse parseUnqt
           `onFail`
-          liftM checkDD quotelessString
+          fmap checkDD quotelessString
 
 checkDD     :: Text -> StyleName
 checkDD str = case T.toLower str of
@@ -2732,9 +2706,8 @@ checkDD str = case T.toLower str of
                 _           -> DD str
 
 parseStyleName :: Parse Text
-parseStyleName = do f <- orEscaped . noneOf $ ' ' : disallowedChars
-                    r <- parseEscaped True [] disallowedChars
-                    return $ f `T.cons` r
+parseStyleName = liftA2 T.cons (orEscaped . noneOf $ ' ' : disallowedChars)
+                               (parseEscaped True [] disallowedChars)
   where
     disallowedChars = [quoteChar, '(', ')', ',']
     -- Used because the first character has slightly stricter requirements than the rest.
@@ -2760,13 +2733,12 @@ instance PrintDot ViewPort where
   toDot = dquotes . unqtDot
 
 instance ParseDot ViewPort where
-  parseUnqt = do wv <- parseUnqt
-                 parseComma
-                 hv <- parseUnqt
-                 parseComma
-                 zv <- parseUnqt
-                 mf <- optional $ parseComma >> parseUnqt
-                 return $ VP wv hv zv mf
+  parseUnqt = VP <$> parseUnqt
+                 <*  parseComma
+                 <*> parseUnqt
+                 <*  parseComma
+                 <*> parseUnqt
+                 <*> optional (parseComma *> parseUnqt)
 
   parse = quotedParse parseUnqt
 
@@ -2783,13 +2755,13 @@ instance PrintDot FocusType where
   toDot (NodeFocus nm) = toDot nm
 
 instance ParseDot FocusType where
-  parseUnqt = liftM XY parseUnqt
+  parseUnqt = fmap XY parseUnqt
               `onFail`
-              liftM NodeFocus parseUnqt
+              fmap NodeFocus parseUnqt
 
-  parse = liftM XY parse
+  parse = fmap XY parse
           `onFail`
-          liftM NodeFocus parse
+          fmap NodeFocus parse
 
 -- -----------------------------------------------------------------------------
 
@@ -2821,11 +2793,11 @@ instance PrintDot Paths where
     toDot ps          = dquotes $ unqtDot ps
 
 instance ParseDot Paths where
-    parseUnqt = liftM (Paths . splitSearchPath) parseUnqt
+    parseUnqt = Paths . splitSearchPath <$> parseUnqt
 
     parse = quotedParse parseUnqt
             `onFail`
-            liftM (Paths . (:[]) . T.unpack) quotelessString
+            fmap (Paths . (:[]) . T.unpack) quotelessString
 
 -- -----------------------------------------------------------------------------
 
@@ -2886,7 +2858,7 @@ instance PrintDot Ratios where
   unqtDot AutoRatio       = text "auto"
 
 instance ParseDot Ratios where
-  parseUnqt = oneOf [ liftM AspectRatio parseUnqt
+  parseUnqt = oneOf [ AspectRatio <$> parseUnqt
                     , stringRep FillRatio "fill"
                     , stringRep CompressRatio "compress"
                     , stringRep ExpandRatio "expand"
