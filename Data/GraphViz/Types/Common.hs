@@ -26,7 +26,7 @@ import Data.Maybe(isJust)
 import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.Read as T
 import Data.Text.Lazy(Text)
-import Control.Monad(liftM, liftM2, when, unless)
+import Control.Monad(when, unless)
 
 -- -----------------------------------------------------------------------------
 -- This is re-exported by Data.GraphViz.Types
@@ -49,9 +49,9 @@ instance PrintDot GraphID where
   toDot gID       = unqtDot gID
 
 instance ParseDot GraphID where
-  parseUnqt = liftM stringNum parseUnqt
+  parseUnqt = stringNum <$> parseUnqt
 
-  parse = liftM stringNum parse
+  parse = stringNum <$> parse
           `adjustErr`
           ("Not a valid GraphID\n\t"++)
 
@@ -115,13 +115,13 @@ instance ParseDot GlobalAttributes where
                  oldTp <- getAttributeType
                  maybe (return ()) setAttributeType mtp
 
-                 as <- whitespace >> parse
+                 as <- whitespace *> parse
 
                  -- Safe to set back even if not changed.
                  setAttributeType oldTp
                  return $ gat as
               `onFail`
-              liftM determineType parse
+              fmap determineType parse
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
@@ -184,14 +184,14 @@ instance (ParseDot n) => ParseDot (DotNode n) where
   parseList = parseUnqtList
 
 parseNodeID :: (ParseDot n) => Parse (Attributes -> DotNode n)
-parseNodeID = liftM DotNode parseAndCheck
+parseNodeID = DotNode <$> parseAndCheck
   where
     parseAndCheck = do n <- parse
                        me <- optional parseUnwanted
                        maybe (return n) (const notANode) me
     notANode = fail "This appears to be an edge, not a node"
-    parseUnwanted = oneOf [ parseEdgeType >> return ()
-                          , character ':' >> return () -- PortPos value
+    parseUnwanted = oneOf [ parseEdgeType *> return ()
+                          , character ':' *> return () -- PortPos value
                           ]
 
 instance Functor DotNode where
@@ -232,17 +232,13 @@ instance (ParseDot n) => ParseDot (DotEdge n) where
   parse = parseUnqt -- Don't want the option of quoting
 
   -- Have to take into account edges of the type "n1 -> n2 -> n3", etc.
-  parseUnqtList = liftM concat
-                  $ parseStatements parseEdgeLine
+  parseUnqtList = concat <$> parseStatements parseEdgeLine
 
   parseList = parseUnqtList
 
 parseEdgeID :: (ParseDot n) => Parse (Attributes -> DotEdge n)
-parseEdgeID = do eFrom <- parseEdgeNode
-                 -- Parse both edge types just to be more liberal
-                 parseEdgeType
-                 eTo <- parseEdgeNode
-                 return $ mkEdge eFrom eTo
+parseEdgeID = ignoreSep mkEdge parseEdgeNode parseEdgeType parseEdgeNode
+              -- Parse both edge types just to be more liberal
 
 type EdgeNode n = (n, Maybe PortPos)
 
@@ -254,11 +250,11 @@ parseEdgeNodes = parseBraced ( wrapWhitespace
                                $ parseStatements parseEdgeNode
                              )
                  `onFail`
-                 liftM return parseEdgeNode
+                 fmap (:[]) parseEdgeNode
 
 parseEdgeNode :: (ParseDot n) => Parse (EdgeNode n)
-parseEdgeNode = liftM2 (,) parse
-                           (optional $ character ':' >> parseEdgeBasedPP)
+parseEdgeNode = liftA2 (,) parse
+                           (optional $ character ':' *> parseEdgeBasedPP)
 
 mkEdge :: EdgeNode n -> EdgeNode n -> Attributes -> DotEdge n
 mkEdge (eFrom, mFP) (eTo, mTP) = DotEdge eFrom eTo
@@ -267,7 +263,7 @@ mkEdge (eFrom, mFP) (eTo, mTP) = DotEdge eFrom eTo
 
 mkEdges :: [EdgeNode n] -> [EdgeNode n]
            -> Attributes -> [DotEdge n]
-mkEdges fs ts as = liftM2 (\f t -> mkEdge f t as) fs ts
+mkEdges fs ts as = liftA2 (\f t -> mkEdge f t as) fs ts
 
 addPortPos   :: (PortPos -> Attribute) -> Maybe PortPos
                 -> Attributes -> Attributes
@@ -280,8 +276,7 @@ parseEdgeType = wrapWhitespace $ stringRep True dirEdge
 
 parseEdgeLine :: (ParseDot n) => Parse [DotEdge n]
 parseEdgeLine = do n1 <- parseEdgeNodes
-                   ens <- many1 $ do parseEdgeType
-                                     parseEdgeNodes
+                   ens <- many1 $ parseEdgeType *> parseEdgeNodes
                    let ens' = n1 : ens
                        efs = zipWith mkEdges ens' (tail ens')
                        ef = return $ \ as -> concatMap ($as) efs
@@ -351,8 +346,7 @@ printGraphID str isDir mID g = do setDirectedness isDir'
 
 parseGraphID   :: (Bool -> Bool -> Maybe GraphID -> a) -> Parse a
 parseGraphID f = do whitespace
-                    str <- liftM isJust
-                           $ optional (parseAndSpace $ string strGraph)
+                    str <- isJust <$> optional (parseAndSpace $ string strGraph)
                     dir <- parseAndSpace ( stringRep True dirGraph
                                            `onFail`
                                            stringRep False undirGraph
@@ -390,7 +384,7 @@ printBracesBased h i = vcat $ sequence [ h <+> lbrace
 parseBracesBased      :: AttributeType -> Parse a -> Parse a
 parseBracesBased tp p = do gs <- getsGS id
                            setAttributeType tp
-                           a <- whitespace >> parseBraced (wrapWhitespace p)
+                           a <- whitespace *> parseBraced (wrapWhitespace p)
                            modifyGS (const gs)
                            return a
                         `adjustErr`
@@ -418,16 +412,15 @@ printSGID isCl sID = bool noClust addClust isCl
 parseSubGraph         :: (Bool -> Maybe GraphID -> stmt -> c) -> Parse stmt -> Parse c
 parseSubGraph pid pst = do (isC, fID) <- parseSubGraphID pid
                            let tp = bool SubGraphAttribute ClusterAttribute isC
-                           liftM fID $ parseBracesBased tp pst
+                           fID <$> parseBracesBased tp pst
 
 parseSubGraphID   :: (Bool -> Maybe GraphID -> c) -> Parse (Bool,c)
-parseSubGraphID f = do string sGraph
-                       whitespace1
-                       (isC,mid) <- parseSGID
-                       return (isC, f isC mid)
+parseSubGraphID f = appl <$> (string sGraph *> whitespace1 *> parseSGID)
+  where
+    appl (isC, mid) = (isC, f isC mid)
 
 parseSGID :: Parse (Bool, Maybe GraphID)
-parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
+parseSGID = oneOf [ getClustFrom <$> parseAndSpace parse
                   , return (False, Nothing)
                   ]
   where
@@ -440,7 +433,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
     pStr = do isCl <- checkCl
                       `onFail`
                       return False
-              when isCl $ optional (character '_') >> return ()
+              when isCl $ optional (character '_') *> return ()
               sID <- optional pID
               let sID' = if sID == emptyID
                          then Nothing
@@ -451,7 +444,7 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
 
     -- For Strings, there are no more quotes to unescape, so consume
     -- what you can.
-    pID = liftM stringNum $ manySatisfy (const True)
+    pID = stringNum <$> manySatisfy (const True)
 
 {- This is a much nicer definition, but unfortunately it doesn't work.
    The problem is that Graphviz decides that a subgraph is a cluster
@@ -462,9 +455,9 @@ parseSGID = oneOf [ liftM getClustFrom $ parseAndSpace parse
                        `onFail`
                        return False
                sID <- optional $ do when isCl
-                                      $ optional (character '_') >> return ()
+                                      $ optional (character '_') *> return ()
                                     parseUnqt
-               when (isCl || isJust sID) $ whitespace1 >> return ()
+               when (isCl || isJust sID) $ whitespace1 *> return ()
                return (isCl, sID)
 -}
 
@@ -494,7 +487,7 @@ parseAttrBased tp lc p = do oldType <- getAttributeType
                             setAttributeType tp
                             oldCS <- getColorScheme
                             f <- p
-                            atts <- tryParseList' (whitespace >> parse)
+                            atts <- tryParseList' (whitespace *> parse)
                             unless lc $ setColorScheme oldCS
                             when (tp /= oldType) $ setAttributeType oldType
                             return $ f atts
@@ -507,16 +500,16 @@ parseAttrBasedList tp lc = parseStatements . parseAttrBased tp lc
 
 -- | Parse the separator (and any other whitespace1 present) between statements.
 statementEnd :: Parse ()
-statementEnd = parseSplit >> newline'
+statementEnd = parseSplit *> newline'
   where
-    parseSplit = (whitespace >> oneOf [ character ';' >> return ()
-                                       , newline
-                                       ]
+    parseSplit = (whitespace *> oneOf [ character ';' *> return ()
+                                      , newline
+                                      ]
                  )
                  `onFail`
                  whitespace1
 
 parseStatements   :: Parse a -> Parse [a]
-parseStatements p = sepBy (whitespace >> p) statementEnd
+parseStatements p = sepBy (whitespace *> p) statementEnd
                     `discard`
                     optional statementEnd
