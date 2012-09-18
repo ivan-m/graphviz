@@ -16,8 +16,8 @@
      * Split lines (by inserting a @\\@ the rest of that \"line\" is
        continued on the next line).
 
-     * 'Text's concatenated together using @\"...\" + \"...\"@; these
-       are concatenated into one big 'Text'.
+     * Strings concatenated together using @\"...\" + \"...\"@; these
+       are concatenated into one big string.
 -}
 module Data.GraphViz.PreProcessing(preProcess) where
 
