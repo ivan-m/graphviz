@@ -99,7 +99,7 @@ import Data.Char( isDigit
                 )
 import Data.List(groupBy, sortBy)
 import Data.Function(on)
-import Data.Maybe(fromMaybe, isNothing, listToMaybe)
+import Data.Maybe(fromMaybe, isJust, isNothing, listToMaybe)
 import Data.Ratio((%))
 import qualified Data.Set as Set
 import qualified Data.Text.Lazy as T
@@ -251,11 +251,17 @@ parseSigned p = (character '-' *> fmap negate p)
 
 parseInt :: (Integral a) => Parse a
 parseInt = do cs <- many1Satisfy isDigit
+                    `adjustErr` ("Expected one or more digits\n\t"++)
               case T.decimal cs of
-                Right (n,"")  -> return n
+                Right (n,"")  -> checkInt n
+                -- This case should never actually happen...
                 Right (_,txt) -> fail $ "Trailing digits not parsed as Integral: " ++ T.unpack txt
                 Left err      -> fail $ "Could not read Integral: " ++ err
-           `adjustErr` ("Expected one or more digits\n\t"++)
+  where
+    checkInt n = do c <- optional $ oneOf [ character '.', character 'e' ]
+                    if isJust c
+                      then fail "This number is actually Floating, not Integral!"
+                      else return n
 
 parseInt' :: Parse Int
 parseInt' = parseSigned parseInt
