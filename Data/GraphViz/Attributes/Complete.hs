@@ -2315,11 +2315,14 @@ instance ParseDot PageDir where
 
 -- | The number of points in the list must be equivalent to 1 mod 3;
 --   note that this is not checked.
-data Spline = Spline (Maybe Point) (Maybe Point) [Point]
+data Spline = Spline { endPoint     :: Maybe Point
+                     , startPoint   :: Maybe Point
+                     , splinePoints :: [Point]
+                     }
             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Spline where
-  unqtDot (Spline ms me ps) = addS . addE
+  unqtDot (Spline me ms ps) = addE . addS
                              . hsep
                              $ mapM unqtDot ps
     where
@@ -2334,7 +2337,7 @@ instance PrintDot Spline where
   listToDot = dquotes . unqtListToDot
 
 instance ParseDot Spline where
-  parseUnqt = Spline <$> parseP 's' <*> parseP 'e'
+  parseUnqt = Spline <$> parseP 'e' <*> parseP 's'
                      <*> sepBy1 parseUnqt whitespace1
       where
         parseP t = optional (character t *> parseComma *> parseUnqt <* whitespace1)
