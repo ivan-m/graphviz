@@ -52,7 +52,6 @@ import Numeric(showHex, readHex)
 import Data.Maybe(isJust)
 import Data.Word(Word8)
 import qualified Data.Text.Lazy as T
-import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
 
@@ -134,12 +133,11 @@ instance ParseDot Color where
                           _ -> throw . NotDotCode
                                $ "Not a valid hex Color specification: "
                                   ++ show cs
-      parseHSV = do h <- parse
-                    parseSep
-                    s <- parse
-                    parseSep
-                    v <- parse
-                    return $ HSV h s v
+      parseHSV = HSV <$> parse
+                     <*  parseSep
+                     <*> parse
+                     <*  parseSep
+                     <*> parse
       parseSep = oneOf [ string ","
                        , whitespace1
                        ]
@@ -163,7 +161,7 @@ instance ParseDot Color where
                      failBad $ "Error parsing list of Colors with color scheme of "
                                ++ show cs
 
-  parseList = liftM (:[])
+  parseList = fmap (:[])
               -- Unquoted single color
               (oneOf [ parseNC (undefined :: BrewerColor) True
                      , parseNC (undefined :: SVGColor) True
@@ -247,7 +245,7 @@ parseNamedColor :: (NamedColor nc, ParseDot lv)
                    => (ColorScheme -> Maybe cs) -> Parse cs -> (cs -> Bool)
                    -> (cs -> lv -> nc) -> Bool -> Parse nc
 parseNamedColor gcs parseCS vcs mkC q
-    = do Just cs <- gcs `fmap` getColorScheme
+    = do Just cs <- gcs <$> getColorScheme
          lv <- bool parseUnqt parse q
                `onFail`
                mQts (string "//" *> parseUnqt)
@@ -257,8 +255,7 @@ parseNamedColor gcs parseCS vcs mkC q
                 cs <- parseCS
                 character '/'
                 if vcs cs
-                   then do lv <- parseUnqt
-                           return $ mkC cs lv
+                   then mkC cs <$>  parseUnqt
                    else fail "Explicit colorscheme not as expected."
            )
     where
@@ -269,16 +266,16 @@ parseNamedColor gcs parseCS vcs mkC q
 -- X11 has a special case when parsing: '/yyyy'
 
 parseX11Color   :: Bool -> Parse Color
-parseX11Color q = fmap X11Color
-                  $ parseNC' q
-                    `onFail`
-                    bool id quotedParse q (character '/' *> parseUnqt)
-                    `onFail`
-                    -- Can use X11 colors within brewer colorscheme.
-                    do cs <- getColorScheme
-                       case cs of
-                         Brewer{} -> bool parseUnqt parse q
-                         _        -> fail "Unable to parse an X11 color within Brewer"
+parseX11Color q = X11Color
+                  <$> parseNC' q
+                      `onFail`
+                      bool id quotedParse q (character '/' *> parseUnqt)
+                      `onFail`
+                      -- Can use X11 colors within brewer colorscheme.
+                      do cs <- getColorScheme
+                         case cs of
+                           Brewer{} -> bool parseUnqt parse q
+                           _        -> fail "Unable to parse an X11 color within Brewer"
 
 -- -----------------------------------------------------------------------------
 

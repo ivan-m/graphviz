@@ -238,6 +238,8 @@ instance (ParseDot n) => ParseDot (DotEdge n) where
 
 parseEdgeID :: (ParseDot n) => Parse (Attributes -> DotEdge n)
 parseEdgeID = ignoreSep mkEdge parseEdgeNode parseEdgeType parseEdgeNode
+              `adjustErr`
+              ("Parsed beginning of DotEdge but could not parse Attributes:\n\t"++)
               -- Parse both edge types just to be more liberal
 
 type EdgeNode n = (n, Maybe PortPos)

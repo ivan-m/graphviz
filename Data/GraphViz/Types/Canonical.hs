@@ -91,7 +91,6 @@ import Data.GraphViz.State(AttributeType(..))
 import Data.GraphViz.Util(bool)
 
 import Control.Arrow((&&&))
-import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
 
@@ -182,8 +181,8 @@ instance (ParseDot n) => ParseDot (DotSubGraph n) where
   parseUnqt = parseSubGraph DotSG parseUnqt
               `onFail`
               -- Take "anonymous" DotSubGraphs into account.
-              liftM (DotSG False Nothing)
-                    (parseBracesBased SubGraphAttribute parseUnqt)
+              fmap (DotSG False Nothing)
+                   (parseBracesBased SubGraphAttribute parseUnqt)
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`

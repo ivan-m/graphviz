@@ -29,7 +29,6 @@ import Data.Text.Lazy(Text)
 import qualified Data.Text.Lazy.Builder as B
 import Data.Text.Lazy.Builder(Builder)
 import Data.Monoid(Monoid(..), mconcat)
-import Control.Monad(liftM)
 
 -- -----------------------------------------------------------------------------
 -- Filtering out unwanted Dot items such as comments
@@ -46,7 +45,7 @@ preProcess t = case fst $ runParser parseOutUnwanted t of
 --   lines only over a single line.  Should parse the /entire/ input
 --   'Text'.
 parseOutUnwanted :: Parse Builder
-parseOutUnwanted = liftM mconcat (many getNext)
+parseOutUnwanted = mconcat <$> many getNext
   where
     getNext = parseOK
               `onFail`
@@ -56,9 +55,10 @@ parseOutUnwanted = liftM mconcat (many getNext)
               `onFail`
               parseUnwanted
               `onFail`
-              liftM B.singleton next
-    parseOK = liftM B.fromLazyText
-              $ many1Satisfy (`notElem` ['\n', '\r', '\\', '/', '"', '<'])
+              fmap B.singleton next
+
+    parseOK = B.fromLazyText
+              <$> many1Satisfy (`notElem` ['\n', '\r', '\\', '/', '"', '<'])
 
 -- | Parses an unwanted part of the Dot code (comments and
 --   pre-processor lines; also un-splits lines).
@@ -74,65 +74,58 @@ parseUnwanted = oneOf [ parseLineComment
 --   previous line, but will leave the one from the pre-processor line
 --   there (so in the end it just removes the line).
 parsePreProcessor :: (Monoid m) => Parse m
-parsePreProcessor = do newline
-                       character '#'
-                       consumeLine
-                       return mempty
+parsePreProcessor = newline *> character '#' *> consumeLine *> pure mempty
 
 -- | Parse @//@-style comments.
 parseLineComment :: (Monoid m) => Parse m
-parseLineComment = do string "//"
-                      -- Note: do /not/ consume the newlines, as they're
-                      -- needed in case the next line is a pre-processor
-                      -- line.
-                      consumeLine
-                      return mempty
+parseLineComment = string "//"
+                   -- Note: do /not/ consume the newlines, as they're
+                   -- needed in case the next line is a pre-processor
+                   -- line.
+                   *> consumeLine
+                   *> pure mempty
 
 -- | Parse @/* ... */@-style comments.
 parseMultiLineComment :: (Monoid m) => Parse m
-parseMultiLineComment = bracket start end (many inner)
-                        >> return mempty
+parseMultiLineComment = bracket start end (many inner) *> pure mempty
   where
     start = string "/*"
     end = string "*/"
-    inner = (many1Satisfy ('*' /=) >> return ())
+    inner = (many1Satisfy ('*' /=) *> pure ())
             `onFail`
-            do character '*'
-               satisfy ('/' /=)
-               inner
+            (character '*' *> satisfy ('/' /=) *> inner)
 
 parseConcatStrings :: Parse Builder
-parseConcatStrings = liftM (wrapQuotes . mconcat)
-                     $ sepBy1 parseString parseConcat
+parseConcatStrings = wrapQuotes . mconcat <$> sepBy1 parseString parseConcat
   where
     qParse = bracket (character '"') (commit $ character '"')
-    parseString = qParse (liftM mconcat $ many parseInner)
-    parseInner = (string "\\\"" >> return (B.fromLazyText $ T.pack "\\\""))
+    parseString = qParse (mconcat <$> many parseInner)
+    parseInner = (string "\\\"" *> pure (B.fromLazyText $ T.pack "\\\""))
                  `onFail`
                  -- Need to parse an explicit `\', in case it ends the
                  -- string (and thus the next step would get parsed by the
                  -- previous option).
-                 (string "\\\\" >> return (B.fromLazyText $ T.pack "\\\\"))
+                 (string "\\\\" *> pure (B.fromLazyText $ T.pack "\\\\"))
                  `onFail`
                  parseSplitLine -- in case there's a split mid-quote
                  `onFail`
-                 liftM B.singleton (satisfy (quoteChar /=))
-    parseConcat = parseSep >> character '+' >> parseSep
+                 fmap B.singleton (satisfy (quoteChar /=))
+    parseConcat = parseSep *> character '+' *> parseSep
     parseSep = many $ whitespace1 `onFail` parseUnwanted
     wrapQuotes str = qc `mappend` str `mappend` qc
     qc = B.singleton '"'
 
 -- | Lines can be split with a @\\@ at the end of the line.
 parseSplitLine :: (Monoid m) => Parse m
-parseSplitLine = character '\\' >> newline >> return mempty
+parseSplitLine = character '\\' *> newline *> pure mempty
 
 parseHTML :: Parse Builder
-parseHTML = liftM (addAngled . mconcat)
+parseHTML = fmap (addAngled . mconcat)
             . parseAngled $ many inner
   where
     inner = parseHTML
             `onFail`
-            (liftM B.fromLazyText $ many1Satisfy (\c -> c /= open && c /= close))
+            (B.fromLazyText <$> many1Satisfy (\c -> c /= open && c /= close))
     addAngled str = B.singleton open `mappend` str `mappend` B.singleton close
     open = '<'
     close = '>'

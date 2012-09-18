@@ -114,8 +114,8 @@ import qualified Data.Map as M
 import Data.Map(Map)
 import qualified Data.Set as S
 import qualified Data.Sequence as Seq
+import Control.Applicative(liftA2, (<$>), (<*>))
 import Control.Arrow((***))
-import Control.Monad(liftM, liftM2)
 import Text.Read(Lexeme(Ident), lexP, parens, readPrec)
 import Text.ParserCombinators.ReadPrec(prec)
 
@@ -471,7 +471,7 @@ removeEmptyClusters dg = dg { clusters = cM' }
     invNs = usedClustsIn . M.map _inCluster $ values dg
 
     usedClustsIn = M.fromAscList
-                   . map (liftM2 (,) (fst . head) (map snd))
+                   . map ((,) <$> fst . head <*> map snd)
                    . groupSortBy fst
                    . mapMaybe (uncurry (fmap . flip (,)))
                    . M.assocs
@@ -489,7 +489,7 @@ hasClusters = M.null . clusters
 
 -- | Determine if this graph has nodes or clusters.
 isEmptyGraph :: DotGraph n -> Bool
-isEmptyGraph = liftM2 (&&) isEmpty (not . hasClusters)
+isEmptyGraph = liftA2 (&&) isEmpty (not . hasClusters)
 
 graphAttributes :: DotGraph n -> [GlobalAttributes]
 graphAttributes = fromGlobAttrs . graphAttrs
@@ -575,7 +575,7 @@ instance (Ord n, PrintDot n) => PrintDot (DotGraph n) where
 
 -- | Uses the ParseDot instance for generalised 'G.DotGraph's.
 instance (Ord n, ParseDot n) => ParseDot (DotGraph n) where
-  parseUnqt = liftM fromGDot $ parseUnqt
+  parseUnqt = fromGDot <$> parseUnqt
     where
       -- fromGDot :: G.DotGraph n -> DotGraph n
       fromGDot = fromDotRepr . flip asTypeOf (undefined :: G.DotGraph n)
@@ -657,7 +657,7 @@ toEdgeMap     :: (Ord n) => (DotEdge n -> n) -> (DotEdge n -> n) -> [DotEdge n]
                  -> Map n (EdgeMap n)
 toEdgeMap f t = M.map eM . M.fromList . groupSortCollectBy f t'
   where
-    t' = liftM2 (,) t edgeAttributes
+    t' = liftA2 (,) t edgeAttributes
     eM = M.fromList . groupSortCollectBy fst snd
 
 mapNs :: (Ord n, Ord n') => (n -> n') -> DotGraph n -> DotGraph n'

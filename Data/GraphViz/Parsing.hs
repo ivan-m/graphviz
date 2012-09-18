@@ -310,7 +310,7 @@ parseFloat' = parseSigned ( parseFloat
 bracket               :: Parse bra -> Parse ket -> Parse a -> Parse a
 bracket open close pa = (open `adjustErr` ("Missing opening bracket:\n\t"++))
                         *> pa
-                        <* (close `adjustErr` ("Missing closing bracket:\n\t"++))
+                        <* (close `adjustErr` ("Was expecting closing bracket:\n\t"++))
 
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` whitespace

@@ -75,6 +75,7 @@ import Data.GraphViz.Attributes.Complete(CustomAttribute, AttributeName
 import Data.GraphViz.Commands
 import Data.GraphViz.Commands.IO(hGetDot)
 
+import Data.Functor((<$>))
 import Data.Graph.Inductive.Graph
 import qualified Data.Set as Set
 import Control.Arrow((&&&), first)
@@ -82,7 +83,6 @@ import Data.Maybe(mapMaybe, fromJust)
 import qualified Data.Map as Map
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
-import Control.Monad(liftM)
 import System.IO.Unsafe(unsafePerformIO)
 import Control.Concurrent(forkIO)
 
@@ -437,8 +437,7 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 dotAttributes :: (Graph gr, PPDotRepr dg Node) => Bool -> gr nl (EdgeID el)
                  -> dg Node -> IO (gr (AttributeNode nl) (AttributeEdge el))
 dotAttributes isDir gr dot
-  = liftM (augmentGraph gr . parseDG)
-    $ graphvizWithHandle command dot DotOutput hGetDot
+  = augmentGraph gr . parseDG <$> graphvizWithHandle command dot DotOutput hGetDot
   where
     parseDG = (`asTypeOf` dot)
     command = if isDir then dirCommand else undirCommand

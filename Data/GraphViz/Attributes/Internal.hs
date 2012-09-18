@@ -28,7 +28,6 @@ import Data.Maybe(isNothing)
 import qualified Data.Map as Map
 import Data.Map(Map)
 import Data.Text.Lazy(Text)
-import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
 
@@ -52,15 +51,14 @@ instance PrintDot PortName where
   toDot = toDot . portName
 
 instance ParseDot PortName where
-  parseUnqt = liftM PN
-              $ parseEscaped False [] ['"', ':']
+  parseUnqt = PN <$> parseEscaped False [] ['"', ':']
 
   parse = quotedParse parseUnqt
           `onFail`
           unqtPortName
 
 unqtPortName :: Parse PortName
-unqtPortName = liftM PN quotelessString
+unqtPortName = PN <$> quotelessString
 
 -- -----------------------------------------------------------------------------
 
@@ -86,7 +84,7 @@ instance ParseDot PortPos where
 
   parse = quotedParse parseUnqt
           `onFail`
-          liftM checkPortName unqtPortName
+          fmap checkPortName unqtPortName
 
 checkPortName    :: PortName -> PortPos
 checkPortName pn = maybe (LabelledPort pn Nothing) CompassPoint
@@ -96,7 +94,7 @@ checkPortName pn = maybe (LabelledPort pn Nothing) CompassPoint
 -- | When attached to a node in a DotEdge definition, the 'PortName'
 --   and the 'CompassPoint' can be in separate quotes.
 parseEdgeBasedPP :: Parse PortPos
-parseEdgeBasedPP = liftM2 LabelledPort parse (liftM Just $ character ':' >> parse)
+parseEdgeBasedPP = liftA2 LabelledPort parse (fmap Just $ character ':' *> parse)
                    `onFail`
                    parse
 

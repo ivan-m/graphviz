@@ -74,7 +74,6 @@ import Data.Sequence(Seq, (><))
 import qualified Data.Foldable as F
 import qualified Data.Traversable as T
 import Control.Arrow((&&&))
-import Control.Monad(liftM)
 import Control.Monad.Trans.State(get, put, modify, execState, evalState)
 
 -- -----------------------------------------------------------------------------
@@ -154,7 +153,7 @@ printGStmts :: (PrintDot n) => DotStatements n -> DotCode
 printGStmts = toDot . F.toList
 
 parseGStmts :: (ParseDot n) => Parse (DotStatements n)
-parseGStmts = liftM Seq.fromList parse
+parseGStmts = Seq.fromList <$> parse
 
 statementStructure :: DotStatements n -> GraphState ()
 statementStructure = F.mapM_ stmtStructure
@@ -191,24 +190,24 @@ instance (PrintDot n) => PrintDot (DotStatement n) where
   listToDot = unqtListToDot
 
 instance (ParseDot n) => ParseDot (DotStatement n) where
-  parseUnqt = oneOf [ liftM GA parseUnqt
-                    , liftM SG parseUnqt
-                    , liftM DN parseUnqt
-                    , liftM DE parseUnqt
+  parseUnqt = oneOf [ GA <$> parseUnqt
+                    , SG <$> parseUnqt
+                    , DN <$> parseUnqt
+                    , DE <$> parseUnqt
                     ]
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
           ("Not a valid statement\n\t"++)
 
-  parseUnqtList = liftM concat . wrapWhitespace
+  parseUnqtList = fmap concat . wrapWhitespace
                   $ parseStatements p
     where
       -- Have to do something special here because of "a -> b -> c"
       -- syntax for edges.
-      p = liftM (map DE) parseEdgeLine
+      p = fmap (map DE) parseEdgeLine
           `onFail`
-          liftM return parse
+          fmap (:[]) parse
 
   parseList = parseUnqtList
 
@@ -262,14 +261,14 @@ instance (ParseDot n) => ParseDot (DotSubGraph n) where
   parseUnqt = parseSubGraph DotSG parseGStmts
               `onFail`
               -- Take anonymous DotSubGraphs into account
-              liftM (DotSG False Nothing)
-                    (parseBracesBased SubGraphAttribute parseGStmts)
+              fmap (DotSG False Nothing)
+                   (parseBracesBased SubGraphAttribute parseGStmts)
 
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
           ("Not a valid Sub Graph\n\t"++)
 
-  parseUnqtList = sepBy (whitespace >> parseUnqt) newline'
+  parseUnqtList = sepBy (whitespace *> parseUnqt) newline'
 
   parseList = parseUnqtList
 
@@ -298,8 +297,8 @@ renumber dg = dg { graphStatements = newStmts }
     newStmts = evalState (stsRe $ graphStatements dg) startN
 
     stsRe = T.mapM stRe
-    stRe (SG sg) = liftM SG $ sgRe sg
-    stRe stmt    = return stmt
+    stRe (SG sg) = SG <$> sgRe sg
+    stRe stmt    = pure stmt
     sgRe sg = do sgid' <- case subGraphID sg of
                             Nothing -> do n <- get
                                           put $ succ n
