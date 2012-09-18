@@ -1,3 +1,4 @@
 :set -itests -iutils
 :set -hide-package graphviz
 :set -XHaskell98
+:set -XOverloadedStrings
