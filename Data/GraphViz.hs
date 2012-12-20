@@ -415,8 +415,8 @@ addEdgeIDs g = mkGraph ns es'
     es' = zipWith addID es ([1..] :: [Int])
     addID (f,t,l) i = (f,t,EID (T.pack $ show i) l)
 
--- | Add the 'Comment' to the list of attributes containing the value
---   of the unique edge identifier.
+-- | Add a custom attribute to the list of attributes containing the
+--   value of the unique edge identifier.
 setEdgeIDAttribute     :: (LEdge el -> Attributes)
                           -> (LEdge (EdgeID el) -> Attributes)
 setEdgeIDAttribute f = \ e@(_,_,eid) -> identifierAttribute (eID eid)
