@@ -45,9 +45,6 @@ module Data.GraphViz.Commands
     , quitWithoutGraphviz
     ) where
 
--- Want to use the extensible-exception version
-import Prelude hiding (catch)
-
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
 import Data.GraphViz.Attributes.Complete(Attribute(Z))
