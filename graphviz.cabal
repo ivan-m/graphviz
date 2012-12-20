@@ -42,7 +42,7 @@ Build-Type:         Simple
 Cabal-Version:      >= 1.14
 Extra-Source-Files: TODO
                     Changelog
-                    README
+                    README.md
                     FAQ
                     utils/AttributeGenerator.hs
                     utils/TestParsing.hs
