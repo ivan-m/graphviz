@@ -294,7 +294,7 @@ dotToGraph dg = mkGraph ns' es
     -- Applying uniqBy just in case...
     ns = uniqBy fst . map toLN $ graphNodes dg
     es = concatMap toLE $ graphEdges dg
-    -- Need to ensure that for some reason there are node IDs in an
+    -- Need to check that for some reason there aren't node IDs in an
     -- edge but not on their own.
     nSet = Set.fromList $ map fst ns
     nEs = map (flip (,) [])
