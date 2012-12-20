@@ -149,7 +149,7 @@ instance ParseDot TextItem where
 
   parse = parseUnqt
 
-  parseUnqtList = many1 parseUnqt -- sepBy1 parseUnqt whitespace
+  parseUnqtList = many parseUnqt
 
   parseList = parseUnqtList
 
