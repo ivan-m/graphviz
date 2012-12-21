@@ -49,7 +49,7 @@ Extra-Source-Files: TODO
 
 Source-Repository head
     Type:         darcs
-    Location:     http://code.haskell.org/graphviz
+    Location:     http://hub.darcs.net/ivanm/graphviz
 
 Library {
         Default-Language:  Haskell98
