@@ -148,14 +148,14 @@ createDefn att = hdr $+$ constructors $+$ derivs
                      . asRows
                      . firstOthers equals (char '|')
                      . (++ [defUnknown])
-                     . map createDefn
+                     . map createDf
                      $ atts att
       derivs = nest tab $ text "deriving (Eq, Ord, Show, Read)"
-      createDefn a = [cnst a <+> vtypeCode a
-                     , if isEmpty cm
-                       then empty
-                       else text "-- ^" <+> cm
-                     ]
+      createDf a = [cnst a <+> vtypeCode a
+                   , if isEmpty cm
+                     then empty
+                     else text "-- ^" <+> cm
+                   ]
           where
             cm = comment a
       defUnknown = [ unknownAttr <+> unknownNameAlias <+> vtype Strng
@@ -170,17 +170,19 @@ createAlias att = text "type"
     where
       tp = tpNm att
 
-nameAlias     :: Atts -> Code
-nameAlias att = comment
-                $$ (text "type"
-                    <+> unknownNameAlias
-                    <+> equals
-                    <+> vtype Strng)
+-- The Atts value isn't used; this is just to make it have the same
+-- type as the other code-generating functions.
+nameAlias   :: Atts -> Code
+nameAlias _ = cmnt
+              $$ (text "type"
+                  <+> unknownNameAlias
+                  <+> equals
+                  <+> vtype Strng)
   where
-    comment = text "-- | The name for an" <+> unknownAttr
-              <> text "; must satisfy "
-              <+> quotes validUnknownName
-              <> text "."
+    cmnt = text "-- | The name for an" <+> unknownAttr
+           <> text "; must satisfy "
+           <+> quotes validUnknownName
+           <> text "."
 
 unknownNameAlias :: Code
 unknownNameAlias = text "AttributeName"
@@ -191,7 +193,6 @@ showInstance att = hdr $+$ insts'
       hdr = text "instance" <+> text "PrintDot" <+> tpNm att <+> text "where"
       var = char 'v'
       sFunc = text "unqtDot"
-      cnct = text "<>"
       insts = asRows
               . (++ [unknownInst])
               . map mkInstance
@@ -636,7 +637,6 @@ This way, you can more easily edit/update the appropriate values.
   value; anything else is wrapped in quotes and then has Just applied to
   it.  As such, you still need to escape quotes.
 
-
 * Any entries in 'Parsing default' or "Default value" should be a
   valid Haskell value (add parens if needed) with the exception that
   double-quotes should be escaped.
@@ -796,13 +796,18 @@ This way, you can more easily edit/update the appropriate values.
 | Width              | width              | N       | Dbl                      |                 | 0.75                       | @0.75@                                                                   | @0.01@                          |                                                                  |
 | XLabel             | xlabel             | EN      | Cust "Label"             |                 | (StrLabel \"\")            | @'StrLabel' \\\"\\\"@                                                    |                                 | requires Graphviz >= 2.29.0                                      |
 | Z                  | z                  | N       | Dbl                      |                 | 0                          | @0.0@                                                                    | @-MAXFLOAT@, @-1000@            |                                                                  |
+
 -}
 
 unknownAttr :: Doc
 unknownAttr = text "UnknownAttribute"
 
+-- For testing purposes
+attrs :: [Attribute]
 attrs = take 10 $ drop 5 attributes
 
+-- For testing purposes
+attrs' :: Atts
 attrs' = AS (text "Attribute") attrs
 
 bool       :: a -> a -> Bool -> a
