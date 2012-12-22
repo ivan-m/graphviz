@@ -56,9 +56,3 @@ graphviz is free software licensed under a [3-Clause BSD License].
 
 For more information, feel free to
 [email](mailto:Ivan.Miljenovic+graphviz@gmail.com) me.
-
-<!--
-     Local Variables:
-     mode:markdown
-     End:
-  -->
