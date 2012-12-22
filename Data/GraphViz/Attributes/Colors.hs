@@ -162,7 +162,7 @@ instance ParseDot Color where
                                ++ show cs
 
   parseList = fmap (:[])
-              -- Unquoted single color
+              -- Potentially unquoted single color
               (oneOf [ parseNC (undefined :: BrewerColor) True
                      , parseNC (undefined :: SVGColor) True
                      , parseX11Color True
