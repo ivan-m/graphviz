@@ -18,8 +18,8 @@ Changes in 2999.15.0.0
   the old color scheme would override the _parent's_ state.
 
 * Previously, some malformed attributes were accepted when being
-  parsed as they silently became parsed as 'UnknownAttribute'.  Now,
-  attributes where the attribute name and the equal sign are
+  parsed as they silently became parsed as an `UnknownAttribute`.
+  Now, attributes where the attribute name and the equal sign are
   successfully parsed **but** the value of the attribute is _not_
   successfully parse will throw an unrecoverable error.
 
