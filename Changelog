@@ -7,6 +7,37 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.15.0.0
+----------------------
+
+* `GraphvizParams` now lets you specify whether a "cluster" is
+  actually a cluster or a sub-graph.  Requested by **Gabor Greif**.
+
+* Fixed an error where printing edges whose attributes contained a
+  `ColorScheme` attribute, that attribute would stay in the state and
+  the old color scheme would override the _parent's_ state.
+
+* Previously, some malformed attributes were accepted when being
+  parsed as they silently became parsed as 'UnknownAttribute'.  Now,
+  attributes where the attribute name and the equal sign are
+  successfully parsed **but** the value of the attribute is _not_
+  successfully parse will throw an unrecoverable error.
+
+    **Note**: this does mean that some Dot graphs that are accepted by
+    Graphviz (as they separate tokenizing from parsing; as such
+    something like `"0.1"` is successfully accepted as an integer,
+    specifically `0`) are no longer accepted when parsing them in.
+
+* Error messages from parsing are improved to help you track down
+  where the parsing error occurred (in that it's easier to find which
+  attribute failed to parse, etc.).
+
+* The optional start and end points for `Spline`s were previously the
+  wrong way round; this has now been fixed.
+
+* HTML-like labels previously disallowed empty textual label
+  components when parsing; spotted by **Daniel Hummel**.
+
 Changes in 2999.14.1.0
 ----------------------
 
