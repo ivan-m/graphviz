@@ -169,6 +169,11 @@ isUndirected g = all hasFlip es
 --   These correspond to 'LNode' and 'LEdge' in FGL graphs.
 --
 --   The clustering in 'clusterBy' can be to arbitrary depth.
+--
+--   Note that the term \"cluster\" is slightly conflated here: in
+--   terms of @GraphvizParams@ values, a cluster is a grouping of
+--   nodes; the 'isDotCluster' function lets you specify whether it is
+--   a cluster in the Dot sense or just a sub-graph.
 data GraphvizParams n nl el cl l
      = Params { -- | @True@ if the graph is directed; @False@
                 --   otherwise.
@@ -179,6 +184,9 @@ data GraphvizParams n nl el cl l
                 -- | A function to specify which cluster a particular
                 --   node is in.
               , clusterBy        :: ((n,nl) -> NodeCluster cl (n,l))
+                -- | Is this \"cluster\" actually a cluster, or just a
+                --   sub-graph?
+              , isDotCluster     :: (cl -> Bool)
                 -- | The name/identifier for a cluster.
               , clusterID        :: (cl -> GraphID)
                 -- | Specify which global attributes are applied in
@@ -208,6 +216,7 @@ defaultParams :: GraphvizParams n nl el cl nl
 defaultParams = Params { isDirected       = True
                        , globalAttributes = []
                        , clusterBy        = N
+                       , isDotCluster     = const True
                        , clusterID        = const (Int 0)
                        , fmtCluster       = const []
                        , fmtNode          = const []
@@ -232,6 +241,7 @@ blankParams :: GraphvizParams n nl el cl l
 blankParams = Params { isDirected       = undefined
                      , globalAttributes = undefined
                      , clusterBy        = undefined
+                     , isDotCluster     = undefined
                      , clusterID        = undefined
                      , fmtCluster       = undefined
                      , fmtNode          = undefined
@@ -271,8 +281,8 @@ graphElemsToDot params lns les
                      , nodeStmts = ns
                      , edgeStmts = es
                      }
-    (cs, ns) = clustersToNodes (clusterBy params) (clusterID params)
-                               (fmtCluster params) (fmtNode params)
+    (cs, ns) = clustersToNodes (clusterBy params) (isDotCluster params)
+                               (clusterID params) (fmtCluster params) (fmtNode params)
                                lns
     es = mapMaybe mkDotEdge les
     mkDotEdge e@(f,t,_) = if dirGraph || f <= t

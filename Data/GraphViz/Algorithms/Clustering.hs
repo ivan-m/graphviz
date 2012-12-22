@@ -32,11 +32,11 @@ data NodeCluster c a = N a -- ^ Indicates the actual Node in the Graph.
 
 -- | Extract the clusters and nodes from the list of nodes.
 clustersToNodes :: (Ord c) => ((n,a) -> NodeCluster c (n,l))
-                  -> (c -> GraphID) -> (c -> [GlobalAttributes])
+                  -> (c -> Bool) -> (c -> GraphID) -> (c -> [GlobalAttributes])
                   -> ((n,l) -> Attributes) -> [(n,a)]
                   -> ([DotSubGraph n], [DotNode n])
-clustersToNodes clusterBy cID fmtCluster fmtNode
-    = treesToDot cID fmtCluster fmtNode
+clustersToNodes clusterBy isC cID fmtCluster fmtNode
+    = treesToDot isC cID fmtCluster fmtNode
       . collapseNClusts
       . map (clustToTree . clusterBy)
 
@@ -84,23 +84,23 @@ collapseNClusts = concatMap grpCls
 -- | Convert the cluster representation of the trees into 'DotNode's
 --   and 'DotSubGraph's (with @'isCluster' = 'True'@, and
 --   @'subGraphID' = 'Nothing'@).
-treesToDot :: (c -> GraphID) -> (c -> [GlobalAttributes])
+treesToDot :: (c -> Bool) -> (c -> GraphID) -> (c -> [GlobalAttributes])
               -> ((n,a) -> Attributes) -> [ClusterTree c (n,a)]
               -> ([DotSubGraph n], [DotNode n])
-treesToDot cID fmtCluster fmtNode
+treesToDot isC cID fmtCluster fmtNode
     = partitionEithers
-      . map (treeToDot cID fmtCluster fmtNode)
+      . map (treeToDot isC cID fmtCluster fmtNode)
 
 -- | Convert this 'ClusterTree' into its /Dot/ representation.
-treeToDot :: (c -> GraphID) -> (c -> [GlobalAttributes])
+treeToDot :: (c -> Bool) -> (c -> GraphID) -> (c -> [GlobalAttributes])
              -> ((n,a) -> Attributes) -> ClusterTree c (n,a)
              -> Either (DotSubGraph n) (DotNode n)
-treeToDot _ _ fmtNode (NT ln)
+treeToDot _ _ _ fmtNode (NT ln)
     = Right DotNode { nodeID         = fst ln
                     , nodeAttributes = fmtNode ln
                     }
-treeToDot cID fmtCluster fmtNode (CT c nts)
-    = Left DotSG { isCluster     = True
+treeToDot isC cID fmtCluster fmtNode (CT c nts)
+    = Left DotSG { isCluster     = isC c
                  , subGraphID    = Just $ cID c
                  , subGraphStmts = stmts
                  }
@@ -110,4 +110,4 @@ treeToDot cID fmtCluster fmtNode (CT c nts)
                      , nodeStmts = ns
                      , edgeStmts = []
                      }
-    (cs, ns) = treesToDot cID fmtCluster fmtNode nts
+    (cs, ns) = treesToDot isC cID fmtCluster fmtNode nts
