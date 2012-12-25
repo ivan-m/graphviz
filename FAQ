@@ -567,11 +567,10 @@ Yes, I do!  See the TODO file for more information.
 
 ### Does _graphviz_ have a test suite? ###
 
-Yes, there is: to get it, you have to build it with the `test` flag
-enabled; for example:
+Yes, there is, using the in-built support for test suites in Cabal:
 
 ~~~~~~~~~~~~~~~~~~~~ {.bash}
-cabal install graphviz --flags=test
+cabal install graphviz --enable-tests
 ~~~~~~~~~~~~~~~~~~~~
 
 Then run the `graphviz-testsuite` executable.  This test suite uses
