@@ -138,7 +138,7 @@ instance ParseDot Color where
                      <*> parse
                      <*  parseSep
                      <*> parse
-      parseSep = oneOf [ string ","
+      parseSep = oneOf [ string "," *> whitespace
                        , whitespace1
                        ]
       parse2Hex = do c1 <- satisfy isHexDigit
