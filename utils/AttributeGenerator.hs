@@ -510,7 +510,7 @@ attributes = [
   makeAttr "HeadTarget" ["headtarget"] "E" (EStrng) Nothing (Just "\"\"") (Just "none") Nothing (Just "svg, map only"),
   makeAttr "HeadTooltip" ["headtooltip"] "E" (EStrng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, cmap only"),
   makeAttr "Height" ["height"] "N" (Dbl) Nothing (Just "0.5") (Just "@0.5@") (Just "@0.02@") Nothing,
-  makeAttr "ID" ["id"] "GNE" (EStrng) Nothing (Just "\"\"") (Just "@\\\"\\\"") Nothing (Just "svg, postscript, map only"),
+  makeAttr "ID" ["id"] "GNE" (EStrng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, postscript, map only"),
   makeAttr "Image" ["image"] "N" (Strng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing,
   makeAttr "ImagePath" ["imagepath"] "G" (Cust "Paths") Nothing (Just "(Paths [])") (Just "@'Paths' []@") Nothing (Just "Printing and parsing is OS-specific, requires Graphviz >= 2.29.0"),
   makeAttr "ImageScale" ["imagescale"] "N" (Cust "ScaleType") (Just "UniformScale") (Just "NoScale") (Just "@'NoScale'@") Nothing Nothing,
@@ -691,7 +691,7 @@ This way, you can more easily edit/update the appropriate values.
 | HeadTarget         | headtarget         | E       | EStrng                   |                 | \"\"                       | none                                                                     |                                 | svg, map only                                                    |
 | HeadTooltip        | headtooltip        | E       | EStrng                   |                 | \"\"                       | @\\\"\\\"@                                                               |                                 | svg, cmap only                                                   |
 | Height             | height             | N       | Dbl                      |                 | 0.5                        | @0.5@                                                                    | @0.02@                          |                                                                  |
-| ID                 | id                 | GNE     | EStrng                   |                 | \"\"                       | @\\\"\\\"                                                                |                                 | svg, postscript, map only                                        |
+| ID                 | id                 | GNE     | EStrng                   |                 | \"\"                       | @\\\"\\\"@                                                               |                                 | svg, postscript, map only                                        |
 | Image              | image              | N       | Strng                    |                 | \"\"                       | @\\\"\\\"@                                                               |                                 |                                                                  |
 | ImagePath          | imagepath          | G       | Cust "Paths"             |                 | (Paths [])                 | @'Paths' []@                                                             |                                 | Printing and parsing is OS-specific, requires Graphviz >= 2.29.0 |
 | ImageScale         | imagescale         | N       | Cust "ScaleType"         | UniformScale    | NoScale                    | @'NoScale'@                                                              |                                 |                                                                  |
