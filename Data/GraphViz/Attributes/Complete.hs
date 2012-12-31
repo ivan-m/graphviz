@@ -1677,7 +1677,7 @@ data Rect = Rect Point Point
             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Rect where
-  unqtDot (Rect p1 p2) = commaDel p1 p2
+  unqtDot (Rect p1 p2) = printPoint2DUnqt p1 <> comma <> printPoint2DUnqt p2
 
   toDot = dquotes . unqtDot
 
@@ -1754,16 +1754,22 @@ instance ParseDot DEConstraints where
 
 -- | Either a 'Double' or a (2D) 'Point' (i.e. created with
 --   'createPoint').
+--
+--   Whilst it is possible to create a 'Point' value with either a
+--   third co-ordinate or a forced position, these are ignored for
+--   printing/parsing.
+--
+--   An optional prefix of @\'+\'@ is allowed when parsing.
 data DPoint = DVal Double
             | PVal Point
             deriving (Eq, Ord, Show, Read)
 
 instance PrintDot DPoint where
   unqtDot (DVal d) = unqtDot d
-  unqtDot (PVal p) = unqtDot p
+  unqtDot (PVal p) = printPoint2DUnqt p
 
   toDot (DVal d) = toDot d
-  toDot (PVal p) = toDot p
+  toDot (PVal p) = printPoint2D p
 
 instance ParseDot DPoint where
   parseUnqt = fmap PVal parsePoint2D
@@ -2018,6 +2024,12 @@ data Point = Point { xCoord   :: Double
 -- | Create a point with only @x@ and @y@ values.
 createPoint     :: Double -> Double -> Point
 createPoint x y = Point x y Nothing False
+
+printPoint2DUnqt   :: Point -> DotCode
+printPoint2DUnqt p = commaDel (xCoord p) (yCoord p)
+
+printPoint2D :: Point -> DotCode
+printPoint2D = dquotes . printPoint2DUnqt
 
 parsePoint2D :: Parse Point
 parsePoint2D = uncurry createPoint <$> commaSepUnqt
