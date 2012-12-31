@@ -10,6 +10,23 @@ each release.
 Changes in 2999.15.0.0
 ----------------------
 
+* Updates to various `Attribute` definitions:
+
+    - The list of available shapes has been expanded to take into
+      account the new synthetic biology shapes.
+
+    - The `Size` and `FontNames` attributes now have specified data types.
+
+    - The optional start and end points for `Spline`s were previously
+      the wrong way round; this has now been fixed.
+
+    - Explicitly only print 2-dimensional `Point` values for `Rect`
+      and `DPoint` (previously only 2-dimensional values where parsed,
+      but it was possible to print a 3-dimensional value).
+
+    - HTML-like labels previously disallowed empty textual label
+      components when parsing; spotted by **Daniel Hummel**.
+
 * `GraphvizParams` now lets you specify whether a "cluster" is
   actually a cluster or a sub-graph.  Requested by **Gabor Greif**.
 
@@ -28,15 +45,19 @@ Changes in 2999.15.0.0
     something like `"0.1"` is successfully accepted as an integer,
     specifically `0`) are no longer accepted when parsing them in.
 
+* Miscellaneous parsing improvements:
+
+    - Whilst not specified anywhere, Graphviz seems to treat empty
+      quotes as values for attributes expecting a number as their
+      default; as such, this is now taken into account when parsing.
+
+    - `DPoint` values can now parse an optional `+` prefix.
+
+    - Whitespaces after commas in HSV colors are now accepted.
+
 * Error messages from parsing are improved to help you track down
   where the parsing error occurred (in that it's easier to find which
   attribute failed to parse, etc.).
-
-* The optional start and end points for `Spline`s were previously the
-  wrong way round; this has now been fixed.
-
-* HTML-like labels previously disallowed empty textual label
-  components when parsing; spotted by **Daniel Hummel**.
 
 Changes in 2999.14.1.0
 ----------------------
