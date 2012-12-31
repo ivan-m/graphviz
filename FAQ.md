@@ -387,9 +387,9 @@ down and fixed this feature will be returned.
 The important thing here is to ensure that your custom datatype has
 defined instances of `PrintDot` and `ParseDot`.  Probably the easiest
 way of doing this is to have functions that convert between your type
-and `String` and let graphviz determine how to print and parse those.
-Here is an example of a more difficult type that should be printed
-like `"1: Foo"`:
+and `String` or `Text` and let graphviz determine how to print and
+parse those.  Here is an example of a more difficult type that should
+be printed like `"1: Foo"`:
 
 ~~~~~~~~~~~~~~~~~~~~ {.haskell}
 data MyType = MyType String Int
@@ -401,11 +401,10 @@ instance PrintDot MyType where
   toDot = doubleQuotes . unqtDot
 
 instance ParseDot MyType where
-  parseUnqt = do i <- parseUnqt
-                 character ':'
-                 whitespace1
-                 s <- parseUnqt
-                 return $ MyType s i
+  parseUnqt = MyType <$> parseUnqt
+                     <*  character ':'
+                     <*  whitespace1
+                     <*> parseUnqt
 
   -- Has at least one space, so it will be quoted.
   parse = quotedParse parseUnqt
