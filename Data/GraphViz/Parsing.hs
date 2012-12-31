@@ -69,6 +69,7 @@ module Data.GraphViz.Parsing
     , parseFieldsBool
     , parseFieldDef
     , parseFieldsDef
+    , parseFieldNumDef
     , liftEqParse
     , liftEqParse'
     , commaSep
@@ -450,6 +451,15 @@ parseFieldDef c d fld = [(fld, p)]
 
 parseFieldsDef     :: (ParseDot a) => (a -> b) -> a -> [String] -> [(String, Parse b)]
 parseFieldsDef c d = concatMap (parseFieldDef c d)
+
+-- | For numeric attributes, @dot -Tdot@ seems to use @\"\"@ to
+--   indicate the default value.
+parseFieldNumDef :: (ParseDot a) => (a -> b) -> a -> String -> [(String, Parse b)]
+parseFieldNumDef c d fld = [(fld, liftEqParse p fld c)]
+  where
+    p = stringRep d "\"\""
+        `onFail`
+        parse
 
 -- | 'liftEqParse'' using 'parse' as the parser.
 liftEqParse' :: (ParseDot a) => String -> (a -> b) -> Parse b

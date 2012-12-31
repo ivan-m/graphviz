@@ -67,6 +67,7 @@ data Attribute = A { cnst         :: Code
                    , parseNames   :: [Code]
                    , valtype      :: VType
                    , parseDef     :: Maybe Code
+                   , emptyParse   :: Maybe Code -- ^ What the empty string gets parsed as.
                    , defValue     :: Maybe Code
                    , forGraphs    :: Bool
                    , forClusters  :: Bool
@@ -87,6 +88,7 @@ makeAttr c ns u v df d fd m cm = A { cnst         = text c
                                    , valtype      = v -- just in case need to do fancy
                                                       -- stuff
                                    , parseDef     = liftM text df
+                                   , emptyParse   = liftM text dfP
                                    , defValue     = liftM text d
                                    , forGraphs    = isFor 'G'
                                    , forClusters  = isFor 'C' || forSG
@@ -100,6 +102,11 @@ makeAttr c ns u v df d fd m cm = A { cnst         = text c
       isFor f = f `elem` u
       forSG = isFor 'S'
       df' = if v == Bl then Just "'True'" else fmap ( \ t -> '\'' : t ++ "'") df
+      isNumeric = case v of
+                    Integ -> True
+                    Dbl   -> True
+                    _     -> False
+      dfP = bool Nothing d isNumeric
       mDoc (f,fc) = f <> colon <+> text fc
       addF f = fmap (\ dc -> (wrap (char '/') (text f), dc))
       cm' = hsep
@@ -228,9 +235,10 @@ parseInstance att = hdr $+$ nest tab fns
             $ atts att
       pFunc = text "parseUnqt"
       pType b a
-          | valtype a == Bl     = pFld <> text "Bool" <+> cnst a
-          | isJust $ parseDef a = pFld <> text "Def"  <+> cnst a <+> fromJust (parseDef a)
-          | otherwise           = pFld <+> cnst a
+          | valtype a == Bl       = pFld <> text "Bool" <+> cnst a
+          | isJust $ parseDef a   = pFld <> text "Def"  <+> cnst a <+> fromJust (parseDef a)
+          | isJust $ emptyParse a = pFld <> text "NumDef" <+> cnst a <+> fromJust (emptyParse a)
+          | otherwise             = pFld <+> cnst a
           where
             pFld = text "parseField" <> if b then char 's' else empty
 
