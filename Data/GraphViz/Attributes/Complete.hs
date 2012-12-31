@@ -1987,8 +1987,8 @@ recordEscChars = ['{', '}', '|', ' ', '<', '>']
 
 -- -----------------------------------------------------------------------------
 
--- | How to treat a node whose name is of the form @|edgelabel|*@" as a
---   special node representing an edge label.
+-- | How to treat a node whose name is of the form \"@|edgelabel|*@\"
+--   as a special node representing an edge label.
 data LabelScheme = NotEdgeLabel        -- ^ No effect
                  | CloseToCenter       -- ^ Make node close to center of neighbor
                  | CloseToOldCenter    -- ^ Make node close to old center of neighbor
