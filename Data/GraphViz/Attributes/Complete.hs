@@ -2513,7 +2513,7 @@ instance ParseDot RankDir where
 data Shape
     = BoxShape -- ^ Has synonyms of /rect/ and /rectangle/.
     | Polygon
-    | Ellipse
+    | Ellipse  -- ^ Has synonym of /oval/.
     | Circle
     | PointShape
     | Egg
@@ -2541,43 +2541,83 @@ data Shape
     | Folder
     | Box3D
     | Component
+    | Promoter
+    | CDS
+    | Terminator
+    | UTR
+    | PrimerSite
+    | RestrictionSite
+    | FivePovOverhang
+    | ThreePovOverhang
+    | NoOverhang
+    | Assembly
+    | Signature
+    | Insulator
+    | Ribosite
+    | RNAStab
+    | ProteaseSite
+    | ProteinStab
+    | RPromoter
+    | RArrow
+    | LArrow
+    | LPromoter
     | Record -- ^ Must specify the record shape with a 'Label'.
     | MRecord -- ^ Must specify the record shape with a 'Label'.
     deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot Shape where
-  unqtDot BoxShape      = text "box"
-  unqtDot Polygon       = text "polygon"
-  unqtDot Ellipse       = text "ellipse"
-  unqtDot Circle        = text "circle"
-  unqtDot PointShape    = text "point"
-  unqtDot Egg           = text "egg"
-  unqtDot Triangle      = text "triangle"
-  unqtDot PlainText     = text "plaintext"
-  unqtDot DiamondShape  = text "diamond"
-  unqtDot Trapezium     = text "trapezium"
-  unqtDot Parallelogram = text "parallelogram"
-  unqtDot House         = text "house"
-  unqtDot Pentagon      = text "pentagon"
-  unqtDot Hexagon       = text "hexagon"
-  unqtDot Septagon      = text "septagon"
-  unqtDot Octagon       = text "octagon"
-  unqtDot DoubleCircle  = text "doublecircle"
-  unqtDot DoubleOctagon = text "doubleoctagon"
-  unqtDot TripleOctagon = text "tripleoctagon"
-  unqtDot InvTriangle   = text "invtriangle"
-  unqtDot InvTrapezium  = text "invtrapezium"
-  unqtDot InvHouse      = text "invhouse"
-  unqtDot MDiamond      = text "Mdiamond"
-  unqtDot MSquare       = text "Msquare"
-  unqtDot MCircle       = text "Mcircle"
-  unqtDot Note          = text "note"
-  unqtDot Tab           = text "tab"
-  unqtDot Folder        = text "folder"
-  unqtDot Box3D         = text "box3d"
-  unqtDot Component     = text "component"
-  unqtDot Record        = text "record"
-  unqtDot MRecord       = text "Mrecord"
+  unqtDot BoxShape         = text "box"
+  unqtDot Polygon          = text "polygon"
+  unqtDot Ellipse          = text "ellipse"
+  unqtDot Circle           = text "circle"
+  unqtDot PointShape       = text "point"
+  unqtDot Egg              = text "egg"
+  unqtDot Triangle         = text "triangle"
+  unqtDot PlainText        = text "plaintext"
+  unqtDot DiamondShape     = text "diamond"
+  unqtDot Trapezium        = text "trapezium"
+  unqtDot Parallelogram    = text "parallelogram"
+  unqtDot House            = text "house"
+  unqtDot Pentagon         = text "pentagon"
+  unqtDot Hexagon          = text "hexagon"
+  unqtDot Septagon         = text "septagon"
+  unqtDot Octagon          = text "octagon"
+  unqtDot DoubleCircle     = text "doublecircle"
+  unqtDot DoubleOctagon    = text "doubleoctagon"
+  unqtDot TripleOctagon    = text "tripleoctagon"
+  unqtDot InvTriangle      = text "invtriangle"
+  unqtDot InvTrapezium     = text "invtrapezium"
+  unqtDot InvHouse         = text "invhouse"
+  unqtDot MDiamond         = text "Mdiamond"
+  unqtDot MSquare          = text "Msquare"
+  unqtDot MCircle          = text "Mcircle"
+  unqtDot Note             = text "note"
+  unqtDot Tab              = text "tab"
+  unqtDot Folder           = text "folder"
+  unqtDot Box3D            = text "box3d"
+  unqtDot Component        = text "component"
+  unqtDot Promoter         = text "promoter"
+  unqtDot CDS              = text "cds"
+  unqtDot Terminator       = text "terminator"
+  unqtDot UTR              = text "utr"
+  unqtDot PrimerSite       = text "primersite"
+  unqtDot RestrictionSite  = text "restrictionsite"
+  unqtDot FivePovOverhang  = text "fivepovoverhang"
+  unqtDot ThreePovOverhang = text "threepovoverhang"
+  unqtDot NoOverhang       = text "nooverhang"
+  unqtDot Assembly         = text "assembly"
+  unqtDot Signature        = text "signature"
+  unqtDot Insulator        = text "insulator"
+  unqtDot Ribosite         = text "ribosite"
+  unqtDot RNAStab          = text "rnastab"
+  unqtDot ProteaseSite     = text "proteasesite"
+  unqtDot ProteinStab      = text "proteinstab"
+  unqtDot RPromoter        = text "rpromoter"
+  unqtDot RArrow           = text "rarrow"
+  unqtDot LArrow           = text "larrow"
+  unqtDot LPromoter        = text "lpromoter"
+  unqtDot Record           = text "record"
+  unqtDot MRecord          = text "Mrecord"
 
 instance ParseDot Shape where
   parseUnqt = stringValue [ ("box3d", Box3D)
@@ -2586,6 +2626,7 @@ instance ParseDot Shape where
                           , ("rect", BoxShape)
                           , ("polygon", Polygon)
                           , ("ellipse", Ellipse)
+                          , ("oval", Ellipse)
                           , ("circle", Circle)
                           , ("point", PointShape)
                           , ("egg", Egg)
@@ -2613,6 +2654,26 @@ instance ParseDot Shape where
                           , ("tab", Tab)
                           , ("folder", Folder)
                           , ("component", Component)
+                          , ("promoter", Promoter)
+                          , ("cds", CDS)
+                          , ("terminator", Terminator)
+                          , ("utr", UTR)
+                          , ("primersite", PrimerSite)
+                          , ("restrictionsite", RestrictionSite)
+                          , ("fivepovoverhang", FivePovOverhang)
+                          , ("threepovoverhang", ThreePovOverhang)
+                          , ("nooverhang", NoOverhang)
+                          , ("assembly", Assembly)
+                          , ("signature", Signature)
+                          , ("insulator", Insulator)
+                          , ("ribosite", Ribosite)
+                          , ("rnastab", RNAStab)
+                          , ("proteasesite", ProteaseSite)
+                          , ("proteinstab", ProteinStab)
+                          , ("rpromoter", RPromoter)
+                          , ("rarrow", RArrow)
+                          , ("larrow", LArrow)
+                          , ("lpromoter", LPromoter)
                           , ("record", Record)
                           , ("Mrecord", MRecord)
                           ]
