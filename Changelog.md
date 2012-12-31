@@ -681,9 +681,3 @@ Older versions
 
 For versions of graphviz older than `2008.9.20`, the exact differences
 between versions is unknown.
-
-<!--
-     Local Variables:
-     mode:markdown
-     End:
-  -->

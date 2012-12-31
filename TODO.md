@@ -46,9 +46,3 @@ Long term
   implementing a separate library to represent graphs (see initial
   discussions about this
   [here](http://www.haskell.org/pipermail/haskell-cafe/2009-June/063402.html)).
-
-<!--
-     Local Variables:
-     mode:markdown
-     End:
-  -->

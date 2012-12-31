@@ -33,17 +33,17 @@ Main features of the graphviz library include:
 Homepage:           http://projects.haskell.org/graphviz/
 Category:           Graphs, Graphics
 License:            BSD3
-License-File:       LICENSE
+License-File:       LICENSE.md
 Copyright:          Matthew Sackman, Ivan Lazar Miljenovic
 Author:             Matthew Sackman, Ivan Lazar Miljenovic
 Maintainer:         Ivan.Miljenovic+graphviz@gmail.com
 Bug-Reports:        http://hub.darcs.net/ivanm/graphviz/issues
 Build-Type:         Simple
 Cabal-Version:      >= 1.14
-Extra-Source-Files: TODO
-                    Changelog
+Extra-Source-Files: TODO.md
+                    Changelog.md
                     README.md
-                    FAQ
+                    FAQ.md
                     utils/AttributeGenerator.hs
                     utils/TestParsing.hs
 

@@ -631,13 +631,3 @@ Graphviz has a large number of attributes.  Rather than try to edit
 everything manually each time I want to change how I use the large
 `Attribute` datatype, the AttributeGenerator script generates the
 datatype, instances, etc. for me.
-
-<!--
-     Local Variables:
-     mode:markdown
-     End:
-  -->
-
-
-<!--  LocalWords:  graphviz
- -->
