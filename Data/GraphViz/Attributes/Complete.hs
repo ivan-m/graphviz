@@ -245,9 +245,9 @@ data Attribute
   = Damping Double                      -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
   | K Double                            -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
   | URL EscString                       -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
-  | ArrowHead ArrowType                 -- ^ /Valid for/: E; /Default/: @'AType' [('noMods', 'Normal')]@
+  | ArrowHead ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
   | ArrowSize Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
-  | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'AType' [('noMods', 'Normal')]@
+  | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
   | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
   | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
   | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
