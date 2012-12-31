@@ -439,6 +439,16 @@ instance Arbitrary DPoint where
   shrink (DVal d) = map DVal $ shrink d
   shrink (PVal p) = map PVal $ shrink p
 
+instance Arbitrary SVGFontNames where
+  arbitrary = arbBounded
+
+instance Arbitrary GraphSize where
+  arbitrary = liftM3 GSize arbitrary arbitrary arbitrary
+
+  shrink gs = do w' <- shrink $ width gs
+                 h' <- shrinkM $ height gs
+                 return $ GSize w' h' False
+
 instance Arbitrary ModeType where
   arbitrary = arbBounded
 

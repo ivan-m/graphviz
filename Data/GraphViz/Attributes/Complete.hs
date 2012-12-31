@@ -110,6 +110,7 @@ module Data.GraphViz.Attributes.Complete
        , Label(..)
        , VerticalPlacement(..)
        , LabelScheme(..)
+       , SVGFontNames(..)
          -- *** Types representing the Dot grammar for records.
        , RecordFields
        , RecordField(..)
@@ -146,6 +147,7 @@ module Data.GraphViz.Attributes.Complete
        , DPoint(..)
 
          -- ** Layout
+       , GraphSize(..)
        , AspectType(..)
        , ClusterMode(..)
        , Model(..)
@@ -274,7 +276,7 @@ data Attribute
   | FixedSize Bool                      -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
   | FontColor Color                     -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
   | FontName Text                       -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
-  | FontNames Text                      -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
+  | FontNames SVGFontNames              -- ^ /Valid for/: G; /Default/: @'SvgNames'@; /Notes/: svg only
   | FontPath Text                       -- ^ /Valid for/: G; /Default/: system dependent
   | FontSize Double                     -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
   | ForceLabels Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: Only for 'XLabel' attributes, requires Graphviz >= 2.29.0
@@ -368,7 +370,7 @@ data Attribute
   | ShapeFile Text                      -- ^ /Valid for/: N; /Default/: @\"\"@
   | ShowBoxes Int                       -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
   | Sides Int                           -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
-  | Size Point                          -- ^ /Valid for/: G
+  | Size GraphSize                      -- ^ /Valid for/: G
   | Skew Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
   | Smoothing SmoothType                -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
   | SortV Word16                        -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
@@ -1143,7 +1145,7 @@ defaultAttributeValue FillColor{}          = Just $ FillColor [X11Color Black]
 defaultAttributeValue FixedSize{}          = Just $ FixedSize False
 defaultAttributeValue FontColor{}          = Just $ FontColor (X11Color Black)
 defaultAttributeValue FontName{}           = Just $ FontName "Times-Roman"
-defaultAttributeValue FontNames{}          = Just $ FontNames ""
+defaultAttributeValue FontNames{}          = Just $ FontNames SvgNames
 defaultAttributeValue FontSize{}           = Just $ FontSize 14
 defaultAttributeValue ForceLabels{}        = Just $ ForceLabels False
 defaultAttributeValue GradientAngle{}      = Just $ GradientAngle 0
@@ -1771,6 +1773,62 @@ instance ParseDot DPoint where
   parse = quotedParse parseUnqt
           `onFail`
           fmap DVal parseUnqt
+
+-- -----------------------------------------------------------------------------
+
+-- | The mapping used for 'FontName' values in SVG output.
+--
+--   More information can be found at <http://www.graphviz.org/doc/fontfaq.txt>.
+data SVGFontNames = SvgNames        -- ^ Use the legal generic SVG font names.
+                  | PostScriptNames -- ^ Use PostScript font names.
+                  | FontConfigNames -- ^ Use fontconfig font conventions.
+                  deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot SVGFontNames where
+  unqtDot SvgNames        = text "svg"
+  unqtDot PostScriptNames = text "ps"
+  unqtDot FontConfigNames = text "gd"
+
+instance ParseDot SVGFontNames where
+  parseUnqt = oneOf [ stringRep SvgNames "svg"
+                    , stringRep PostScriptNames "ps"
+                    , stringRep FontConfigNames "gd"
+                    ]
+
+  parse = stringRep SvgNames "\"\""
+          `onFail`
+          optionalQuoted parseUnqt
+
+-- -----------------------------------------------------------------------------
+
+-- | Maximum width and height of drawing in inches.
+data GraphSize = GSize { width :: Double
+                         -- | If @Nothing@, then the height is the
+                         --   same as the width.
+                       , height :: Maybe Double
+                         -- | If drawing is smaller than specified
+                         --   size, this value determines whether it
+                         --   is scaled up.
+                       , desiredSize :: Bool
+                       }
+               deriving (Eq, Ord, Show, Read)
+
+instance PrintDot GraphSize where
+  unqtDot (GSize w mh ds) = bool id (<> char '!') ds
+                            . maybe id (\h -> (<> unqtDot h) . (<> comma)) mh
+                            $ unqtDot w
+
+  toDot (GSize w Nothing False) = toDot w
+  toDot gs                      = dquotes $ unqtDot gs
+
+instance ParseDot GraphSize where
+  parseUnqt = GSize <$> parseUnqt
+                    <*> optional (parseComma *> whitespace *> parseUnqt)
+                    <*> (isJust <$> optional (character '!'))
+
+  parse = quotedParse parseUnqt
+          `onFail`
+          fmap (\ w -> GSize w Nothing False) parseUnqt
 
 -- -----------------------------------------------------------------------------
 

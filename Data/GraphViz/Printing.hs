@@ -79,6 +79,7 @@ import Text.PrettyPrint.Leijen.Text.Monadic hiding ( SimpleDoc(..)
                                                    , Pretty(..)
                                                    , bool
                                                    , string
+                                                   , width
                                                    , (<$>))
 import qualified Text.PrettyPrint.Leijen.Text.Monadic as PP
 import qualified Data.Text.Lazy as T

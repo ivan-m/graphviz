@@ -497,7 +497,7 @@ attributes = [
   makeAttr "FixedSize" ["fixedsize"] "N" (Bl) (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing,
   makeAttr "FontColor" ["fontcolor"] "ENGC" (Cust "Color") Nothing (Just "(X11Color Black)") (Just "@'X11Color' 'Black'@") Nothing Nothing,
   makeAttr "FontName" ["fontname"] "ENGC" (Strng) Nothing (Just "\"Times-Roman\"") (Just "@\\\"Times-Roman\\\"@") Nothing Nothing,
-  makeAttr "FontNames" ["fontnames"] "G" (Strng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg only"),
+  makeAttr "FontNames" ["fontnames"] "G" (Cust "SVGFontNames") Nothing (Just "SvgNames") (Just "@'SvgNames'@") Nothing (Just "svg only"),
   makeAttr "FontPath" ["fontpath"] "G" (Strng) Nothing Nothing (Just "system dependent") Nothing Nothing,
   makeAttr "FontSize" ["fontsize"] "ENGC" (Dbl) Nothing (Just "14") (Just "@14.0@") (Just "@1.0@") Nothing,
   makeAttr "ForceLabels" ["forcelabels"] "G" (Bl) (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "Only for 'XLabel' attributes, requires Graphviz >= 2.29.0"),
@@ -591,7 +591,7 @@ attributes = [
   makeAttr "ShapeFile" ["shapefile"] "N" (Strng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing,
   makeAttr "ShowBoxes" ["showboxes"] "ENG" (Integ) Nothing (Just "0") (Just "@0@") (Just "@0@") (Just "dot only"),
   makeAttr "Sides" ["sides"] "N" (Integ) Nothing (Just "4") (Just "@4@") (Just "@0@") Nothing,
-  makeAttr "Size" ["size"] "G" (Cust "Point") Nothing Nothing Nothing Nothing Nothing,
+  makeAttr "Size" ["size"] "G" (Cust "GraphSize") Nothing Nothing Nothing Nothing Nothing,
   makeAttr "Skew" ["skew"] "N" (Dbl) Nothing (Just "0") (Just "@0.0@") (Just "@-100.0@") Nothing,
   makeAttr "Smoothing" ["smoothing"] "G" (Cust "SmoothType") Nothing (Just "NoSmooth") (Just "@'NoSmooth'@") Nothing (Just "sfdp only"),
   makeAttr "SortV" ["sortv"] "GCN" (Cust "Word16") Nothing (Just "0") (Just "@0@") (Just "@0@") Nothing,
@@ -678,7 +678,7 @@ This way, you can more easily edit/update the appropriate values.
 | FixedSize          | fixedsize          | N       | Bl                       | True            | False                      | @'False'@                                                                |                                 |                                                                  |
 | FontColor          | fontcolor          | ENGC    | Cust "Color"             |                 | (X11Color Black)           | @'X11Color' 'Black'@                                                     |                                 |                                                                  |
 | FontName           | fontname           | ENGC    | Strng                    |                 | \"Times-Roman\"            | @\\\"Times-Roman\\\"@                                                    |                                 |                                                                  |
-| FontNames          | fontnames          | G       | Strng                    |                 | \"\"                       | @\\\"\\\"@                                                               |                                 | svg only                                                         |
+| FontNames          | fontnames          | G       | Cust "SVGFontNames"      |                 | SvgNames                   | @'SvgNames'@                                                             |                                 | svg only                                                         |
 | FontPath           | fontpath           | G       | Strng                    |                 |                            | system dependent                                                         |                                 |                                                                  |
 | FontSize           | fontsize           | ENGC    | Dbl                      |                 | 14                         | @14.0@                                                                   | @1.0@                           |                                                                  |
 | ForceLabels        | forcelabels        | G       | Bl                       | True            | False                      | @'False'@                                                                |                                 | Only for 'XLabel' attributes, requires Graphviz >= 2.29.0        |
@@ -772,7 +772,7 @@ This way, you can more easily edit/update the appropriate values.
 | ShapeFile          | shapefile          | N       | Strng                    |                 | \"\"                       | @\\\"\\\"@                                                               |                                 |                                                                  |
 | ShowBoxes          | showboxes          | ENG     | Integ                    |                 | 0                          | @0@                                                                      | @0@                             | dot only                                                         |
 | Sides              | sides              | N       | Integ                    |                 | 4                          | @4@                                                                      | @0@                             |                                                                  |
-| Size               | size               | G       | Cust "Point"             |                 |                            |                                                                          |                                 |                                                                  |
+| Size               | size               | G       | Cust "GraphSize"         |                 |                            |                                                                          |                                 |                                                                  |
 | Skew               | skew               | N       | Dbl                      |                 | 0                          | @0.0@                                                                    | @-100.0@                        |                                                                  |
 | Smoothing          | smoothing          | G       | Cust "SmoothType"        |                 | NoSmooth                   | @'NoSmooth'@                                                             |                                 | sfdp only                                                        |
 | SortV              | sortv              | GCN     | Cust "Word16"            |                 | 0                          | @0@                                                                      | @0@                             |                                                                  |
