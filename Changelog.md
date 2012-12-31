@@ -10,6 +10,10 @@ each release.
 Changes in 2999.15.0.0
 ----------------------
 
+* The repository is now hosted on
+  [hub.darcs.net](http://hub.darcs.net/ivanm/graphviz), and using the
+  bug-tracker there.
+
 * Updates to various `Attribute` definitions:
 
     - The list of available shapes has been expanded to take into
