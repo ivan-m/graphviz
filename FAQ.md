@@ -202,7 +202,7 @@ that break the repository are recorded (when it's simpler/cleaner to
 break one patch into several smaller patches).
 
 [darcs]: http://darcs.net/
-[repository]: http://code.haskell.org/graphviz/
+[repository]: http://hub.darcs.net/ivanm/graphviz
 
 ### How is _graphviz_ licensed? ###
 
@@ -617,7 +617,7 @@ Once we've discussed what you're going to do, first get yourself a
 copy of the darcs repository:
 
 ~~~~~~~~~~~~~~~~~~~~ {.bash}
-darcs get --lazy http://code.haskell.org/graphviz
+darcs get --lazy http://hub.darcs.net/ivanm/graphviz
 ~~~~~~~~~~~~~~~~~~~~
 
 Once you've made your changes, make sure you build and run the
