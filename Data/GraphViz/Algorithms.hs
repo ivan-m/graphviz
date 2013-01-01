@@ -209,7 +209,6 @@ createCanonical opts gas cl nl es
                 then commonAttrs f
                 else const []
 
-
 -- Same as compare for lists, except shorter lists are GT
 compLists :: (Ord a) => [a] -> [a] -> Ordering
 compLists []     []     = EQ
@@ -225,7 +224,7 @@ nonEmptyGAs = filter (not . null . attrs)
 -- Return all attributes found in every value.
 commonAttrs         :: (a -> Attributes) -> [a] -> Attributes
 commonAttrs _ []  = []
-commonAttrs _ [_] = []
+commonAttrs f [a] = f a
 commonAttrs f xs  = Set.toList . foldr1 Set.intersection
                     $ map (Set.fromList . f) xs
 
