@@ -7,6 +7,13 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.15.0.1
+----------------------
+
+* Fixed bug where `canonicalise` and related functions did not
+  properly deal with attributes of a single node or edge within a
+  sub-graph.
+
 Changes in 2999.15.0.0
 ----------------------
 
