@@ -32,10 +32,10 @@ instance (Eq n, Arbitrary n) => Arbitrary (DotGraph n) where
 instance (Eq n, Arbitrary n) => Arbitrary (DotStatements n) where
   arbitrary = sized (arbDS gaGraph True)
 
-  shrink ds@(DotStmts gas sgs ns es) = do gas' <- shrinkL gas
-                                          sgs' <- shrinkL sgs
-                                          ns' <- shrinkL ns
-                                          es' <- shrinkL es
+  shrink ds@(DotStmts gas sgs ns es) = do gas' <- shrink gas
+                                          sgs' <- shrink sgs
+                                          ns' <- shrink ns
+                                          es' <- shrink es
                                           returnCheck ds
                                             $ DotStmts gas' sgs' ns' es'
 
