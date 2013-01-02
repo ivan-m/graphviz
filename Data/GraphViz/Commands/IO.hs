@@ -42,11 +42,14 @@ import Control.Monad(liftM)
 import Control.Monad.Trans.State
 import System.IO(Handle, IOMode(ReadMode,WriteMode)
                 , withFile, stdout, stdin, hPutChar
-                , hClose, hGetContents, hSetBinaryMode)
+                , hClose, hGetContents)
+import System.IO.Temp(withSystemTempFile)
 import System.Exit(ExitCode(ExitSuccess))
 import System.Process(runInteractiveProcess, waitForProcess)
-import Control.Exception(IOException, evaluate)
+import System.FilePath((<.>))
+import Control.Exception(IOException, evaluate, finally)
 import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
+
 
 -- -----------------------------------------------------------------------------
 
@@ -133,6 +136,10 @@ readDot = hGetDot stdin
 --
 --   If the command was unsuccessful, then a 'GraphvizException' is
 --   thrown.
+--
+--   For performance reasons, a temporary file is used to store the
+--   generated Dot code.  As such, this is only suitable for local
+--   commands.
 runCommand :: (PrintDotRepr dg n)
               => String           -- ^ Command to run
               -> [String]         -- ^ Command-line arguments
@@ -140,17 +147,16 @@ runCommand :: (PrintDotRepr dg n)
               -> dg n
               -> IO a
 runCommand cmd args hf dg
-  = mapException notRunnable
-    $ bracket
-        (runInteractiveProcess cmd args Nothing Nothing)
+  = mapException notRunnable $
+    withSystemTempFile ("graphviz" <.> "dot") $ \dotFile dotHandle -> do
+      finally (hPutCompactDot dotHandle dg) (hClose dotHandle)
+      bracket
+        (runInteractiveProcess cmd (args ++ [dotFile]) Nothing Nothing)
         (\(inh,outh,errh,_) -> hClose inh >> hClose outh >> hClose errh)
         $ \(inp,outp,errp,prc) -> do
 
-          hSetBinaryMode inp True
-          hSetBinaryMode errp False
-
-          -- Make sure we close the input or it will hang!!!!!!!
-          forkIO $ hPutCompactDot inp dg >> hClose inp
+          -- Not using it, so close it off directly.
+          hClose inp
 
           -- Need to make sure both the output and error handles are
           -- really fully consumed.
