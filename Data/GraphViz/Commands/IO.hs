@@ -30,7 +30,7 @@ import Data.GraphViz.State(initialState)
 import Data.GraphViz.Types(PrintDotRepr, ParseDotRepr, printDotGraph, parseDotGraph)
 import Data.GraphViz.Printing(toDot)
 import Data.GraphViz.Exception
-import Text.PrettyPrint.Leijen.Text(displayT, renderCompact)
+import Text.PrettyPrint.Leijen.Text(displayT, renderOneLine)
 
 import qualified Data.Text.Lazy.Encoding as T
 import Data.Text.Encoding.Error(UnicodeException)
@@ -53,7 +53,7 @@ import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
 -- | Correctly render Graphviz output in a more machine-oriented form
 --   (i.e. more compact than the output of 'renderDot').
 renderCompactDot :: (PrintDotRepr dg n) => dg n -> Text
-renderCompactDot = displayT . renderCompact
+renderCompactDot = displayT . renderOneLine
                    . flip evalState initialState
                    . toDot
 

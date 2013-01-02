@@ -65,7 +65,7 @@ Library {
                            colour == 2.3.*,
                            transformers >= 0.2 && < 0.4,
                            text,
-                           wl-pprint-text >= 1.0.0.0 && < 1.2.0.0,
+                           wl-pprint-text >= 1.1.0.0 && < 1.2.0.0,
                            dlist == 0.5.*
 
         Exposed-Modules:   Data.GraphViz
