@@ -7,6 +7,16 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.15.0.2
+----------------------
+
+* Use temporary files rather than pipes when running dot, etc.
+
+    Makes it more portable, and also avoids issues where dot, etc. use
+    100% CPU when a graph is passed in via stdin.
+
+    Original patch by **Henning Thielemann**.
+
 Changes in 2999.15.0.1
 ----------------------
 
