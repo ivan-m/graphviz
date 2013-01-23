@@ -194,7 +194,7 @@ import Data.GraphViz.State(getLayerSep, setLayerSep)
 import Data.GraphViz.Exception(GraphvizException(NotCustomAttr), throw)
 
 import Data.List(partition, intercalate)
-import Data.Maybe(isJust)
+import Data.Maybe(isJust, isNothing)
 import Data.Word(Word16)
 import qualified Data.Set as S
 import qualified Data.Text.Lazy as T
@@ -560,11 +560,11 @@ instance PrintDot Attribute where
   listToDot = unqtListToDot
 
 instance ParseDot Attribute where
-  parseUnqt = stringParse (concat [ parseFieldNumDef Damping 0.99 "Damping"
-                                  , parseFieldNumDef K 0.3 "K"
+  parseUnqt = stringParse (concat [ parseField Damping "Damping"
+                                  , parseField K "K"
                                   , parseFields URL ["URL", "href"]
                                   , parseField ArrowHead "arrowhead"
-                                  , parseFieldNumDef ArrowSize 1 "arrowsize"
+                                  , parseField ArrowSize "arrowsize"
                                   , parseField ArrowTail "arrowtail"
                                   , parseField Aspect "aspect"
                                   , parseField BoundingBox "bb"
@@ -579,11 +579,11 @@ instance ParseDot Attribute where
                                   , parseFieldBool Constraint "constraint"
                                   , parseFieldBool Decorate "decorate"
                                   , parseField DefaultDist "defaultdist"
-                                  , parseFieldNumDef Dim 2 "dim"
-                                  , parseFieldNumDef Dimen 2 "dimen"
+                                  , parseField Dim "dim"
+                                  , parseField Dimen "dimen"
                                   , parseField Dir "dir"
                                   , parseFieldDef DirEdgeConstraints EdgeConstraints "diredgeconstraints"
-                                  , parseFieldNumDef Distortion 0 "distortion"
+                                  , parseField Distortion "distortion"
                                   , parseFields DPI ["dpi", "resolution"]
                                   , parseFields EdgeURL ["edgeURL", "edgehref"]
                                   , parseField EdgeTarget "edgetarget"
@@ -596,9 +596,9 @@ instance ParseDot Attribute where
                                   , parseField FontName "fontname"
                                   , parseField FontNames "fontnames"
                                   , parseField FontPath "fontpath"
-                                  , parseFieldNumDef FontSize 14 "fontsize"
+                                  , parseField FontSize "fontsize"
                                   , parseFieldBool ForceLabels "forcelabels"
-                                  , parseFieldNumDef GradientAngle 0 "gradientangle"
+                                  , parseField GradientAngle "gradientangle"
                                   , parseField Group "group"
                                   , parseFields HeadURL ["headURL", "headhref"]
                                   , parseFieldBool HeadClip "headclip"
@@ -606,7 +606,7 @@ instance ParseDot Attribute where
                                   , parseField HeadPort "headport"
                                   , parseField HeadTarget "headtarget"
                                   , parseField HeadTooltip "headtooltip"
-                                  , parseFieldNumDef Height 0.5 "height"
+                                  , parseField Height "height"
                                   , parseField ID "id"
                                   , parseField Image "image"
                                   , parseField ImagePath "imagepath"
@@ -614,12 +614,12 @@ instance ParseDot Attribute where
                                   , parseField Label "label"
                                   , parseFields LabelURL ["labelURL", "labelhref"]
                                   , parseField LabelScheme "label_scheme"
-                                  , parseFieldNumDef LabelAngle (-25) "labelangle"
-                                  , parseFieldNumDef LabelDistance 1 "labeldistance"
+                                  , parseField LabelAngle "labelangle"
+                                  , parseField LabelDistance "labeldistance"
                                   , parseFieldBool LabelFloat "labelfloat"
                                   , parseField LabelFontColor "labelfontcolor"
                                   , parseField LabelFontName "labelfontname"
-                                  , parseFieldNumDef LabelFontSize 14 "labelfontsize"
+                                  , parseField LabelFontSize "labelfontsize"
                                   , parseField LabelJust "labeljust"
                                   , parseField LabelLoc "labelloc"
                                   , parseField LabelTarget "labeltarget"
@@ -630,8 +630,8 @@ instance ParseDot Attribute where
                                   , parseField LayerSep "layersep"
                                   , parseField Layout "layout"
                                   , parseField Len "len"
-                                  , parseFieldNumDef LevelsGap 0 "levelsgap"
-                                  , parseFieldNumDef Levels maxBound "levels"
+                                  , parseField LevelsGap "levelsgap"
+                                  , parseField Levels "levels"
                                   , parseField LHead "lhead"
                                   , parseField LHeight "LHeight"
                                   , parseField LPos "lp"
@@ -639,34 +639,34 @@ instance ParseDot Attribute where
                                   , parseField LWidth "lwidth"
                                   , parseField Margin "margin"
                                   , parseField MaxIter "maxiter"
-                                  , parseFieldNumDef MCLimit 1 "mclimit"
-                                  , parseFieldNumDef MinDist 1 "mindist"
-                                  , parseFieldNumDef MinLen 1 "minlen"
+                                  , parseField MCLimit "mclimit"
+                                  , parseField MinDist "mindist"
+                                  , parseField MinLen "minlen"
                                   , parseField Mode "mode"
                                   , parseField Model "model"
                                   , parseFieldBool Mosek "mosek"
-                                  , parseFieldNumDef NodeSep 0.25 "nodesep"
+                                  , parseField NodeSep "nodesep"
                                   , parseFieldBool NoJustify "nojustify"
                                   , parseFieldBool Normalize "normalize"
                                   , parseField Nslimit "nslimit"
                                   , parseField Nslimit1 "nslimit1"
                                   , parseField Ordering "ordering"
-                                  , parseFieldNumDef Orientation 0 "orientation"
+                                  , parseField Orientation "orientation"
                                   , parseField OutputOrder "outputorder"
                                   , parseFieldDef Overlap KeepOverlaps "overlap"
-                                  , parseFieldNumDef OverlapScaling (-4) "overlap_scaling"
+                                  , parseField OverlapScaling "overlap_scaling"
                                   , parseFieldDef Pack DoPack "pack"
                                   , parseField PackMode "packmode"
                                   , parseField Pad "pad"
                                   , parseField Page "page"
                                   , parseField PageDir "pagedir"
                                   , parseField PenColor "pencolor"
-                                  , parseFieldNumDef PenWidth 1 "penwidth"
-                                  , parseFieldNumDef Peripheries 1 "peripheries"
+                                  , parseField PenWidth "penwidth"
+                                  , parseField Peripheries "peripheries"
                                   , parseFieldBool Pin "pin"
                                   , parseField Pos "pos"
                                   , parseFieldDef QuadTree NormalQT "quadtree"
-                                  , parseFieldNumDef Quantum 0 "quantum"
+                                  , parseField Quantum "quantum"
                                   , parseField Rank "rank"
                                   , parseField RankDir "rankdir"
                                   , parseField RankSep "ranksep"
@@ -674,22 +674,22 @@ instance ParseDot Attribute where
                                   , parseField Rects "rects"
                                   , parseFieldBool Regular "regular"
                                   , parseFieldBool ReMinCross "remincross"
-                                  , parseFieldNumDef RepulsiveForce 1 "repulsiveforce"
+                                  , parseField RepulsiveForce "repulsiveforce"
                                   , parseFieldDef Root IsCentral "root"
-                                  , parseFieldNumDef Rotate 0 "rotate"
-                                  , parseFieldNumDef Rotation 0 "rotation"
+                                  , parseField Rotate "rotate"
+                                  , parseField Rotation "rotation"
                                   , parseField SameHead "samehead"
                                   , parseField SameTail "sametail"
                                   , parseField SamplePoints "samplepoints"
                                   , parseField Scale "scale"
-                                  , parseFieldNumDef SearchSize 30 "searchsize"
+                                  , parseField SearchSize "searchsize"
                                   , parseField Sep "sep"
                                   , parseField Shape "shape"
                                   , parseField ShapeFile "shapefile"
-                                  , parseFieldNumDef ShowBoxes 0 "showboxes"
-                                  , parseFieldNumDef Sides 4 "sides"
+                                  , parseField ShowBoxes "showboxes"
+                                  , parseField Sides "sides"
                                   , parseField Size "size"
-                                  , parseFieldNumDef Skew 0 "skew"
+                                  , parseField Skew "skew"
                                   , parseField Smoothing "smoothing"
                                   , parseField SortV "sortv"
                                   , parseFieldDef Splines SplineEdges "splines"
@@ -707,15 +707,15 @@ instance ParseDot Attribute where
                                   , parseFieldBool TrueColor "truecolor"
                                   , parseField Vertices "vertices"
                                   , parseField ViewPort "viewport"
-                                  , parseFieldNumDef VoroMargin 0.05 "voro_margin"
+                                  , parseField VoroMargin "voro_margin"
                                   , parseField Weight "weight"
-                                  , parseFieldNumDef Width 0.75 "width"
+                                  , parseField Width "width"
                                   , parseField XLabel "xlabel"
-                                  , parseFieldNumDef Z 0 "z"
+                                  , parseField Z "z"
                                   ])
               `onFail`
               do attrName <- stringBlock
-                 liftEqParse' ("UnknownAttribute (" ++ T.unpack attrName ++ ")")
+                 liftEqParse ("UnknownAttribute (" ++ T.unpack attrName ++ ")")
                               (UnknownAttribute attrName)
 
   parse = parseUnqt
@@ -1408,6 +1408,47 @@ validUnknown txt = T.toLower txt `S.notMember` names
             `S.union`
             keywords
 {- Delete to here -}
+
+-- -----------------------------------------------------------------------------
+-- These parsing combinators are defined here for customisation purposes.
+
+parseField       :: (ParseDot a) => (a -> Attribute) -> String
+                    -> [(String, Parse Attribute)]
+parseField c fld = [(fld, liftEqParse fld c)]
+
+parseFields   :: (ParseDot a) => (a -> Attribute) -> [String]
+                 -> [(String, Parse Attribute)]
+parseFields c = concatMap (parseField c)
+
+parseFieldBool :: (Bool -> Attribute) -> String -> [(String, Parse Attribute)]
+parseFieldBool = flip parseFieldDef True
+
+-- | For 'Bool'-like data structures where the presence of the field
+--   name without a value implies a default value.
+parseFieldDef         :: (ParseDot a) => (a -> Attribute) -> a -> String
+                         -> [(String, Parse Attribute)]
+parseFieldDef c d fld = [(fld, p)]
+  where
+    p = liftEqParse fld c
+        `onFail`
+        do nxt <- optional $ satisfy restIDString
+           bool (fail "Not actually the field you were after")
+                (return $ c d)
+                (isNothing nxt)
+
+-- | Attempt to parse the @\"=value\"@ part of a @key=value@ pair.  If
+--   there is an equal sign but the @value@ part doesn't parse, throw
+--   an un-recoverable error.
+liftEqParse :: (ParseDot a) => String -> (a -> Attribute) -> Parse Attribute
+liftEqParse k c = parseEq
+                  *> ( hasDef (fmap c parse)
+                       `adjustErrBad`
+                       (("Unable to parse key=value with key of " ++ k
+                         ++ "\n\t") ++)
+                     )
+  where
+    hasDef p = maybe p (onFail p . flip stringRep "\"\"")
+               . defaultAttributeValue $ c undefined
 
 -- -----------------------------------------------------------------------------
 

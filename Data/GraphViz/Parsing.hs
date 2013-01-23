@@ -63,15 +63,6 @@ module Data.GraphViz.Parsing
     , tryParseList
     , tryParseList'
     , consumeLine
-    , parseField
-    , parseFields
-    , parseFieldBool
-    , parseFieldsBool
-    , parseFieldDef
-    , parseFieldsDef
-    , parseFieldNumDef
-    , liftEqParse
-    , liftEqParse'
     , commaSep
     , commaSepUnqt
     , commaSep'
@@ -424,57 +415,6 @@ consumeLine = manySatisfy (`notElem` ['\n','\r'])
 
 parseEq :: Parse ()
 parseEq = wrapWhitespace (character '=') *> return ()
-
-parseField       :: (ParseDot a) => (a -> b) -> String -> [(String, Parse b)]
-parseField c fld = [(fld, liftEqParse' fld c)]
-
-parseFields   :: (ParseDot a) => (a -> b) -> [String] -> [(String, Parse b)]
-parseFields c = concatMap (parseField c)
-
-parseFieldBool :: (Bool -> b) -> String -> [(String, Parse b)]
-parseFieldBool = flip parseFieldDef True
-
-parseFieldsBool   :: (Bool -> b) -> [String] -> [(String, Parse b)]
-parseFieldsBool c = concatMap (parseFieldBool c)
-
--- | For 'Bool'-like data structures where the presence of the field
---   name without a value implies a default value.
-parseFieldDef         :: (ParseDot a) => (a -> b) -> a -> String -> [(String, Parse b)]
-parseFieldDef c d fld = [(fld, p)]
-  where
-    p = liftEqParse' fld c
-        `onFail`
-        do nxt <- optional $ satisfy restIDString
-           bool (fail "Not actually the field you were after")
-                (return $ c d)
-                (isNothing nxt)
-
-parseFieldsDef     :: (ParseDot a) => (a -> b) -> a -> [String] -> [(String, Parse b)]
-parseFieldsDef c d = concatMap (parseFieldDef c d)
-
--- | For numeric attributes, @dot -Tdot@ seems to use @\"\"@ to
---   indicate the default value.
-parseFieldNumDef :: (ParseDot a) => (a -> b) -> a -> String -> [(String, Parse b)]
-parseFieldNumDef c d fld = [(fld, liftEqParse p fld c)]
-  where
-    p = stringRep d "\"\""
-        `onFail`
-        parse
-
--- | 'liftEqParse'' using 'parse' as the parser.
-liftEqParse' :: (ParseDot a) => String -> (a -> b) -> Parse b
-liftEqParse' = liftEqParse parse
-
--- | Attempt to parse the @\"=value\"@ part of a @key=value@ pair.  If
---   there is an equal sign but the @value@ part doesn't parse, throw
---   an un-recoverable error.
-liftEqParse :: Parse a -> String -> (a -> b) -> Parse b
-liftEqParse p k c = parseEq
-                    *> ( fmap c p
-                         `adjustErrBad`
-                         (("Unable to parse key=value with key of " ++ k
-                           ++ "\n\t") ++)
-                       )
 
 -- | The opposite of 'bracket'.
 ignoreSep :: (a -> b -> c) -> Parse a -> Parse sep -> Parse b -> Parse c
