@@ -86,7 +86,7 @@ arbList :: (Arbitrary a) => Gen [a]
 arbList = listOf1 arbitrary
 
 nonEmptyShrinks :: (Arbitrary a) => [a] -> [[a]]
-nonEmptyShrinks = filter (not . null) . shrinkList
+nonEmptyShrinks = filter (not . null) . shrink
 
 nonEmptyShrinks' :: [a] -> [[a]]
 nonEmptyShrinks' = filter (not . null) . shrinkList'

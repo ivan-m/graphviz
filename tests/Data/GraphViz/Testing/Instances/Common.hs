@@ -41,12 +41,12 @@ instance Arbitrary GraphID where
 instance (Arbitrary n) => Arbitrary (DotNode n) where
   arbitrary = liftM2 DotNode arbitrary arbNodeAttrs
 
-  shrink (DotNode n as) = map (DotNode n) $ shrinkList as
+  shrink (DotNode n as) = map (DotNode n) $ shrink as
 
 instance (Arbitrary n) => Arbitrary (DotEdge n) where
   arbitrary = liftM3 DotEdge arbitrary arbitrary arbEdgeAttrs
 
-  shrink (DotEdge f t as) = map (DotEdge f t) $ shrinkList as
+  shrink (DotEdge f t as) = map (DotEdge f t) $ shrink as
 
 instance Arbitrary GlobalAttributes where
   arbitrary = gaGraph
