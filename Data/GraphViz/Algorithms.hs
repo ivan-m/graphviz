@@ -1,3 +1,5 @@
+{-# LANGUAGE MonadComprehensions #-}
+
 {- |
    Module      : Data.GraphViz.Algorithms
    Description : Various algorithms on Graphviz graphs.
@@ -8,6 +10,10 @@
    Defines various algorithms for use on 'DotRepr' graphs.  These are
    typically re-implementations of behaviour found in existing Graphviz
    tools but without the I/O requirement.
+
+   Note that one way that these algorithms differ from those found in
+   Graphviz is that the order of clusters is /not/ maintained, which may
+   affect layout in some cases.
  -}
 module Data.GraphViz.Algorithms
        ( -- * Canonicalisation Options
@@ -16,21 +22,25 @@ module Data.GraphViz.Algorithms
        , defaultCanonOptions
        , dotLikeOptions
          -- * Canonicalisation
+         -- $canonicalisation
        , canonicalise
        , canonicaliseOptions
          -- * Dealing with transitive edges
+         -- $transitive
        , transitiveReduction
        , transitiveReductionOptions
        ) where
 
-import Data.GraphViz.Attributes.Complete( Attributes, usedByClusters
+import Data.GraphViz.Attributes.Complete( Attribute(ColorScheme), Attributes
                                         , defaultAttributeValue)
 import Data.GraphViz.Attributes.Same
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical
+import Data.GraphViz.Types.Common
+import Data.GraphViz.Util(bool)
 
 import Data.Function(on)
-import Data.List(groupBy, sortBy, partition, (\\), sort, deleteBy)
+import Data.List(groupBy, sortBy, partition, (\\), deleteBy)
 import Data.Maybe(listToMaybe, mapMaybe, fromMaybe)
 import qualified Data.DList as DList
 import qualified Data.Map as Map
@@ -73,14 +83,38 @@ dotLikeOptions = COpts { edgesInClusters = True
 
 -- -----------------------------------------------------------------------------
 
--- | Implements similar functionality to @dot -Tcanon@.  However, this
---   method requires no IO and doesn't care about image locations, etc.
---
---   This function will create a single explicit definition for every
---   node in the original graph and place it in the appropriate
---   position in the cluster hierarchy.  All edges are found in the
---   deepest cluster that contains both nodes.  Currently node and
---   edge attributes are not grouped into global ones.
+{- $canonicalisation
+
+These functions implement similar functionality to @dot -Tcanon@
+(i.e. creates a canonical form of any 'DotRepr' graph).  without
+requiring IO.
+
+Note that due to implementation specifics the behaviour is not
+identical; in particular:
+
+* Any specified 'Attributes' that equal the defaults are stripped out
+  (unless required to override a previous attribute that doesn't apply
+  here).
+
+* Grouping of attributes (when @'groupAttributes = True'@) is much
+  more conservative; only those node/edge attributes that are common to
+  /all/ nodes and edges within that cluster (and within sub-clusters)
+  are made global.
+
+* Sub-graphs aren't kept, only clusters.
+
+* 'ColorScheme' Attributes are removed (as all @Color@ values embed
+  any needed color scheme anyway) as the output order of attributes may
+  change (and this matters for the Haskell side of things).
+
+In particular, note that this function will create a single explicit
+definition for every node in the original graph and place it in the
+appropriate position in the cluster hierarchy.  All edges are found in
+the deepest cluster that contains both nodes.
+
+-}
+
+-- | Canonicalise with some sensible defaults.
 canonicalise :: (DotRepr dg n) => dg n -> DotGraph n
 canonicalise = canonicaliseOptions defaultCanonOptions
 
@@ -89,125 +123,167 @@ canonicaliseOptions :: (DotRepr dg n) => CanonicaliseOptions
                        -> dg n -> DotGraph n
 canonicaliseOptions opts dg = cdg { strictGraph   = graphIsStrict dg
                                   , directedGraph = graphIsDirected dg
-                                  , graphID       = getID dg
                                   }
   where
-    cdg = createCanonical opts gas cl nl es
+    cdg = createCanonical opts (getID dg) gas cl nl es
 
-    (gas, cl) = graphStructureInformation dg
-    nl = nodeInformation True dg
-    es = edgeInformation True dg
+    (gas, cl) = graphStructureInformation' dg
+    nl = nodeInformation' True dg
+    es = edgeInformation' True dg
 
-createCanonical :: (Ord n) => CanonicaliseOptions -> GlobalAttributes
+type NodePath n = ([Maybe GraphID], DotNode n)
+type NodePaths n = [NodePath n]
+type EdgeClusters n = Map (Maybe GraphID) [DotEdge n]
+type EdgeLocations n = (EdgeClusters n, [DotEdge n])
+
+data CanonControl n = CC { cOpts    :: !CanonicaliseOptions
+                         , isGraph  :: !Bool
+                         , clusters :: !ClusterLookup
+                         , clustEs  :: !(EdgeLocations n)
+                         , topID    :: !(Maybe GraphID)
+                         , topAttrs :: !Attributes
+                         }
+
+createCanonical :: (Ord n) => CanonicaliseOptions -> Maybe GraphID -> GlobalAttributes
                    -> ClusterLookup -> NodeLookup n -> [DotEdge n] -> DotGraph n
-createCanonical opts gas cl nl es
-  = DotGraph { strictGraph     = undefined
-             , directedGraph   = undefined
-             , graphID         = undefined
-             , graphStatements = gStmts
-             }
+createCanonical opts gid gas cl nl es = promoteDSG $ makeGrouping cc ns
   where
-    gStmts = DotStmts { attrStmts = gas'
-                      , subGraphs = sgs
-                      , nodeStmts = topNs'
-                      , edgeStmts = topEs'
-                      }
-
-    gas' = nonEmptyGAs [ gas
-                       , NodeAttrs topNAs
-                       , EdgeAttrs topEAs
-                       ]
     nUnlook (n,(p,as)) = (F.toList p, DotNode n as)
     -- DotNodes paired and sorted by their paths
     ns = sortBy (compLists `on` fst) . map nUnlook $ Map.toList nl
-    -- nodes in clusters vs top-level
-    (clustNs, topNs) = thisLevel ns
-    -- edges in clusters vs top-level
-    (clustEL, topEs) = if edgesInClusters opts
-                       then edgeClusters nl es
-                       else (Map.empty, es)
 
-    -- The global attributes that are also applicable to clusters.
-    topClustAs = filter usedByClusters $ attrs gas
-    topClustAs' = toSAttr topClustAs
+    cc = CC { cOpts   = opts
+            , isGraph = True
+            , clusters = cl
+            , clustEs = edgeClusters nl es
+            , topID = gid
+            , topAttrs = attrs gas
+            }
 
-    topNAs = mCommon nodeAttributes topNs
-    topNAs' = toSAttr topNAs
-    topNs' = map (\dn -> dn {nodeAttributes = nodeAttributes dn \\ topNAs}) topNs
+thisLevel :: NodePaths n -> (NodePaths n, [DotNode n])
+thisLevel = second (map snd) . span (not . null . fst)
 
-    topEAs = mCommon edgeAttributes topEs
-    topEAs' = toSAttr topEAs
-    topEs' = map (\de -> de {edgeAttributes = edgeAttributes de \\ topEAs}) topEs
+makeGrouping :: CanonControl n -> NodePaths n -> DotSubGraph n
+makeGrouping cc cns = DotSG { isCluster = True
+                            , subGraphID = cID
+                            , subGraphStmts = stmts
+                            }
+  where
+    cID | isGraph cc = topID cc
+        | otherwise  = head . fst . head $ cns
 
-    sgs = clusts topClustAs topClustAs' topNAs topNAs' topEAs topEAs' clustNs
+    (nestedNs, ns) = thisLevel
+                     . bool (map $ first tail) id (isGraph cc)
+                     $ cns
 
-    clusts oAs oAsS nAs nAsS eAs eAsS = map (toClust oAs oAsS nAs nAsS eAs eAsS)
-                                        . groupBy ((==) `on` (listToMaybe . fst))
+    es = bool (fromMaybe [] . Map.lookup cID . fst) snd (isGraph cc)
+         $ clustEs cc
 
-    -- Create a new cluster.
-    -- oAs - outer cluster attributes
-    -- nAs - outer node attributes
-    -- eAs - outer edge attributes
-    -- (*S variants are same thing but as sets; premature optimisation?)
-    -- cns - nodes in this cluster
-    toClust oAs oAsS nAs nAsS eAs eAsS cns
-      = DotSG { isCluster     = True
-              , subGraphID    = cID
-              , subGraphStmts = stmts
-              }
-      where
-        -- Find the ID for this cluster.
-        cID = head . fst $ head cns
+    gas | isGraph cc = topAttrs cc
+        | otherwise  = attrs . snd $ clusters cc Map.! cID
 
-        -- Get the nodes that are deeper and the ones that belong
-        -- here.
-        (nested, here) = thisLevel $ map (first tail) cns
+    subGs = map (makeGrouping $ cc { isGraph = False })
+            . groupBy ((==) `on` (listToMaybe . fst))
+            $ nestedNs
 
+    stmts = setGlobal (cOpts cc) gas
+            $ DotStmts { attrStmts = []
+                       , subGraphs = subGs
+                       , nodeStmts = ns
+                       , edgeStmts = es
+                       }
 
-        stmts = DotStmts { attrStmts = sgAs
-                         , subGraphs = subSGs
-                         , nodeStmts = here'
-                         , edgeStmts = edges'
-                         }
+setGlobal :: CanonicaliseOptions
+             -> Attributes -- Specified cluster attributes
+             -> DotStatements n
+             -> DotStatements n
+setGlobal opts as stmts = stmts { attrStmts = globs'
+                                , subGraphs = sgs'
+                                , nodeStmts = ns'
+                                , edgeStmts = es'
+                                }
+  where
+    sgs = subGraphs stmts
+    sStmts = map subGraphStmts sgs
+    ns = nodeStmts stmts
+    es = edgeStmts stmts
 
-        -- Starting global attributes
-        sgAs = nonEmptyGAs [ GraphAttrs as'
-                           , NodeAttrs nas'
-                           , EdgeAttrs eas'
-                           ]
+    sGlobs = map (partitionGlobal . attrStmts) sStmts
 
-        -- Sub-clusters
-        subSGs = clusts as asS nas nasS eas easS nested
+    (sgas,snas,seas) = unzip3 sGlobs
 
-        -- The attributes attached to this cluster ID in the original.
-        as = attrs . snd $ cl Map.! cID
-        asS = toSAttr as
+    gas' = as -- Can't change graph attrs! Need these!
+    nas' = getCommonGlobs opts nodeStmts snas sStmts $ map nodeAttributes ns
+    eas' = getCommonGlobs opts edgeStmts seas sStmts $ map edgeAttributes es
 
-        -- Get the global attributes that apply to this cluster,
-        -- ignoring ones set globally.
-        as' = fst $ innerAttributes oAs oAsS as
+    globs' = nonEmptyGAs [ GraphAttrs gas'
+                         , NodeAttrs  nas'
+                         , EdgeAttrs  eas'
+                         ]
+    ns' = map (\dn -> dn { nodeAttributes = nodeAttributes dn \\ nas' }) ns
+    es' = map (\de -> de { edgeAttributes = edgeAttributes de \\ eas' }) es
 
-        -- The node attributes that can be stated globally.
-        nas = mCommon nodeAttributes here
-        nasS = toSAttr nas
-        (nas',nOv) = innerAttributes nAs nAsS nas
+    sgas' = updateGraphGlobs gas' sgas
+    snas' = map (\\ nas') snas
+    seas' = map (\\ eas') seas
 
-        -- The nodes that belong here, with updated attributes.
-        here' = map (\dn -> dn {nodeAttributes = nodeAttributes dn \\ (nas ++ nOv)}) here
+    sGlobs' = zip3 sgas' snas' seas'
+    sStmts' = zipWith (\ sSt sGl -> sSt { attrStmts = nonEmptyGAs $ unPartitionGlobal sGl })
+                      sStmts
+                      sGlobs'
 
-        eas = mCommon edgeAttributes edges
-        easS = toSAttr eas
-        (eas',eOv) = innerAttributes eAs eAsS eas
-        edges' = map (\de -> de {edgeAttributes = edgeAttributes de \\ (eas ++ eOv)}) edges
+    sgs' = zipWith (\ sg sSt -> sg { subGraphStmts = sSt }) sgs sStmts'
 
-        -- Find edges that belong here
-        edges = fromMaybe [] $ cID `Map.lookup` clustEL
+updateGraphGlobs :: Attributes -> [Attributes] -> [Attributes]
+updateGraphGlobs gas = map go
+  where
+    gasS = Set.fromList gas
 
-    thisLevel = second (map snd) . span (not . null . fst)
+    override = toSAttr $ nonSameDefaults gas
 
-    mCommon f = if groupAttributes opts
-                then commonAttrs f
-                else const []
+    -- * Remove any identical values
+    -- * Override any different values
+    go = Set.toList
+         . (`Set.difference` gasS) -- Remove identical values
+         . unSameSet
+         . (`Set.union` override) -- Keeps existing values of constructors
+         . toSAttr
+
+nonSameDefaults :: Attributes -> Attributes
+nonSameDefaults = mapMaybe (\ a -> [ a' | a' <- defaultAttributeValue a, a' /= a] )
+
+getCommonGlobs :: CanonicaliseOptions
+                  -> (DotStatements n -> [a])
+                  -> [Attributes] -- ^ From sub-graphs
+                  -> [DotStatements n] -- ^ Statements from the sub-graphs for testing.
+                  -> [Attributes] -- ^ From nodes/edges
+                  -> Attributes
+getCommonGlobs opts f sas stmts as
+  | not $ groupAttributes opts = []
+  | otherwise = case sas' ++ as of
+                  []  -> []
+                  [_] -> []
+                  as' -> Set.toList . foldr1 Set.intersection
+                         $ map Set.fromList as'
+  where
+    sas' = keepIfAny f sas stmts
+
+-- Used to distinguish between having empty list of global attributes
+-- for nodes or edges because there aren't any nodes/edges, or because
+-- there aren't any common attributes
+keepIfAny :: (DotStatements n -> [a]) -> [Attributes] -> [DotStatements n]
+             -> [Attributes]
+keepIfAny f sas = map fst . filter snd . zip sas . map (hasAny f)
+
+hasAny      :: (DotStatements n -> [a]) -> DotStatements n -> Bool
+hasAny f ds = not (null $ f ds) || any (hasAny f . subGraphStmts) (subGraphs ds)
+
+promoteDSG     :: DotSubGraph n -> DotGraph n
+promoteDSG dsg = DotGraph { strictGraph     = undefined
+                          , directedGraph   = undefined
+                          , graphID         = subGraphID dsg
+                          , graphStatements = subGraphStmts dsg
+                          }
 
 -- Same as compare for lists, except shorter lists are GT
 compLists :: (Ord a) => [a] -> [a] -> Ordering
@@ -221,45 +297,20 @@ compLists (x:xs) (y:ys) = case compare x y of
 nonEmptyGAs :: [GlobalAttributes] -> [GlobalAttributes]
 nonEmptyGAs = filter (not . null . attrs)
 
--- Return all attributes found in every value.
-commonAttrs         :: (a -> Attributes) -> [a] -> Attributes
-commonAttrs _ []  = []
-commonAttrs f [a] = f a
-commonAttrs f xs  = Set.toList . foldr1 Set.intersection
-                    $ map (Set.fromList . f) xs
-
 -- Assign each edge into the cluster it belongs in.
 edgeClusters    :: (Ord n) => NodeLookup n -> [DotEdge n]
-                   -> (Map (Maybe GraphID) [DotEdge n], [DotEdge n])
+                   -> EdgeLocations n
 edgeClusters nl = (toM *** map snd) . partition (not . null . fst)
                   . map inClust
   where
     nl' = Map.map (F.toList . fst) nl
+    -- DotEdge n -> (Path, DotEdge n)
     inClust de@(DotEdge n1 n2 _) = (flip (,) de)
                                    . map fst . takeWhile (uncurry (==))
                                    $ zip (nl' Map.! n1) (nl' Map.! n2)
     toM = Map.map DList.toList
           . Map.fromListWith (flip DList.append)
           . map (last *** DList.singleton)
-
--- Return only those attributes that are required within the inner
--- sub-graph.  Also returns the overrides.
-innerAttributes                    :: Attributes -> SAttrs
-                                      -> Attributes -> (Attributes, Attributes)
-innerAttributes outer outerS inner = (sort $ inner' ++ override, override)
-  where
-    -- Remove all Attributes that are also defined in the outer cluster
-    inner' = inner \\ outer
-
-    -- Need to consider those Attributes that were defined /after/ this value
-    override = mapMaybe defAttr . unSame
-               $ outerS `Set.difference` toSAttr inner
-
-    -- A version of defaultAttributeValue that returns Nothing if the
-    -- value it is replacing /is/ the default.
-    defAttr a = case defaultAttributeValue a of
-                  Just a' | a == a' -> Nothing
-                  ma'               -> ma'
 
 -- -----------------------------------------------------------------------------
 
@@ -299,6 +350,8 @@ innerAttributes outer outerS inner = (sort $ inner' ++ override, override)
    Note that transitive reduction only makes sense for directed graphs;
    for undirected graphs these functions are identical to the
    canonicalisation functions above.
+
+   The caveats for the canonicalisation functions also apply.
  -}
 
 transitiveReduction :: (DotRepr dg n) => dg n -> DotGraph n
@@ -308,13 +361,12 @@ transitiveReductionOptions         :: (DotRepr dg n) => CanonicaliseOptions
                                       -> dg n -> DotGraph n
 transitiveReductionOptions opts dg = cdg { strictGraph = graphIsStrict dg
                                          , directedGraph = graphIsDirected dg
-                                         , graphID = getID dg
                                          }
   where
-    cdg = createCanonical opts gas cl nl es'
-    (gas, cl) = graphStructureInformation dg
-    nl = nodeInformation True dg
-    es = edgeInformation True dg
+    cdg = createCanonical opts (getID dg) gas cl nl es'
+    (gas, cl) = graphStructureInformation' dg
+    nl = nodeInformation' True dg
+    es = edgeInformation' True dg
     es' | graphIsDirected dg = rmTransEdges es
         | otherwise          = es
 
@@ -416,3 +468,36 @@ traverse t n = do setMark True
                              let n' = toNode e
                              unless (isMarked m n' || t' `Set.member` delSet)
                                $ traverse t' n'
+
+-- -----------------------------------------------------------------------------
+
+-- | Remove attributes that we don't want to consider:
+--
+--   * Those that are defaults
+--   * colorscheme (as the colors embed it anyway)
+rmUnwanted :: Attributes -> Attributes
+rmUnwanted = filter (not . (`any` tests) . flip ($))
+  where
+    tests = [isDefault, isColorScheme]
+
+    isDefault a = maybe False (a==) $ defaultAttributeValue a
+
+    isColorScheme ColorScheme{} = True
+    isColorScheme _             = False
+
+rmUnwantedGlob :: GlobalAttributes -> GlobalAttributes
+rmUnwantedGlob = withGlob rmUnwanted
+
+-- Post-process 'graphStructureInformation'
+graphStructureInformation' :: (DotRepr dg n) => dg n
+                              -> (GlobalAttributes, ClusterLookup)
+graphStructureInformation' = (rmUnwantedGlob *** fmap (second rmUnwantedGlob))
+                             . graphStructureInformation
+
+nodeInformation' :: (DotRepr dg n) => Bool -> dg n -> NodeLookup n
+nodeInformation' = (fmap (second rmUnwanted) .) . nodeInformation
+
+edgeInformation' :: (DotRepr dg n) => Bool -> dg n -> [DotEdge n]
+edgeInformation' = (map rmEdgeAs .) . edgeInformation
+  where
+    rmEdgeAs de = de { edgeAttributes = rmUnwanted $ edgeAttributes de }
