@@ -16,6 +16,7 @@ module Data.GraphViz.Attributes.Same
        , SAttrs
        , toSAttr
        , unSame
+       , unSameSet
        ) where
 
 import Data.GraphViz.Attributes.Complete(Attribute, Attributes, sameAttribute)
@@ -47,3 +48,6 @@ toSAttr = Set.fromList . map SA
 
 unSame :: SAttrs -> Attributes
 unSame = map getAttr . Set.toList
+
+unSameSet :: SAttrs -> Set Attribute
+unSameSet = Set.mapMonotonic getAttr

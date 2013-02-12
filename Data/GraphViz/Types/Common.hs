@@ -100,6 +100,12 @@ partitionGlobal = foldr select ([], [], [])
                                  NodeAttrs  as -> (gs, as ++ ns, es)
                                  EdgeAttrs  as -> (gs, ns, as ++ es)
 
+unPartitionGlobal :: (Attributes, Attributes, Attributes) -> [GlobalAttributes]
+unPartitionGlobal (gas,nas,eas) = [ GraphAttrs gas
+                                  , NodeAttrs  nas
+                                  , EdgeAttrs  eas
+                                  ]
+
 printGlobAttrType              :: GlobalAttributes -> DotCode
 printGlobAttrType GraphAttrs{} = text "graph"
 printGlobAttrType NodeAttrs{}  = text "node"
@@ -153,6 +159,11 @@ determineType attr
   | otherwise           = EdgeAttrs attr' -- Must be for edges.
   where
     attr' = [attr]
+
+withGlob :: (Attributes -> Attributes) -> GlobalAttributes -> GlobalAttributes
+withGlob f (GraphAttrs as) = GraphAttrs $ f as
+withGlob f (NodeAttrs  as) = NodeAttrs  $ f as
+withGlob f (EdgeAttrs  as) = EdgeAttrs  $ f as
 
 -- -----------------------------------------------------------------------------
 
