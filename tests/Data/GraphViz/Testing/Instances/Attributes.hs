@@ -62,16 +62,17 @@ instance Arbitrary Attribute where
   arbitrary = oneof [ liftM Damping arbitrary
                     , liftM K arbitrary
                     , liftM URL arbitrary
+                    , liftM Area arbitrary
                     , liftM ArrowHead arbitrary
                     , liftM ArrowSize arbitrary
                     , liftM ArrowTail arbitrary
                     , liftM Aspect arbitrary
                     , liftM BoundingBox arbitrary
-                    , liftM ColorScheme arbitrary
-                    , liftM BgColor arbList
+                    , liftM BgColor arbitrary
                     , liftM Center arbitrary
                     , liftM ClusterRank arbitrary
-                    , liftM Color arbList
+                    , liftM Color arbitrary
+                    , liftM ColorScheme arbitrary
                     , liftM Comment arbitrary
                     , liftM Compound arbitrary
                     , liftM Concentrate arbitrary
@@ -89,7 +90,7 @@ instance Arbitrary Attribute where
                     , liftM EdgeTooltip arbitrary
                     , liftM Epsilon arbitrary
                     , liftM ESep arbitrary
-                    , liftM FillColor arbList
+                    , liftM FillColor arbitrary
                     , liftM FixedSize arbitrary
                     , liftM FontColor arbitrary
                     , liftM FontName arbitrary
@@ -100,6 +101,7 @@ instance Arbitrary Attribute where
                     , liftM GradientAngle arbitrary
                     , liftM Group arbitrary
                     , liftM HeadURL arbitrary
+                    , liftM Head_LP arbitrary
                     , liftM HeadClip arbitrary
                     , liftM HeadLabel arbitrary
                     , liftM HeadPort arbitrary
@@ -125,7 +127,9 @@ instance Arbitrary Attribute where
                     , liftM LabelTooltip arbitrary
                     , liftM Landscape arbitrary
                     , liftM Layer arbitrary
+                    , liftM LayerListSep arbitrary
                     , liftM Layers arbitrary
+                    , liftM LayerSelect arbitrary
                     , liftM LayerSep arbitrary
                     , liftM Layout arbitrary
                     , liftM Len arbitrary
@@ -196,6 +200,7 @@ instance Arbitrary Attribute where
                     , liftM Style arbList
                     , liftM StyleSheet arbitrary
                     , liftM TailURL arbitrary
+                    , liftM Tail_LP arbitrary
                     , liftM TailClip arbitrary
                     , liftM TailLabel arbitrary
                     , liftM TailPort arbitrary
@@ -210,6 +215,7 @@ instance Arbitrary Attribute where
                     , liftM Weight arbitrary
                     , liftM Width arbitrary
                     , liftM XLabel arbitrary
+                    , liftM XLP arbitrary
                     , liftM Z arbitrary
                     , liftM2 UnknownAttribute (suchThat arbIDString validUnknown) arbitrary
                     ]
@@ -217,16 +223,17 @@ instance Arbitrary Attribute where
   shrink (Damping v)            = map Damping             $ shrink v
   shrink (K v)                  = map K                   $ shrink v
   shrink (URL v)                = map URL                 $ shrink v
+  shrink (Area v)               = map Area                $ shrink v
   shrink (ArrowHead v)          = map ArrowHead           $ shrink v
   shrink (ArrowSize v)          = map ArrowSize           $ shrink v
   shrink (ArrowTail v)          = map ArrowTail           $ shrink v
   shrink (Aspect v)             = map Aspect              $ shrink v
   shrink (BoundingBox v)        = map BoundingBox         $ shrink v
-  shrink (ColorScheme v)        = map ColorScheme         $ shrink v
   shrink (BgColor v)            = map BgColor             $ nonEmptyShrinks v
   shrink (Center v)             = map Center              $ shrink v
   shrink (ClusterRank v)        = map ClusterRank         $ shrink v
   shrink (Color v)              = map Color               $ nonEmptyShrinks v
+  shrink (ColorScheme v)        = map ColorScheme         $ shrink v
   shrink (Comment v)            = map Comment             $ shrink v
   shrink (Compound v)           = map Compound            $ shrink v
   shrink (Concentrate v)        = map Concentrate         $ shrink v
@@ -255,6 +262,7 @@ instance Arbitrary Attribute where
   shrink (GradientAngle v)      = map GradientAngle       $ shrink v
   shrink (Group v)              = map Group               $ shrink v
   shrink (HeadURL v)            = map HeadURL             $ shrink v
+  shrink (Head_LP v)            = map Head_LP             $ shrink v
   shrink (HeadClip v)           = map HeadClip            $ shrink v
   shrink (HeadLabel v)          = map HeadLabel           $ shrink v
   shrink (HeadPort v)           = map HeadPort            $ shrink v
@@ -280,7 +288,9 @@ instance Arbitrary Attribute where
   shrink (LabelTooltip v)       = map LabelTooltip        $ shrink v
   shrink (Landscape v)          = map Landscape           $ shrink v
   shrink (Layer v)              = map Layer               $ shrink v
+  shrink (LayerListSep v)       = map LayerListSep        $ shrink v
   shrink (Layers v)             = map Layers              $ shrink v
+  shrink (LayerSelect v)        = map LayerSelect         $ shrink v
   shrink (LayerSep v)           = map LayerSep            $ shrink v
   shrink (Layout v)             = map Layout              $ shrink v
   shrink (Len v)                = map Len                 $ shrink v
@@ -351,6 +361,7 @@ instance Arbitrary Attribute where
   shrink (Style v)              = map Style               $ nonEmptyShrinks v
   shrink (StyleSheet v)         = map StyleSheet          $ shrink v
   shrink (TailURL v)            = map TailURL             $ shrink v
+  shrink (Tail_LP v)            = map Tail_LP             $ shrink v
   shrink (TailClip v)           = map TailClip            $ shrink v
   shrink (TailLabel v)          = map TailLabel           $ shrink v
   shrink (TailPort v)           = map TailPort            $ shrink v
@@ -365,6 +376,7 @@ instance Arbitrary Attribute where
   shrink (Weight v)             = map Weight              $ shrink v
   shrink (Width v)              = map Width               $ shrink v
   shrink (XLabel v)             = map XLabel              $ shrink v
+  shrink (XLP v)                = map XLP                 $ shrink v
   shrink (Z v)                  = map Z                   $ shrink v
   shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrink a) (shrink v)
 {- delete to here -}

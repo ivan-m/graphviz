@@ -250,24 +250,25 @@ data Attribute
   = Damping Double                      -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
   | K Double                            -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
   | URL EscString                       -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
+  | Area Double                         -- ^ /Valid for/: NC; /Default/: @1.0@; /Minimum/: @>0@; /Notes/: patchwork only, requires Graphviz >= 2.30.0
   | ArrowHead ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
   | ArrowSize Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
   | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
   | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
   | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
-  | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
-  | BgColor [Color]                     -- ^ /Valid for/: GC; /Default/: @[]@
+  | BgColor ColorList                   -- ^ /Valid for/: GC; /Default/: @[]@
   | Center Bool                         -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | ClusterRank ClusterMode             -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
-  | Color [Color]                       -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
+  | Color ColorList                     -- ^ /Valid for/: ENC; /Default/: @['WC' ('X11Color' 'Black') Nothing]@
+  | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
   | Comment Text                        -- ^ /Valid for/: ENG; /Default/: @\"\"@
   | Compound Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
   | Concentrate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | Constraint Bool                     -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
   | Decorate Bool                       -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
   | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(abs(V))@ (unable to statically define); /Minimum/: The value of 'Epsilon'.; /Notes/: neato only, only if @'Pack' 'DontPack'@
-  | Dim Int                             -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
-  | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
+  | Dim Int                             -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: maximum of @10@; sfdp, fdp, neato only
+  | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: maximum of @10@; sfdp, fdp, neato only
   | Dir DirType                         -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
   | DirEdgeConstraints DEConstraints    -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
   | Distortion Double                   -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
@@ -277,17 +278,18 @@ data Attribute
   | EdgeTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
   | Epsilon Double                      -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
   | ESep DPoint                         -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not dot
-  | FillColor [Color]                   -- ^ /Valid for/: NEC; /Default/: @['X11Color' 'LightGray']@ (nodes), @['X11Color' 'Black']@ (clusters)
+  | FillColor ColorList                 -- ^ /Valid for/: NEC; /Default/: @['WC' ('X11Color' 'LightGray') Nothing]@ (nodes), @['WC' ('X11Color' 'Black') Nothing]@ (clusters)
   | FixedSize Bool                      -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
   | FontColor Color                     -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
   | FontName Text                       -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
   | FontNames SVGFontNames              -- ^ /Valid for/: G; /Default/: @'SvgNames'@; /Notes/: svg only
-  | FontPath Text                       -- ^ /Valid for/: G; /Default/: system dependent
+  | FontPath Paths                      -- ^ /Valid for/: G; /Default/: system dependent
   | FontSize Double                     -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
-  | ForceLabels Bool                    -- ^ /Valid for/: G; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: Only for 'XLabel' attributes, requires Graphviz >= 2.29.0
+  | ForceLabels Bool                    -- ^ /Valid for/: G; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: only for 'XLabel' attributes, requires Graphviz >= 2.29.0
   | GradientAngle Int                   -- ^ /Valid for/: NCG; /Default/: 0; /Notes/: requires Graphviz >= 2.29.0
   | Group Text                          -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
   | HeadURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | Head_LP Point                       -- ^ /Valid for/: E; /Notes/: write only, requires Graphviz >= 2.30.0
   | HeadClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
   | HeadLabel Label                     -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
   | HeadPort PortPos                    -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
@@ -312,10 +314,12 @@ data Attribute
   | LabelTarget EscString               -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
   | LabelTooltip EscString              -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
   | Landscape Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-  | Layer LayerRange                    -- ^ /Valid for/: EN
+  | Layer LayerRange                    -- ^ /Valid for/: EN; /Default/: @[]@
+  | LayerListSep LayerListSep           -- ^ /Valid for/: G; /Default/: @'LLSep' \",\"@; /Notes/: requires Graphviz >= 2.30.0
   | Layers LayerList                    -- ^ /Valid for/: G; /Default/: @'LL' []@
+  | LayerSelect LayerRange              -- ^ /Valid for/: G; /Default/: @[]@
   | LayerSep LayerSep                   -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
-  | Layout Text                         -- ^ /Valid for/: G; /Default/: @\"\"@
+  | Layout GraphvizCommand              -- ^ /Valid for/: G
   | Len Double                          -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
   | Levels Int                          -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
   | LevelsGap Double                    -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
@@ -373,7 +377,7 @@ data Attribute
   | Sep DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
   | Shape Shape                         -- ^ /Valid for/: N; /Default/: @'Ellipse'@
   | ShapeFile Text                      -- ^ /Valid for/: N; /Default/: @\"\"@
-  | ShowBoxes Int                       -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only
+  | ShowBoxes Int                       -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only; used for debugging by printing PostScript guide boxes
   | Sides Int                           -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
   | Size GraphSize                      -- ^ /Valid for/: G
   | Skew Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
@@ -384,6 +388,7 @@ data Attribute
   | Style [StyleItem]                   -- ^ /Valid for/: ENC
   | StyleSheet Text                     -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
   | TailURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
+  | Tail_LP Point                       -- ^ /Valid for/: E; /Notes/: write only
   | TailClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
   | TailLabel Label                     -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
   | TailPort PortPos                    -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
@@ -398,6 +403,7 @@ data Attribute
   | Weight Double                       -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
   | Width Double                        -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
   | XLabel Label                        -- ^ /Valid for/: EN; /Default/: @'StrLabel' \"\"@; /Notes/: requires Graphviz >= 2.29.0
+  | XLP Point                           -- ^ /Valid for/: EN; /Notes/: write only, requires Graphviz >= 2.29.0
   | Z Double                            -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
   | UnknownAttribute AttributeName Text -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
   deriving (Eq, Ord, Show, Read)
@@ -411,16 +417,17 @@ instance PrintDot Attribute where
   unqtDot (Damping v)            = printField "Damping" v
   unqtDot (K v)                  = printField "K" v
   unqtDot (URL v)                = printField "URL" v
+  unqtDot (Area v)               = printField "area" v
   unqtDot (ArrowHead v)          = printField "arrowhead" v
   unqtDot (ArrowSize v)          = printField "arrowsize" v
   unqtDot (ArrowTail v)          = printField "arrowtail" v
   unqtDot (Aspect v)             = printField "aspect" v
   unqtDot (BoundingBox v)        = printField "bb" v
-  unqtDot (ColorScheme v)        = printField "colorscheme" v
   unqtDot (BgColor v)            = printField "bgcolor" v
   unqtDot (Center v)             = printField "center" v
   unqtDot (ClusterRank v)        = printField "clusterrank" v
   unqtDot (Color v)              = printField "color" v
+  unqtDot (ColorScheme v)        = printField "colorscheme" v
   unqtDot (Comment v)            = printField "comment" v
   unqtDot (Compound v)           = printField "compound" v
   unqtDot (Concentrate v)        = printField "concentrate" v
@@ -449,6 +456,7 @@ instance PrintDot Attribute where
   unqtDot (GradientAngle v)      = printField "gradientangle" v
   unqtDot (Group v)              = printField "group" v
   unqtDot (HeadURL v)            = printField "headURL" v
+  unqtDot (Head_LP v)            = printField "head_lp" v
   unqtDot (HeadClip v)           = printField "headclip" v
   unqtDot (HeadLabel v)          = printField "headlabel" v
   unqtDot (HeadPort v)           = printField "headport" v
@@ -474,7 +482,9 @@ instance PrintDot Attribute where
   unqtDot (LabelTooltip v)       = printField "labeltooltip" v
   unqtDot (Landscape v)          = printField "landscape" v
   unqtDot (Layer v)              = printField "layer" v
+  unqtDot (LayerListSep v)       = printField "layerlistsep" v
   unqtDot (Layers v)             = printField "layers" v
+  unqtDot (LayerSelect v)        = printField "layerselect" v
   unqtDot (LayerSep v)           = printField "layersep" v
   unqtDot (Layout v)             = printField "layout" v
   unqtDot (Len v)                = printField "len" v
@@ -545,6 +555,7 @@ instance PrintDot Attribute where
   unqtDot (Style v)              = printField "style" v
   unqtDot (StyleSheet v)         = printField "stylesheet" v
   unqtDot (TailURL v)            = printField "tailURL" v
+  unqtDot (Tail_LP v)            = printField "tail_lp" v
   unqtDot (TailClip v)           = printField "tailclip" v
   unqtDot (TailLabel v)          = printField "taillabel" v
   unqtDot (TailPort v)           = printField "tailport" v
@@ -559,6 +570,7 @@ instance PrintDot Attribute where
   unqtDot (Weight v)             = printField "weight" v
   unqtDot (Width v)              = printField "width" v
   unqtDot (XLabel v)             = printField "xlabel" v
+  unqtDot (XLP v)                = printField "xlp" v
   unqtDot (Z v)                  = printField "z" v
   unqtDot (UnknownAttribute a v) = toDot a <> equals <> toDot v
 
@@ -568,16 +580,17 @@ instance ParseDot Attribute where
   parseUnqt = stringParse (concat [ parseField Damping "Damping"
                                   , parseField K "K"
                                   , parseFields URL ["URL", "href"]
+                                  , parseField Area "area"
                                   , parseField ArrowHead "arrowhead"
                                   , parseField ArrowSize "arrowsize"
                                   , parseField ArrowTail "arrowtail"
                                   , parseField Aspect "aspect"
                                   , parseField BoundingBox "bb"
-                                  , parseField ColorScheme "colorscheme"
                                   , parseField BgColor "bgcolor"
                                   , parseFieldBool Center "center"
                                   , parseField ClusterRank "clusterrank"
                                   , parseField Color "color"
+                                  , parseField ColorScheme "colorscheme"
                                   , parseField Comment "comment"
                                   , parseFieldBool Compound "compound"
                                   , parseFieldBool Concentrate "concentrate"
@@ -606,6 +619,7 @@ instance ParseDot Attribute where
                                   , parseField GradientAngle "gradientangle"
                                   , parseField Group "group"
                                   , parseFields HeadURL ["headURL", "headhref"]
+                                  , parseField Head_LP "head_lp"
                                   , parseFieldBool HeadClip "headclip"
                                   , parseField HeadLabel "headlabel"
                                   , parseField HeadPort "headport"
@@ -631,12 +645,14 @@ instance ParseDot Attribute where
                                   , parseField LabelTooltip "labeltooltip"
                                   , parseFieldBool Landscape "landscape"
                                   , parseField Layer "layer"
+                                  , parseField LayerListSep "layerlistsep"
                                   , parseField Layers "layers"
+                                  , parseField LayerSelect "layerselect"
                                   , parseField LayerSep "layersep"
                                   , parseField Layout "layout"
                                   , parseField Len "len"
-                                  , parseField LevelsGap "levelsgap"
                                   , parseField Levels "levels"
+                                  , parseField LevelsGap "levelsgap"
                                   , parseField LHead "lhead"
                                   , parseField LHeight "LHeight"
                                   , parseField LPos "lp"
@@ -702,6 +718,7 @@ instance ParseDot Attribute where
                                   , parseField Style "style"
                                   , parseField StyleSheet "stylesheet"
                                   , parseFields TailURL ["tailURL", "tailhref"]
+                                  , parseField Tail_LP "tail_lp"
                                   , parseFieldBool TailClip "tailclip"
                                   , parseField TailLabel "taillabel"
                                   , parseField TailPort "tailport"
@@ -716,12 +733,13 @@ instance ParseDot Attribute where
                                   , parseField Weight "weight"
                                   , parseField Width "width"
                                   , parseField XLabel "xlabel"
+                                  , parseField XLP "xlp"
                                   , parseField Z "z"
                                   ])
               `onFail`
               do attrName <- stringBlock
                  liftEqParse ("UnknownAttribute (" ++ T.unpack attrName ++ ")")
-                              (UnknownAttribute attrName)
+                             (UnknownAttribute attrName)
 
   parse = parseUnqt
 
@@ -734,10 +752,10 @@ usedByGraphs K{}                  = True
 usedByGraphs URL{}                = True
 usedByGraphs Aspect{}             = True
 usedByGraphs BoundingBox{}        = True
-usedByGraphs ColorScheme{}        = True
 usedByGraphs BgColor{}            = True
 usedByGraphs Center{}             = True
 usedByGraphs ClusterRank{}        = True
+usedByGraphs ColorScheme{}        = True
 usedByGraphs Comment{}            = True
 usedByGraphs Compound{}           = True
 usedByGraphs Concentrate{}        = True
@@ -762,7 +780,9 @@ usedByGraphs LabelScheme{}        = True
 usedByGraphs LabelJust{}          = True
 usedByGraphs LabelLoc{}           = True
 usedByGraphs Landscape{}          = True
+usedByGraphs LayerListSep{}       = True
 usedByGraphs Layers{}             = True
+usedByGraphs LayerSelect{}        = True
 usedByGraphs LayerSep{}           = True
 usedByGraphs Layout{}             = True
 usedByGraphs Levels{}             = True
@@ -822,9 +842,10 @@ usedByGraphs _                    = False
 usedByClusters                    :: Attribute -> Bool
 usedByClusters K{}                = True
 usedByClusters URL{}              = True
-usedByClusters ColorScheme{}      = True
+usedByClusters Area{}             = True
 usedByClusters BgColor{}          = True
 usedByClusters Color{}            = True
+usedByClusters ColorScheme{}      = True
 usedByClusters FillColor{}        = True
 usedByClusters FontColor{}        = True
 usedByClusters FontName{}         = True
@@ -857,8 +878,9 @@ usedBySubGraphs _                  = False
 -- | Determine if this 'Attribute' is valid for use with Nodes.
 usedByNodes                    :: Attribute -> Bool
 usedByNodes URL{}              = True
-usedByNodes ColorScheme{}      = True
+usedByNodes Area{}             = True
 usedByNodes Color{}            = True
+usedByNodes ColorScheme{}      = True
 usedByNodes Comment{}          = True
 usedByNodes Distortion{}       = True
 usedByNodes FillColor{}        = True
@@ -899,6 +921,7 @@ usedByNodes Tooltip{}          = True
 usedByNodes Vertices{}         = True
 usedByNodes Width{}            = True
 usedByNodes XLabel{}           = True
+usedByNodes XLP{}              = True
 usedByNodes Z{}                = True
 usedByNodes UnknownAttribute{} = True
 usedByNodes _                  = False
@@ -909,8 +932,8 @@ usedByEdges URL{}              = True
 usedByEdges ArrowHead{}        = True
 usedByEdges ArrowSize{}        = True
 usedByEdges ArrowTail{}        = True
-usedByEdges ColorScheme{}      = True
 usedByEdges Color{}            = True
+usedByEdges ColorScheme{}      = True
 usedByEdges Comment{}          = True
 usedByEdges Constraint{}       = True
 usedByEdges Decorate{}         = True
@@ -923,6 +946,7 @@ usedByEdges FontColor{}        = True
 usedByEdges FontName{}         = True
 usedByEdges FontSize{}         = True
 usedByEdges HeadURL{}          = True
+usedByEdges Head_LP{}          = True
 usedByEdges HeadClip{}         = True
 usedByEdges HeadLabel{}        = True
 usedByEdges HeadPort{}         = True
@@ -953,6 +977,7 @@ usedByEdges SameTail{}         = True
 usedByEdges ShowBoxes{}        = True
 usedByEdges Style{}            = True
 usedByEdges TailURL{}          = True
+usedByEdges Tail_LP{}          = True
 usedByEdges TailClip{}         = True
 usedByEdges TailLabel{}        = True
 usedByEdges TailPort{}         = True
@@ -962,6 +987,7 @@ usedByEdges Target{}           = True
 usedByEdges Tooltip{}          = True
 usedByEdges Weight{}           = True
 usedByEdges XLabel{}           = True
+usedByEdges XLP{}              = True
 usedByEdges UnknownAttribute{} = True
 usedByEdges _                  = False
 
@@ -970,16 +996,17 @@ sameAttribute                                                 :: Attribute -> At
 sameAttribute Damping{}               Damping{}               = True
 sameAttribute K{}                     K{}                     = True
 sameAttribute URL{}                   URL{}                   = True
+sameAttribute Area{}                  Area{}                  = True
 sameAttribute ArrowHead{}             ArrowHead{}             = True
 sameAttribute ArrowSize{}             ArrowSize{}             = True
 sameAttribute ArrowTail{}             ArrowTail{}             = True
 sameAttribute Aspect{}                Aspect{}                = True
 sameAttribute BoundingBox{}           BoundingBox{}           = True
-sameAttribute ColorScheme{}           ColorScheme{}           = True
 sameAttribute BgColor{}               BgColor{}               = True
 sameAttribute Center{}                Center{}                = True
 sameAttribute ClusterRank{}           ClusterRank{}           = True
 sameAttribute Color{}                 Color{}                 = True
+sameAttribute ColorScheme{}           ColorScheme{}           = True
 sameAttribute Comment{}               Comment{}               = True
 sameAttribute Compound{}              Compound{}              = True
 sameAttribute Concentrate{}           Concentrate{}           = True
@@ -1008,6 +1035,7 @@ sameAttribute ForceLabels{}           ForceLabels{}           = True
 sameAttribute GradientAngle{}         GradientAngle{}         = True
 sameAttribute Group{}                 Group{}                 = True
 sameAttribute HeadURL{}               HeadURL{}               = True
+sameAttribute Head_LP{}               Head_LP{}               = True
 sameAttribute HeadClip{}              HeadClip{}              = True
 sameAttribute HeadLabel{}             HeadLabel{}             = True
 sameAttribute HeadPort{}              HeadPort{}              = True
@@ -1033,7 +1061,9 @@ sameAttribute LabelTarget{}           LabelTarget{}           = True
 sameAttribute LabelTooltip{}          LabelTooltip{}          = True
 sameAttribute Landscape{}             Landscape{}             = True
 sameAttribute Layer{}                 Layer{}                 = True
+sameAttribute LayerListSep{}          LayerListSep{}          = True
 sameAttribute Layers{}                Layers{}                = True
+sameAttribute LayerSelect{}           LayerSelect{}           = True
 sameAttribute LayerSep{}              LayerSep{}              = True
 sameAttribute Layout{}                Layout{}                = True
 sameAttribute Len{}                   Len{}                   = True
@@ -1104,6 +1134,7 @@ sameAttribute Start{}                 Start{}                 = True
 sameAttribute Style{}                 Style{}                 = True
 sameAttribute StyleSheet{}            StyleSheet{}            = True
 sameAttribute TailURL{}               TailURL{}               = True
+sameAttribute Tail_LP{}               Tail_LP{}               = True
 sameAttribute TailClip{}              TailClip{}              = True
 sameAttribute TailLabel{}             TailLabel{}             = True
 sameAttribute TailPort{}              TailPort{}              = True
@@ -1118,6 +1149,7 @@ sameAttribute VoroMargin{}            VoroMargin{}            = True
 sameAttribute Weight{}                Weight{}                = True
 sameAttribute Width{}                 Width{}                 = True
 sameAttribute XLabel{}                XLabel{}                = True
+sameAttribute XLP{}                   XLP{}                   = True
 sameAttribute Z{}                     Z{}                     = True
 sameAttribute (UnknownAttribute a1 _) (UnknownAttribute a2 _) = a1 == a2
 sameAttribute _                       _                       = False
@@ -1127,13 +1159,15 @@ defaultAttributeValue                      :: Attribute -> Maybe Attribute
 defaultAttributeValue Damping{}            = Just $ Damping 0.99
 defaultAttributeValue K{}                  = Just $ K 0.3
 defaultAttributeValue URL{}                = Just $ URL ""
+defaultAttributeValue Area{}               = Just $ Area 1.0
 defaultAttributeValue ArrowHead{}          = Just $ ArrowHead normal
 defaultAttributeValue ArrowSize{}          = Just $ ArrowSize 1.0
 defaultAttributeValue ArrowTail{}          = Just $ ArrowTail normal
 defaultAttributeValue BgColor{}            = Just $ BgColor []
 defaultAttributeValue Center{}             = Just $ Center False
 defaultAttributeValue ClusterRank{}        = Just $ ClusterRank Local
-defaultAttributeValue Color{}              = Just $ Color [X11Color Black]
+defaultAttributeValue Color{}              = Just $ Color [toWColor Black]
+defaultAttributeValue ColorScheme{}        = Just $ ColorScheme X11
 defaultAttributeValue Comment{}            = Just $ Comment ""
 defaultAttributeValue Compound{}           = Just $ Compound False
 defaultAttributeValue Concentrate{}        = Just $ Concentrate False
@@ -1147,7 +1181,7 @@ defaultAttributeValue DPI{}                = Just $ DPI 96.0
 defaultAttributeValue EdgeURL{}            = Just $ EdgeURL ""
 defaultAttributeValue EdgeTooltip{}        = Just $ EdgeTooltip ""
 defaultAttributeValue ESep{}               = Just $ ESep (DVal 3)
-defaultAttributeValue FillColor{}          = Just $ FillColor [X11Color Black]
+defaultAttributeValue FillColor{}          = Just $ FillColor [toWColor Black]
 defaultAttributeValue FixedSize{}          = Just $ FixedSize False
 defaultAttributeValue FontColor{}          = Just $ FontColor (X11Color Black)
 defaultAttributeValue FontName{}           = Just $ FontName "Times-Roman"
@@ -1181,9 +1215,11 @@ defaultAttributeValue LabelLoc{}           = Just $ LabelLoc VTop
 defaultAttributeValue LabelTarget{}        = Just $ LabelTarget ""
 defaultAttributeValue LabelTooltip{}       = Just $ LabelTooltip ""
 defaultAttributeValue Landscape{}          = Just $ Landscape False
+defaultAttributeValue Layer{}              = Just $ Layer []
+defaultAttributeValue LayerListSep{}       = Just $ LayerListSep (LLSep ",")
 defaultAttributeValue Layers{}             = Just $ Layers (LL [])
+defaultAttributeValue LayerSelect{}        = Just $ LayerSelect []
 defaultAttributeValue LayerSep{}           = Just $ LayerSep (LSep " :\t")
-defaultAttributeValue Layout{}             = Just $ Layout ""
 defaultAttributeValue Levels{}             = Just $ Levels maxBound
 defaultAttributeValue LevelsGap{}          = Just $ LevelsGap 0.0
 defaultAttributeValue LHead{}              = Just $ LHead ""
@@ -1229,7 +1265,6 @@ defaultAttributeValue Sides{}              = Just $ Sides 4
 defaultAttributeValue Skew{}               = Just $ Skew 0.0
 defaultAttributeValue Smoothing{}          = Just $ Smoothing NoSmooth
 defaultAttributeValue SortV{}              = Just $ SortV 0
-defaultAttributeValue Splines{}            = Just $ Splines SplineEdges
 defaultAttributeValue StyleSheet{}         = Just $ StyleSheet ""
 defaultAttributeValue TailURL{}            = Just $ TailURL ""
 defaultAttributeValue TailClip{}           = Just $ TailClip True
@@ -1256,16 +1291,17 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "K"
                , "URL"
                , "href"
+               , "area"
                , "arrowhead"
                , "arrowsize"
                , "arrowtail"
                , "aspect"
                , "bb"
-               , "colorscheme"
                , "bgcolor"
                , "center"
                , "clusterrank"
                , "color"
+               , "colorscheme"
                , "comment"
                , "compound"
                , "concentrate"
@@ -1297,6 +1333,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "group"
                , "headURL"
                , "headhref"
+               , "head_lp"
                , "headclip"
                , "headlabel"
                , "headport"
@@ -1323,7 +1360,9 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "labeltooltip"
                , "landscape"
                , "layer"
+               , "layerlistsep"
                , "layers"
+               , "layerselect"
                , "layersep"
                , "layout"
                , "len"
@@ -1395,6 +1434,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "stylesheet"
                , "tailURL"
                , "tailhref"
+               , "tail_lp"
                , "tailclip"
                , "taillabel"
                , "tailport"
@@ -1409,6 +1449,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "weight"
                , "width"
                , "xlabel"
+               , "xlp"
                , "z"
                , "charset" -- Defined upstream, just not used here.
                ])
