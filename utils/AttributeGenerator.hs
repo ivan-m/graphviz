@@ -595,7 +595,7 @@ attributes = [
   makeAttr "Skew" ["skew"] "N" (Dbl) Nothing (Just "0.0") (Just "@0.0@") (Just "@-100.0@") Nothing,
   makeAttr "Smoothing" ["smoothing"] "G" (Cust "SmoothType") Nothing (Just "NoSmooth") (Just "@'NoSmooth'@") Nothing (Just "sfdp only"),
   makeAttr "SortV" ["sortv"] "GCN" (Cust "Word16") Nothing (Just "0") (Just "@0@") (Just "@0@") Nothing,
-  makeAttr "Splines" ["splines"] "G" (Cust "EdgeType") (Just "SplineEdges") (Just "SplineEdges") Nothing Nothing Nothing,
+  makeAttr "Splines" ["splines"] "G" (Cust "EdgeType") (Just "SplineEdges") Nothing (Just "@'SplineEdges'@ (dot), @'LineEdges'@ (other)") Nothing Nothing,
   makeAttr "Start" ["start"] "G" (Cust "StartType") Nothing Nothing (Just "@'StartStyleSeed' 'RandomStyle' seed@ for some unknown fixed seed.") Nothing (Just "fdp, neato only"),
   makeAttr "Style" ["style"] "ENC" (Cust "[StyleItem]") Nothing Nothing Nothing Nothing Nothing,
   makeAttr "StyleSheet" ["stylesheet"] "G" (Strng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg only"),
@@ -776,7 +776,7 @@ This way, you can more easily edit/update the appropriate values.
 | Skew               | skew               | N       | Dbl                      |                 | 0.0                        | @0.0@                                                                    | @-100.0@                        |                                                                  |
 | Smoothing          | smoothing          | G       | Cust "SmoothType"        |                 | NoSmooth                   | @'NoSmooth'@                                                             |                                 | sfdp only                                                        |
 | SortV              | sortv              | GCN     | Cust "Word16"            |                 | 0                          | @0@                                                                      | @0@                             |                                                                  |
-| Splines            | splines            | G       | Cust "EdgeType"          | SplineEdges     | SplineEdges                |                                                                          |                                 |                                                                  |
+| Splines            | splines            | G       | Cust "EdgeType"          | SplineEdges     |                            | @'SplineEdges'@ (dot), @'LineEdges'@ (other)                             |                                 |                                                                  |
 | Start              | start              | G       | Cust "StartType"         |                 |                            | @'StartStyleSeed' 'RandomStyle' seed@ for some unknown fixed seed.       |                                 | fdp, neato only                                                  |
 | Style              | style              | ENC     | Cust "[StyleItem]"       |                 |                            |                                                                          |                                 |                                                                  |
 | StyleSheet         | stylesheet         | G       | Strng                    |                 | \"\"                       | @\\\"\\\"@                                                               |                                 | svg only                                                         |

@@ -376,7 +376,7 @@ data Attribute
   | Skew Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
   | Smoothing SmoothType                -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
   | SortV Word16                        -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
-  | Splines EdgeType                    -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
+  | Splines EdgeType                    -- ^ /Valid for/: G; /Default/: @'SplineEdges'@ (dot), @'LineEdges'@ (other); /Parsing Default/: 'SplineEdges'
   | Start StartType                     -- ^ /Valid for/: G; /Default/: @'StartStyleSeed' 'RandomStyle' seed@ for some unknown fixed seed.; /Notes/: fdp, neato only
   | Style [StyleItem]                   -- ^ /Valid for/: ENC
   | StyleSheet Text                     -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
@@ -2406,18 +2406,27 @@ instance ParseDot Pos where
 -- -----------------------------------------------------------------------------
 
 -- | Controls how (and if) edges are represented.
-data EdgeType = SplineEdges
+--
+--   For @dot@, the default is 'SplineEdges'; for all other layouts
+--   the default is 'LineEdges'.
+data EdgeType = SplineEdges -- ^ Except for dot, requires
+                            --   non-overlapping nodes (see
+                            --   'Overlap').
               | LineEdges
               | NoEdges
               | PolyLine
+              | Ortho -- ^ Does not handle ports or edge labels in dot.
+              | Curved -- ^ Requires Graphviz >= 2.30.0.
               | CompoundEdge -- ^ fdp only
               deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot EdgeType where
-  unqtDot SplineEdges  = toDot True
-  unqtDot LineEdges    = toDot False
+  unqtDot SplineEdges  = text "spline"
+  unqtDot LineEdges    = text "line"
   unqtDot NoEdges      = empty
   unqtDot PolyLine     = text "polyline"
+  unqtDot Ortho        = text "ortho"
+  unqtDot Curved       = text "curved"
   unqtDot CompoundEdge = text "compound"
 
   toDot NoEdges = dquotes empty
@@ -2428,7 +2437,10 @@ instance ParseDot EdgeType where
   parseUnqt = oneOf [ bool LineEdges SplineEdges <$> parse
                     , stringRep SplineEdges "spline"
                     , stringRep LineEdges "line"
+                    , stringRep NoEdges "none"
                     , stringRep PolyLine "polyline"
+                    , stringRep Ortho "ortho"
+                    , stringRep Curved "curved"
                     , stringRep CompoundEdge "compound"
                     ]
 
