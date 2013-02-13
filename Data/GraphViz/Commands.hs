@@ -47,7 +47,7 @@ module Data.GraphViz.Commands
 
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
-import Data.GraphViz.Attributes.Complete(Attribute(Z))
+import Data.GraphViz.Attributes.Complete(GraphvizCommand(..), Attribute(Z))
 import Data.GraphViz.Commands.IO(runCommand)
 import Data.GraphViz.Exception
 
@@ -61,30 +61,13 @@ import System.Exit(ExitCode(..), exitWith)
 
 -- -----------------------------------------------------------------------------
 
--- | The available Graphviz commands.  The following directions are
---   based upon those in the Graphviz man page (available online at
---   <http://graphviz.org/pdf/dot.1.pdf>, or if installed on your
---   system @man graphviz@).  Note that any command can be used on
---   both directed and undirected graphs.
-data GraphvizCommand = Dot       -- ^ For hierachical graphs (ideal for
-                                 --   directed graphs).
-                     | Neato     -- ^ For symmetric layouts of graphs
-                                 --   (ideal for undirected graphs).
-                     | TwoPi     -- ^ For radial layout of graphs.
-                     | Circo     -- ^ For circular layout of graphs.
-                     | Fdp       -- ^ For symmetric layout of graphs.
-                     | Osage     -- ^ Filter for drawing clustered graphs,
-                                 --   requires Graphviz >= 2.28.0.
-                     | Patchwork -- ^ Draw clustered graphs as treemaps,
-                                 --   requires Graphviz >= 2.28.0.
-                     deriving (Eq, Ord, Show, Read)
-
 showCmd           :: GraphvizCommand -> String
 showCmd Dot       = "dot"
 showCmd Neato     = "neato"
 showCmd TwoPi     = "twopi"
 showCmd Circo     = "circo"
 showCmd Fdp       = "fdp"
+showCmd Sfdp      = "sfdp"
 showCmd Osage     = "osage"
 showCmd Patchwork = "patchwork"
 

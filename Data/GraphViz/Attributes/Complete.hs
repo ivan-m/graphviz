@@ -149,6 +149,7 @@ module Data.GraphViz.Attributes.Complete
        , DPoint(..)
 
          -- ** Layout
+       , GraphvizCommand(..)
        , GraphSize(..)
        , AspectType(..)
        , ClusterMode(..)
@@ -1520,6 +1521,53 @@ deleteCustomAttributes = filter (not . isCustom)
 -- | Removes all instances of the specified custom attribute.
 deleteSpecifiedCustom :: AttributeName -> Attributes -> Attributes
 deleteSpecifiedCustom nm = filter (not . isSpecifiedCustom nm)
+
+-- -----------------------------------------------------------------------------
+
+-- | The available Graphviz commands.  The following directions are
+--   based upon those in the Graphviz man page (available online at
+--   <http://graphviz.org/pdf/dot.1.pdf>, or if installed on your
+--   system @man graphviz@).  Note that any command can be used on
+--   both directed and undirected graphs.
+--
+--   When used with the 'Layout' attribute, it overrides any actual
+--   command called on the dot graph.
+data GraphvizCommand = Dot       -- ^ For hierachical graphs (ideal for
+                                 --   directed graphs).
+                     | Neato     -- ^ For symmetric layouts of graphs
+                                 --   (ideal for undirected graphs).
+                     | TwoPi     -- ^ For radial layout of graphs.
+                     | Circo     -- ^ For circular layout of graphs.
+                     | Fdp       -- ^ Spring-model approach for
+                                 --   undirected graphs.
+                     | Sfdp      -- ^ As with Fdp, but ideal for large
+                                 --   graphs.
+                     | Osage     -- ^ Filter for drawing clustered graphs,
+                                 --   requires Graphviz >= 2.28.0.
+                     | Patchwork -- ^ Draw clustered graphs as treemaps,
+                                 --   requires Graphviz >= 2.28.0.
+                     deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot GraphvizCommand where
+  unqtDot Dot       = unqtText "dot"
+  unqtDot Neato     = unqtText "neato"
+  unqtDot TwoPi     = unqtText "twopi"
+  unqtDot Circo     = unqtText "circo"
+  unqtDot Fdp       = unqtText "fdp"
+  unqtDot Sfdp      = unqtText "sfdp"
+  unqtDot Osage     = unqtText "osage"
+  unqtDot Patchwork = unqtText "patchwork"
+
+instance ParseDot GraphvizCommand where
+  parseUnqt = stringValue [ ("dot", Dot)
+                          , ("neato", Neato)
+                          , ("twopi", TwoPi)
+                          , ("circo", Circo)
+                          , ("fdp", Fdp)
+                          , ("sfdp", Sfdp)
+                          , ("osage", Osage)
+                          , ("patchwork", Patchwork)
+                          ]
 
 -- -----------------------------------------------------------------------------
 

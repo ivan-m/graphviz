@@ -369,6 +369,9 @@ instance Arbitrary Attribute where
   shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrink a) (shrink v)
 {- delete to here -}
 
+instance Arbitrary GraphvizCommand where
+  arbitrary = arbBounded
+
 instance Arbitrary ArrowType where
   arbitrary = liftM AType
               -- Arrow specifications have between 1 and 4 elements.
