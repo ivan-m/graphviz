@@ -1734,6 +1734,9 @@ instance ParseDot Rect where
 
 -- -----------------------------------------------------------------------------
 
+-- | If 'Local', then sub-graphs that are clusters are given special
+--   treatment.  'Global' and 'NoCluster' currently appear to be
+--   identical and turn off the special cluster processing.
 data ClusterMode = Local
                  | Global
                  | NoCluster
