@@ -377,7 +377,7 @@ data Attribute
   | Smoothing SmoothType                -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
   | SortV Word16                        -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
   | Splines EdgeType                    -- ^ /Valid for/: G; /Parsing Default/: 'SplineEdges'
-  | Start StartType                     -- ^ /Valid for/: G; /Notes/: fdp, neato only
+  | Start StartType                     -- ^ /Valid for/: G; /Default/: @'StartStyleSeed' 'RandomStyle' seed@ for some unknown fixed seed.; /Notes/: fdp, neato only
   | Style [StyleItem]                   -- ^ /Valid for/: ENC
   | StyleSheet Text                     -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
   | TailURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only

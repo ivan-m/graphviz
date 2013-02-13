@@ -596,7 +596,7 @@ attributes = [
   makeAttr "Smoothing" ["smoothing"] "G" (Cust "SmoothType") Nothing (Just "NoSmooth") (Just "@'NoSmooth'@") Nothing (Just "sfdp only"),
   makeAttr "SortV" ["sortv"] "GCN" (Cust "Word16") Nothing (Just "0") (Just "@0@") (Just "@0@") Nothing,
   makeAttr "Splines" ["splines"] "G" (Cust "EdgeType") (Just "SplineEdges") (Just "SplineEdges") Nothing Nothing Nothing,
-  makeAttr "Start" ["start"] "G" (Cust "StartType") Nothing Nothing Nothing Nothing (Just "fdp, neato only"),
+  makeAttr "Start" ["start"] "G" (Cust "StartType") Nothing Nothing (Just "@'StartStyleSeed' 'RandomStyle' seed@ for some unknown fixed seed.") Nothing (Just "fdp, neato only"),
   makeAttr "Style" ["style"] "ENC" (Cust "[StyleItem]") Nothing Nothing Nothing Nothing Nothing,
   makeAttr "StyleSheet" ["stylesheet"] "G" (Strng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg only"),
   makeAttr "TailURL" ["tailURL", "tailhref"] "E" (EStrng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "svg, map only"),
@@ -777,7 +777,7 @@ This way, you can more easily edit/update the appropriate values.
 | Smoothing          | smoothing          | G       | Cust "SmoothType"        |                 | NoSmooth                   | @'NoSmooth'@                                                             |                                 | sfdp only                                                        |
 | SortV              | sortv              | GCN     | Cust "Word16"            |                 | 0                          | @0@                                                                      | @0@                             |                                                                  |
 | Splines            | splines            | G       | Cust "EdgeType"          | SplineEdges     | SplineEdges                |                                                                          |                                 |                                                                  |
-| Start              | start              | G       | Cust "StartType"         |                 |                            |                                                                          |                                 | fdp, neato only                                                  |
+| Start              | start              | G       | Cust "StartType"         |                 |                            | @'StartStyleSeed' 'RandomStyle' seed@ for some unknown fixed seed.       |                                 | fdp, neato only                                                  |
 | Style              | style              | ENC     | Cust "[StyleItem]"       |                 |                            |                                                                          |                                 |                                                                  |
 | StyleSheet         | stylesheet         | G       | Strng                    |                 | \"\"                       | @\\\"\\\"@                                                               |                                 | svg only                                                         |
 | TailURL            | tailURL tailhref   | E       | EStrng                   |                 | \"\"                       | @\\\"\\\"@                                                               |                                 | svg, map only                                                    |
