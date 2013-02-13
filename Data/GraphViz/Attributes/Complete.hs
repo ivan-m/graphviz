@@ -1961,17 +1961,20 @@ instance ParseDot ModeType where
 data Model = ShortPath
            | SubSet
            | Circuit
+           | MDS
            deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot Model where
   unqtDot ShortPath = text "shortpath"
   unqtDot SubSet    = text "subset"
   unqtDot Circuit   = text "circuit"
+  unqtDot MDS       = text "mds"
 
 instance ParseDot Model where
   parseUnqt = oneOf [ stringRep ShortPath "shortpath"
                     , stringRep SubSet "subset"
                     , stringRep Circuit "circuit"
+                    , stringRep MDS "mds"
                     ]
 
 -- -----------------------------------------------------------------------------
