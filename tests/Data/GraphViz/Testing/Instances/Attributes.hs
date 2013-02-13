@@ -129,8 +129,8 @@ instance Arbitrary Attribute where
                     , liftM LayerSep arbitrary
                     , liftM Layout arbitrary
                     , liftM Len arbitrary
-                    , liftM LevelsGap arbitrary
                     , liftM Levels arbitrary
+                    , liftM LevelsGap arbitrary
                     , liftM LHead arbitrary
                     , liftM LHeight arbitrary
                     , liftM LPos arbitrary
@@ -284,8 +284,8 @@ instance Arbitrary Attribute where
   shrink (LayerSep v)           = map LayerSep            $ shrink v
   shrink (Layout v)             = map Layout              $ shrink v
   shrink (Len v)                = map Len                 $ shrink v
-  shrink (LevelsGap v)          = map LevelsGap           $ shrink v
   shrink (Levels v)             = map Levels              $ shrink v
+  shrink (LevelsGap v)          = map LevelsGap           $ shrink v
   shrink (LHead v)              = map LHead               $ shrink v
   shrink (LHeight v)            = map LHeight             $ shrink v
   shrink (LPos v)               = map LPos                $ shrink v

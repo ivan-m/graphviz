@@ -533,8 +533,8 @@ attributes = [
   makeAttr "LayerSep" ["layersep"] "G" (Cust "LayerSep") Nothing (Just "(LSep \" :\\t\")") (Just "@'LSep' \\\" :\\t\\\"@") Nothing Nothing,
   makeAttr "Layout" ["layout"] "G" (Strng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing,
   makeAttr "Len" ["len"] "E" (Dbl) Nothing Nothing (Just "@1.0@ (neato), @0.3@ (fdp)") Nothing (Just "fdp, neato only"),
-  makeAttr "LevelsGap" ["levelsgap"] "G" (Dbl) Nothing (Just "0") (Just "@0.0@") Nothing (Just "neato only"),
   makeAttr "Levels" ["levels"] "G" (Integ) Nothing (Just "maxBound") (Just "@'maxBound'@") (Just "@0@") (Just "sfdp only"),
+  makeAttr "LevelsGap" ["levelsgap"] "G" (Dbl) Nothing (Just "0.0") (Just "@0.0@") Nothing (Just "neato only"),
   makeAttr "LHead" ["lhead"] "E" (Strng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing (Just "dot only"),
   makeAttr "LHeight" ["LHeight"] "GC" (Dbl) Nothing Nothing Nothing Nothing (Just "write only, requires Graphviz >= 2.28.0"),
   makeAttr "LPos" ["lp"] "EGC" (Cust "Point") Nothing Nothing Nothing Nothing (Just "write only"),
@@ -714,8 +714,8 @@ This way, you can more easily edit/update the appropriate values.
 | LayerSep           | layersep           | G       | Cust "LayerSep"          |                 | (LSep \" :\\t\")           | @'LSep' \\\" :\\t\\\"@                                                   |                                 |                                                                  |
 | Layout             | layout             | G       | Strng                    |                 | \"\"                       | @\\\"\\\"@                                                               |                                 |                                                                  |
 | Len                | len                | E       | Dbl                      |                 |                            | @1.0@ (neato), @0.3@ (fdp)                                               |                                 | fdp, neato only                                                  |
-| LevelsGap          | levelsgap          | G       | Dbl                      |                 | 0                          | @0.0@                                                                    |                                 | neato only                                                       |
 | Levels             | levels             | G       | Integ                    |                 | maxBound                   | @'maxBound'@                                                             | @0@                             | sfdp only                                                        |
+| LevelsGap          | levelsgap          | G       | Dbl                      |                 | 0.0                        | @0.0@                                                                    |                                 | neato only                                                       |
 | LHead              | lhead              | E       | Strng                    |                 | \"\"                       | @\\\"\\\"@                                                               |                                 | dot only                                                         |
 | LHeight            | LHeight            | GC      | Dbl                      |                 |                            |                                                                          |                                 | write only, requires Graphviz >= 2.28.0                          |
 | LPos               | lp                 | EGC     | Cust "Point"             |                 |                            |                                                                          |                                 | write only                                                       |

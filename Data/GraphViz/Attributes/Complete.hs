@@ -314,8 +314,8 @@ data Attribute
   | LayerSep LayerSep                   -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
   | Layout Text                         -- ^ /Valid for/: G; /Default/: @\"\"@
   | Len Double                          -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
-  | LevelsGap Double                    -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
   | Levels Int                          -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
+  | LevelsGap Double                    -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
   | LHead Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
   | LHeight Double                      -- ^ /Valid for/: GC; /Notes/: write only, requires Graphviz >= 2.28.0
   | LPos Point                          -- ^ /Valid for/: EGC; /Notes/: write only
@@ -475,8 +475,8 @@ instance PrintDot Attribute where
   unqtDot (LayerSep v)           = printField "layersep" v
   unqtDot (Layout v)             = printField "layout" v
   unqtDot (Len v)                = printField "len" v
-  unqtDot (LevelsGap v)          = printField "levelsgap" v
   unqtDot (Levels v)             = printField "levels" v
+  unqtDot (LevelsGap v)          = printField "levelsgap" v
   unqtDot (LHead v)              = printField "lhead" v
   unqtDot (LHeight v)            = printField "LHeight" v
   unqtDot (LPos v)               = printField "lp" v
@@ -762,8 +762,8 @@ usedByGraphs Landscape{}          = True
 usedByGraphs Layers{}             = True
 usedByGraphs LayerSep{}           = True
 usedByGraphs Layout{}             = True
-usedByGraphs LevelsGap{}          = True
 usedByGraphs Levels{}             = True
+usedByGraphs LevelsGap{}          = True
 usedByGraphs LHeight{}            = True
 usedByGraphs LPos{}               = True
 usedByGraphs LWidth{}             = True
@@ -1034,8 +1034,8 @@ sameAttribute Layers{}                Layers{}                = True
 sameAttribute LayerSep{}              LayerSep{}              = True
 sameAttribute Layout{}                Layout{}                = True
 sameAttribute Len{}                   Len{}                   = True
-sameAttribute LevelsGap{}             LevelsGap{}             = True
 sameAttribute Levels{}                Levels{}                = True
+sameAttribute LevelsGap{}             LevelsGap{}             = True
 sameAttribute LHead{}                 LHead{}                 = True
 sameAttribute LHeight{}               LHeight{}               = True
 sameAttribute LPos{}                  LPos{}                  = True
@@ -1181,8 +1181,8 @@ defaultAttributeValue Landscape{}          = Just $ Landscape False
 defaultAttributeValue Layers{}             = Just $ Layers (LL [])
 defaultAttributeValue LayerSep{}           = Just $ LayerSep (LSep " :\t")
 defaultAttributeValue Layout{}             = Just $ Layout ""
-defaultAttributeValue LevelsGap{}          = Just $ LevelsGap 0
 defaultAttributeValue Levels{}             = Just $ Levels maxBound
+defaultAttributeValue LevelsGap{}          = Just $ LevelsGap 0.0
 defaultAttributeValue LHead{}              = Just $ LHead ""
 defaultAttributeValue LTail{}              = Just $ LTail ""
 defaultAttributeValue MCLimit{}            = Just $ MCLimit 1.0
@@ -1324,8 +1324,8 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "layersep"
                , "layout"
                , "len"
-               , "levelsgap"
                , "levels"
+               , "levelsgap"
                , "lhead"
                , "LHeight"
                , "lp"
