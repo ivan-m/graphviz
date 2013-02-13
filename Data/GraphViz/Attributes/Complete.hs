@@ -260,7 +260,7 @@ data Attribute
   | Concentrate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | Constraint Bool                     -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
   | Decorate Bool                       -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(abs(V))@; /Minimum/: @epsilon@; /Notes/: neato only, only if @'Pack' 'DontPack'@
+  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(abs(V))@ (unable to statically define); /Minimum/: The value of 'Epsilon'.; /Notes/: neato only, only if @'Pack' 'DontPack'@
   | Dim Int                             -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
   | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: sfdp, fdp, neato only
   | Dir DirType                         -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
