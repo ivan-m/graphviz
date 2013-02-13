@@ -1549,14 +1549,14 @@ data GraphvizCommand = Dot       -- ^ For hierachical graphs (ideal for
                      deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot GraphvizCommand where
-  unqtDot Dot       = unqtText "dot"
-  unqtDot Neato     = unqtText "neato"
-  unqtDot TwoPi     = unqtText "twopi"
-  unqtDot Circo     = unqtText "circo"
-  unqtDot Fdp       = unqtText "fdp"
-  unqtDot Sfdp      = unqtText "sfdp"
-  unqtDot Osage     = unqtText "osage"
-  unqtDot Patchwork = unqtText "patchwork"
+  unqtDot Dot       = text "dot"
+  unqtDot Neato     = text "neato"
+  unqtDot TwoPi     = text "twopi"
+  unqtDot Circo     = text "circo"
+  unqtDot Fdp       = text "fdp"
+  unqtDot Sfdp      = text "sfdp"
+  unqtDot Osage     = text "osage"
+  unqtDot Patchwork = text "patchwork"
 
 instance ParseDot GraphvizCommand where
   parseUnqt = stringValue [ ("dot", Dot)
@@ -1665,15 +1665,15 @@ data ArrowShape = Box
                 deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot ArrowShape where
-  unqtDot Box      = unqtText "box"
-  unqtDot Crow     = unqtText "crow"
-  unqtDot Diamond  = unqtText "diamond"
-  unqtDot DotArrow = unqtText "dot"
-  unqtDot Inv      = unqtText "inv"
-  unqtDot NoArrow  = unqtText "none"
-  unqtDot Normal   = unqtText "normal"
-  unqtDot Tee      = unqtText "tee"
-  unqtDot Vee      = unqtText "vee"
+  unqtDot Box      = text "box"
+  unqtDot Crow     = text "crow"
+  unqtDot Diamond  = text "diamond"
+  unqtDot DotArrow = text "dot"
+  unqtDot Inv      = text "inv"
+  unqtDot NoArrow  = text "none"
+  unqtDot Normal   = text "normal"
+  unqtDot Tee      = text "tee"
+  unqtDot Vee      = text "vee"
 
 instance ParseDot ArrowShape where
   parseUnqt = stringValue [ ("box", Box)
@@ -1796,9 +1796,9 @@ data ClusterMode = Local
                  deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot ClusterMode where
-  unqtDot Local     = unqtText "local"
-  unqtDot Global    = unqtText "global"
-  unqtDot NoCluster = unqtText "none"
+  unqtDot Local     = text "local"
+  unqtDot Global    = text "global"
+  unqtDot NoCluster = text "none"
 
 instance ParseDot ClusterMode where
   parseUnqt = oneOf [ stringRep Local "local"
@@ -1818,10 +1818,10 @@ data DirType = Forward -- ^ Draw a directed edge with an arrow to the
              deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot DirType where
-  unqtDot Forward = unqtText "forward"
-  unqtDot Back    = unqtText "back"
-  unqtDot Both    = unqtText "both"
-  unqtDot NoDir   = unqtText "none"
+  unqtDot Forward = text "forward"
+  unqtDot Back    = text "back"
+  unqtDot Both    = text "both"
+  unqtDot NoDir   = text "none"
 
 instance ParseDot DirType where
   parseUnqt = oneOf [ stringRep Forward "forward"
