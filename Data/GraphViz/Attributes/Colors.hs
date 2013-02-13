@@ -212,7 +212,7 @@ instance PrintDot WeightedColor where
   listToDot wcs  = dquotes $ unqtListToDot wcs
 
 instance ParseDot WeightedColor where
-  parseUnqt = WC <$> parseUnqt <*> optional parseUnqt
+  parseUnqt = WC <$> parseUnqt <*> optional (character ';' *> parseUnqt)
 
   parse = quotedParse parseUnqt
           `onFail`
