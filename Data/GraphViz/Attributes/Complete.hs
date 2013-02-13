@@ -1142,6 +1142,7 @@ defaultAttributeValue DirEdgeConstraints{} = Just $ DirEdgeConstraints NoConstra
 defaultAttributeValue Distortion{}         = Just $ Distortion 0.0
 defaultAttributeValue DPI{}                = Just $ DPI 96.0
 defaultAttributeValue EdgeURL{}            = Just $ EdgeURL ""
+defaultAttributeValue EdgeTooltip{}        = Just $ EdgeTooltip ""
 defaultAttributeValue ESep{}               = Just $ ESep (DVal 3)
 defaultAttributeValue FillColor{}          = Just $ FillColor [X11Color Black]
 defaultAttributeValue FixedSize{}          = Just $ FixedSize False
