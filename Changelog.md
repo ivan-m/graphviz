@@ -7,7 +7,7 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
-Changes in 2999.15.0.2
+Changes in 2999.16.0.0
 ----------------------
 
 * Use temporary files rather than pipes when running dot, etc.
