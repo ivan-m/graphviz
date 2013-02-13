@@ -118,7 +118,9 @@ _aren't_ covered:
 * The global `orientation` attribute is not defined; however its
   behaviour is duplicated by the `rotate` attribute.
 
-* The deprecated `overlap` algorithms have not been defined.
+* The deprecated `overlap` algorithms have not been defined, and the
+  ability to specify an integer prefix for use with the `fdp` layout
+  tool is not available.
 
 * `pointf` and `point` values have been combined into one datatype; as
   such, when constructing values such as `Rect` care should be taken

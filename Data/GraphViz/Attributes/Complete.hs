@@ -57,7 +57,9 @@
    * Not every 'Attribute' is fully documented/described.  However,
      all those which have specific allowed values should be covered.
 
-   * Deprecated 'Overlap' algorithms are not defined.
+   * Deprecated 'Overlap' algorithms are not defined.  Furthermore,
+     the ability to specify an integer prefix for use with the fdp layout
+     is /not/ supported.
 
    * The global @Orientation@ attribute is not defined, as it is
      difficult to distinguish from the node-based 'Orientation'
@@ -2106,15 +2108,35 @@ instance ParseDot Point where
 
 -- -----------------------------------------------------------------------------
 
+-- | How to deal with node overlaps.
+--
+--   Defaults to 'KeepOverlaps' /except/ for fdp and sfdp.
+--
+--   The ability to specify the number of tries for fdp's initial
+--   force-directed technique is /not/ supported (by default, fdp uses
+--   @9@ passes of its in-built technique, and then @'PrismOverlap'
+--   Nothing@).
+--
+--   For sfdp, the default is @'PrismOverlap' (Just 0)@.
 data Overlap = KeepOverlaps
-             | ScaleOverlaps
-             | ScaleXYOverlaps
-             | PrismOverlap (Maybe Word16) -- ^ Only when sfdp is
-                                           --   available, @'Nothing'@
+             | ScaleOverlaps -- ^ Remove overlaps by uniformly scaling in x and y.
+             | ScaleXYOverlaps -- ^ Remove overlaps by separately scaling x and y.
+             | PrismOverlap (Maybe Word16) -- ^ Requires the Prism
+                                           --   library to be
+                                           --   available (if not,
+                                           --   this is equivalent to
+                                           --   'VoronoiOverlap'). @'Nothing'@
                                            --   is equivalent to
                                            --   @'Just' 1000@.
-             | CompressOverlap
-             | VpscOverlap
+                                           --   Influenced by
+                                           --   'OverlapScaling'.
+             | VoronoiOverlap -- ^ Requires Graphviz >= 2.30.0.
+             | CompressOverlap -- ^ Scale layout down as much as
+                               --   possible without introducing
+                               --   overlaps, assuming none to begin
+                               --   with.
+             | VpscOverlap -- ^ Uses quadratic optimization to
+                           --   minimize node displacement.
              | IpsepOverlap -- ^ Only when @mode == 'IpSep'@
              deriving (Eq, Ord, Show, Read)
 
@@ -2123,16 +2145,21 @@ instance PrintDot Overlap where
   unqtDot ScaleOverlaps    = text "scale"
   unqtDot ScaleXYOverlaps  = text "scalexy"
   unqtDot (PrismOverlap i) = maybe id (flip (<>) . unqtDot) i $ text "prism"
+  unqtDot VoronoiOverlap   = text "voronoi"
   unqtDot CompressOverlap  = text "compress"
   unqtDot VpscOverlap      = text "vpsc"
   unqtDot IpsepOverlap     = text "ipsep"
 
+-- | Note that @overlap=false@ defaults to @'PrismOverlap' Nothing@,
+--   but if the Prism library isn't available then it is equivalent to
+--   'VoronoiOverlap'.
 instance ParseDot Overlap where
   parseUnqt = oneOf [ stringRep KeepOverlaps "true"
                     , stringRep ScaleXYOverlaps "scalexy"
                     , stringRep ScaleOverlaps "scale"
                     , string "prism" *> fmap PrismOverlap (optional parse)
                     , stringRep (PrismOverlap Nothing) "false"
+                    , stringRep VoronoiOverlap "voronoi"
                     , stringRep CompressOverlap "compress"
                     , stringRep VpscOverlap "vpsc"
                     , stringRep IpsepOverlap "ipsep"

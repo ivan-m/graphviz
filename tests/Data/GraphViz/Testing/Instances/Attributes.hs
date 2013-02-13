@@ -500,6 +500,7 @@ instance Arbitrary Overlap where
       simpleOverlap = elements [ KeepOverlaps
                                , ScaleOverlaps
                                , ScaleXYOverlaps
+                               , VoronoiOverlap
                                , CompressOverlap
                                , VpscOverlap
                                , IpsepOverlap
