@@ -2258,7 +2258,7 @@ parseLayerListSep = do lls <- getLayerListSep
 --   'LRName' option, as they won't be parseable.
 data LayerID = AllLayers
              | LRInt Int
-             | LRName Text -- ^ Should not be a number of @"all"@.
+             | LRName Text -- ^ Should not be a number or @"all"@.
              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot LayerID where
@@ -2293,9 +2293,13 @@ checkLayerName str = maybe checkAll LRInt $ stringToInt str
                then AllLayers
                else LRName str
 
--- | A list of layer names.  The names should all be 'LRName' values,
---   and when printed will use an arbitrary character from
---   'defLayerSep'.
+-- Remember: this /must/ be a newtype as we can't use arbitrary
+-- LayerID values!
+
+-- | A list of layer names.  The names should all be unique 'LRName'
+--   values, and when printed will use an arbitrary character from
+--   'defLayerSep'.  The values in the list are implicitly numbered
+--   @1, 2, ...@.
 newtype LayerList = LL [LayerID]
                   deriving (Eq, Ord, Show, Read)
 
