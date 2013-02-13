@@ -68,10 +68,10 @@ instance Arbitrary Attribute where
                     , liftM ArrowTail arbitrary
                     , liftM Aspect arbitrary
                     , liftM BoundingBox arbitrary
-                    , liftM BgColor arbitrary
+                    , liftM BgColor arbList
                     , liftM Center arbitrary
                     , liftM ClusterRank arbitrary
-                    , liftM Color arbitrary
+                    , liftM Color arbList
                     , liftM ColorScheme arbitrary
                     , liftM Comment arbitrary
                     , liftM Compound arbitrary
@@ -90,7 +90,7 @@ instance Arbitrary Attribute where
                     , liftM EdgeTooltip arbitrary
                     , liftM Epsilon arbitrary
                     , liftM ESep arbitrary
-                    , liftM FillColor arbitrary
+                    , liftM FillColor arbList
                     , liftM FixedSize arbitrary
                     , liftM FontColor arbitrary
                     , liftM FontName arbitrary

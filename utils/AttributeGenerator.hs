@@ -320,9 +320,10 @@ validUnknownFunc att = cmnt $$ asRows [tpSig, def] $$ whClause
                 . concatMap parseNames
                 $ atts att
 
-arbitraryFor                :: VType -> Doc
-arbitraryFor (Cust ('[':_)) = text "arbList"
-arbitraryFor _              = text "arbitrary"
+arbitraryFor :: VType -> Doc
+arbitraryFor (Cust ('[':_))     = text "arbList"
+arbitraryFor (Cust "ColorList") = text "arbList"
+arbitraryFor _                  = text "arbitrary"
 
 arbitraryFor' :: Attribute -> Doc
 arbitraryFor' = arbitraryFor . valtype
