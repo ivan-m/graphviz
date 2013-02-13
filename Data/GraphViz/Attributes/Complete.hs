@@ -1814,11 +1814,12 @@ instance PrintDot DPoint where
   toDot (PVal p) = printPoint2D p
 
 instance ParseDot DPoint where
-  parseUnqt = fmap PVal parsePoint2D
-              `onFail`
-              fmap DVal parseUnqt
+  parseUnqt = optional (character '+')
+              *> oneOf [ PVal <$> parsePoint2D
+                       , DVal <$> parseUnqt
+                       ]
 
-  parse = quotedParse parseUnqt
+  parse = quotedParse parseUnqt -- A `+' would need to be quoted.
           `onFail`
           fmap DVal parseUnqt
 
