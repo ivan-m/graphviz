@@ -472,7 +472,7 @@ attributes = [
   makeAttr "Aspect" ["aspect"] "G" (Cust "AspectType") Nothing Nothing Nothing Nothing (Just "dot only"),
   makeAttr "BoundingBox" ["bb"] "G" (Cust "Rect") Nothing Nothing Nothing Nothing (Just "write only"),
   makeAttr "ColorScheme" ["colorscheme"] "ENCG" (Cust "ColorScheme") Nothing (Just "X11") (Just "@'X11'@") Nothing Nothing,
-  makeAttr "BgColor" ["bgcolor"] "GC" (Cust "[Color]") Nothing (Just "[X11Color Transparent]") (Just "@['X11Color' 'Transparent']@") Nothing Nothing,
+  makeAttr "BgColor" ["bgcolor"] "GC" (Cust "[Color]") Nothing (Just "[]") (Just "@[]@") Nothing Nothing,
   makeAttr "Center" ["center"] "G" (Bl) (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing,
   makeAttr "ClusterRank" ["clusterrank"] "G" (Cust "ClusterMode") Nothing (Just "Local") (Just "@'Local'@") Nothing (Just "dot only"),
   makeAttr "Color" ["color"] "ENC" (Cust "[Color]") Nothing (Just "[X11Color Black]") (Just "@['X11Color' 'Black']@") Nothing Nothing,
@@ -653,7 +653,7 @@ This way, you can more easily edit/update the appropriate values.
 | Aspect             | aspect             | G       | Cust "AspectType"        |                 |                            |                                                                          |                                 | dot only                                                         |
 | BoundingBox        | bb                 | G       | Cust "Rect"              |                 |                            |                                                                          |                                 | write only                                                       |
 | ColorScheme        | colorscheme        | ENCG    | Cust "ColorScheme"       |                 | X11                        | @'X11'@                                                                  |                                 |                                                                  |
-| BgColor            | bgcolor            | GC      | Cust "[Color]"           |                 | [X11Color Transparent]     | @['X11Color' 'Transparent']@                                             |                                 |                                                                  |
+| BgColor            | bgcolor            | GC      | Cust "[Color]"           |                 | []                         | @[]@                                                                     |                                 |                                                                  |
 | Center             | center             | G       | Bl                       | True            | False                      | @'False'@                                                                |                                 |                                                                  |
 | ClusterRank        | clusterrank        | G       | Cust "ClusterMode"       |                 | Local                      | @'Local'@                                                                |                                 | dot only                                                         |
 | Color              | color              | ENC     | Cust "[Color]"           |                 | [X11Color Black]           | @['X11Color' 'Black']@                                                   |                                 |                                                                  |

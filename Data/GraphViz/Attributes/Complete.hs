@@ -184,7 +184,7 @@ module Data.GraphViz.Attributes.Complete
        ) where
 
 import Data.GraphViz.Attributes.Colors
-import Data.GraphViz.Attributes.Colors.X11(X11Color(Transparent, Black))
+import Data.GraphViz.Attributes.Colors.X11(X11Color(Black))
 import qualified Data.GraphViz.Attributes.HTML as Html
 import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Util
@@ -251,7 +251,7 @@ data Attribute
   | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
   | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
   | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
-  | BgColor [Color]                     -- ^ /Valid for/: GC; /Default/: @['X11Color' 'Transparent']@
+  | BgColor [Color]                     -- ^ /Valid for/: GC; /Default/: @[]@
   | Center Bool                         -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
   | ClusterRank ClusterMode             -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
   | Color [Color]                       -- ^ /Valid for/: ENC; /Default/: @['X11Color' 'Black']@
@@ -1125,8 +1125,7 @@ defaultAttributeValue URL{}                = Just $ URL ""
 defaultAttributeValue ArrowHead{}          = Just $ ArrowHead normal
 defaultAttributeValue ArrowSize{}          = Just $ ArrowSize 1
 defaultAttributeValue ArrowTail{}          = Just $ ArrowTail normal
-defaultAttributeValue ColorScheme{}        = Just $ ColorScheme X11
-defaultAttributeValue BgColor{}            = Just $ BgColor [X11Color Transparent]
+defaultAttributeValue BgColor{}            = Just $ BgColor []
 defaultAttributeValue Center{}             = Just $ Center False
 defaultAttributeValue ClusterRank{}        = Just $ ClusterRank Local
 defaultAttributeValue Color{}              = Just $ Color [X11Color Black]
