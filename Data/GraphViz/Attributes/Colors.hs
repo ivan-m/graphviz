@@ -24,7 +24,12 @@ module Data.GraphViz.Attributes.Colors
          ColorScheme(..)
          -- * Colors
        , Color(..)
+       , ColorList
+       , WeightedColor(..)
+       , toWC
+       , toColorList
        , NamedColor(toColor)
+       , toWColor
          -- * Conversion to\/from @Colour@.
        , toColour
        , fromColour
@@ -175,6 +180,61 @@ instance ParseDot Color where
                  failBad $ "Error parsing list of Colors with color scheme of "
                            ++ show cs
 
+-- | The sum of the optional weightings /must/ sum to at most @1@.
+type ColorList = [WeightedColor]
+
+-- | A 'Color' tagged with an optional weighting.
+data WeightedColor = WC { wColor :: Color
+                          -- | Must be in range @0 <= W <= 1@.
+                        , weighting :: Maybe Double
+                        }
+                   deriving (Eq, Ord, Show, Read)
+
+-- | For colors without weightings.
+toWC :: Color -> WeightedColor
+toWC = (`WC` Nothing)
+
+-- | For a list of colors without weightings.
+toColorList :: [Color] -> ColorList
+toColorList = map toWC
+
+instance PrintDot WeightedColor where
+  unqtDot (WC c mw) = unqtDot c
+                      <> maybe empty ((semi<>) . unqtDot) mw
+
+  toDot (WC c Nothing) = toDot c
+  toDot wc             = dquotes $ unqtDot wc
+
+  unqtListToDot = hcat . punctuate colon . mapM unqtDot
+
+  -- Might not need quoting
+  listToDot [wc] = toDot wc
+  listToDot wcs  = dquotes $ unqtListToDot wcs
+
+instance ParseDot WeightedColor where
+  parseUnqt = WC <$> parseUnqt <*> optional parseUnqt
+
+  parse = quotedParse parseUnqt
+          `onFail`
+          -- Using parse rather than parseUnqt as there shouldn't be
+          -- any quotes, but to avoid copy-pasting the oneOf block.
+          (toWC <$> parse)
+
+  parseUnqtList = sepBy1 parseUnqt (character ':')
+                  `onFail`
+                  do cs <- getColorScheme
+                     failBad $ "Error parsing a ColorList with color scheme of "
+                               ++ show cs
+
+  parseList = ((:[]) . toWC <$> parse)
+              -- Potentially unquoted un-weighted single color
+              `onFail`
+              quotedParse parseUnqtList
+              `onFail`
+              do cs <- getColorScheme
+                 failBad $ "Error parsing ColorList with color scheme of "
+                           ++ show cs
+
 -- -----------------------------------------------------------------------------
 
 -- | More easily convert named colors to an overall 'Color' value.
@@ -187,6 +247,9 @@ class NamedColor nc where
 
     -- | Bool is for whether quoting is needed.
     parseNC' :: Bool -> Parse nc
+
+toWColor :: (NamedColor nc) => nc -> WeightedColor
+toWColor = toWC . toColor
 
 -- First value just used for type
 parseNC :: (NamedColor nc) => nc -> Bool -> Parse Color

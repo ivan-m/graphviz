@@ -796,6 +796,15 @@ instance Arbitrary Color where
   shrink (BrewerColor c) = map BrewerColor $ shrink c
   shrink _               = [] -- Shrinking 0<=h,s,v<=1 does nothing
 
+-- | No guarantees are made as to sanity of generated weightings.
+instance Arbitrary WeightedColor where
+  arbitrary = liftM2 WC arbitrary arbitrary
+
+  -- No color shrinks to itself, so no sanity checking needed.
+  shrink (WC c mw) = do c' <- shrink c
+                        mw' <- shrink mw
+                        return $ WC c' mw'
+
 instance Arbitrary X11Color where
   arbitrary = arbBounded
 

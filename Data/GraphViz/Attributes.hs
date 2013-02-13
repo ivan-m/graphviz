@@ -226,24 +226,24 @@ instance Labellable (PortName, EscString) where
 --   clusters, if @'style' 'filled'@ is used, then 'fillColor' will
 --   override it.
 bgColor :: (NamedColor nc) => nc -> Attribute
-bgColor = BgColor . (:[]) . toColor
+bgColor = BgColor . toColorList . (:[]) . toColor
 
 -- | As with 'bgColor', but add a second color to create a gradient
 --   effect.  Requires Graphviz >= 2.29.0.
 bgColors       :: (NamedColor nc) => nc -> nc -> Attribute
-bgColors c1 c2 = BgColor $ map toColor [c1,c2]
+bgColors c1 c2 = BgColor . toColorList $ map toColor [c1,c2]
 
 -- | Specify the fill color of a node, cluster or arrowhead.  Requires
 --   @'style' 'filled'@ for nodes and clusters.  For nodes and edges,
 --   if this isn't set then the 'color' value is used instead; for
 --   clusters, 'bgColor' is used.
 fillColor :: (NamedColor nc) => nc -> Attribute
-fillColor = FillColor . (:[]) . toColor
+fillColor = FillColor . toColorList . (:[]) . toColor
 
 -- | As with 'fillColor', but add a second color to create a gradient
 --   effect.  Requires Graphviz >= 2.29.0.
 fillColors       :: (NamedColor nc) => nc -> nc -> Attribute
-fillColors c1 c2 = FillColor $ map toColor [c1,c2]
+fillColors c1 c2 = FillColor . toColorList $ map toColor [c1,c2]
 
 -- | Specify the color of text.
 fontColor :: (NamedColor nc) => nc -> Attribute
@@ -267,7 +267,7 @@ penColor = PenColor . toColor
 --     background color of nodes and clusters unless 'fillColor' or
 --     'bgColor' respectively is set.
 color :: (NamedColor nc) => nc -> Attribute
-color = Color . (:[]) . toColor
+color = Color . toColorList . (:[]) . toColor
 
 -- -----------------------------------------------------------------------------
 
