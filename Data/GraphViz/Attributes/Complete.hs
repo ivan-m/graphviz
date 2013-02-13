@@ -172,7 +172,9 @@ module Data.GraphViz.Attributes.Complete
 
          -- ** Layers
        , LayerSep(..)
-       , LayerRange(..)
+       , LayerListSep(..)
+       , LayerRange
+       , LayerRangeElem(..)
        , LayerID(..)
        , LayerList(..)
 
@@ -190,7 +192,7 @@ import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
-import Data.GraphViz.State(getLayerSep, setLayerSep)
+import Data.GraphViz.State(getLayerSep, setLayerSep, getLayerListSep, setLayerListSep)
 import Data.GraphViz.Exception(GraphvizException(NotCustomAttr), throw)
 
 import Data.List(partition, intercalate)
@@ -2154,11 +2156,30 @@ instance ParseDot LayerSep where
              setLayerSep $ T.unpack ls
              return $ LSep ls
 
-data LayerRange = LRID LayerID
-                | LRS LayerID LayerID
-                deriving (Eq, Ord, Show, Read)
+newtype LayerListSep = LLSep Text
+                     deriving (Eq, Ord, Show, Read)
 
-instance PrintDot LayerRange where
+instance PrintDot LayerListSep where
+  unqtDot (LLSep ls) = setLayerListSep (T.unpack ls) *> unqtDot ls
+
+  toDot (LLSep ls) = setLayerListSep (T.unpack ls) *> toDot ls
+
+instance ParseDot LayerListSep where
+  parseUnqt = do ls <- parseUnqt
+                 setLayerListSep $ T.unpack ls
+                 return $ LLSep ls
+
+  parse = do ls <- parse
+             setLayerListSep $ T.unpack ls
+             return $ LLSep ls
+
+type LayerRange = [LayerRangeElem]
+
+data LayerRangeElem = LRID LayerID
+                    | LRS LayerID LayerID
+                    deriving (Eq, Ord, Show, Read)
+
+instance PrintDot LayerRangeElem where
   unqtDot (LRID lid)    = unqtDot lid
   unqtDot (LRS id1 id2) = do ls <- getLayerSep
                              let s = unqtDot $ head ls
@@ -2167,27 +2188,43 @@ instance PrintDot LayerRange where
   toDot (LRID lid) = toDot lid
   toDot lrs        = dquotes $ unqtDot lrs
 
-instance ParseDot LayerRange where
+  unqtListToDot lr = do lls <- getLayerListSep
+                        let s = unqtDot $ head lls
+                        hcat . punctuate s $ mapM unqtDot lr
+
+  listToDot [lre] = toDot lre
+  listToDot lrs   = dquotes $ unqtListToDot lrs
+
+instance ParseDot LayerRangeElem where
   parseUnqt = ignoreSep LRS parseUnqt parseLayerSep parseUnqt
               `onFail`
               fmap LRID parseUnqt
 
-
   parse = quotedParse (ignoreSep LRS parseUnqt parseLayerSep parseUnqt)
           `onFail`
           fmap LRID parse
+
+  parseUnqtList = sepBy parseUnqt parseLayerListSep
+
+  parseList = quotedParse parseUnqtList
+              `onFail`
+              fmap ((:[]) . LRID) parse
 
 parseLayerSep :: Parse ()
 parseLayerSep = do ls <- getLayerSep
                    many1Satisfy (`elem` ls) *> return ()
 
 parseLayerName :: Parse Text
-parseLayerName = parseEscaped False [] =<< getLayerSep
+parseLayerName = parseEscaped False [] =<< liftA2 (++) getLayerSep getLayerListSep
 
 parseLayerName' :: Parse Text
 parseLayerName' = stringBlock
                   `onFail`
                   quotedParse parseLayerName
+
+parseLayerListSep :: Parse ()
+parseLayerListSep = do lls <- getLayerListSep
+                       many1Satisfy (`elem` lls) *> return ()
 
 -- | You should not have any layer separator characters for the
 --   'LRName' option, as they won't be parseable.

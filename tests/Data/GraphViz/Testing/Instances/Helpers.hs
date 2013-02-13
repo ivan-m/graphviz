@@ -12,7 +12,7 @@
 module Data.GraphViz.Testing.Instances.Helpers where
 
 import Data.GraphViz.Parsing(isNumString)
-import Data.GraphViz.State(initialState, layerSep)
+import Data.GraphViz.State(initialState, layerSep, layerListSep)
 
 import Test.QuickCheck
 
@@ -74,7 +74,7 @@ arbBounded = elements [minBound .. maxBound]
 arbLayerName :: Gen Text
 arbLayerName = suchThat arbitrary (T.all notLayerSep)
   where
-    defLayerSep = layerSep initialState
+    defLayerSep = layerSep initialState ++ layerListSep initialState
     notLayerSep = (`notElem` defLayerSep)
 
 arbStyleName :: Gen Text

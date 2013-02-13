@@ -25,7 +25,7 @@ import Data.GraphViz.Attributes.Colors.Brewer
 import Data.GraphViz.Attributes.Colors.X11(X11Color)
 import Data.GraphViz.Attributes.Colors.SVG(SVGColor)
 import Data.GraphViz.Attributes.Internal(compassLookup)
-import Data.GraphViz.State(initialState, layerSep)
+import Data.GraphViz.State(initialState, layerSep, layerListSep)
 import Data.GraphViz.Util(bool)
 
 import Test.QuickCheck
@@ -513,6 +513,11 @@ instance Arbitrary LayerSep where
   -- one because of arbLayerName
   arbitrary = return . LSep . T.pack $ layerSep initialState
 
+instance Arbitrary LayerListSep where
+  -- Since Arbitrary isn't stateful, we can't generate an arbitrary
+  -- one because of arbLayerName
+  arbitrary = return . LLSep . T.pack $ layerListSep initialState
+
 instance Arbitrary LayerList where
   arbitrary = liftM LL $ listOf1 arbName
     where
@@ -523,7 +528,7 @@ instance Arbitrary LayerList where
 
   shrink (LL ll) = map LL $ nonEmptyShrinks ll
 
-instance Arbitrary LayerRange where
+instance Arbitrary LayerRangeElem where
   arbitrary = oneof [ liftM LRID arbitrary
                     , liftM2 LRS arbitrary arbitrary
                     ]

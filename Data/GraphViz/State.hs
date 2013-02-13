@@ -21,6 +21,8 @@ module Data.GraphViz.State
        , getDirectedness
        , setLayerSep
        , getLayerSep
+       , setLayerListSep
+       , getLayerListSep
        , setColorScheme
        , getColorScheme
        ) where
@@ -57,6 +59,7 @@ data AttributeType = GraphAttribute
 -- | Several aspects of Dot code are either global or mutable state.
 data GraphvizState = GS { directedEdges :: !Bool
                         , layerSep      :: [Char]
+                        , layerListSep  :: [Char]
                         , attributeType :: !AttributeType
                         , graphColor    :: !ColorScheme
                         , clusterColor  :: !ColorScheme
@@ -68,6 +71,7 @@ data GraphvizState = GS { directedEdges :: !Bool
 initialState :: GraphvizState
 initialState = GS { directedEdges = True
                   , layerSep      = defLayerSep
+                  , layerListSep  = defLayerListSep
                   , attributeType = GraphAttribute
                   , graphColor    = X11
                   , clusterColor  = X11
@@ -93,6 +97,12 @@ setLayerSep sep = modifyGS (\ gs -> gs { layerSep = sep } )
 getLayerSep :: (GraphvizStateM m) => m [Char]
 getLayerSep = getsGS layerSep
 
+setLayerListSep     :: (GraphvizStateM m) => [Char] -> m ()
+setLayerListSep sep = modifyGS (\ gs -> gs { layerListSep = sep } )
+
+getLayerListSep :: (GraphvizStateM m) => m [Char]
+getLayerListSep = getsGS layerListSep
+
 setColorScheme    :: (GraphvizStateM m) => ColorScheme -> m ()
 setColorScheme cs = do tp <- getsGS attributeType
                        modifyGS $ \gs -> case tp of
@@ -116,3 +126,7 @@ getColorScheme = do tp <- getsGS attributeType
 -- | The default separators for 'LayerSep'.
 defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
+
+-- | The default separators for 'LayerListSep'.
+defLayerListSep :: [Char]
+defLayerListSep = [',']
