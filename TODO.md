@@ -18,6 +18,11 @@ Short term
 * Add nicer syntax for record labels, and specifying ports in Monadic
   Dot graphs.
 
+* Add support for custom shapes; in particular, a nice way of
+  re-defining the `Shape` datatype (as just adding a non-nullary
+  constructor would make it unwieldy to make sure tests, etc. were
+  kept up-to-date).
+
 * Define new classes to distinguish between printing/parsing Attribute
   values and other values (as only the former requires quoted
   variants).
