@@ -182,7 +182,7 @@ data Context n = Cntxt { node         :: !n
                deriving (Eq, Ord, Show, Read)
 
 adjacent :: Context n -> [DotEdge n]
-adjacent c = mapU (flip DotEdge n) (predecessors c)
+adjacent c = mapU (`DotEdge` n) (predecessors c)
              ++ mapU (DotEdge n) (successors c)
   where
     n = node c
@@ -312,7 +312,7 @@ addCluster c mp gas dg
 
 -- Used to make sure that the parent cluster exists
 addEmptyCluster :: Maybe GraphID -> DotGraph n -> DotGraph n
-addEmptyCluster = maybe id (withClusters . flip dontReplace defCI)
+addEmptyCluster = maybe id (withClusters . (`dontReplace` defCI))
   where
     dontReplace = M.insertWith (const id)
     defCI = CI Nothing emptyGA
@@ -335,7 +335,7 @@ setClusterAttributes c gas = withClusters (M.adjust setAs c)
 
 -- | Create a graph with no clusters.
 mkGraph :: (Ord n) => [DotNode n] -> [DotEdge n] -> DotGraph n
-mkGraph ns es = flip (foldl' (flip addDotEdge)) es
+mkGraph ns es = flip (foldl' $ flip addDotEdge) es
                 $ foldl' (flip addDotNode) emptyGraph ns
 
 -- | Convert this DotGraph into canonical form.  All edges are found
@@ -506,7 +506,7 @@ attributesOf dg n = _attributes $ values dg M.! n
 --   equivalent to 'adjacentTo'.
 predecessorsOf :: (Ord n) => DotGraph n -> n -> [DotEdge n]
 predecessorsOf dg t
-  | directedGraph dg = emToDE (flip DotEdge t)
+  | directedGraph dg = emToDE (`DotEdge` t)
                        . _predecessors $ values dg M.! t
   | otherwise        = adjacentTo dg t
 
@@ -524,7 +524,7 @@ adjacentTo dg n = sucs ++ preds
   where
     ni = values dg M.! n
     sucs = emToDE (DotEdge n) $ _successors ni
-    preds = emToDE (flip DotEdge n) $ n `M.delete` _predecessors ni
+    preds = emToDE (`DotEdge` n) $ n `M.delete` _predecessors ni
 
 emToDE :: (Ord n) => (n -> Attributes -> DotEdge n)
           -> EdgeMap n -> [DotEdge n]
@@ -578,7 +578,7 @@ instance (Ord n, ParseDot n) => ParseDot (DotGraph n) where
   parseUnqt = fromGDot <$> parseUnqt
     where
       -- fromGDot :: G.DotGraph n -> DotGraph n
-      fromGDot = fromDotRepr . flip asTypeOf (undefined :: G.DotGraph n)
+      fromGDot = fromDotRepr . (`asTypeOf` (undefined :: G.DotGraph n))
 
   parse = parseUnqt -- Don't want the option of quoting
 
@@ -699,7 +699,7 @@ getNodeInfo withGlob dg = M.map toLookup ns
         as = _attributes ni
         mp = _inCluster ni
         pth = fromMaybe Seq.empty $ mp `M.lookup` pM
-        pAs = fromMaybe gGlob $ flip M.lookup aM =<< mp
+        pAs = fromMaybe gGlob $ (`M.lookup` aM) =<< mp
         as' | withGlob  = unSame $ toSAttr as `S.union` pAs
             | otherwise = as
 
@@ -732,7 +732,7 @@ globAttrMap af dg = (gGlob, aM)
       where
         as = af $ clusterAttrs ci
         p = parentCluster ci
-        pAs = fromMaybe gGlob $ flip M.lookup aM =<< p
+        pAs = fromMaybe gGlob $ (`M.lookup` aM) =<< p
 
 clusterPath :: DotGraph n -> Map (Maybe GraphID) St.Path
 clusterPath = M.mapKeysMonotonic Just . M.map (fmap Just) . clusterPath'
@@ -747,7 +747,7 @@ clusterPath' dg = pM
     pathOf c ci = pPth Seq.|> c
       where
         mp = parentCluster ci
-        pPth = fromMaybe Seq.empty $ flip M.lookup pM =<< mp
+        pPth = fromMaybe Seq.empty $ (`M.lookup` pM) =<< mp
 
 -- -----------------------------------------------------------------------------
 

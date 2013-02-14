@@ -57,7 +57,7 @@ import Control.Concurrent(MVar, forkIO, newEmptyMVar, putMVar, takeMVar)
 --   (i.e. more compact than the output of 'renderDot').
 renderCompactDot :: (PrintDotRepr dg n) => dg n -> Text
 renderCompactDot = displayT . renderOneLine
-                   . flip evalState initialState
+                   . (`evalState` initialState)
                    . toDot
 
 -- -----------------------------------------------------------------------------

@@ -195,7 +195,7 @@ node n = tellStmt . MN . DotNode n
 
 -- | Add a node with no attributes to the graph.
 node' :: n -> Dot n
-node' = flip node []
+node' = (`node` [])
 
 -- -----------------------------------------------------------------------------
 -- Edges
@@ -217,4 +217,3 @@ infixr 9 -->
 infixr 9 <->
 
 -- -----------------------------------------------------------------------------
-

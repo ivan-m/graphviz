@@ -1469,7 +1469,7 @@ parseFields   :: (ParseDot a) => (a -> Attribute) -> [String]
 parseFields c = concatMap (parseField c)
 
 parseFieldBool :: (Bool -> Attribute) -> String -> [(String, Parse Attribute)]
-parseFieldBool = flip parseFieldDef True
+parseFieldBool = (`parseFieldDef` True)
 
 -- | For 'Bool'-like data structures where the presence of the field
 --   name without a value implies a default value.
@@ -1495,7 +1495,7 @@ liftEqParse k c = parseEq
                          ++ "\n\t") ++)
                      )
   where
-    hasDef p = maybe p (onFail p . flip stringRep "\"\"")
+    hasDef p = maybe p (onFail p . (`stringRep` "\"\""))
                . defaultAttributeValue $ c undefined
 
 -- -----------------------------------------------------------------------------
@@ -2477,13 +2477,13 @@ instance PrintDot PackMode where
     where
       addNum = maybe id (flip (<>) . unqtDot) mi
       isUnder = if c || u
-                then flip (<>) $ char '_'
+                then (<> char '_')
                 else id
       isC = if c
-            then flip (<>) $ char 'c'
+            then (<> char 'c')
             else id
       isU = if u
-            then flip (<>) $ char 'u'
+            then (<> char 'u')
             else id
 
 instance ParseDot PackMode where
@@ -2500,7 +2500,7 @@ instance ParseDot PackMode where
     where
       hasCharacter ms c = maybe False (elem c) ms
       -- Also checks and removes quote characters
-      isCU = flip elem ['c', 'u']
+      isCU = (`elem` ['c', 'u'])
 
 -- -----------------------------------------------------------------------------
 
@@ -2990,7 +2990,7 @@ instance ParseDot StyleItem where
 
   parse = quotedParse (liftA2 SItem parseUnqt parseArgs)
           `onFail`
-          fmap (flip SItem []) parse
+          fmap (`SItem` []) parse
 
   parseUnqtList = sepBy1 parseUnqt parseComma
 
@@ -3081,7 +3081,7 @@ instance PrintDot ViewPort where
                $ focus vp
     where
       vs = hcat . punctuate comma
-           $ mapM (unqtDot . flip ($) vp) [wVal, hVal, zVal]
+           $ mapM (unqtDot . ($vp)) [wVal, hVal, zVal]
 
   toDot = dquotes . unqtDot
 

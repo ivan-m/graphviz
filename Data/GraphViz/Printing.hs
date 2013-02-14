@@ -102,7 +102,7 @@ instance Show DotCode where
 -- | Correctly render Graphviz output.
 renderDot :: DotCode -> Text
 renderDot = PP.displayT . PP.renderPretty 0.4 80
-            . flip evalState initialState
+            . (`evalState` initialState)
 
 -- | A class used to correctly print parts of the Graphviz Dot language.
 --   Minimal implementation is 'unqtDot'.

@@ -269,7 +269,7 @@ instance ParseDot Cell where
               `adjustErr`
               ("Can't parse Html.Cell\n\t"++)
     where
-      parseCell = flip parseTag "TD"
+      parseCell = (`parseTag` "TD")
 
   parse = parseUnqt
 
@@ -577,7 +577,7 @@ htmlEscapes = [ ('"', "quot")
 htmlUnescapes :: [(T.Text, Char)]
 htmlUnescapes = maybeEscaped
                 ++
-                map (uncurry (flip (,))) htmlEscapes
+                map (uncurry $ flip (,)) htmlEscapes
   where
     maybeEscaped = [("nbsp", ' '), ("apos", '\'')]
 
@@ -628,7 +628,7 @@ parseTag c t pv = c <$> parseAngled openingTag
                  <* whitespace
 
 parseFontTag :: (Attributes -> val -> tag) -> Parse val -> Parse tag
-parseFontTag = flip parseTag "FONT"
+parseFontTag = (`parseTag` "FONT")
 
 -- Should this just be specialised for tagName ~ Format ?
 

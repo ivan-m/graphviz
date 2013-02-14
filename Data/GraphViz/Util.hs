@@ -128,7 +128,7 @@ descapeQuotes ('\\':'"':str) = '"' : descapeQuotes str
 descapeQuotes (c:str)        = c : descapeQuotes str
 
 isKeyword :: Text -> Bool
-isKeyword = flip Set.member keywords . T.toLower
+isKeyword = (`Set.member` keywords) . T.toLower
 
 -- | The following are Dot keywords and are not valid as labels, etc. unquoted.
 keywords :: Set Text

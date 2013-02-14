@@ -121,7 +121,7 @@ type ClusterInfo = (DList Path, SAttrs)
 
 getGraphInfo :: GraphState a -> (GlobalAttributes, ClusterLookup)
 getGraphInfo = ((graphGlobal . globalAttrs) &&& (convert . value))
-               . flip execState initState
+               . (`execState` initState)
   where
     convert = Map.map ((uniq . DList.toList) *** toGlobal)
     toGlobal = GraphAttrs . filter usedByClusters . unSame
@@ -172,7 +172,7 @@ toDotNodes :: (Ord n) => NodeLookup n -> [DotNode n]
 toDotNodes = map (\(n,(_,as)) -> DotNode n as) . Map.assocs
 
 getNodeLookup       :: (Ord n) => Bool -> NodeState n a -> NodeLookup n
-getNodeLookup addGs = Map.map combine . value . flip execState initState
+getNodeLookup addGs = Map.map combine . value . (`execState` initState)
   where
     initState = SV Set.empty addGs Seq.empty Map.empty
     combine ni = (location ni, unSame $ atts ni `Set.union` gAtts ni)
@@ -230,7 +230,7 @@ addEdgeNodes (DotEdge f t _) = do gas <- getGlobals
 type EdgeState n a = GVState (DList (DotEdge n)) a
 
 getDotEdges       :: Bool -> EdgeState n a -> [DotEdge n]
-getDotEdges addGs = DList.toList . value . flip execState initState
+getDotEdges addGs = DList.toList . value . (`execState` initState)
   where
     initState = SV Set.empty addGs Seq.empty DList.empty
 
@@ -242,4 +242,4 @@ addEdge :: DotEdge n -> EdgeState n ()
 addEdge de@DotEdge{edgeAttributes = as}
   = do gas <- getGlobals
        let de' = de { edgeAttributes = unSame $ unionWith gas as }
-       modifyValue $ flip DList.snoc de'
+       modifyValue $ (`DList.snoc` de')

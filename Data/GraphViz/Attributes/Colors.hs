@@ -253,7 +253,7 @@ toWColor = toWC . toColor
 
 -- First value just used for type
 parseNC :: (NamedColor nc) => nc -> Bool -> Parse Color
-parseNC nc q = fmap (toColor . flip asTypeOf nc)
+parseNC nc q = fmap (toColor . (`asTypeOf` nc))
                $ parseNC' q
 
 instance NamedColor BrewerColor where

@@ -311,7 +311,7 @@ renumber dg = dg { graphStatements = newStmts }
 
 maxSGInt    :: DotGraph n -> Int
 maxSGInt dg = execState (stsInt $ graphStatements dg)
-              . flip check 0
+              . (`check` 0)
               $ graphID dg
   where
     check = maybe id max . (numericValue =<<)

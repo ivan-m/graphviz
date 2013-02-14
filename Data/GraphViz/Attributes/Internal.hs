@@ -88,7 +88,7 @@ instance ParseDot PortPos where
 
 checkPortName    :: PortName -> PortPos
 checkPortName pn = maybe (LabelledPort pn Nothing) CompassPoint
-                   . flip Map.lookup compassLookup
+                   . (`Map.lookup` compassLookup)
                    $ portName pn
 
 -- | When attached to a node in a DotEdge definition, the 'PortName'
