@@ -3011,13 +3011,17 @@ data StyleName = Dashed    -- ^ Nodes and Edges
                | Bold      -- ^ Nodes and Edges
                | Invisible -- ^ Nodes and Edges
                | Filled    -- ^ Nodes and Clusters
+               | Striped   -- ^ Rectangularly-shaped Nodes and
+                           --   Clusters; requires Graphviz >= 2.30.0
+               | Wedged    -- ^ Elliptically-shaped Nodes only;
+                           --   requires Graphviz >= 2.30.0
                | Diagonals -- ^ Nodes only
                | Rounded   -- ^ Nodes and Clusters
                | Tapered   -- ^ Edges only; requires Graphviz >=
-                           --   2.29.0.
+                           --   2.29.0
                | Radial    -- ^ Nodes, Clusters and Graphs, for use
                            --   with 'GradientAngle'; requires
-                           --   Graphviz >= 2.29.0.
+                           --   Graphviz >= 2.29.0
                | DD Text   -- ^ Device Dependent
                deriving (Eq, Ord, Show, Read)
 
@@ -3028,6 +3032,8 @@ instance PrintDot StyleName where
   unqtDot Bold      = text "bold"
   unqtDot Invisible = text "invis"
   unqtDot Filled    = text "filled"
+  unqtDot Striped   = text "striped"
+  unqtDot Wedged    = text "wedged"
   unqtDot Diagonals = text "diagonals"
   unqtDot Rounded   = text "rounded"
   unqtDot Tapered   = text "tapered"
@@ -3052,6 +3058,8 @@ checkDD str = case T.toLower str of
                 "bold"      -> Bold
                 "invis"     -> Invisible
                 "filled"    -> Filled
+                "striped"   -> Striped
+                "wedged"    -> Wedged
                 "diagonals" -> Diagonals
                 "rounded"   -> Rounded
                 "tapered"   -> Tapered

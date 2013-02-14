@@ -54,6 +54,8 @@ module Data.GraphViz.Attributes
        , invis
        , filled
        , diagonals
+       , striped
+       , wedged
        , rounded
        , tapered
        , radial
@@ -319,6 +321,16 @@ rounded = SItem Rounded []
 -- | Only available for nodes.
 diagonals :: Style
 diagonals = SItem Diagonals []
+
+-- | Only available for rectangularly-shaped nodes and
+--   clusters.  Requires Graphviz >= 2.30.0.
+striped :: Style
+striped = SItem Striped []
+
+-- | Only available for elliptically-shaped nodes.  Requires Graphviz
+--   >= 2.30.0.
+wedged :: Style
+wedged = SItem Wedged []
 
 -- | Only available for edges; creates a tapered edge between the two
 --   nodes.  Requires Graphviz >= 2.29.0.

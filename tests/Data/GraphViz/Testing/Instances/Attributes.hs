@@ -687,6 +687,8 @@ instance Arbitrary StyleName where
                                , Bold
                                , Invisible
                                , Filled
+                               , Striped
+                               , Wedged
                                , Diagonals
                                , Rounded
                                , Tapered
@@ -698,6 +700,8 @@ instance Arbitrary StyleName where
                                 , "bold"
                                 , "invis"
                                 , "filled"
+                                , "striped"
+                                , "wedged"
                                 , "diagonals"
                                 , "rounded"
                                 , "tapered"
