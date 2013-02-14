@@ -16,7 +16,7 @@ import Data.GraphViz( dotizeGraph, graphToDot
 import Data.GraphViz.Types( DotRepr(..), PrintDotRepr
                           , DotNode(..), DotEdge(..), GlobalAttributes(..)
                           , printDotGraph, graphNodes, graphEdges
-                          , graphStructureInformation)
+                          , nodeInformationClean, edgeInformationClean)
 import Data.GraphViz.Types.Canonical(DotGraph(..), DotStatements(..))
 import qualified Data.GraphViz.Types.Generalised as G
 import Data.GraphViz.Printing(PrintDot(..), printIt)
@@ -149,16 +149,37 @@ prop_noGraphInfo dg' g = info == (GraphAttrs [], Map.empty)
     info = graphStructureInformation dg
 
 -- | Canonicalisation should be idempotent.
-prop_canonicalise   :: (ParseDot n, PrintDot n, DotRepr dg n) => dg n -> Bool
-prop_canonicalise g = cdg == canonicalise cdg
+prop_canonicalise :: (DotRepr dg n) => CanonicaliseOptions -> dg n -> Bool
+prop_canonicalise copts g = cdg == canonicaliseOptions copts cdg
   where
-    cdg = canonicalise g
+    cdg = canonicaliseOptions copts g
+
+-- | Canonicalisation shouldn't change any nodes.
+prop_canonicaliseNodes :: (DotRepr dg n) => CanonicaliseOptions -> dg n -> Bool
+prop_canonicaliseNodes copts g = nodeInformationClean True g
+                                 == nodeInformationClean True cdg
+  where
+    cdg = canonicaliseOptions copts g
+
+-- | Canonicalisation shouldn't change any edges.
+prop_canonicaliseEdges :: (DotRepr dg n) => CanonicaliseOptions -> dg n -> Bool
+prop_canonicaliseEdges copts g = sort (edgeInformationClean True g)
+                                 == sort (edgeInformationClean True cdg)
+  where
+    cdg = canonicaliseOptions copts g
 
 -- | Removing transitive edges should be idempotent.
-prop_transitive   :: (DotRepr dg n) => dg n -> Bool
-prop_transitive g = tdg == transitiveReduction tdg
+prop_transitive :: (DotRepr dg n) => CanonicaliseOptions -> dg n -> Bool
+prop_transitive copts g = tdg == transitiveReductionOptions copts tdg
   where
-    tdg = transitiveReduction g
+    tdg = transitiveReductionOptions copts g
+
+-- | Transitive reduction shouldn't change any nodes.
+prop_transitiveNodes :: (DotRepr dg n) => CanonicaliseOptions -> dg n -> Bool
+prop_transitiveNodes copts g = nodeInformationClean True g
+                               == nodeInformationClean True cdg
+  where
+    cdg = transitiveReductionOptions copts g
 
 -- -----------------------------------------------------------------------------
 -- Helper utility functions

@@ -103,6 +103,9 @@ module Data.GraphViz.Types
        , ClusterLookup
        , NodeLookup
        , Path
+       , graphStructureInformationClean
+       , nodeInformationClean
+       , edgeInformationClean
          -- * Obtaining the @DotNode@s and @DotEdges@.
        , graphNodes
        , graphEdges
@@ -115,9 +118,11 @@ module Data.GraphViz.Types
 
 import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
                                     , DotSubGraph(..))
-import Data.GraphViz.Types.Common( GraphID(..), GlobalAttributes(..)
+import Data.GraphViz.Types.Common( GraphID(..), GlobalAttributes(..), withGlob
                                  , DotNode(..), DotEdge(..), numericValue)
 import Data.GraphViz.Types.State
+import Data.GraphViz.Attributes.Complete( rmUnwantedAttributes, usedByGraphs
+                                        , usedByClusters, usedByNodes, usedByEdges)
 import Data.GraphViz.Util(bool)
 import Data.GraphViz.Parsing(ParseDot(..), runParser, checkValidParse, parse, adjustErr)
 import Data.GraphViz.PreProcessing(preProcess)
@@ -125,7 +130,7 @@ import Data.GraphViz.Printing(PrintDot(..), printIt)
 
 import qualified Data.Text.Lazy as T
 import Data.Text.Lazy(Text)
-import Control.Arrow(first)
+import Control.Arrow(first, second, (***))
 import Control.Monad.Trans.State(get, put, modify, execState, evalState)
 
 -- -----------------------------------------------------------------------------
@@ -186,6 +191,36 @@ class (Ord n) => DotRepr dg n where
   --   (i.e. there will be no 'Nothing' key in the 'ClusterLookup'
   --   from 'graphStructureInformation').
   unAnonymise :: dg n -> dg n
+
+-- | A variant of 'graphStructureInformation' with default attributes
+--   removed and only attributes usable by graph/cluster kept (where
+--   applicable).
+graphStructureInformationClean :: (DotRepr dg n) => dg n
+                                  -> (GlobalAttributes, ClusterLookup)
+graphStructureInformationClean = (globOnly *** fmap (second clustOnly))
+                                 . graphStructureInformation
+  where
+    globOnly = withGlob $ filter usedByGraphs . rmUnwantedAttributes
+
+    clustOnly = withGlob $ filter usedByClusters . rmUnwantedAttributes
+
+
+-- | A variant of 'nodeInformation' with default attributes removed
+--   and only attributes used by nodes kept.
+nodeInformationClean :: (DotRepr dg n) => Bool -> dg n -> NodeLookup n
+nodeInformationClean = (fmap (second nodeOnly) .) . nodeInformation
+  where
+    nodeOnly = filter usedByNodes . rmUnwantedAttributes
+
+-- | A variant of 'edgeInformation' with default attributes removed
+--   and only attributes used by edges kept.
+edgeInformationClean :: (DotRepr dg n) => Bool -> dg n -> [DotEdge n]
+edgeInformationClean = (map rmEdgeAs .) . edgeInformation
+  where
+    rmEdgeAs de = de { edgeAttributes = edgeOnly $ edgeAttributes de }
+
+    edgeOnly = filter usedByEdges . rmUnwantedAttributes
+
 
 -- | This class exists just to make type signatures nicer; all
 --   instances of 'DotRepr' should also be an instance of

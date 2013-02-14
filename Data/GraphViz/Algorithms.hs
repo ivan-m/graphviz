@@ -31,8 +31,7 @@ module Data.GraphViz.Algorithms
        , transitiveReductionOptions
        ) where
 
-import Data.GraphViz.Attributes.Complete( Attribute(ColorScheme), Attributes
-                                        , defaultAttributeValue)
+import Data.GraphViz.Attributes.Complete( Attributes, defaultAttributeValue)
 import Data.GraphViz.Attributes.Same
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical
@@ -127,9 +126,9 @@ canonicaliseOptions opts dg = cdg { strictGraph   = graphIsStrict dg
   where
     cdg = createCanonical opts (getID dg) gas cl nl es
 
-    (gas, cl) = graphStructureInformation' dg
-    nl = nodeInformation' True dg
-    es = edgeInformation' True dg
+    (gas, cl) = graphStructureInformationClean dg
+    nl = nodeInformationClean True dg
+    es = edgeInformationClean True dg
 
 type NodePath n = ([Maybe GraphID], DotNode n)
 type NodePaths n = [NodePath n]
@@ -368,9 +367,9 @@ transitiveReductionOptions opts dg = cdg { strictGraph = graphIsStrict dg
                                          }
   where
     cdg = createCanonical opts (getID dg) gas cl nl es'
-    (gas, cl) = graphStructureInformation' dg
-    nl = nodeInformation' True dg
-    es = edgeInformation' True dg
+    (gas, cl) = graphStructureInformationClean dg
+    nl = nodeInformationClean True dg
+    es = edgeInformationClean True dg
     es' | graphIsDirected dg = rmTransEdges es
         | otherwise          = es
 
@@ -472,36 +471,3 @@ traverse t n = do setMark True
                              let n' = toNode e
                              unless (isMarked m n' || t' `Set.member` delSet)
                                $ traverse t' n'
-
--- -----------------------------------------------------------------------------
-
--- | Remove attributes that we don't want to consider:
---
---   * Those that are defaults
---   * colorscheme (as the colors embed it anyway)
-rmUnwanted :: Attributes -> Attributes
-rmUnwanted = filter (not . (`any` tests) . flip ($))
-  where
-    tests = [isDefault, isColorScheme]
-
-    isDefault a = maybe False (a==) $ defaultAttributeValue a
-
-    isColorScheme ColorScheme{} = True
-    isColorScheme _             = False
-
-rmUnwantedGlob :: GlobalAttributes -> GlobalAttributes
-rmUnwantedGlob = withGlob rmUnwanted
-
--- Post-process 'graphStructureInformation'
-graphStructureInformation' :: (DotRepr dg n) => dg n
-                              -> (GlobalAttributes, ClusterLookup)
-graphStructureInformation' = (rmUnwantedGlob *** fmap (second rmUnwantedGlob))
-                             . graphStructureInformation
-
-nodeInformation' :: (DotRepr dg n) => Bool -> dg n -> NodeLookup n
-nodeInformation' = (fmap (second rmUnwanted) .) . nodeInformation
-
-edgeInformation' :: (DotRepr dg n) => Bool -> dg n -> [DotEdge n]
-edgeInformation' = (map rmEdgeAs .) . edgeInformation
-  where
-    rmEdgeAs de = de { edgeAttributes = rmUnwanted $ edgeAttributes de }

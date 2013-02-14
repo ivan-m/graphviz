@@ -20,6 +20,7 @@ import Data.GraphViz.Testing.Instances.Helpers
 import Data.GraphViz.Attributes(Attributes)
 import Data.GraphViz.Types.Common( DotNode(..), DotEdge(..)
                                  , GlobalAttributes(..), GraphID(..))
+import Data.GraphViz.Algorithms(CanonicaliseOptions(..))
 
 import Test.QuickCheck
 
@@ -69,3 +70,6 @@ gaFor g = oneof [ liftM GraphAttrs g
                 , liftM NodeAttrs  arbNodeAttrs
                 , liftM EdgeAttrs  arbEdgeAttrs
                 ]
+
+instance Arbitrary CanonicaliseOptions where
+  arbitrary = liftM2 COpts arbitrary arbitrary

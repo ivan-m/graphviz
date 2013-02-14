@@ -53,7 +53,10 @@ module Data.GraphViz.Testing
        , test_dotizeAugment
        , test_dotizeAugmentUniq
        , test_canonicalise
+       , test_canonicaliseNodes
+       , test_canonicaliseEdges
        , test_transitive
+       , test_transitiveNodes
         -- * Re-exporting modules for manual testing.
        , module Data.GraphViz
        , module Data.GraphViz.Testing.Properties
@@ -75,6 +78,7 @@ import Data.GraphViz.Testing.Instances()
 import Data.GraphViz.Testing.Properties
 
 import Data.GraphViz
+import Data.GraphViz.Algorithms(CanonicaliseOptions)
 import Data.GraphViz.Parsing(parseIt, parseIt', runParser)
 import Data.GraphViz.PreProcessing(preProcess)
 import Data.GraphViz.Printing(printIt, renderDot)
@@ -170,7 +174,10 @@ defaultTests = [ test_printParseID_Attributes
                , test_findAllEdges
                , test_noGraphInfo
                , test_canonicalise
+               , test_canonicaliseNodes
+               , test_canonicaliseEdges
                , test_transitive
+               , test_transitiveNodes
                ]
 
 -- | Test that 'Attributes' can be printed and then parsed back.
@@ -352,10 +359,36 @@ test_canonicalise
          , tests      = [qCheck prop]
          }
   where
-    prop :: DotGraph Int -> Bool
+    prop :: CanonicaliseOptions -> DotGraph Int -> Bool
     prop = prop_canonicalise
 
     dsc = "Repeated application of canonicalise shouldn't have any further affect."
+
+test_canonicaliseNodes :: Test
+test_canonicaliseNodes
+  = Test { name       = "Canonicalisation shouldn't change any nodes"
+         , lookupName = "canonicalisenodes"
+         , desc       = dsc
+         , tests      = [qCheck prop]
+         }
+  where
+    prop :: CanonicaliseOptions -> DotGraph Int -> Bool
+    prop = prop_canonicaliseNodes
+
+    dsc = "Canonicalisation shouldn't change or remove any nodes."
+
+test_canonicaliseEdges :: Test
+test_canonicaliseEdges
+  = Test { name       = "Canonicalisation shouldn't change any edges"
+         , lookupName = "canonicaliseedges"
+         , desc       = dsc
+         , tests      = [qCheck prop]
+         }
+  where
+    prop :: CanonicaliseOptions -> DotGraph Int -> Bool
+    prop = prop_canonicaliseEdges
+
+    dsc = "Canonicalisation shouldn't change or remove any edges."
 
 test_transitive :: Test
 test_transitive
@@ -365,10 +398,23 @@ test_transitive
          , tests      = [qCheck prop]
          }
   where
-    prop :: DotGraph Int -> Bool
+    prop :: CanonicaliseOptions -> DotGraph Int -> Bool
     prop = prop_transitive
 
     dsc = "Repeated application of transitiveReduction shouldn't have any further affect."
+
+test_transitiveNodes :: Test
+test_transitiveNodes
+  = Test { name       = "Transitive reduction shouldn't change any nodes"
+         , lookupName = "transitivenodes"
+         , desc       = dsc
+         , tests      = [qCheck prop]
+         }
+  where
+    prop :: CanonicaliseOptions -> DotGraph Int -> Bool
+    prop = prop_transitiveNodes
+
+    dsc = "Transitive reduction shouldn't change or remove any nodes."
 
 -- -----------------------------------------------------------------------------
 

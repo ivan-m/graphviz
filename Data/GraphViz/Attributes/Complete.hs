@@ -83,6 +83,7 @@ module Data.GraphViz.Attributes.Complete
        , Attributes
        , sameAttribute
        , defaultAttributeValue
+       , rmUnwantedAttributes
          -- ** Validity functions on @Attribute@ values.
        , usedByGraphs
        , usedBySubGraphs
@@ -1442,6 +1443,20 @@ validUnknown txt = T.toLower txt `S.notMember` names
             `S.union`
             keywords
 {- Delete to here -}
+
+-- | Remove attributes that we don't want to consider:
+--
+--   * Those that are defaults
+--   * colorscheme (as the colors embed it anyway)
+rmUnwantedAttributes :: Attributes -> Attributes
+rmUnwantedAttributes = filter (not . (`any` tests) . flip ($))
+  where
+    tests = [isDefault, isColorScheme]
+
+    isDefault a = maybe False (a==) $ defaultAttributeValue a
+
+    isColorScheme ColorScheme{} = True
+    isColorScheme _             = False
 
 -- -----------------------------------------------------------------------------
 -- These parsing combinators are defined here for customisation purposes.
