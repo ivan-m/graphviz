@@ -188,7 +188,6 @@ instance Arbitrary Attribute where
                     , liftM SearchSize arbitrary
                     , liftM Sep arbitrary
                     , liftM Shape arbitrary
-                    , liftM ShapeFile arbitrary
                     , liftM ShowBoxes arbitrary
                     , liftM Sides arbitrary
                     , liftM Size arbitrary
@@ -216,7 +215,6 @@ instance Arbitrary Attribute where
                     , liftM Width arbitrary
                     , liftM XLabel arbitrary
                     , liftM XLP arbitrary
-                    , liftM Z arbitrary
                     , liftM2 UnknownAttribute (suchThat arbIDString validUnknown) arbitrary
                     ]
 
@@ -349,7 +347,6 @@ instance Arbitrary Attribute where
   shrink (SearchSize v)         = map SearchSize          $ shrink v
   shrink (Sep v)                = map Sep                 $ shrink v
   shrink (Shape v)              = map Shape               $ shrink v
-  shrink (ShapeFile v)          = map ShapeFile           $ shrink v
   shrink (ShowBoxes v)          = map ShowBoxes           $ shrink v
   shrink (Sides v)              = map Sides               $ shrink v
   shrink (Size v)               = map Size                $ shrink v
@@ -377,7 +374,6 @@ instance Arbitrary Attribute where
   shrink (Width v)              = map Width               $ shrink v
   shrink (XLabel v)             = map XLabel              $ shrink v
   shrink (XLP v)                = map XLP                 $ shrink v
-  shrink (Z v)                  = map Z                   $ shrink v
   shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrink a) (shrink v)
 {- delete to here -}
 

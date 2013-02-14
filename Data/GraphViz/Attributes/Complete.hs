@@ -376,7 +376,6 @@ data Attribute
   | SearchSize Int                      -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
   | Sep DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
   | Shape Shape                         -- ^ /Valid for/: N; /Default/: @'Ellipse'@
-  | ShapeFile Text                      -- ^ /Valid for/: N; /Default/: @\"\"@
   | ShowBoxes Int                       -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only; used for debugging by printing PostScript guide boxes
   | Sides Int                           -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
   | Size GraphSize                      -- ^ /Valid for/: G
@@ -404,7 +403,6 @@ data Attribute
   | Width Double                        -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
   | XLabel Label                        -- ^ /Valid for/: EN; /Default/: @'StrLabel' \"\"@; /Notes/: requires Graphviz >= 2.29.0
   | XLP Point                           -- ^ /Valid for/: EN; /Notes/: write only, requires Graphviz >= 2.29.0
-  | Z Double                            -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-MAXFLOAT@, @-1000@
   | UnknownAttribute AttributeName Text -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
   deriving (Eq, Ord, Show, Read)
 
@@ -543,7 +541,6 @@ instance PrintDot Attribute where
   unqtDot (SearchSize v)         = printField "searchsize" v
   unqtDot (Sep v)                = printField "sep" v
   unqtDot (Shape v)              = printField "shape" v
-  unqtDot (ShapeFile v)          = printField "shapefile" v
   unqtDot (ShowBoxes v)          = printField "showboxes" v
   unqtDot (Sides v)              = printField "sides" v
   unqtDot (Size v)               = printField "size" v
@@ -571,7 +568,6 @@ instance PrintDot Attribute where
   unqtDot (Width v)              = printField "width" v
   unqtDot (XLabel v)             = printField "xlabel" v
   unqtDot (XLP v)                = printField "xlp" v
-  unqtDot (Z v)                  = printField "z" v
   unqtDot (UnknownAttribute a v) = toDot a <> equals <> toDot v
 
   listToDot = unqtListToDot
@@ -706,7 +702,6 @@ instance ParseDot Attribute where
                                   , parseField SearchSize "searchsize"
                                   , parseField Sep "sep"
                                   , parseField Shape "shape"
-                                  , parseField ShapeFile "shapefile"
                                   , parseField ShowBoxes "showboxes"
                                   , parseField Sides "sides"
                                   , parseField Size "size"
@@ -734,7 +729,6 @@ instance ParseDot Attribute where
                                   , parseField Width "width"
                                   , parseField XLabel "xlabel"
                                   , parseField XLP "xlp"
-                                  , parseField Z "z"
                                   ])
               `onFail`
               do attrName <- stringBlock
@@ -910,7 +904,6 @@ usedByNodes Regular{}          = True
 usedByNodes Root{}             = True
 usedByNodes SamplePoints{}     = True
 usedByNodes Shape{}            = True
-usedByNodes ShapeFile{}        = True
 usedByNodes ShowBoxes{}        = True
 usedByNodes Sides{}            = True
 usedByNodes Skew{}             = True
@@ -922,7 +915,6 @@ usedByNodes Vertices{}         = True
 usedByNodes Width{}            = True
 usedByNodes XLabel{}           = True
 usedByNodes XLP{}              = True
-usedByNodes Z{}                = True
 usedByNodes UnknownAttribute{} = True
 usedByNodes _                  = False
 
@@ -1122,7 +1114,6 @@ sameAttribute Scale{}                 Scale{}                 = True
 sameAttribute SearchSize{}            SearchSize{}            = True
 sameAttribute Sep{}                   Sep{}                   = True
 sameAttribute Shape{}                 Shape{}                 = True
-sameAttribute ShapeFile{}             ShapeFile{}             = True
 sameAttribute ShowBoxes{}             ShowBoxes{}             = True
 sameAttribute Sides{}                 Sides{}                 = True
 sameAttribute Size{}                  Size{}                  = True
@@ -1150,7 +1141,6 @@ sameAttribute Weight{}                Weight{}                = True
 sameAttribute Width{}                 Width{}                 = True
 sameAttribute XLabel{}                XLabel{}                = True
 sameAttribute XLP{}                   XLP{}                   = True
-sameAttribute Z{}                     Z{}                     = True
 sameAttribute (UnknownAttribute a1 _) (UnknownAttribute a2 _) = a1 == a2
 sameAttribute _                       _                       = False
 
@@ -1259,7 +1249,6 @@ defaultAttributeValue SameTail{}           = Just $ SameTail ""
 defaultAttributeValue SearchSize{}         = Just $ SearchSize 30
 defaultAttributeValue Sep{}                = Just $ Sep (DVal 4)
 defaultAttributeValue Shape{}              = Just $ Shape Ellipse
-defaultAttributeValue ShapeFile{}          = Just $ ShapeFile ""
 defaultAttributeValue ShowBoxes{}          = Just $ ShowBoxes 0
 defaultAttributeValue Sides{}              = Just $ Sides 4
 defaultAttributeValue Skew{}               = Just $ Skew 0.0
@@ -1278,7 +1267,6 @@ defaultAttributeValue VoroMargin{}         = Just $ VoroMargin 0.05
 defaultAttributeValue Weight{}             = Just $ Weight 1.0
 defaultAttributeValue Width{}              = Just $ Width 0.75
 defaultAttributeValue XLabel{}             = Just $ XLabel (StrLabel "")
-defaultAttributeValue Z{}                  = Just $ Z 0
 defaultAttributeValue _                    = Nothing
 
 -- | Determine if the provided 'Text' value is a valid name for an 'UnknownAttribute'.
@@ -1421,7 +1409,6 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "searchsize"
                , "sep"
                , "shape"
-               , "shapefile"
                , "showboxes"
                , "sides"
                , "size"
@@ -1450,7 +1437,6 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "width"
                , "xlabel"
                , "xlp"
-               , "z"
                , "charset" -- Defined upstream, just not used here.
                ])
             `S.union`

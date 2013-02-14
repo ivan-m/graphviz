@@ -47,7 +47,7 @@ module Data.GraphViz.Commands
 
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
-import Data.GraphViz.Attributes.Complete(GraphvizCommand(..), Attribute(Z))
+import Data.GraphViz.Attributes.Complete(GraphvizCommand(..))
 import Data.GraphViz.Commands.IO(runCommand)
 import Data.GraphViz.Exception
 
@@ -149,7 +149,9 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                                 --   usually preferred.
                     | Vrml      -- ^ Virtual Reality Modeling Language
                                 --   format; requires nodes to have a
-                                --   'Z' attribute.
+                                --   third dimension set via the @Pos@
+                                --   attribute (and with a @Dim@ value
+                                --   of at least @3@).
                     | WBmp      -- ^ Wireless BitMap format;
                                 --   monochrome format usually used
                                 --   for mobile computing devices.

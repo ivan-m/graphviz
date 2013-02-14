@@ -240,7 +240,7 @@ parseInstance att = hdr $+$ nest tab fns
       unknownName = text "attrName"
       pUnknown = text "do"
                  <+> (   (unknownName <+> text "<- stringBlock")
-                      $$ (text "liftEqParse'"
+                      $$ (text "liftEqParse"
                           <+> (parens (text "\"" <> unknownAttr <+> text "(\""
                                        <+> text "++ T.unpack" <+> unknownName
                                        <+> text "++ \")\"")
@@ -321,18 +321,19 @@ validUnknownFunc att = cmnt $$ asRows [tpSig, def] $$ whClause
                 $ atts att
 
 arbitraryFor :: VType -> Doc
-arbitraryFor (Cust ('[':_))     = text "arbList"
-arbitraryFor (Cust "ColorList") = text "arbList"
-arbitraryFor _                  = text "arbitrary"
+arbitraryFor = text . bool "arbitrary" "arbList" . isListType
 
 arbitraryFor' :: Attribute -> Doc
 arbitraryFor' = arbitraryFor . valtype
 
--- Need to explicitly list some type aliases that aren't allowed to have empty lists.
 shrinkFor :: VType -> Doc
-shrinkFor (Cust ('[':_))     = text "nonEmptyShrinks"
-shrinkFor (Cust "ColorList") = text "nonEmptyShrinks"
-shrinkFor _                  = text "shrink"
+shrinkFor = text . bool "shrink" "nonEmptyShrinks" . isListType
+
+-- Some types are aliases for lists.
+isListType :: VType -> Bool
+isListType (Cust ('[':_))     = True
+isListType (Cust "ColorList") = True
+isListType _                  = False
 
 usedByFunc          :: String -> (Attribute -> Bool) -> Atts -> Code
 usedByFunc nm p att = cmnt $$ asRows (tpSig : trs ++ [fls])
@@ -595,7 +596,6 @@ attributes = [
   makeAttr "SearchSize" ["searchsize"] "G" (Integ) Nothing (Just "30") (Just "@30@") Nothing (Just "dot only"),
   makeAttr "Sep" ["sep"] "G" (Cust "DPoint") Nothing (Just "(DVal 4)") (Just "@'DVal' 4@") Nothing (Just "not dot"),
   makeAttr "Shape" ["shape"] "N" (Cust "Shape") Nothing (Just "Ellipse") (Just "@'Ellipse'@") Nothing Nothing,
-  makeAttr "ShapeFile" ["shapefile"] "N" (Strng) Nothing (Just "\"\"") (Just "@\\\"\\\"@") Nothing Nothing,
   makeAttr "ShowBoxes" ["showboxes"] "ENG" (Integ) Nothing (Just "0") (Just "@0@") (Just "@0@") (Just "dot only; used for debugging by printing PostScript guide boxes"),
   makeAttr "Sides" ["sides"] "N" (Integ) Nothing (Just "4") (Just "@4@") (Just "@0@") Nothing,
   makeAttr "Size" ["size"] "G" (Cust "GraphSize") Nothing Nothing Nothing Nothing Nothing,
@@ -622,8 +622,7 @@ attributes = [
   makeAttr "Weight" ["weight"] "E" (Dbl) Nothing (Just "1.0") (Just "@1.0@") (Just "@0@ (dot), @1@ (neato,fdp,sfdp)") Nothing,
   makeAttr "Width" ["width"] "N" (Dbl) Nothing (Just "0.75") (Just "@0.75@") (Just "@0.01@") Nothing,
   makeAttr "XLabel" ["xlabel"] "EN" (Cust "Label") Nothing (Just "(StrLabel \"\")") (Just "@'StrLabel' \\\"\\\"@") Nothing (Just "requires Graphviz >= 2.29.0"),
-  makeAttr "XLP" ["xlp"] "EN" (Cust "Point") Nothing Nothing Nothing Nothing (Just "write only, requires Graphviz >= 2.29.0"),
-  makeAttr "Z" ["z"] "N" (Dbl) Nothing (Just "0") (Just "@0.0@") (Just "@-MAXFLOAT@, @-1000@") Nothing
+  makeAttr "XLP" ["xlp"] "EN" (Cust "Point") Nothing Nothing Nothing Nothing (Just "write only, requires Graphviz >= 2.29.0")
   -- END RECEIVE ORGTBL Attributes
   ]
 
@@ -782,7 +781,6 @@ This way, you can more easily edit/update the appropriate values.
 | SearchSize         | searchsize         | G       | Integ                    |                 | 30                         | @30@                                                                                                |                                 | dot only                                                         |
 | Sep                | sep                | G       | Cust "DPoint"            |                 | (DVal 4)                   | @'DVal' 4@                                                                                          |                                 | not dot                                                          |
 | Shape              | shape              | N       | Cust "Shape"             |                 | Ellipse                    | @'Ellipse'@                                                                                         |                                 |                                                                  |
-| ShapeFile          | shapefile          | N       | Strng                    |                 | \"\"                       | @\\\"\\\"@                                                                                          |                                 |                                                                  |
 | ShowBoxes          | showboxes          | ENG     | Integ                    |                 | 0                          | @0@                                                                                                 | @0@                             | dot only; used for debugging by printing PostScript guide boxes  |
 | Sides              | sides              | N       | Integ                    |                 | 4                          | @4@                                                                                                 | @0@                             |                                                                  |
 | Size               | size               | G       | Cust "GraphSize"         |                 |                            |                                                                                                     |                                 |                                                                  |
@@ -810,7 +808,6 @@ This way, you can more easily edit/update the appropriate values.
 | Width              | width              | N       | Dbl                      |                 | 0.75                       | @0.75@                                                                                              | @0.01@                          |                                                                  |
 | XLabel             | xlabel             | EN      | Cust "Label"             |                 | (StrLabel \"\")            | @'StrLabel' \\\"\\\"@                                                                               |                                 | requires Graphviz >= 2.29.0                                      |
 | XLP                | xlp                | EN      | Cust "Point"             |                 |                            |                                                                                                     |                                 | write only, requires Graphviz >= 2.29.0                          |
-| Z                  | z                  | N       | Dbl                      |                 | 0                          | @0.0@                                                                                               | @-MAXFLOAT@, @-1000@            |                                                                  |
 
 -}
 
