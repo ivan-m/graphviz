@@ -10,12 +10,76 @@ each release.
 Changes in 2999.16.0.0
 ----------------------
 
+* Add support for Graphviz-2.30.0:
+
+    - New attributes:
+
+        + `Area`
+        + `Head_LP`
+        + `LayerListSep`
+        + `LayerSelect`
+        + `Tail_LP`
+        + `XLP`
+
+    - `BgColor`, `Color` and `FillColor` now take a list of colors
+      with optional weightings.
+
+    - Layer handling now supports layer sub-ranges.
+
+    - Added the voronoi-based option to `Overlap`.
+
+    - Added the `Striped` and `Wedged` styles.
+
+* Updates to attributes and their values:
+
+    - The following attributes have had their values changed to better
+      reflect what they represent:
+
+        + `FontPath` takes a `Path` value.
+
+        + `Layout` takes a `GraphvizCommand` (and thus
+          `GraphvizCommand` has been moved to
+          `Data.GraphViz.Attributes.Complete`).
+
+    - Added `MDS` to `Model` (which had somehow been overlooked).
+
+    - Various attributes now have defaults added/updated/removed if
+      wrong.
+
+    - Removed the following deprecated attributes:
+
+        + `ShapeFile`
+
+        + `Z`
+
+* Now any value that has a defined default can be parsed when the Dot
+  code just has `attribute=""` (which `dot -Tcanon` is fond of doing
+  to "reset" attributes).
+
+* `GraphvizCommand` now defines `Sfdp` (which had somehow been
+  overlooked up till now).
+
+* The `canonicalise` and related functions have been re-written;
+  whilst there might be some cases where their behaviour does not
+  fully match how `dot -Tcanon` and `tred` behave (due to the
+  interaction of various attributes), the new implementation is much
+  more sane.
+
 * Use temporary files rather than pipes when running dot, etc.
 
     Makes it more portable, and also avoids issues where dot, etc. use
     100% CPU when a graph is passed in via stdin.
 
     Original patch by **Henning Thielemann**.
+
+* `renderCompactDot` now outputs to just one line (which means it's
+  shorter, but more difficult to read for a human).
+
+* The QuickCheck instances are a bit smarter now to avoid having such
+  ugly huge outputs when a test fails.
+
+* More documentation to help you understand what certain data types
+  are for, etc.
 
 Changes in 2999.15.0.1
 ----------------------
@@ -79,6 +143,10 @@ Changes in 2999.15.0.0
 * Error messages from parsing are improved to help you track down
   where the parsing error occurred (in that it's easier to find which
   attribute failed to parse, etc.).
+
+* Some parsing combinators are no longer publicly accessible, but
+  shouldn't be needed by end users anyway (as they were there for
+  parsing the Attribute data type).
 
 Changes in 2999.14.1.0
 ----------------------
