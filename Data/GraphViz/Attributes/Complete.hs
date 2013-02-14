@@ -2715,15 +2715,19 @@ instance ParseDot RankDir where
 
 -- -----------------------------------------------------------------------------
 
+-- | Geometries of shapes are affected by the attributes 'Regular',
+--   'Peripheries' and 'Orientation'.
 data Shape
     = BoxShape -- ^ Has synonyms of /rect/ and /rectangle/.
-    | Polygon
+    | Polygon  -- ^ Also affected by 'Sides', 'Skew' and 'Distortion'.
     | Ellipse  -- ^ Has synonym of /oval/.
     | Circle
-    | PointShape
+    | PointShape -- ^ Only affected by 'Peripheries', 'Width' and
+                 --   'Height'.
     | Egg
     | Triangle
-    | PlainText -- ^ Has synonym of /none/.
+    | PlainText -- ^ Has synonym of /none/.  Recommended for
+                --   'HtmlLabel's.
     | DiamondShape
     | Trapezium
     | Parallelogram
@@ -3130,6 +3134,7 @@ instance ParseDot VerticalPlacement where
 
 -- -----------------------------------------------------------------------------
 
+-- | A list of search paths.
 newtype Paths = Paths { paths :: [FilePath] }
     deriving (Eq, Ord, Show, Read)
 
