@@ -152,11 +152,15 @@ createCanonical opts gid gas cl nl es = promoteDSG $ makeGrouping cc ns
     -- DotNodes paired and sorted by their paths
     ns = sortBy (compLists `on` fst) . map nUnlook $ Map.toList nl
 
-    cc = CC { cOpts   = opts
-            , isGraph = True
+    es' = if edgesInClusters opts
+          then edgeClusters nl es
+          else (Map.empty, es)
+
+    cc = CC { cOpts    = opts
+            , isGraph  = True
             , clusters = cl
-            , clustEs = edgeClusters nl es
-            , topID = gid
+            , clustEs  = es'
+            , topID    = gid
             , topAttrs = attrs gas
             }
 
