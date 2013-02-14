@@ -130,6 +130,9 @@ instance (ParseDot n) => ParseDot (DotGraph n) where
               <*> parseBracesBased GraphAttribute parseGStmts
 
   parse = parseUnqt -- Don't want the option of quoting
+          `adjustErr`
+          ("Not a valid generalised DotGraph\n\t"++)
+
 
 -- | Assumed to be an injective mapping function.
 instance Functor DotGraph where
@@ -153,7 +156,9 @@ printGStmts :: (PrintDot n) => DotStatements n -> DotCode
 printGStmts = toDot . F.toList
 
 parseGStmts :: (ParseDot n) => Parse (DotStatements n)
-parseGStmts = Seq.fromList <$> parse
+parseGStmts = (Seq.fromList <$> parse)
+              `adjustErr`
+              ("Not a valid generalised DotStatements\n\t"++)
 
 statementStructure :: DotStatements n -> GraphState ()
 statementStructure = F.mapM_ stmtStructure
