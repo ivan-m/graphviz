@@ -32,7 +32,6 @@ module Data.GraphViz.Parsing
     , runParser'
     , checkValidParse
       -- * Convenience parsing combinators.
-    , bracket
     , ignoreSep
     , onlyBool
     , quotelessString
@@ -81,7 +80,8 @@ import Data.GraphViz.State
 import Data.GraphViz.Attributes.ColorScheme
 import Data.GraphViz.Exception(GraphvizException(NotDotCode), throw)
 
-import Text.ParserCombinators.Poly.StateText hiding (bracket, empty, indent, runParser)
+import           Text.ParserCombinators.Poly.StateText hiding (empty, indent,
+                                                        runParser)
 import qualified Text.ParserCombinators.Poly.StateText as P
 import Data.Char( isDigit
                 , isSpace
@@ -293,16 +293,6 @@ parseFloat' = parseSigned ( parseFloat
     fI = fromIntegral
 
 -- -----------------------------------------------------------------------------
-
--- | Parse a bracketed item, discarding the brackets.
---
---   The definition of @bracket@ defined in Polyparse uses
---   'adjustErrBad' and thus doesn't allow backtracking and trying the
---   next possible parser.  This is a version of @bracket@ that does.
-bracket               :: Parse bra -> Parse ket -> Parse a -> Parse a
-bracket open close pa = (open `adjustErr` ("Missing opening bracket:\n\t"++))
-                        *> pa
-                        <* (close `adjustErr` ("Was expecting closing bracket:\n\t"++))
 
 parseAndSpace   :: Parse a -> Parse a
 parseAndSpace p = p `discard` whitespace
