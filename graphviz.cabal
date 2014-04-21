@@ -90,14 +90,15 @@ Library {
                            Data.GraphViz.Exception
                            Data.GraphViz.Algorithms
 
+                           Data.GraphViz.Attributes.Internal
+                           Data.GraphViz.Internal.Util
+                           Data.GraphViz.Internal.State
+                           Data.GraphViz.Types.Internal.Common
+
         Other-Modules:     Data.GraphViz.Algorithms.Clustering
                            Data.GraphViz.Attributes.ColorScheme
-                           Data.GraphViz.Attributes.Internal
                            Data.GraphViz.Attributes.Same
-                           Data.GraphViz.Types.Common
                            Data.GraphViz.Types.State
-                           Data.GraphViz.Util
-                           Data.GraphViz.State
 
         if True
            Ghc-Options: -Wall
@@ -115,22 +116,14 @@ Test-Suite graphviz-testsuite {
 
         -- Versions controlled by library section
         Build-Depends:     base,
+                           graphviz,
                            containers,
-                           process,
-                           directory,
-                           temporary,
                            fgl,
                            filepath,
-                           polyparse,
-                           bytestring,
-                           colour,
-                           transformers,
                            text,
-                           wl-pprint-text,
-                           dlist,
                            QuickCheck >= 2.3 && < 2.8
 
-        hs-Source-Dirs:    . tests
+        hs-Source-Dirs:    tests
 
         Main-Is:           RunTests.hs
 

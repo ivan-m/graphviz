@@ -11,8 +11,8 @@
  -}
 module Data.GraphViz.Testing.Instances.Helpers where
 
-import Data.GraphViz.Parsing (isNumString)
-import Data.GraphViz.State   (initialState, layerListSep, layerSep)
+import Data.GraphViz.Internal.State (initialState, layerListSep, layerSep)
+import Data.GraphViz.Parsing        (isNumString)
 
 import Test.QuickCheck
 

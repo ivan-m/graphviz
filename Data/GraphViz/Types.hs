@@ -117,20 +117,20 @@ module Data.GraphViz.Types
          -- $limitations
        ) where
 
-import Data.GraphViz.Attributes.Complete (rmUnwantedAttributes, usedByClusters,
-                                          usedByEdges, usedByGraphs,
-                                          usedByNodes)
-import Data.GraphViz.Parsing             (ParseDot (..), adjustErr,
-                                          checkValidParse, parse, runParser)
-import Data.GraphViz.PreProcessing       (preProcess)
-import Data.GraphViz.Printing            (PrintDot (..), printIt)
-import Data.GraphViz.Types.Canonical     (DotGraph (..), DotStatements (..),
-                                          DotSubGraph (..))
-import Data.GraphViz.Types.Common        (DotEdge (..), DotNode (..),
-                                          GlobalAttributes (..), GraphID (..),
-                                          numericValue, withGlob)
+import Data.GraphViz.Attributes.Complete   (rmUnwantedAttributes,
+                                            usedByClusters, usedByEdges,
+                                            usedByGraphs, usedByNodes)
+import Data.GraphViz.Internal.Util         (bool)
+import Data.GraphViz.Parsing               (ParseDot (..), adjustErr,
+                                            checkValidParse, parse, runParser)
+import Data.GraphViz.PreProcessing         (preProcess)
+import Data.GraphViz.Printing              (PrintDot (..), printIt)
+import Data.GraphViz.Types.Canonical       (DotGraph (..), DotStatements (..),
+                                            DotSubGraph (..))
+import Data.GraphViz.Types.Internal.Common (DotEdge (..), DotNode (..),
+                                            GlobalAttributes (..), GraphID (..),
+                                            numericValue, withGlob)
 import Data.GraphViz.Types.State
-import Data.GraphViz.Util                (bool)
 
 import           Control.Arrow             (first, second, (***))
 import           Control.Monad.Trans.State (evalState, execState, get, modify,

@@ -101,13 +101,13 @@ import           Data.GraphViz.Algorithms            (CanonicaliseOptions (..),
 import           Data.GraphViz.Algorithms.Clustering
 import           Data.GraphViz.Attributes.Complete   (Attributes)
 import           Data.GraphViz.Attributes.Same
+import           Data.GraphViz.Internal.Util         (groupSortBy,
+                                                      groupSortCollectBy)
 import           Data.GraphViz.Types
 import qualified Data.GraphViz.Types.Canonical       as C
-import           Data.GraphViz.Types.Common          (partitionGlobal)
 import qualified Data.GraphViz.Types.Generalised     as G
+import           Data.GraphViz.Types.Internal.Common (partitionGlobal)
 import qualified Data.GraphViz.Types.State           as St
-import           Data.GraphViz.Util                  (groupSortBy,
-                                                      groupSortCollectBy)
 
 import           Control.Applicative             (liftA2, (<$>), (<*>))
 import           Control.Arrow                   ((***))

@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
-   Module      : Data.GraphViz.Util
+   Module      : Data.GraphViz.Internal.Util
    Description : Internal utility functions
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
@@ -10,23 +10,19 @@
 
    This module defines internal utility functions.
 -}
-module Data.GraphViz.Util where
+module Data.GraphViz.Internal.Util where
 
-import Data.Char( isAsciiUpper
-                , isAsciiLower
-                , isDigit
-                , ord
-                )
+import Data.Char (isAsciiLower, isAsciiUpper, isDigit, ord)
 
-import Data.List(groupBy, sortBy)
-import Data.Maybe(isJust)
-import Data.Function(on)
-import qualified Data.Set as Set
-import Data.Set(Set)
-import qualified Data.Text.Lazy as T
+import           Control.Monad       (liftM2)
+import           Data.Function       (on)
+import           Data.List           (groupBy, sortBy)
+import           Data.Maybe          (isJust)
+import           Data.Set            (Set)
+import qualified Data.Set            as Set
+import           Data.Text.Lazy      (Text)
+import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T
-import Data.Text.Lazy(Text)
-import Control.Monad(liftM2)
 
 -- -----------------------------------------------------------------------------
 

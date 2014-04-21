@@ -10,17 +10,17 @@
  -}
 module Data.GraphViz.Testing.Instances.Generalised where
 
-import Data.GraphViz.Testing.Instances.Attributes()
+import Data.GraphViz.Testing.Instances.Attributes ()
 import Data.GraphViz.Testing.Instances.Common
-import Data.GraphViz.Testing.Instances.Helpers()
+import Data.GraphViz.Testing.Instances.Helpers    ()
 
+import Data.GraphViz.Internal.Util     (bool)
 import Data.GraphViz.Types.Generalised
-import Data.GraphViz.Util(bool)
 
 import Test.QuickCheck
 
+import           Control.Monad (liftM, liftM2, liftM4)
 import qualified Data.Sequence as Seq
-import Control.Monad(liftM, liftM2, liftM4)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the generalised types

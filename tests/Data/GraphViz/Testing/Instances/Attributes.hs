@@ -25,9 +25,9 @@ import           Data.GraphViz.Attributes.Colors.X11    (X11Color)
 import           Data.GraphViz.Attributes.Complete
 import qualified Data.GraphViz.Attributes.HTML          as Html
 import           Data.GraphViz.Attributes.Internal      (compassLookup)
-import           Data.GraphViz.State                    (initialState,
+import           Data.GraphViz.Internal.State           (initialState,
                                                          layerListSep, layerSep)
-import           Data.GraphViz.Util                     (bool)
+import           Data.GraphViz.Internal.Util            (bool)
 
 import Test.QuickCheck
 

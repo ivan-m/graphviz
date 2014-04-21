@@ -24,10 +24,10 @@ module Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
-import Data.Maybe(isNothing)
-import qualified Data.Map as Map
-import Data.Map(Map)
-import Data.Text.Lazy(Text)
+import           Data.Map       (Map)
+import qualified Data.Map       as Map
+import           Data.Maybe     (isNothing)
+import           Data.Text.Lazy (Text)
 
 -- -----------------------------------------------------------------------------
 

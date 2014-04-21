@@ -13,12 +13,12 @@ module Data.GraphViz.Testing.Instances.Canonical where
 import Data.GraphViz.Testing.Instances.Common
 import Data.GraphViz.Testing.Instances.Helpers
 
+import Data.GraphViz.Internal.Util   (bool)
 import Data.GraphViz.Types.Canonical
-import Data.GraphViz.Util(bool)
 
 import Test.QuickCheck
 
-import Control.Monad(liftM2, liftM4)
+import Control.Monad (liftM2, liftM4)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for the overall types

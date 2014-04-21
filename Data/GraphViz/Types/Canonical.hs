@@ -84,13 +84,13 @@ module Data.GraphViz.Types.Canonical
        , DotEdge(..)
        ) where
 
-import Data.GraphViz.Types.Common
+import Data.GraphViz.Internal.State        (AttributeType (..))
+import Data.GraphViz.Internal.Util         (bool)
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
-import Data.GraphViz.State(AttributeType(..))
-import Data.GraphViz.Util(bool)
+import Data.GraphViz.Types.Internal.Common
 
-import Control.Arrow((&&&))
+import Control.Arrow ((&&&))
 
 -- -----------------------------------------------------------------------------
 

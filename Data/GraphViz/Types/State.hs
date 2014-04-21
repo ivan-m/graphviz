@@ -34,22 +34,22 @@ module Data.GraphViz.Types.State
        , addEdge
        ) where
 
-import Data.GraphViz.Types.Common
-import Data.GraphViz.Attributes.Complete( Attributes
-                                        , usedByClusters, usedByGraphs)
+import Data.GraphViz.Attributes.Complete   (Attributes, usedByClusters,
+                                            usedByGraphs)
 import Data.GraphViz.Attributes.Same
+import Data.GraphViz.Types.Internal.Common
 
-import Data.Function(on)
-import qualified Data.DList as DList
-import Data.DList(DList)
-import qualified Data.Map as Map
-import Data.Map(Map)
-import qualified Data.Set as Set
-import qualified Data.Sequence as Seq
-import Data.Sequence(Seq, (|>), ViewL(..))
-import Control.Arrow((&&&), (***))
-import Control.Monad(when)
-import Control.Monad.Trans.State
+import           Control.Arrow             ((&&&), (***))
+import           Control.Monad             (when)
+import           Control.Monad.Trans.State
+import           Data.DList                (DList)
+import qualified Data.DList                as DList
+import           Data.Function             (on)
+import           Data.Map                  (Map)
+import qualified Data.Map                  as Map
+import           Data.Sequence             (Seq, ViewL (..), (|>))
+import qualified Data.Sequence             as Seq
+import qualified Data.Set                  as Set
 
 -- -----------------------------------------------------------------------------
 
@@ -160,8 +160,8 @@ type NodeLookup n = Map n (Path, Attributes)
 
 type NodeLookup' n = Map n NodeInfo
 
-data NodeInfo = NI { atts :: SAttrs
-                   , gAtts :: SAttrs -- from globals
+data NodeInfo = NI { atts     :: SAttrs
+                   , gAtts    :: SAttrs -- from globals
                    , location :: Path
                    }
               deriving (Eq, Ord, Show, Read)

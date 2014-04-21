@@ -61,15 +61,15 @@ module Data.GraphViz.Types.Generalised
        , DotEdge(..)
        ) where
 
-import           Data.GraphViz.Algorithms      (canonicalise)
+import           Data.GraphViz.Algorithms            (canonicalise)
+import           Data.GraphViz.Internal.State        (AttributeType (..))
+import           Data.GraphViz.Internal.Util         (bool)
 import           Data.GraphViz.Parsing
 import           Data.GraphViz.Printing
-import           Data.GraphViz.State           (AttributeType (..))
 import           Data.GraphViz.Types
-import qualified Data.GraphViz.Types.Canonical as C
-import           Data.GraphViz.Types.Common
+import qualified Data.GraphViz.Types.Canonical       as C
+import           Data.GraphViz.Types.Internal.Common
 import           Data.GraphViz.Types.State
-import           Data.GraphViz.Util            (bool)
 
 import           Control.Arrow             ((&&&))
 import           Control.Monad.Trans.State (evalState, execState, get, modify,

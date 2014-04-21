@@ -74,9 +74,9 @@ module Data.GraphViz.Parsing
     , parseColorScheme
     ) where
 
-import Data.GraphViz.Exception (GraphvizException (NotDotCode), throw)
-import Data.GraphViz.State
-import Data.GraphViz.Util
+import Data.GraphViz.Exception      (GraphvizException (NotDotCode), throw)
+import Data.GraphViz.Internal.State
+import Data.GraphViz.Internal.Util
 
 -- To avoid orphan instances and cyclic imports
 import Data.GraphViz.Attributes.ColorScheme

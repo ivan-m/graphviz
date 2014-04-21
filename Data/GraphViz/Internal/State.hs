@@ -1,7 +1,8 @@
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# OPTIONS_HADDOCK hide #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 
 {- |
-   Module      : Data.GraphViz.State
+   Module      : Data.GraphViz.Internal.State
    Description : Printing and parsing state.
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
@@ -10,7 +11,7 @@
    When printing and parsing Dot code, some items depend on values
    that are set earlier.
 -}
-module Data.GraphViz.State
+module Data.GraphViz.Internal.State
        ( GraphvizStateM(..)
        , GraphvizState(..)
        , AttributeType(..)
@@ -29,8 +30,8 @@ module Data.GraphViz.State
 
 import Data.GraphViz.Attributes.ColorScheme
 
-import Control.Monad.Trans.State(State, modify, gets)
-import Text.ParserCombinators.Poly.StateText(Parser, stUpdate, stQuery)
+import Control.Monad.Trans.State             (State, gets, modify)
+import Text.ParserCombinators.Poly.StateText (Parser, stQuery, stUpdate)
 
 -- -----------------------------------------------------------------------------
 

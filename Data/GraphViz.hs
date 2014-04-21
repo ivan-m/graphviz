@@ -70,11 +70,11 @@ import Data.GraphViz.Attributes.Complete   (AttributeName, CustomAttribute,
                                             findSpecifiedCustom)
 import Data.GraphViz.Commands
 import Data.GraphViz.Commands.IO           (hGetDot)
+import Data.GraphViz.Internal.Util         (uniq, uniqBy)
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical       (DotGraph (..), DotStatements (..),
                                             DotSubGraph (..))
 import Data.GraphViz.Types.Generalised     (FromGeneralisedDot (..))
-import Data.GraphViz.Util                  (uniq, uniqBy)
 
 import           Control.Arrow              (first, (&&&))
 import           Control.Concurrent         (forkIO)

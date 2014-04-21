@@ -17,14 +17,14 @@ module Data.GraphViz.Testing.Instances.Common
 import Data.GraphViz.Testing.Instances.Attributes
 import Data.GraphViz.Testing.Instances.Helpers
 
-import Data.GraphViz.Attributes(Attributes)
-import Data.GraphViz.Types.Common( DotNode(..), DotEdge(..)
-                                 , GlobalAttributes(..), GraphID(..))
-import Data.GraphViz.Algorithms(CanonicaliseOptions(..))
+import Data.GraphViz.Algorithms            (CanonicaliseOptions (..))
+import Data.GraphViz.Attributes            (Attributes)
+import Data.GraphViz.Types.Internal.Common (DotEdge (..), DotNode (..),
+                                            GlobalAttributes (..), GraphID (..))
 
 import Test.QuickCheck
 
-import Control.Monad(liftM, liftM2, liftM3)
+import Control.Monad (liftM, liftM2, liftM3)
 
 -- -----------------------------------------------------------------------------
 -- Common values

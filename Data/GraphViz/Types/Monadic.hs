@@ -75,12 +75,11 @@ module Data.GraphViz.Types.Monadic
        , (<->)
        ) where
 
-import Data.GraphViz.Attributes(Attributes)
-import Data.GraphViz.Types.Common
+import Data.GraphViz.Attributes        (Attributes)
 import Data.GraphViz.Types.Generalised
 
-import qualified Data.DList as DL
-import Data.DList(DList)
+import           Data.DList    (DList)
+import qualified Data.DList    as DL
 import qualified Data.Sequence as Seq
 
 -- -----------------------------------------------------------------------------

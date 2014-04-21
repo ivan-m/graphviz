@@ -18,12 +18,12 @@ module Data.GraphViz.Testing.Instances.FGL() where
 
 import Test.QuickCheck
 
-import Data.GraphViz.Util(uniq)
+import Data.GraphViz.Internal.Util (uniq)
 
-import Data.Graph.Inductive.Graph(Graph, mkGraph, nodes, delNode)
-import Data.List(sortBy)
-import Data.Function(on)
-import Control.Monad(liftM, liftM3)
+import Control.Monad              (liftM, liftM3)
+import Data.Function              (on)
+import Data.Graph.Inductive.Graph (Graph, delNode, mkGraph, nodes)
+import Data.List                  (sortBy)
 
 -- -----------------------------------------------------------------------------
 -- Arbitrary instance for FGL graphs.

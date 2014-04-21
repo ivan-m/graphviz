@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings, TypeSynonymInstances #-}
 
 {- |
    Module      : Data.GraphViz.Printing
@@ -63,33 +63,28 @@ module Data.GraphViz.Printing
     , printColorScheme
     ) where
 
-import Data.GraphViz.Util
-import Data.GraphViz.State
+import Data.GraphViz.Internal.State
+import Data.GraphViz.Internal.Util
 -- To avoid orphan instances and cyclic imports
 import Data.GraphViz.Attributes.ColorScheme
 
 -- Only implicitly import and re-export combinators.
-import Text.PrettyPrint.Leijen.Text.Monadic hiding ( SimpleDoc(..)
-                                                   , renderPretty
-                                                   , renderCompact
-                                                   , displayT
-                                                   , displayIO
-                                                   , putDoc
-                                                   , hPutDoc
-                                                   , Pretty(..)
-                                                   , bool
-                                                   , string
-                                                   , width
-                                                   , (<$>))
+import           Data.Text.Lazy                       (Text)
+import qualified Data.Text.Lazy                       as T
+import           Text.PrettyPrint.Leijen.Text.Monadic hiding (Pretty (..),
+                                                       SimpleDoc (..), bool,
+                                                       displayIO, displayT,
+                                                       hPutDoc, putDoc,
+                                                       renderCompact,
+                                                       renderPretty, string,
+                                                       width, (<$>))
 import qualified Text.PrettyPrint.Leijen.Text.Monadic as PP
-import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
 
-import Data.Char(toLower)
-import qualified Data.Set as Set
-import Data.Word(Word8, Word16)
-import Control.Monad(ap, when)
-import Control.Monad.Trans.State
+import           Control.Monad             (ap, when)
+import           Control.Monad.Trans.State
+import           Data.Char                 (toLower)
+import qualified Data.Set                  as Set
+import           Data.Word                 (Word16, Word8)
 
 -- -----------------------------------------------------------------------------
 

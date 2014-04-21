@@ -195,13 +195,13 @@ import qualified Data.GraphViz.Attributes.HTML       as Html
 import           Data.GraphViz.Attributes.Internal
 import           Data.GraphViz.Exception             (GraphvizException (NotCustomAttr),
                                                       throw)
-import           Data.GraphViz.Parsing
-import           Data.GraphViz.Printing
-import           Data.GraphViz.State                 (getLayerListSep,
+import           Data.GraphViz.Internal.State        (getLayerListSep,
                                                       getLayerSep,
                                                       setLayerListSep,
                                                       setLayerSep)
-import           Data.GraphViz.Util
+import           Data.GraphViz.Internal.Util
+import           Data.GraphViz.Parsing
+import           Data.GraphViz.Printing
 
 import           Data.List       (intercalate, partition)
 import           Data.Maybe      (isJust, isNothing)

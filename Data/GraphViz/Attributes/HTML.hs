@@ -67,20 +67,20 @@ module Data.GraphViz.Attributes.HTML
        , Scale(..)
        ) where
 
-import Data.GraphViz.Parsing
-import Data.GraphViz.Printing
 import Data.GraphViz.Attributes.Colors
 import Data.GraphViz.Attributes.Internal
-import Data.GraphViz.Util(bool)
+import Data.GraphViz.Internal.Util       (bool)
+import Data.GraphViz.Parsing
+import Data.GraphViz.Printing
 
-import Numeric(readHex)
-import Data.Char(chr, ord, isSpace)
-import Data.Function(on)
-import Data.List(delete)
-import Data.Maybe(catMaybes, listToMaybe)
-import Data.Word(Word8, Word16)
-import qualified Data.Map as Map
+import           Data.Char      (chr, isSpace, ord)
+import           Data.Function  (on)
+import           Data.List      (delete)
+import qualified Data.Map       as Map
+import           Data.Maybe     (catMaybes, listToMaybe)
 import qualified Data.Text.Lazy as T
+import           Data.Word      (Word16, Word8)
+import           Numeric        (readHex)
 
 -- -----------------------------------------------------------------------------
 

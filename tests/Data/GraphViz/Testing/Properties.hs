@@ -15,6 +15,7 @@ import           Data.GraphViz                   (dotizeGraph, graphToDot,
                                                   nonClusteredParams,
                                                   setDirectedness)
 import           Data.GraphViz.Algorithms
+import           Data.GraphViz.Internal.Util     (groupSortBy, isSingle)
 import           Data.GraphViz.Parsing           (ParseDot (..), parseIt,
                                                   parseIt')
 import           Data.GraphViz.PreProcessing     (preProcess)
@@ -30,7 +31,6 @@ import           Data.GraphViz.Types             (DotEdge (..), DotNode (..),
 import           Data.GraphViz.Types.Canonical   (DotGraph (..),
                                                   DotStatements (..))
 import qualified Data.GraphViz.Types.Generalised as G
-import           Data.GraphViz.Util              (groupSortBy, isSingle)
 
 import Test.QuickCheck
 

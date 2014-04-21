@@ -1,4 +1,4 @@
-{-# LANGUAGE MonadComprehensions #-}
+{-# LANGUAGE MonadComprehensions, MultiParamTypeClasses #-}
 
 {- |
    Module      : Data.GraphViz.Algorithms
@@ -31,25 +31,26 @@ module Data.GraphViz.Algorithms
        , transitiveReductionOptions
        ) where
 
-import Data.GraphViz.Attributes.Complete( Attributes, defaultAttributeValue)
+import Data.GraphViz.Attributes.Complete   (Attributes, defaultAttributeValue)
 import Data.GraphViz.Attributes.Same
+import Data.GraphViz.Internal.Util         (bool)
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical
-import Data.GraphViz.Types.Common
-import Data.GraphViz.Util(bool)
+import Data.GraphViz.Types.Internal.Common
 
-import Data.Function(on)
-import Data.List(groupBy, sortBy, partition, (\\), deleteBy)
-import Data.Maybe(listToMaybe, mapMaybe, fromMaybe)
-import qualified Data.DList as DList
-import qualified Data.Map as Map
-import Data.Map(Map)
-import qualified Data.Set as Set
-import Data.Set(Set)
-import qualified Data.Foldable as F
-import Control.Arrow(first, second, (***))
-import Control.Monad(unless)
-import Control.Monad.Trans.State
+import           Control.Arrow             (first, second, (***))
+import           Control.Monad             (unless)
+import           Control.Monad.Trans.State
+import qualified Data.DList                as DList
+import qualified Data.Foldable             as F
+import           Data.Function             (on)
+import           Data.List                 (deleteBy, groupBy, partition,
+                                            sortBy, (\\))
+import           Data.Map                  (Map)
+import qualified Data.Map                  as Map
+import           Data.Maybe                (fromMaybe, listToMaybe, mapMaybe)
+import           Data.Set                  (Set)
+import qualified Data.Set                  as Set
 
 -- -----------------------------------------------------------------------------
 

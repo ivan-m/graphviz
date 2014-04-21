@@ -2,7 +2,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
-   Module      : Data.GraphViz.Types.Common
+   Module      : Data.GraphViz.Types.Internal.Common
    Description : Common internal functions for dealing with overall types.
    Copyright   : (c) Ivan Lazar Miljenovic
    License     : 3-Clause BSD-style
@@ -11,22 +11,22 @@
    This module provides common functions used by both
    "Data.GraphViz.Types" as well as "Data.GraphViz.Types.Generalised".
 -}
-module Data.GraphViz.Types.Common where
+module Data.GraphViz.Types.Internal.Common where
 
+import Data.GraphViz.Attributes.Complete (Attribute (HeadPort, TailPort),
+                                          Attributes, usedByClusters,
+                                          usedByGraphs, usedByNodes)
+import Data.GraphViz.Attributes.Internal (PortPos, parseEdgeBasedPP)
+import Data.GraphViz.Internal.State
+import Data.GraphViz.Internal.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
-import Data.GraphViz.State
-import Data.GraphViz.Util
-import Data.GraphViz.Attributes.Complete( Attributes, Attribute(HeadPort, TailPort)
-                                        , usedByGraphs, usedByClusters
-                                        , usedByNodes)
-import Data.GraphViz.Attributes.Internal(PortPos, parseEdgeBasedPP)
 
-import Data.Maybe(isJust)
-import qualified Data.Text.Lazy as T
+import           Control.Monad       (unless, when)
+import           Data.Maybe          (isJust)
+import           Data.Text.Lazy      (Text)
+import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T
-import Data.Text.Lazy(Text)
-import Control.Monad(when, unless)
 
 -- -----------------------------------------------------------------------------
 -- This is re-exported by Data.GraphViz.Types
@@ -168,7 +168,7 @@ withGlob f (EdgeAttrs  as) = EdgeAttrs  $ f as
 -- -----------------------------------------------------------------------------
 
 -- | A node in 'DotGraph'.
-data DotNode n = DotNode { nodeID :: n
+data DotNode n = DotNode { nodeID         :: n
                          , nodeAttributes :: Attributes
                          }
                deriving (Eq, Ord, Show, Read)
