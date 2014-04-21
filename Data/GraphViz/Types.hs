@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses,
+             TypeSynonymInstances #-}
 
 {- |
    Module      : Data.GraphViz.Types
@@ -116,22 +117,26 @@ module Data.GraphViz.Types
          -- $limitations
        ) where
 
-import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
-                                    , DotSubGraph(..))
-import Data.GraphViz.Types.Common( GraphID(..), GlobalAttributes(..), withGlob
-                                 , DotNode(..), DotEdge(..), numericValue)
+import Data.GraphViz.Attributes.Complete (rmUnwantedAttributes, usedByClusters,
+                                          usedByEdges, usedByGraphs,
+                                          usedByNodes)
+import Data.GraphViz.Parsing             (ParseDot (..), adjustErr,
+                                          checkValidParse, parse, runParser)
+import Data.GraphViz.PreProcessing       (preProcess)
+import Data.GraphViz.Printing            (PrintDot (..), printIt)
+import Data.GraphViz.Types.Canonical     (DotGraph (..), DotStatements (..),
+                                          DotSubGraph (..))
+import Data.GraphViz.Types.Common        (DotEdge (..), DotNode (..),
+                                          GlobalAttributes (..), GraphID (..),
+                                          numericValue, withGlob)
 import Data.GraphViz.Types.State
-import Data.GraphViz.Attributes.Complete( rmUnwantedAttributes, usedByGraphs
-                                        , usedByClusters, usedByNodes, usedByEdges)
-import Data.GraphViz.Util(bool)
-import Data.GraphViz.Parsing(ParseDot(..), runParser, checkValidParse, parse, adjustErr)
-import Data.GraphViz.PreProcessing(preProcess)
-import Data.GraphViz.Printing(PrintDot(..), printIt)
+import Data.GraphViz.Util                (bool)
 
-import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
-import Control.Arrow(first, second, (***))
-import Control.Monad.Trans.State(get, put, modify, execState, evalState)
+import           Control.Arrow             (first, second, (***))
+import           Control.Monad.Trans.State (evalState, execState, get, modify,
+                                            put)
+import           Data.Text.Lazy            (Text)
+import qualified Data.Text.Lazy            as T
 
 -- -----------------------------------------------------------------------------
 

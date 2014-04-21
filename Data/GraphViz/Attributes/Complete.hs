@@ -189,23 +189,27 @@ module Data.GraphViz.Attributes.Complete
        , StyleName(..)
        ) where
 
-import Data.GraphViz.Attributes.Colors
-import Data.GraphViz.Attributes.Colors.X11(X11Color(Black))
-import qualified Data.GraphViz.Attributes.HTML as Html
-import Data.GraphViz.Attributes.Internal
-import Data.GraphViz.Util
-import Data.GraphViz.Parsing
-import Data.GraphViz.Printing
-import Data.GraphViz.State(getLayerSep, setLayerSep, getLayerListSep, setLayerListSep)
-import Data.GraphViz.Exception(GraphvizException(NotCustomAttr), throw)
+import           Data.GraphViz.Attributes.Colors
+import           Data.GraphViz.Attributes.Colors.X11 (X11Color (Black))
+import qualified Data.GraphViz.Attributes.HTML       as Html
+import           Data.GraphViz.Attributes.Internal
+import           Data.GraphViz.Exception             (GraphvizException (NotCustomAttr),
+                                                      throw)
+import           Data.GraphViz.Parsing
+import           Data.GraphViz.Printing
+import           Data.GraphViz.State                 (getLayerListSep,
+                                                      getLayerSep,
+                                                      setLayerListSep,
+                                                      setLayerSep)
+import           Data.GraphViz.Util
 
-import Data.List(partition, intercalate)
-import Data.Maybe(isJust, isNothing)
-import Data.Word(Word16)
-import qualified Data.Set as S
-import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
-import System.FilePath(searchPathSeparator, splitSearchPath)
+import           Data.List       (intercalate, partition)
+import           Data.Maybe      (isJust, isNothing)
+import qualified Data.Set        as S
+import           Data.Text.Lazy  (Text)
+import qualified Data.Text.Lazy  as T
+import           Data.Word       (Word16)
+import           System.FilePath (searchPathSeparator, splitSearchPath)
 
 -- -----------------------------------------------------------------------------
 
@@ -1949,10 +1953,10 @@ instance ParseDot SVGFontNames where
 -- -----------------------------------------------------------------------------
 
 -- | Maximum width and height of drawing in inches.
-data GraphSize = GSize { width :: Double
+data GraphSize = GSize { width       :: Double
                          -- | If @Nothing@, then the height is the
                          --   same as the width.
-                       , height :: Maybe Double
+                       , height      :: Maybe Double
                          -- | If drawing is smaller than specified
                          --   size, this value determines whether it
                          --   is scaled up.

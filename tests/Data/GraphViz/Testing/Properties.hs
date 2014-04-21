@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, MultiParamTypeClasses #-}
 
 {- |
    Module      : Data.GraphViz.Testing.Properties
@@ -11,30 +11,37 @@
 -}
 module Data.GraphViz.Testing.Properties where
 
-import Data.GraphViz( dotizeGraph, graphToDot
-                    , setDirectedness, nonClusteredParams)
-import Data.GraphViz.Types( DotRepr(..), PrintDotRepr
-                          , DotNode(..), DotEdge(..), GlobalAttributes(..)
-                          , printDotGraph, graphNodes, graphEdges
-                          , nodeInformationClean, edgeInformationClean)
-import Data.GraphViz.Types.Canonical(DotGraph(..), DotStatements(..))
+import           Data.GraphViz                   (dotizeGraph, graphToDot,
+                                                  nonClusteredParams,
+                                                  setDirectedness)
+import           Data.GraphViz.Algorithms
+import           Data.GraphViz.Parsing           (ParseDot (..), parseIt,
+                                                  parseIt')
+import           Data.GraphViz.PreProcessing     (preProcess)
+import           Data.GraphViz.Printing          (PrintDot (..), printIt)
+import           Data.GraphViz.Types             (DotEdge (..), DotNode (..),
+                                                  DotRepr (..),
+                                                  GlobalAttributes (..),
+                                                  PrintDotRepr,
+                                                  edgeInformationClean,
+                                                  graphEdges, graphNodes,
+                                                  nodeInformationClean,
+                                                  printDotGraph)
+import           Data.GraphViz.Types.Canonical   (DotGraph (..),
+                                                  DotStatements (..))
 import qualified Data.GraphViz.Types.Generalised as G
-import Data.GraphViz.Printing(PrintDot(..), printIt)
-import Data.GraphViz.Parsing(ParseDot(..), parseIt, parseIt')
-import Data.GraphViz.PreProcessing(preProcess)
-import Data.GraphViz.Util(groupSortBy, isSingle)
-import Data.GraphViz.Algorithms
+import           Data.GraphViz.Util              (groupSortBy, isSingle)
 
 import Test.QuickCheck
 
-import Data.Graph.Inductive( Graph, DynGraph
-                           , equal, nmap, emap, labNodes, labEdges, nodes, edges)
-import Data.List(nub, sort)
-import Data.Function(on)
-import qualified Data.Map as Map
-import qualified Data.Set as Set
-import Data.Text.Lazy(Text)
-import Control.Arrow((&&&))
+import           Control.Arrow        ((&&&))
+import           Data.Function        (on)
+import           Data.Graph.Inductive (DynGraph, Graph, edges, emap, equal,
+                                       labEdges, labNodes, nmap, nodes)
+import           Data.List            (nub, sort)
+import qualified Data.Map             as Map
+import qualified Data.Set             as Set
+import           Data.Text.Lazy       (Text)
 
 -- -----------------------------------------------------------------------------
 -- The properties to test for
