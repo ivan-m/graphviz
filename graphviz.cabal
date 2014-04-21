@@ -52,7 +52,7 @@ Source-Repository head
     Location:     http://hub.darcs.net/ivanm/graphviz
 
 Library {
-        Default-Language:  Haskell98
+        Default-Language:  Haskell2010
 
         Build-Depends:     base == 4.*,
                            containers,
@@ -110,7 +110,7 @@ Library {
 }
 
 Test-Suite graphviz-testsuite {
-        Default-Language:  Haskell98
+        Default-Language:  Haskell2010
 
         Type:              exitcode-stdio-1.0
 
@@ -149,7 +149,7 @@ Test-Suite graphviz-testsuite {
 }
 
 Benchmark graphviz-printparse {
-        Default-Language: Haskell98
+        Default-Language: Haskell2010
 
         Type:             exitcode-stdio-1.0
 
