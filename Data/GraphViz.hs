@@ -73,6 +73,7 @@ import Data.GraphViz.Commands.IO           (hGetDot)
 import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical       (DotGraph (..), DotStatements (..),
                                             DotSubGraph (..))
+import Data.GraphViz.Types.Generalised     (FromGeneralisedDot (..))
 import Data.GraphViz.Util                  (uniq, uniqBy)
 
 import           Control.Arrow              (first, (&&&))
@@ -445,12 +446,13 @@ stripID (f,t,eid) = (f,t, eLbl eid)
 
 -- | Pass the 'DotRepr' through the relevant command and then augment
 --   the 'Graph' that it came from.
-dotAttributes :: (Graph gr, PPDotRepr dg Node) => Bool -> gr nl (EdgeID el)
+dotAttributes :: (Graph gr, PPDotRepr dg Node, FromGeneralisedDot dg Node)
+                 => Bool -> gr nl (EdgeID el)
                  -> dg Node -> IO (gr (AttributeNode nl) (AttributeEdge el))
 dotAttributes isDir gr dot
   = augmentGraph gr . parseDG <$> graphvizWithHandle command dot DotOutput hGetDot
   where
-    parseDG = (`asTypeOf` dot)
+    parseDG = (`asTypeOf` dot) . fromGeneralised
     command = if isDir then dirCommand else undirCommand
 
 -- | Use the 'Attributes' in the provided 'DotGraph' to augment the
