@@ -147,6 +147,9 @@ import Control.Monad.Trans.State(get, put, modify, execState, evalState)
 class (Ord n) => DotRepr dg n where
   -- | Convert from a graph in canonical form.  This is especially
   --   useful when using the functions from "Data.GraphViz.Algorithms".
+  --
+  --   See @FromGeneralisedDot@ in "Data.GraphViz.Types.Generalised"
+  --   for a semi-inverse of this function.
   fromCanonical :: DotGraph n -> dg n
 
   -- | Return the ID of the graph.

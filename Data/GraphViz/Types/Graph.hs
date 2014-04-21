@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 
 {- |
    Module      : Data.GraphViz.Types.Graph
@@ -96,28 +96,31 @@ module Data.GraphViz.Types.Graph
        , removeEmptyClusters
        ) where
 
-import Data.GraphViz.Types
-import qualified Data.GraphViz.Types.Canonical as C
-import qualified Data.GraphViz.Types.Generalised as G
-import Data.GraphViz.Types.Common(partitionGlobal)
-import qualified Data.GraphViz.Types.State as St
-import Data.GraphViz.Attributes.Same
-import Data.GraphViz.Attributes.Complete(Attributes)
-import Data.GraphViz.Util(groupSortBy, groupSortCollectBy)
-import Data.GraphViz.Algorithms(CanonicaliseOptions(..), canonicaliseOptions)
-import Data.GraphViz.Algorithms.Clustering
+import           Data.GraphViz.Algorithms            (CanonicaliseOptions (..),
+                                                      canonicaliseOptions)
+import           Data.GraphViz.Algorithms.Clustering
+import           Data.GraphViz.Attributes.Complete   (Attributes)
+import           Data.GraphViz.Attributes.Same
+import           Data.GraphViz.Types
+import qualified Data.GraphViz.Types.Canonical       as C
+import           Data.GraphViz.Types.Common          (partitionGlobal)
+import qualified Data.GraphViz.Types.Generalised     as G
+import qualified Data.GraphViz.Types.State           as St
+import           Data.GraphViz.Util                  (groupSortBy,
+                                                      groupSortCollectBy)
 
-import Data.List(foldl', delete, unfoldr)
-import qualified Data.Foldable as F
-import Data.Maybe(mapMaybe, fromMaybe)
-import qualified Data.Map as M
-import Data.Map(Map)
-import qualified Data.Set as S
-import qualified Data.Sequence as Seq
-import Control.Applicative(liftA2, (<$>), (<*>))
-import Control.Arrow((***))
-import Text.Read(Lexeme(Ident), lexP, parens, readPrec)
-import Text.ParserCombinators.ReadPrec(prec)
+import           Control.Applicative             (liftA2, (<$>), (<*>))
+import           Control.Arrow                   ((***))
+import qualified Data.Foldable                   as F
+import           Data.List                       (delete, foldl', unfoldr)
+import           Data.Map                        (Map)
+import qualified Data.Map                        as M
+import           Data.Maybe                      (fromMaybe, mapMaybe)
+import qualified Data.Sequence                   as Seq
+import qualified Data.Set                        as S
+import           Text.ParserCombinators.ReadPrec (prec)
+import           Text.Read                       (Lexeme (Ident), lexP, parens,
+                                                  readPrec)
 
 -- -----------------------------------------------------------------------------
 
@@ -564,6 +567,9 @@ instance (Ord n) => DotRepr DotGraph n where
   edgeInformation = getEdgeInfo
 
   unAnonymise = id -- No anonymous clusters!
+
+instance (Ord n) => G.FromGeneralisedDot DotGraph n where
+  fromGeneralised = fromDotRepr
 
 instance (Ord n, PrintDot n) => PrintDotRepr DotGraph n
 instance (Ord n, ParseDot n) => ParseDotRepr DotGraph n

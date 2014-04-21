@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 
 {- |
    Module      : Data.GraphViz.Types.Generalised.
@@ -49,6 +49,7 @@
  -}
 module Data.GraphViz.Types.Generalised
        ( DotGraph(..)
+       , FromGeneralisedDot (..)
          -- * Sub-components of a @DotGraph@.
        , DotStatements
        , DotStatement(..)
@@ -60,21 +61,23 @@ module Data.GraphViz.Types.Generalised
        , DotEdge(..)
        ) where
 
-import Data.GraphViz.Types
+import           Data.GraphViz.Algorithms      (canonicalise)
+import           Data.GraphViz.Parsing
+import           Data.GraphViz.Printing
+import           Data.GraphViz.State           (AttributeType (..))
+import           Data.GraphViz.Types
 import qualified Data.GraphViz.Types.Canonical as C
-import Data.GraphViz.Types.Common
-import Data.GraphViz.Types.State
-import Data.GraphViz.Parsing
-import Data.GraphViz.Printing
-import Data.GraphViz.State(AttributeType(..))
-import Data.GraphViz.Util(bool)
+import           Data.GraphViz.Types.Common
+import           Data.GraphViz.Types.State
+import           Data.GraphViz.Util            (bool)
 
-import qualified Data.Sequence as Seq
-import Data.Sequence(Seq, (><))
-import qualified Data.Foldable as F
-import qualified Data.Traversable as T
-import Control.Arrow((&&&))
-import Control.Monad.Trans.State(get, put, modify, execState, evalState)
+import           Control.Arrow             ((&&&))
+import           Control.Monad.Trans.State (evalState, execState, get, modify,
+                                            put)
+import qualified Data.Foldable             as F
+import           Data.Sequence             (Seq, (><))
+import qualified Data.Sequence             as Seq
+import qualified Data.Traversable          as T
 
 -- -----------------------------------------------------------------------------
 
@@ -147,6 +150,22 @@ generaliseDotGraph dg = DotGraph { strictGraph     = C.strictGraph dg
                                  , graphStatements = generaliseStatements
                                                      $ C.graphStatements dg
                                  }
+
+-- -----------------------------------------------------------------------------
+
+-- | This class is useful for being able to parse in a dot graph as a
+--   generalised one, and then convert it to your preferred
+--   representation.
+--
+--   This can be seen as a semi-inverse of 'fromCanonical'.
+class (DotRepr dg n) => FromGeneralisedDot dg n where
+  fromGeneralised :: DotGraph n -> dg n
+
+instance (Ord n) => FromGeneralisedDot C.DotGraph n where
+  fromGeneralised = canonicalise
+
+instance (Ord n) => FromGeneralisedDot DotGraph n where
+  fromGeneralised = id
 
 -- -----------------------------------------------------------------------------
 
