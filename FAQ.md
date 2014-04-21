@@ -53,7 +53,7 @@ available out of all of them:
 
 * The ability to use a custom node type for Dot graphs.
 
-* Support for the all five layout algorithm programs and all specified
+* Support for all stated layout algorithm programs and all specified
   [output formats] as well as the ability to use custom programs, etc.
 
   [output formats]: http://www.graphviz.org/doc/info/output.html
@@ -122,11 +122,18 @@ _aren't_ covered:
   ability to specify an integer prefix for use with the `fdp` layout
   tool is not available.
 
+* The deprecated `shapefile` attribute is not available; instead, you
+  should specify the file on the command line.
+
+* The deprecated `z` attribute is not available; use the optional
+  third dimension for the `pos` attribute instead.
+
 * `pointf` and `point` values have been combined into one datatype; as
   such, when constructing values such as `Rect` care should be taken
   about which parts of a `Point` are allowed.
 
-* Only polygon-based `shape`s are available.
+* Only polygon-based `shape`s are available (i.e. no custom shapes as
+  yet).
 
 * The `charset` attribute is not available as _graphviz_ assumes that
   all Dot graphs will be in UTF-8 for simplicity; if Latin1-encoded
@@ -344,7 +351,8 @@ If you can, first run `dot -Tcanon` on the Dot code and parse it as a
 with.
 
 If, however, this isn't possible (e.g. it uses an image that isn't in
-the current working directory) then use the `GDotGraph` type.
+the current working directory) then use the `Generalised.DotGraph`
+type.
 
 ### There are too many attributes!!! Which ones should I use? ###
 
@@ -592,9 +600,9 @@ For proper testing of real-life Dot code, there is also the
 `TestParsing.hs` script that comes in the _graphviz_ tarball (but is
 not installed).  Once you have _graphviz_ installed you can just run
 this script, passing it any files containing Dot graphs you wish to
-test.  It will attempt to parse each Dot graph as a `GDotGraph`, and
-then test to see if the canonicalised form is parseable as a
-`DotGraph`.
+test.  It will attempt to parse each Dot graph as a
+`Generalised.DotGraph`, and then test to see if the canonicalised form
+is parseable as a `DotGraph`.
 
 ### I've found a bug! ###
 
