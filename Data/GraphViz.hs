@@ -1,4 +1,4 @@
-{-# LANGUAGE   MultiParamTypeClasses, FlexibleContexts, OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts, MultiParamTypeClasses, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz
@@ -9,8 +9,8 @@
 
    This is the top-level module for the graphviz library.  It provides
    functions to convert 'Data.Graph.Inductive.Graph.Graph's into the
-   /Dot/ language used by the /Graphviz/ suite of programs (as well as
-   a limited ability to perform the reverse operation).
+   /Dot/ language used by the /Graphviz/ suite of programs (as well as a
+   limited ability to perform the reverse operation).
 
    If you wish to construct a Haskell representation of a Dot graph
    yourself rather than using the conversion functions here, please
@@ -19,8 +19,8 @@
 
    Information about Graphviz and the Dot language can be found at:
    <http://graphviz.org/>
-
  -}
+
 module Data.GraphViz
     ( -- * Conversion from graphs to /Dot/ format.
       -- ** Specifying parameters.
@@ -63,28 +63,28 @@ module Data.GraphViz
     , module Data.GraphViz.Commands
     ) where
 
-import Data.GraphViz.Types
-import Data.GraphViz.Types.Canonical( DotGraph(..), DotStatements(..)
-                                    , DotSubGraph(..))
 import Data.GraphViz.Algorithms.Clustering
-import Data.GraphViz.Util(uniq, uniqBy)
 import Data.GraphViz.Attributes
-import Data.GraphViz.Attributes.Complete(CustomAttribute, AttributeName
-                                        , customAttribute, findSpecifiedCustom
-                                        , customValue)
+import Data.GraphViz.Attributes.Complete   (AttributeName, CustomAttribute,
+                                            customAttribute, customValue,
+                                            findSpecifiedCustom)
 import Data.GraphViz.Commands
-import Data.GraphViz.Commands.IO(hGetDot)
+import Data.GraphViz.Commands.IO           (hGetDot)
+import Data.GraphViz.Types
+import Data.GraphViz.Types.Canonical       (DotGraph (..), DotStatements (..),
+                                            DotSubGraph (..))
+import Data.GraphViz.Util                  (uniq, uniqBy)
 
-import Data.Functor((<$>))
-import Data.Graph.Inductive.Graph
-import qualified Data.Set as Set
-import Control.Arrow((&&&), first)
-import Data.Maybe(mapMaybe, fromJust)
-import qualified Data.Map as Map
-import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
-import System.IO.Unsafe(unsafePerformIO)
-import Control.Concurrent(forkIO)
+import           Control.Arrow              (first, (&&&))
+import           Control.Concurrent         (forkIO)
+import           Data.Functor               ((<$>))
+import           Data.Graph.Inductive.Graph
+import qualified Data.Map                   as Map
+import           Data.Maybe                 (fromJust, mapMaybe)
+import qualified Data.Set                   as Set
+import           Data.Text.Lazy             (Text)
+import qualified Data.Text.Lazy             as T
+import           System.IO.Unsafe           (unsafePerformIO)
 
 -- -----------------------------------------------------------------------------
 
@@ -197,6 +197,7 @@ data GraphvizParams n nl el cl l
                 -- | The specific @Attributes@ for an edge.
               , fmtEdge          :: ((n,n,el) -> Attributes)
               }
+
 
 -- | An alias for 'NodeCluster' when dealing with FGL graphs.
 type LNodeCluster cl l = NodeCluster cl (Node,l)

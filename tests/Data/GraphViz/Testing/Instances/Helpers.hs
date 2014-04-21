@@ -11,14 +11,14 @@
  -}
 module Data.GraphViz.Testing.Instances.Helpers where
 
-import Data.GraphViz.Parsing(isNumString)
-import Data.GraphViz.State(initialState, layerSep, layerListSep)
+import Data.GraphViz.Parsing (isNumString)
+import Data.GraphViz.State   (initialState, layerListSep, layerSep)
 
 import Test.QuickCheck
 
+import           Control.Monad  (liftM, liftM2)
+import           Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
-import Control.Monad(liftM, liftM2)
 
 -- -----------------------------------------------------------------------------
 -- Helper Functions

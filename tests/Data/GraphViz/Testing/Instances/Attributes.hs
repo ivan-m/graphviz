@@ -19,23 +19,24 @@ module Data.GraphViz.Testing.Instances.Attributes
 
 import Data.GraphViz.Testing.Instances.Helpers
 
-import Data.GraphViz.Attributes.Complete
-import qualified Data.GraphViz.Attributes.HTML as Html
-import Data.GraphViz.Attributes.Colors.Brewer
-import Data.GraphViz.Attributes.Colors.X11(X11Color)
-import Data.GraphViz.Attributes.Colors.SVG(SVGColor)
-import Data.GraphViz.Attributes.Internal(compassLookup)
-import Data.GraphViz.State(initialState, layerSep, layerListSep)
-import Data.GraphViz.Util(bool)
+import           Data.GraphViz.Attributes.Colors.Brewer
+import           Data.GraphViz.Attributes.Colors.SVG    (SVGColor)
+import           Data.GraphViz.Attributes.Colors.X11    (X11Color)
+import           Data.GraphViz.Attributes.Complete
+import qualified Data.GraphViz.Attributes.HTML          as Html
+import           Data.GraphViz.Attributes.Internal      (compassLookup)
+import           Data.GraphViz.State                    (initialState,
+                                                         layerListSep, layerSep)
+import           Data.GraphViz.Util                     (bool)
 
 import Test.QuickCheck
 
-import Data.List(nub, delete, groupBy)
-import qualified Data.Map as Map
-import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
-import Control.Monad(liftM, liftM2, liftM3, liftM4)
-import System.FilePath(searchPathSeparator)
+import           Control.Monad   (liftM, liftM2, liftM3, liftM4)
+import           Data.List       (delete, groupBy, nub)
+import qualified Data.Map        as Map
+import           Data.Text.Lazy  (Text)
+import qualified Data.Text.Lazy  as T
+import           System.FilePath (searchPathSeparator)
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for Attributes

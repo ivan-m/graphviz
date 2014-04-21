@@ -74,32 +74,30 @@ module Data.GraphViz.Parsing
     , parseColorScheme
     ) where
 
-import Data.GraphViz.Util
+import Data.GraphViz.Exception (GraphvizException (NotDotCode), throw)
 import Data.GraphViz.State
+import Data.GraphViz.Util
+
 -- To avoid orphan instances and cyclic imports
 import Data.GraphViz.Attributes.ColorScheme
-import Data.GraphViz.Exception(GraphvizException(NotDotCode), throw)
 
 import           Text.ParserCombinators.Poly.StateText hiding (empty, indent,
                                                         runParser)
 import qualified Text.ParserCombinators.Poly.StateText as P
-import Data.Char( isDigit
-                , isSpace
-                , isLower
-                , toLower
-                , toUpper
-                )
-import Data.List(groupBy, sortBy)
-import Data.Function(on)
-import Data.Maybe(fromMaybe, isJust, isNothing, listToMaybe)
-import Data.Ratio((%))
-import qualified Data.Set as Set
-import qualified Data.Text.Lazy as T
+
+import           Control.Arrow       (first, second)
+import           Control.Monad       (when)
+import           Data.Char           (isDigit, isLower, isSpace, toLower,
+                                      toUpper)
+import           Data.Function       (on)
+import           Data.List           (groupBy, sortBy)
+import           Data.Maybe          (fromMaybe, isJust, isNothing, listToMaybe)
+import           Data.Ratio          ((%))
+import qualified Data.Set            as Set
+import           Data.Text.Lazy      (Text)
+import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T
-import Data.Text.Lazy(Text)
-import Data.Word(Word8, Word16)
-import Control.Arrow(first, second)
-import Control.Monad(when)
+import           Data.Word           (Word16, Word8)
 
 -- -----------------------------------------------------------------------------
 -- Based off code from Text.Parse in the polyparse library
