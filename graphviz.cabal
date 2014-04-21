@@ -128,7 +128,7 @@ Test-Suite graphviz-testsuite {
                            text,
                            wl-pprint-text,
                            dlist,
-                           QuickCheck >= 2.3 && < 2.6
+                           QuickCheck >= 2.3 && < 2.8
 
         hs-Source-Dirs:    . tests
 

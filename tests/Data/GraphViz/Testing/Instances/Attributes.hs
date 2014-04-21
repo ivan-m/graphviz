@@ -474,7 +474,7 @@ instance Arbitrary Label where
 
   shrink (StrLabel str)   = map StrLabel $ shrink str
   shrink (HtmlLabel html) = map HtmlLabel $ shrink html
-  shrink (RecordLabel fs) = map RecordLabel . filter notStr $ shrinkList fs
+  shrink (RecordLabel fs) = map RecordLabel . filter notStr $ listShrink fs
 
 notStr                :: RecordFields -> Bool
 notStr [FieldLabel{}] = False -- Just in case
@@ -499,7 +499,7 @@ instance Arbitrary RecordField where
   shrink (LabelledTarget f l) = [PortName f, FieldLabel l]
   shrink (PortName f)         = map PortName $ shrink f
   shrink (FieldLabel l)       = map FieldLabel $ shrink l
-  shrink (FlipFields fs)      = map FlipFields $ shrinkList fs
+  shrink (FlipFields fs)      = map FlipFields $ listShrink fs
 
 instance Arbitrary Overlap where
   arbitrary = oneof [ simpleOverlap

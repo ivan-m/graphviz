@@ -89,17 +89,17 @@ nonEmptyShrinks :: (Arbitrary a) => [a] -> [[a]]
 nonEmptyShrinks = filter (not . null) . shrink
 
 nonEmptyShrinks' :: [a] -> [[a]]
-nonEmptyShrinks' = filter (not . null) . shrinkList'
+nonEmptyShrinks' = filter (not . null) . listShrink'
 
 -- Shrink lists with more than one value only by removing values, not
 -- by shrinking individual items.
-shrinkList     :: (Arbitrary a) => [a] -> [[a]]
-shrinkList [a] = map return $ shrink a
-shrinkList as  = shrinkList' as
+listShrink     :: (Arbitrary a) => [a] -> [[a]]
+listShrink [a] = map return $ shrink a
+listShrink as  = listShrink' as
 
 -- Just shrink the size.
-shrinkList'     :: [a] -> [[a]]
-shrinkList' as  = rm (length as) as
+listShrink'     :: [a] -> [[a]]
+listShrink' as  = rm (length as) as
   where
     rm 0 _  = []
     rm 1 _  = [[]]
@@ -125,7 +125,7 @@ shrinkM Nothing = [Nothing]
 shrinkM j       = shrink j
 
 shrinkL    :: (Arbitrary a) => [a] -> [[a]]
-shrinkL xs = case shrinkList xs of
+shrinkL xs = case listShrink xs of
                []  -> [xs]
                xs' -> xs'
 
