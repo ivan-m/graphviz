@@ -2764,6 +2764,9 @@ data Shape
     | MDiamond
     | MSquare
     | MCircle
+    | Square
+    | Star -- ^ Only since version 2.32.
+    | Underline
     | Note
     | Tab
     | Folder
@@ -2819,6 +2822,9 @@ instance PrintDot Shape where
   unqtDot MDiamond         = text "Mdiamond"
   unqtDot MSquare          = text "Msquare"
   unqtDot MCircle          = text "Mcircle"
+  unqtDot Square           = text "square"
+  unqtDot Star             = text "star"
+  unqtDot Underline        = text "underline"
   unqtDot Note             = text "note"
   unqtDot Tab              = text "tab"
   unqtDot Folder           = text "folder"
@@ -2878,6 +2884,9 @@ instance ParseDot Shape where
                           , ("Mdiamond", MDiamond)
                           , ("Msquare", MSquare)
                           , ("Mcircle", MCircle)
+                          , ("square", Square)
+                          , ("star", Star)
+                          , ("underline", Underline)
                           , ("note", Note)
                           , ("tab", Tab)
                           , ("folder", Folder)
