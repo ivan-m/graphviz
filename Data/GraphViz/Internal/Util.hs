@@ -23,6 +23,7 @@ import qualified Data.Set            as Set
 import           Data.Text.Lazy      (Text)
 import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T
+import           Data.Version        (Version (..))
 
 -- -----------------------------------------------------------------------------
 
@@ -135,6 +136,9 @@ keywords = Set.fromList [ "node"
                         , "subgraph"
                         , "strict"
                         ]
+
+createVersion    :: [Int] -> Version
+createVersion bs = Version { versionBranch = bs, versionTags = []}
 
 -- -----------------------------------------------------------------------------
 

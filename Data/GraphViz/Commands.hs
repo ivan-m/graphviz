@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiParamTypeClasses, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz.Commands
@@ -47,17 +47,18 @@ module Data.GraphViz.Commands
 
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
-import Data.GraphViz.Attributes.Complete(GraphvizCommand(..))
-import Data.GraphViz.Commands.IO(runCommand)
+import Data.GraphViz.Attributes.Complete (GraphvizCommand (..))
+import Data.GraphViz.Commands.IO         (runCommand)
 import Data.GraphViz.Exception
 
-import qualified Data.ByteString as SB
-import Data.Maybe(isJust)
-import System.IO(Handle, hSetBinaryMode, hPutStrLn, stderr)
-import Control.Monad(liftM, unless)
-import System.FilePath((<.>))
-import System.Directory(findExecutable)
-import System.Exit(ExitCode(..), exitWith)
+import           Control.Monad    (liftM, unless)
+import qualified Data.ByteString  as SB
+import           Data.Maybe       (isJust)
+import           Data.Version     (Version (..), showVersion)
+import           System.Directory (findExecutable)
+import           System.Exit      (ExitCode (..), exitWith)
+import           System.FilePath  ((<.>))
+import           System.IO        (Handle, hPutStrLn, hSetBinaryMode, stderr)
 
 -- -----------------------------------------------------------------------------
 
@@ -114,9 +115,11 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                                 --   layout performed.
                     | DotOutput -- ^ Reproduces the input along with
                                 --   layout information.
-                    | XDot      -- ^ As with 'DotOutput', but provides
-                                --   even more information on how the
-                                --   graph is drawn.
+                    | XDot (Maybe Version)
+                      -- ^ As with 'DotOutput', but provides even more
+                      --   information on how the graph is drawn.  The
+                      --   optional 'Version' is the same as
+                      --   specifying the @XDotVersion@ attribute.
                     | Eps       -- ^ Encapsulated PostScript.
                     | Fig       -- ^ FIG graphics language.
                     | Gd        -- ^ Internal GD library format.
@@ -157,13 +160,13 @@ data GraphvizOutput = Bmp       -- ^ Windows Bitmap Format.
                                 --   for mobile computing devices.
                     | WebP      -- ^ Google's WebP format; requires
                                 --   Graphviz >= 2.29.0.
-                    deriving (Eq, Ord, Bounded, Enum, Show, Read)
+                    deriving (Eq, Ord, Show, Read)
 
 instance GraphvizResult GraphvizOutput where
   outputCall Bmp       = "bmp"
   outputCall Canon     = "canon"
   outputCall DotOutput = "dot"
-  outputCall XDot      = "xdot"
+  outputCall (XDot mv) = "xdot" ++ maybe "" (showVersion . (\v -> v {versionTags = []})) mv
   outputCall Eps       = "eps"
   outputCall Fig       = "fig"
   outputCall Gd        = "gd"
@@ -195,7 +198,7 @@ defaultExtension           :: GraphvizOutput -> String
 defaultExtension Bmp       = "bmp"
 defaultExtension Canon     = "gv"
 defaultExtension DotOutput = "gv"
-defaultExtension XDot      = "gv"
+defaultExtension XDot{}    = "gv"
 defaultExtension Eps       = "eps"
 defaultExtension Fig       = "fig"
 defaultExtension Gd        = "gd"

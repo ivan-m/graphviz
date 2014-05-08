@@ -27,7 +27,7 @@ import qualified Data.GraphViz.Attributes.HTML          as Html
 import           Data.GraphViz.Attributes.Internal      (compassLookup)
 import           Data.GraphViz.Internal.State           (initialState,
                                                          layerListSep, layerSep)
-import           Data.GraphViz.Internal.Util            (bool)
+import           Data.GraphViz.Internal.Util            (bool, createVersion)
 
 import Test.QuickCheck
 
@@ -36,6 +36,7 @@ import           Data.List       (delete, groupBy, nub)
 import qualified Data.Map        as Map
 import           Data.Text.Lazy  (Text)
 import qualified Data.Text.Lazy  as T
+import           Data.Version    (Version (..))
 import           System.FilePath (searchPathSeparator)
 
 -- -----------------------------------------------------------------------------
@@ -995,3 +996,8 @@ instance Arbitrary Number where
 
   shrink (Int i) = map Int $ shrink i
   shrink (Dbl d) = map Dbl $ filter notInt $ shrink d
+
+instance Arbitrary Version where
+  arbitrary = liftM createVersion arbList
+
+  shrink = map createVersion . nonEmptyShrinks . versionBranch

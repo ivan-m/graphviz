@@ -84,6 +84,7 @@ import           Control.Monad             (ap, when)
 import           Control.Monad.Trans.State
 import           Data.Char                 (toLower)
 import qualified Data.Set                  as Set
+import           Data.Version              (Version (..))
 import           Data.Word                 (Word16, Word8)
 
 -- -----------------------------------------------------------------------------
@@ -173,6 +174,14 @@ instance PrintDot Char where
   unqtListToDot = unqtDot . T.pack
 
   listToDot = toDot . T.pack
+
+-- | Ignores 'versionTags' and assumes 'not . null . versionBranch'
+--   (usually you want 'length . versionBranch == 2').
+instance PrintDot Version where
+  unqtDot = hcat . punctuate dot . mapM int . versionBranch
+
+  toDot v = bool id dquotes (not . null . drop 2 . versionBranch $ v)
+            $ unqtDot v
 
 instance PrintDot Text where
   unqtDot = unqtString

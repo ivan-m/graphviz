@@ -92,12 +92,14 @@ import           Data.Char           (isDigit, isLower, isSpace, toLower,
                                       toUpper)
 import           Data.Function       (on)
 import           Data.List           (groupBy, sortBy)
-import           Data.Maybe          (fromMaybe, isJust, isNothing, listToMaybe)
+import           Data.Maybe          (fromMaybe, isJust, isNothing, listToMaybe,
+                                      maybeToList)
 import           Data.Ratio          ((%))
 import qualified Data.Set            as Set
 import           Data.Text.Lazy      (Text)
 import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T
+import           Data.Version        (Version (..))
 import           Data.Word           (Word16, Word8)
 
 -- -----------------------------------------------------------------------------
@@ -201,6 +203,17 @@ instance ParseDot Char where
   parseUnqtList = T.unpack <$> parseUnqt
 
   parseList = T.unpack <$> parse
+
+-- | Ignores 'versionTags' and assumes 'not . null . versionBranch'
+--   (usually you want 'length . versionBranch == 2') and that all
+--   such values are non-negative.
+instance ParseDot Version where
+  parseUnqt = createVersion <$> sepBy1 parseInt (character '.')
+
+  parse = quotedParse parseUnqt
+          <|>
+          (createVersion .) . (. maybeToList) . (:)
+             <$> parseInt <*> optional (character '.' *> parseInt)
 
 instance ParseDot Text where
   -- Too many problems with using this within other parsers where
