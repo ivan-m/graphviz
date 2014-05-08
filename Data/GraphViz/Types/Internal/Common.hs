@@ -11,11 +11,31 @@
    This module provides common functions used by both
    "Data.GraphViz.Types" as well as "Data.GraphViz.Types.Generalised".
 -}
-module Data.GraphViz.Types.Internal.Common where
+module Data.GraphViz.Types.Internal.Common
+       ( GraphID (..)
+       , Number (..)
+       , numericValue
+       , GlobalAttributes (..)
+       , partitionGlobal
+       , unPartitionGlobal
+       , withGlob
+       , DotNode (..)
+       , DotEdge (..)
+       , parseEdgeLine
+       , printGraphID
+       , parseGraphID
+       , printStmtBased
+       , printStmtBasedList
+       , printSubGraphID
+       , parseSubGraph
+       , parseBracesBased
+       , parseStatements
+       ) where
 
 import Data.GraphViz.Attributes.Complete (Attribute (HeadPort, TailPort),
-                                          Attributes, usedByClusters,
-                                          usedByGraphs, usedByNodes)
+                                          Attributes, Number (..),
+                                          usedByClusters, usedByGraphs,
+                                          usedByNodes)
 import Data.GraphViz.Attributes.Internal (PortPos, parseEdgeBasedPP)
 import Data.GraphViz.Internal.State
 import Data.GraphViz.Internal.Util
@@ -36,17 +56,15 @@ import qualified Data.Text.Lazy.Read as T
 --   instances for 'String' will properly take care of the special
 --   cases for numbers, they are treated differently here.
 data GraphID = Str Text
-             | Int Int
-             | Dbl Double
+             | Num Number
              deriving (Eq, Ord, Show, Read)
 
 instance PrintDot GraphID where
   unqtDot (Str str) = unqtDot str
-  unqtDot (Int i)   = unqtDot i
-  unqtDot (Dbl d)   = unqtDot d
+  unqtDot (Num n)   = unqtDot n
 
   toDot (Str str) = toDot str
-  toDot gID       = unqtDot gID
+  toDot (Num n)   = toDot n
 
 instance ParseDot GraphID where
   parseUnqt = stringNum <$> parseUnqt
@@ -56,17 +74,18 @@ instance ParseDot GraphID where
           ("Not a valid GraphID\n\t"++)
 
 stringNum     :: Text -> GraphID
-stringNum str = maybe checkDbl Int $ stringToInt str
+stringNum str = maybe checkDbl (Num . Int) $ stringToInt str
   where
     checkDbl = if isNumString str
-               then Dbl $ toDouble str
+               then Num . Dbl $ toDouble str
                else Str str
 
 numericValue           :: GraphID -> Maybe Int
 numericValue (Str str) = either (const Nothing) (Just . round . fst)
                          $ T.signed T.double str
-numericValue (Int n)   = Just n
-numericValue (Dbl x)   = Just $ round x
+numericValue (Num n)   = case n of
+                           Int i -> Just i
+                           Dbl d -> Just $ round d
 
 -- -----------------------------------------------------------------------------
 

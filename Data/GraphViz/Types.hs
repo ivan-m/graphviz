@@ -95,6 +95,7 @@ module Data.GraphViz.Types
        , PPDotRepr
          -- * Common sub-types
        , GraphID(..)
+       , Number (..)
        , ToGraphID(..)
        , textGraphID
        , GlobalAttributes(..)
@@ -129,7 +130,7 @@ import Data.GraphViz.Types.Canonical       (DotGraph (..), DotStatements (..),
                                             DotSubGraph (..))
 import Data.GraphViz.Types.Internal.Common (DotEdge (..), DotNode (..),
                                             GlobalAttributes (..), GraphID (..),
-                                            numericValue, withGlob)
+                                            Number (..), numericValue, withGlob)
 import Data.GraphViz.Types.State
 
 import           Control.Arrow             (first, second, (***))
@@ -350,7 +351,7 @@ renumber dg = dg { graphStatements = newStmts }
     sgRe sg = do sgid' <- case subGraphID sg of
                             Nothing -> do n <- get
                                           put $ succ n
-                                          return . Just $ Int n
+                                          return . Just . Num $ Int n
                             sgid    -> return sgid
                  stmts' <- stRe $ subGraphStmts sg
                  return $ sg { subGraphID    = sgid'
@@ -393,14 +394,14 @@ instance ToGraphID Char where
   toGraphID = toGraphID . T.singleton
 
 instance ToGraphID Int where
-  toGraphID = Int
+  toGraphID = Num . Int
 
 -- | This instance loses precision by going via 'Int'.
 instance ToGraphID Integer where
-  toGraphID = Int . fromInteger
+  toGraphID = Num . Int . fromInteger
 
 instance ToGraphID Double where
-  toGraphID = Dbl
+  toGraphID = Num . Dbl
 
 -- -----------------------------------------------------------------------------
 

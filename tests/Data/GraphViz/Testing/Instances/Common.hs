@@ -31,13 +31,11 @@ import Control.Monad (liftM, liftM2, liftM3)
 
 instance Arbitrary GraphID where
   arbitrary = oneof [ liftM Str arbitrary
-                    , liftM Int arbitrary
-                    , liftM Dbl $ suchThat arbitrary notInt
+                    , liftM Num arbitrary
                     ]
 
   shrink (Str s) = map Str $ shrink s
-  shrink (Int i) = map Int $ shrink i
-  shrink (Dbl d) = map Dbl $ filter notInt $ shrink d
+  shrink (Num n) = map Num $ shrink n
 
 instance (Arbitrary n) => Arbitrary (DotNode n) where
   arbitrary = liftM2 DotNode arbitrary arbNodeAttrs

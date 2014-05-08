@@ -144,7 +144,7 @@ isUndirected g = all hasFlip es
      >   where
      >     params = blankParams { globalAttributes = []
      >                          , clusterBy        = clustBy
-     >                          , clusterID        = Int
+     >                          , clusterID        = Num . Int
      >                          , fmtCluster       = clFmt
      >                          , fmtNode          = const []
      >                          , fmtEdge          = const []
@@ -219,7 +219,7 @@ defaultParams = Params { isDirected       = True
                        , globalAttributes = []
                        , clusterBy        = N
                        , isDotCluster     = const True
-                       , clusterID        = const (Int 0)
+                       , clusterID        = const (Num $ Int 0)
                        , fmtCluster       = const []
                        , fmtNode          = const []
                        , fmtEdge          = const []

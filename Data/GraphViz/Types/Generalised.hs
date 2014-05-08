@@ -326,7 +326,7 @@ renumber dg = dg { graphStatements = newStmts }
     sgRe sg = do sgid' <- case subGraphID sg of
                             Nothing -> do n <- get
                                           put $ succ n
-                                          return . Just $ Int n
+                                          return . Just . Num $ Int n
                             sgid    -> return sgid
                  stmts' <- stsRe $ subGraphStmts sg
                  return $ sg { subGraphID    = sgid'

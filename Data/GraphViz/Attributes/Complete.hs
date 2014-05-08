@@ -108,6 +108,9 @@ module Data.GraphViz.Attributes.Complete
          -- * Value types for @Attribute@s.
        , module Data.GraphViz.Attributes.Colors
 
+         -- ** Generic types
+       , Number (..)
+
          -- ** Labels
        , EscString
        , Label(..)
@@ -3214,3 +3217,30 @@ instance ParseDot Ratios where
                     , stringRep ExpandRatio "expand"
                     , stringRep AutoRatio "auto"
                     ]
+
+-- -----------------------------------------------------------------------------
+
+-- | A numeric type with an explicit separation between integers and
+--   floating-point values.
+data Number = Int Int
+            | Dbl Double
+            deriving (Eq, Ord, Show, Read)
+
+instance PrintDot Number where
+  unqtDot (Int i) = unqtDot i
+  unqtDot (Dbl d) = unqtDot d
+
+  toDot (Int i) = toDot i
+  toDot (Dbl d) = toDot d
+
+instance ParseDot Number where
+  parseUnqt = parseNumber True
+
+  parse = quotedParse parseUnqt
+          <|>
+          parseNumber False
+
+parseNumber   :: Bool -> Parse Number
+parseNumber q = Dbl <$> parseStrictFloat q
+                <|>
+                Int <$> parseUnqt
