@@ -985,6 +985,9 @@ instance Arbitrary PortName where
 
   shrink = map PN . filter notCP . shrink . portName
 
+notCP :: Text -> Bool
+notCP = flip Map.notMember compassLookup
+
 instance Arbitrary Number where
   arbitrary = frequency [ (3, liftM Dbl $ suchThat arbitrary notInt)
                         , (1, liftM Int arbitrary)
@@ -992,6 +995,3 @@ instance Arbitrary Number where
 
   shrink (Int i) = map Int $ shrink i
   shrink (Dbl d) = map Dbl $ filter notInt $ shrink d
-
-notCP :: Text -> Bool
-notCP = flip Map.notMember compassLookup
