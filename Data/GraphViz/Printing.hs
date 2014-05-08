@@ -47,7 +47,7 @@
 module Data.GraphViz.Printing
     ( module Text.PrettyPrint.Leijen.Text.Monadic
     , DotCode
-    , renderDot -- Exported for Data.GraphViz.Types.printSGID
+    , renderDot -- Exported for Data.GraphViz.Types.Internal.Common.printSGID
     , PrintDot(..)
     , unqtText
     , dotText
