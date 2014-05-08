@@ -46,6 +46,7 @@ module Data.GraphViz.Parsing
     , strings
     , character
     , parseStrictFloat
+    , parseSignedFloat
     , noneOf
     , whitespace1
     , whitespace
@@ -164,7 +165,10 @@ instance ParseDot Word16 where
   parseUnqt = parseInt
 
 instance ParseDot Double where
-  parseUnqt = parseFloat'
+  parseUnqt = parseSignedFloat True
+
+  parse = quotedParse parseUnqt
+          <|> parseSignedFloat False
 
   parseUnqtList = sepBy1 parseUnqt (character ':')
 
@@ -217,12 +221,12 @@ instance (ParseDot a) => ParseDot [a] where
 
 -- | Parse a 'String' that doesn't need to be quoted.
 quotelessString :: Parse Text
-quotelessString = numString `onFail` stringBlock
+quotelessString = numString False `onFail` stringBlock
 
-numString :: Parse Text
-numString = fmap tShow parseStrictFloat
-            `onFail`
-            fmap tShow parseInt'
+numString :: Bool -> Parse Text
+numString q = fmap tShow (parseStrictFloat q)
+              `onFail`
+              fmap tShow parseInt'
   where
     tShow :: (Show a) => a -> Text
     tShow = T.pack . show
@@ -257,35 +261,37 @@ parseInt' :: Parse Int
 parseInt' = parseSigned parseInt
 
 -- | Parse a floating point number that actually contains decimals.
-parseStrictFloat :: Parse Double
-parseStrictFloat = parseSigned parseFloat
+--   Bool flag indicates whether values that need to be quoted are
+--   parsed.
+parseStrictFloat :: Bool -> Parse Double
+parseStrictFloat = parseSigned . parseFloat
 
-parseFloat :: (RealFrac a) => Parse a
-parseFloat = do ds   <- manySatisfy isDigit
-                frac <- optional $ character '.' *> manySatisfy isDigit
-                when (T.null ds && noDec frac)
-                  (fail "No actual digits in floating point number!")
-                expn  <- optional parseExp
-                when (isNothing frac && isNothing expn)
-                  (fail "This is an integer, not a floating point number!")
-                let frac' = fromMaybe "" frac
-                    expn' = fromMaybe 0 expn
-                ( return . fromRational . (* (10^^(expn' - fromIntegral (T.length frac'))))
-                  . (%1) . runParser' parseInt) (ds `T.append` frac')
-             `onFail`
-             fail "Expected a floating point number"
+-- | Bool flag indicates whether to allow parsing exponentiated term,
+-- as this is only allowed when quoted.
+parseFloat :: (RealFrac a) => Bool -> Parse a
+parseFloat q = do ds   <- manySatisfy isDigit
+                  frac <- optional $ character '.' *> manySatisfy isDigit
+                  when (T.null ds && noDec frac)
+                    (fail "No actual digits in floating point number!")
+                  expn  <- bool (pure Nothing) (optional parseExp) q
+                  when (isNothing frac && isNothing expn)
+                    (fail "This is an integer, not a floating point number!")
+                  let frac' = fromMaybe "" frac
+                      expn' = fromMaybe 0 expn
+                  ( return . fromRational . (* (10^^(expn' - fromIntegral (T.length frac'))))
+                    . (%1) . runParser' parseInt) (ds `T.append` frac')
+               `onFail`
+               fail "Expected a floating point number"
   where
     parseExp = character 'e'
-               *> ((character '+' *> parseInt)
-                   `onFail`
-                   parseInt')
+               *> commit ((character '+' *> parseInt)
+                          `onFail`
+                          parseInt')
     noDec = maybe True T.null
 
-parseFloat' :: Parse Double
-parseFloat' = parseSigned ( parseFloat
-                            `onFail`
-                            fmap fI parseInt
-                          )
+-- Bool indicates whether we can parse values that need quotes.
+parseSignedFloat :: Bool -> Parse Double
+parseSignedFloat q = parseSigned ( parseFloat q <|> fmap fI parseInt )
   where
     fI :: Integer -> Double
     fI = fromIntegral

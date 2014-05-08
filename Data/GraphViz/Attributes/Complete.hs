@@ -1896,7 +1896,7 @@ instance ParseDot DPoint where
 
   parse = quotedParse parseUnqt -- A `+' would need to be quoted.
           `onFail`
-          fmap DVal parse -- Don't use parseUnqt!
+          fmap DVal (parseSignedFloat False) -- Don't use parseUnqt!
 
 -- -----------------------------------------------------------------------------
 
@@ -1952,7 +1952,7 @@ instance ParseDot GraphSize where
 
   parse = quotedParse parseUnqt
           `onFail`
-          fmap (\ w -> GSize w Nothing False) parseUnqt
+          fmap (\ w -> GSize w Nothing False) (parseSignedFloat False)
 
 -- -----------------------------------------------------------------------------
 
@@ -3210,13 +3210,21 @@ instance PrintDot Ratios where
   unqtDot ExpandRatio     = text "expand"
   unqtDot AutoRatio       = text "auto"
 
+  toDot (AspectRatio r) = toDot r
+  toDot r               = unqtDot r
+
 instance ParseDot Ratios where
-  parseUnqt = oneOf [ AspectRatio <$> parseUnqt
-                    , stringRep FillRatio "fill"
-                    , stringRep CompressRatio "compress"
-                    , stringRep ExpandRatio "expand"
-                    , stringRep AutoRatio "auto"
-                    ]
+  parseUnqt = parseRatio True
+
+  parse = quotedParse parseUnqt <|> parseRatio False
+
+parseRatio   :: Bool -> Parse Ratios
+parseRatio q = oneOf [ AspectRatio <$> parseSignedFloat q
+                     , stringRep FillRatio "fill"
+                     , stringRep CompressRatio "compress"
+                     , stringRep ExpandRatio "expand"
+                     , stringRep AutoRatio "auto"
+                     ]
 
 -- -----------------------------------------------------------------------------
 
