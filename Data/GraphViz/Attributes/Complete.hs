@@ -1923,7 +1923,7 @@ instance ParseDot DPoint where
 
   parse = quotedParse parseUnqt -- A `+' would need to be quoted.
           `onFail`
-          fmap DVal parseUnqt
+          fmap DVal parse -- Don't use parseUnqt!
 
 -- -----------------------------------------------------------------------------
 
