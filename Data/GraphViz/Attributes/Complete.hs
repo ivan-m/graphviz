@@ -151,6 +151,7 @@ module Data.GraphViz.Attributes.Complete
        , Pos(..)
        , Spline(..)
        , DPoint(..)
+       , Normalized (..)
 
          -- ** Layout
        , GraphvizCommand(..)
@@ -3259,3 +3260,32 @@ parseNumber   :: Bool -> Parse Number
 parseNumber q = Dbl <$> parseStrictFloat q
                 <|>
                 Int <$> parseUnqt
+
+-- -----------------------------------------------------------------------------
+
+-- | If set, normalizes coordinates such that the first point is at
+--   the origin and the first edge is at the angle if specified.
+data Normalized = IsNormalized -- ^ Equivalent to @'NormalizedAngle' 0@.
+                | NotNormalized
+                | NormalizedAngle Double -- ^ Angle of first edge when
+                                         --   normalized.  Requires
+                                         --   Graphviz >= 2.32.0.
+                deriving (Eq, Ord, Show, Read)
+
+instance PrintDot Normalized where
+  unqtDot IsNormalized        = unqtDot True
+  unqtDot NotNormalized       = unqtDot False
+  unqtDot (NormalizedAngle a) = unqtDot a
+
+  toDot (NormalizedAngle a) = toDot a
+  toDot norm                = unqtDot norm
+
+instance ParseDot Normalized where
+  parseUnqt = parseNormalized True
+
+  parse = quotedParse parseUnqt <|> parseNormalized False
+
+parseNormalized :: Bool -> Parse Normalized
+parseNormalized q = NormalizedAngle <$> parseSignedFloat q
+                    <|>
+                    bool NotNormalized IsNormalized <$> onlyBool

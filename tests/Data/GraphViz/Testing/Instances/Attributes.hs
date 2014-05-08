@@ -997,6 +997,14 @@ instance Arbitrary Number where
   shrink (Int i) = map Int $ shrink i
   shrink (Dbl d) = map Dbl $ filter notInt $ shrink d
 
+instance Arbitrary Normalized where
+  arbitrary = oneof [ elements [IsNormalized, NotNormalized]
+                    , liftM NormalizedAngle arbitrary
+                    ]
+
+  shrink (NormalizedAngle a) = map NormalizedAngle $ shrink a
+  shrink _                   = []
+
 instance Arbitrary Version where
   arbitrary = liftM createVersion arbList
 
