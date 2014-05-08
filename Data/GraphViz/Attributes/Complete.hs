@@ -1962,8 +1962,8 @@ data ModeType = Major
               | KK
               | Hier
               | IpSep
-              | SpringMode -- ^ For 'Sfpd', requires Graphviz >= 2.32.0.
-              | MaxEnt     -- ^ For 'Sfpd', requires Graphviz >= 2.32.0.
+              | SpringMode -- ^ For 'Sfdp', requires Graphviz >= 2.32.0.
+              | MaxEnt     -- ^ For 'Sfdp', requires Graphviz >= 2.32.0.
               deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot ModeType where
@@ -2188,14 +2188,14 @@ instance ParseDot Point where
 
 -- | How to deal with node overlaps.
 --
---   Defaults to 'KeepOverlaps' /except/ for fdp and sfdp.
+--   Defaults to 'KeepOverlaps' /except/ for 'Fdp' and 'Sfdp'.
 --
---   The ability to specify the number of tries for fdp's initial
---   force-directed technique is /not/ supported (by default, fdp uses
+--   The ability to specify the number of tries for 'Fdp''s initial
+--   force-directed technique is /not/ supported (by default, 'Fdp' uses
 --   @9@ passes of its in-built technique, and then @'PrismOverlap'
 --   Nothing@).
 --
---   For sfdp, the default is @'PrismOverlap' (Just 0)@.
+--   For 'Sfdp', the default is @'PrismOverlap' (Just 0)@.
 data Overlap = KeepOverlaps
              | ScaleOverlaps -- ^ Remove overlaps by uniformly scaling in x and y.
              | ScaleXYOverlaps -- ^ Remove overlaps by separately scaling x and y.
@@ -2517,17 +2517,17 @@ instance ParseDot Pos where
 
 -- | Controls how (and if) edges are represented.
 --
---   For @dot@, the default is 'SplineEdges'; for all other layouts
+--   For 'Dot', the default is 'SplineEdges'; for all other layouts
 --   the default is 'LineEdges'.
-data EdgeType = SplineEdges -- ^ Except for dot, requires
+data EdgeType = SplineEdges -- ^ Except for 'Dot', requires
                             --   non-overlapping nodes (see
                             --   'Overlap').
               | LineEdges
               | NoEdges
               | PolyLine
-              | Ortho -- ^ Does not handle ports or edge labels in dot.
+              | Ortho -- ^ Does not handle ports or edge labels in 'Dot'.
               | Curved -- ^ Requires Graphviz >= 2.30.0.
-              | CompoundEdge -- ^ fdp only
+              | CompoundEdge -- ^ 'Fdp' only
               deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot EdgeType where
