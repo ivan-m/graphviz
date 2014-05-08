@@ -474,7 +474,6 @@ attributes = [
   makeAttr "ArrowHead" ["arrowhead"] "E" (Cust "ArrowType") Nothing (Just "normal") (Just "@'normal'@") Nothing Nothing,
   makeAttr "ArrowSize" ["arrowsize"] "E" (Dbl) Nothing (Just "1.0") (Just "@1.0@") (Just "@0.0@") Nothing,
   makeAttr "ArrowTail" ["arrowtail"] "E" (Cust "ArrowType") Nothing (Just "normal") (Just "@'normal'@") Nothing Nothing,
-  makeAttr "Aspect" ["aspect"] "G" (Cust "AspectType") Nothing Nothing Nothing Nothing (Just "dot only"),
   makeAttr "BoundingBox" ["bb"] "G" (Cust "Rect") Nothing Nothing Nothing Nothing (Just "write only"),
   makeAttr "BgColor" ["bgcolor"] "GC" (Cust "ColorList") Nothing (Just "[]") (Just "@[]@") Nothing Nothing,
   makeAttr "Center" ["center"] "G" (Bl) (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing,
@@ -662,7 +661,6 @@ This way, you can more easily edit/update the appropriate values.
 | ArrowHead       | arrowhead       | E       | Cust "ArrowType" |            | normal          | @'normal'@           |            |                      |
 | ArrowSize       | arrowsize       | E       | Dbl             |            | 1.0             | @1.0@                | @0.0@      |                      |
 | ArrowTail       | arrowtail       | E       | Cust "ArrowType" |            | normal          | @'normal'@           |            |                      |
-| Aspect          | aspect          | G       | Cust "AspectType" |            |                 |                      |            | dot only             |
 | BoundingBox     | bb              | G       | Cust "Rect"     |            |                 |                      |            | write only           |
 | BgColor         | bgcolor         | GC      | Cust "ColorList" |            | []              | @[]@                 |            |                      |
 | Center          | center          | G       | Bl              | True       | False           | @'False'@            |            |                      |

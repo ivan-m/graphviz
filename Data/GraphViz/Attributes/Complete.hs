@@ -152,7 +152,6 @@ module Data.GraphViz.Attributes.Complete
          -- ** Layout
        , GraphvizCommand(..)
        , GraphSize(..)
-       , AspectType(..)
        , ClusterMode(..)
        , Model(..)
        , Overlap(..)
@@ -259,7 +258,6 @@ data Attribute
   | ArrowHead ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
   | ArrowSize Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
   | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
-  | Aspect AspectType                   -- ^ /Valid for/: G; /Notes/: dot only
   | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
   | BgColor ColorList                   -- ^ /Valid for/: GC; /Default/: @[]@
   | Center Bool                         -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -424,7 +422,6 @@ instance PrintDot Attribute where
   unqtDot (ArrowHead v)          = printField "arrowhead" v
   unqtDot (ArrowSize v)          = printField "arrowsize" v
   unqtDot (ArrowTail v)          = printField "arrowtail" v
-  unqtDot (Aspect v)             = printField "aspect" v
   unqtDot (BoundingBox v)        = printField "bb" v
   unqtDot (BgColor v)            = printField "bgcolor" v
   unqtDot (Center v)             = printField "center" v
@@ -585,7 +582,6 @@ instance ParseDot Attribute where
                                   , parseField ArrowHead "arrowhead"
                                   , parseField ArrowSize "arrowsize"
                                   , parseField ArrowTail "arrowtail"
-                                  , parseField Aspect "aspect"
                                   , parseField BoundingBox "bb"
                                   , parseField BgColor "bgcolor"
                                   , parseFieldBool Center "center"
@@ -749,7 +745,6 @@ usedByGraphs                      :: Attribute -> Bool
 usedByGraphs Damping{}            = True
 usedByGraphs K{}                  = True
 usedByGraphs URL{}                = True
-usedByGraphs Aspect{}             = True
 usedByGraphs BoundingBox{}        = True
 usedByGraphs BgColor{}            = True
 usedByGraphs Center{}             = True
@@ -997,7 +992,6 @@ sameAttribute Area{}                  Area{}                  = True
 sameAttribute ArrowHead{}             ArrowHead{}             = True
 sameAttribute ArrowSize{}             ArrowSize{}             = True
 sameAttribute ArrowTail{}             ArrowTail{}             = True
-sameAttribute Aspect{}                Aspect{}                = True
 sameAttribute BoundingBox{}           BoundingBox{}           = True
 sameAttribute BgColor{}               BgColor{}               = True
 sameAttribute Center{}                Center{}                = True
@@ -1288,7 +1282,6 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "arrowhead"
                , "arrowsize"
                , "arrowtail"
-               , "aspect"
                , "bb"
                , "bgcolor"
                , "center"
@@ -1787,29 +1780,6 @@ instance ParseDot ArrowSide where
 
   -- Not used individually
   parse = parseUnqt
-
--- -----------------------------------------------------------------------------
-
-data AspectType = RatioOnly Double
-                | RatioPassCount Double Int
-                deriving (Eq, Ord, Show, Read)
-
-instance PrintDot AspectType where
-  unqtDot (RatioOnly r)        = unqtDot r
-  unqtDot (RatioPassCount r p) = commaDel r p
-
-  toDot at@RatioOnly{}      = unqtDot at
-  toDot at@RatioPassCount{} = dquotes $ unqtDot at
-
-instance ParseDot AspectType where
-  parseUnqt = fmap (uncurry RatioPassCount) commaSepUnqt
-              `onFail`
-              fmap RatioOnly parseUnqt
-
-
-  parse = quotedParse (uncurry RatioPassCount <$> commaSepUnqt)
-          `onFail`
-          fmap RatioOnly parse
 
 -- -----------------------------------------------------------------------------
 

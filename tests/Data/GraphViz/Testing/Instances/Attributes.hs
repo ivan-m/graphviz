@@ -67,7 +67,6 @@ instance Arbitrary Attribute where
                     , liftM ArrowHead arbitrary
                     , liftM ArrowSize arbitrary
                     , liftM ArrowTail arbitrary
-                    , liftM Aspect arbitrary
                     , liftM BoundingBox arbitrary
                     , liftM BgColor arbList
                     , liftM Center arbitrary
@@ -226,7 +225,6 @@ instance Arbitrary Attribute where
   shrink (ArrowHead v)          = map ArrowHead           $ shrink v
   shrink (ArrowSize v)          = map ArrowSize           $ shrink v
   shrink (ArrowTail v)          = map ArrowTail           $ shrink v
-  shrink (Aspect v)             = map Aspect              $ shrink v
   shrink (BoundingBox v)        = map BoundingBox         $ shrink v
   shrink (BgColor v)            = map BgColor             $ nonEmptyShrinks v
   shrink (Center v)             = map Center              $ shrink v
@@ -399,16 +397,6 @@ instance Arbitrary ArrowFill where
 
 instance Arbitrary ArrowSide where
   arbitrary = arbBounded
-
-instance Arbitrary AspectType where
-  arbitrary = oneof [ liftM  RatioOnly arbitrary
-                    , liftM2 RatioPassCount arbitrary posArbitrary
-                    ]
-
-  shrink (RatioOnly d) = map RatioOnly $ shrink d
-  shrink (RatioPassCount d i) = do ds <- shrink d
-                                   is <- shrink i
-                                   return $ RatioPassCount ds is
 
 instance Arbitrary LabelScheme where
   arbitrary = arbBounded
