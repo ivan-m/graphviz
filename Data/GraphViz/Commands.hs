@@ -193,9 +193,9 @@ instance GraphvizResult GraphvizOutput where
 -- | A default file extension for each 'GraphvizOutput'.
 defaultExtension           :: GraphvizOutput -> String
 defaultExtension Bmp       = "bmp"
-defaultExtension Canon     = "dot"
-defaultExtension DotOutput = "dot"
-defaultExtension XDot      = "dot"
+defaultExtension Canon     = "gv"
+defaultExtension DotOutput = "gv"
+defaultExtension XDot      = "gv"
 defaultExtension Eps       = "eps"
 defaultExtension Fig       = "fig"
 defaultExtension Gd        = "gd"
