@@ -1956,23 +1956,30 @@ instance ParseDot GraphSize where
 
 -- -----------------------------------------------------------------------------
 
+-- | For 'Neato' unless indicated otherwise.
 data ModeType = Major
               | KK
               | Hier
               | IpSep
+              | SpringMode -- ^ For 'Sfpd', requires Graphviz >= 2.32.0.
+              | MaxEnt     -- ^ For 'Sfpd', requires Graphviz >= 2.32.0.
               deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot ModeType where
-  unqtDot Major = text "major"
-  unqtDot KK    = text "KK"
-  unqtDot Hier  = text "hier"
-  unqtDot IpSep = text "ipsep"
+  unqtDot Major      = text "major"
+  unqtDot KK         = text "KK"
+  unqtDot Hier       = text "hier"
+  unqtDot IpSep      = text "ipsep"
+  unqtDot SpringMode = text "spring"
+  unqtDot MaxEnt     = text "maxent"
 
 instance ParseDot ModeType where
   parseUnqt = oneOf [ stringRep Major "major"
                     , stringRep KK "KK"
                     , stringRep Hier "hier"
                     , stringRep IpSep "ipsep"
+                    , stringRep SpringMode "spring"
+                    , stringRep MaxEnt "maxent"
                     ]
 
 -- -----------------------------------------------------------------------------
