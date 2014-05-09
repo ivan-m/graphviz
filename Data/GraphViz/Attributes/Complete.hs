@@ -200,7 +200,8 @@ import           Data.GraphViz.Attributes.Internal
 import           Data.GraphViz.Exception             (GraphvizException (NotCustomAttr),
                                                       throw)
 import           Data.GraphViz.Internal.State        (getLayerListSep,
-                                                      getLayerSep,
+                                                      getLayerSep, getsGS,
+                                                      parseStrictly,
                                                       setLayerListSep,
                                                       setLayerSep)
 import           Data.GraphViz.Internal.Util
@@ -1521,12 +1522,14 @@ parseFieldDef c d fld = [(fld, p)]
 --   there is an equal sign but the @value@ part doesn't parse, throw
 --   an un-recoverable error.
 liftEqParse :: (ParseDot a) => String -> (a -> Attribute) -> Parse Attribute
-liftEqParse k c = parseEq
-                  *> ( hasDef (fmap c parse)
-                       `adjustErrBad`
-                       (("Unable to parse key=value with key of " ++ k
-                         ++ "\n\t") ++)
-                     )
+liftEqParse k c = do pStrict <- getsGS parseStrictly
+                     let adjErr = bool adjustErr adjustErrBad pStrict
+                     parseEq
+                       *> ( hasDef (fmap c parse)
+                            `adjErr`
+                            (("Unable to parse key=value with key of " ++ k
+                              ++ "\n\t") ++)
+                          )
   where
     hasDef p = maybe p (onFail p . (`stringRep` "\"\""))
                . defaultAttributeValue $ c undefined

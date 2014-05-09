@@ -58,7 +58,11 @@ data AttributeType = GraphAttribute
                      deriving (Eq, Ord, Show, Read)
 
 -- | Several aspects of Dot code are either global or mutable state.
-data GraphvizState = GS { directedEdges :: !Bool
+data GraphvizState = GS { parseStrictly :: !Bool
+                          -- ^ If 'False', allow fallbacks for
+                          --   attributes that don't match known
+                          --   specification when parsing.
+                        , directedEdges :: !Bool
                         , layerSep      :: [Char]
                         , layerListSep  :: [Char]
                         , attributeType :: !AttributeType
@@ -70,7 +74,8 @@ data GraphvizState = GS { directedEdges :: !Bool
                    deriving (Eq, Ord, Show, Read)
 
 initialState :: GraphvizState
-initialState = GS { directedEdges = True
+initialState = GS { parseStrictly = True
+                  , directedEdges = True
                   , layerSep      = defLayerSep
                   , layerListSep  = defLayerListSep
                   , attributeType = GraphAttribute

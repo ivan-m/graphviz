@@ -30,6 +30,8 @@ module Data.GraphViz.Parsing
     , parseIt'
     , runParser
     , runParser'
+    , runParserWith
+    , parseLiberally
     , checkValidParse
       -- * Convenience parsing combinators.
     , ignoreSep
@@ -108,9 +110,16 @@ import           Data.Word           (Word16, Word8)
 -- | A @ReadS@-like type alias.
 type Parse a = Parser GraphvizState a
 
-runParser     :: Parse a -> Text -> (Either String a, Text)
-runParser p t = let (r,_,t') = P.runParser p initialState t
-                in (r,t')
+runParser :: Parse a -> Text -> (Either String a, Text)
+runParser = runParserWith id
+
+parseLiberally    :: GraphvizState -> GraphvizState
+parseLiberally gs = gs { parseStrictly = False }
+
+runParserWith     :: (GraphvizState -> GraphvizState) -> Parse a -> Text
+                     -> (Either String a, Text)
+runParserWith f p t = let (r,_,t') = P.runParser p (f initialState) t
+                      in (r,t')
 
 -- | A variant of 'runParser' where it is assumed that the provided
 --   parsing function consumes all of the 'Text' input (with the

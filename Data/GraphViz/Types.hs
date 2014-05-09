@@ -114,6 +114,7 @@ module Data.GraphViz.Types
          -- * Printing and parsing a @DotRepr@.
        , printDotGraph
        , parseDotGraph
+       , parseDotGraphLiberally
          -- * Limitations and documentation
          -- $limitations
        ) where
@@ -121,9 +122,11 @@ module Data.GraphViz.Types
 import Data.GraphViz.Attributes.Complete   (rmUnwantedAttributes,
                                             usedByClusters, usedByEdges,
                                             usedByGraphs, usedByNodes)
+import Data.GraphViz.Internal.State        (GraphvizState)
 import Data.GraphViz.Internal.Util         (bool)
 import Data.GraphViz.Parsing               (ParseDot (..), adjustErr,
-                                            checkValidParse, parse, runParser)
+                                            checkValidParse, parse,
+                                            parseLiberally, runParserWith)
 import Data.GraphViz.PreProcessing         (preProcess)
 import Data.GraphViz.Printing              (PrintDot (..), printIt)
 import Data.GraphViz.Types.Canonical       (DotGraph (..), DotStatements (..),
@@ -269,9 +272,23 @@ printDotGraph = printIt
 --
 --   Also removes any comments, etc. before parsing.
 parseDotGraph :: (ParseDotRepr dg n) => Text -> dg n
-parseDotGraph = fst . prs . preProcess
+parseDotGraph = parseDotGraphWith id
+
+-- | As with 'parseDotGraph', but if an 'Attribute' cannot be parsed
+--   strictly according to the known rules, let it fall back to being
+--   parsed as an 'UnknownAttribute'.  This is especially useful for
+--   when using a version of Graphviz that is either newer (especially
+--   for the XDot attributes) or older (when some attributes have
+--   changed) but you'd still prefer it to parse rather than throwing
+--   an error.
+parseDotGraphLiberally :: (ParseDotRepr dg n) => Text -> dg n
+parseDotGraphLiberally = parseDotGraphWith parseLiberally
+
+parseDotGraphWith :: (ParseDotRepr dg n) => (GraphvizState -> GraphvizState)
+                     -> Text -> dg n
+parseDotGraphWith f = fst . prs . preProcess
   where
-    prs = first checkValidParse . runParser parse'
+    prs = first checkValidParse . runParserWith f parse'
 
     parse' = parse `adjustErr`
              ("Unable to parse the Dot graph; usually this is because of either:\n\
