@@ -154,11 +154,11 @@ instance ParseDot TextItem where
   parseList = parseUnqtList
 
 data Format = Italics
-                | Bold
-                | Underline
-                | Subscript
-                | Superscript
-                deriving (Eq, Ord, Bounded, Enum, Show, Read)
+              | Bold
+              | Underline
+              | Subscript
+              | Superscript
+              deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
 instance PrintDot Format where
   unqtDot Italics     = text "I"
