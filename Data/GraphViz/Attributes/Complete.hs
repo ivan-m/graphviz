@@ -2777,34 +2777,34 @@ data Shape
     | MSquare
     | MCircle
     | Square
-    | Star -- ^ Only since version 2.32.
-    | Underline
+    | Star      -- ^ Requires Graphviz >= 2.32.0.
+    | Underline -- ^ Requires Graphviz >= 2.36.0.
     | Note
     | Tab
     | Folder
     | Box3D
     | Component
-    | Promoter
-    | CDS
-    | Terminator
-    | UTR
-    | PrimerSite
-    | RestrictionSite
-    | FivePovOverhang
-    | ThreePovOverhang
-    | NoOverhang
-    | Assembly
-    | Signature
-    | Insulator
-    | Ribosite
-    | RNAStab
-    | ProteaseSite
-    | ProteinStab
-    | RPromoter
-    | RArrow
-    | LArrow
-    | LPromoter
-    | Record -- ^ Must specify the record shape with a 'Label'.
+    | Promoter         -- ^ Requires Graphviz >= 2.30.0.
+    | CDS              -- ^ Requires Graphviz >= 2.30.0.
+    | Terminator       -- ^ Requires Graphviz >= 2.30.0.
+    | UTR              -- ^ Requires Graphviz >= 2.30.0.
+    | PrimerSite       -- ^ Requires Graphviz >= 2.30.0.
+    | RestrictionSite  -- ^ Requires Graphviz >= 2.30.0.
+    | FivePovOverhang  -- ^ Requires Graphviz >= 2.30.0.
+    | ThreePovOverhang -- ^ Requires Graphviz >= 2.30.0.
+    | NoOverhang       -- ^ Requires Graphviz >= 2.30.0.
+    | Assembly         -- ^ Requires Graphviz >= 2.30.0.
+    | Signature        -- ^ Requires Graphviz >= 2.30.0.
+    | Insulator        -- ^ Requires Graphviz >= 2.30.0.
+    | Ribosite         -- ^ Requires Graphviz >= 2.30.0.
+    | RNAStab          -- ^ Requires Graphviz >= 2.30.0.
+    | ProteaseSite     -- ^ Requires Graphviz >= 2.30.0.
+    | ProteinStab      -- ^ Requires Graphviz >= 2.30.0.
+    | RPromoter        -- ^ Requires Graphviz >= 2.30.0.
+    | RArrow           -- ^ Requires Graphviz >= 2.30.0.
+    | LArrow           -- ^ Requires Graphviz >= 2.30.0.
+    | LPromoter        -- ^ Requires Graphviz >= 2.30.0.
+    | Record  -- ^ Must specify the record shape with a 'Label'.
     | MRecord -- ^ Must specify the record shape with a 'Label'.
     deriving (Eq, Ord, Bounded, Enum, Show, Read)
 
