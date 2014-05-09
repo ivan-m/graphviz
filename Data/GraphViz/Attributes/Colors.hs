@@ -132,14 +132,13 @@ instance ParseDot Color where
     where
       parseHexBased
           = character '#' *>
-            commit ( do cs <- many1 parse2Hex
-                        return $ case cs of
-                                   [r,g,b] -> RGB r g b
-                                   [r,g,b,a] -> RGBA r g b a
-                                   _ -> throw . NotDotCode
-                                        $ "Not a valid hex Color specification: "
-                                           ++ show cs
-                    )
+            do cs <- many1 parse2Hex
+               return $ case cs of
+                          [r,g,b] -> RGB r g b
+                          [r,g,b,a] -> RGBA r g b a
+                          _ -> throw . NotDotCode
+                               $ "Not a valid hex Color specification: "
+                                  ++ show cs
       parseHSV = HSV <$> parseUnqt
                      <*  parseSep
                      <*> parseUnqt

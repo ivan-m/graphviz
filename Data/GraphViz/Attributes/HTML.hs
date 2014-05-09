@@ -263,7 +263,7 @@ printCell = printTag (text "TD")
 
 instance ParseDot Cell where
   parseUnqt = oneOf [ parseCell LabelCell parse
-                    , parseCell ImgCell $ wrapWhitespace parseUnqt
+                    , parseCell ImgCell $ wrapWhitespace parse
                     , parseEmptyTag (const VerticalRule) "VR"
                     ]
               `adjustErr`
