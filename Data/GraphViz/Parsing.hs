@@ -155,7 +155,7 @@ parseIt' :: (ParseDot a) => Text -> a
 parseIt' = runParser' parse
 
 instance ParseDot Int where
-  parseUnqt = parseInt'
+  parseUnqt = parseSignedInt
 
 instance ParseDot Integer where
   parseUnqt = parseSigned parseInt
@@ -181,7 +181,7 @@ instance ParseDot Double where
 instance ParseDot Bool where
   parseUnqt = onlyBool
               `onFail`
-              fmap (zero /=) parseInt'
+              fmap (zero /=) parseSignedInt
     where
       zero :: Int
       zero = 0
@@ -208,12 +208,15 @@ instance ParseDot Char where
 --   (usually you want 'length . versionBranch == 2') and that all
 --   such values are non-negative.
 instance ParseDot Version where
-  parseUnqt = createVersion <$> sepBy1 parseInt (character '.')
+  parseUnqt = createVersion <$> sepBy1 (parseIntCheck False) (character '.')
 
   parse = quotedParse parseUnqt
           <|>
           (createVersion .) . (. maybeToList) . (:)
-             <$> parseInt <*> optional (character '.' *> parseInt)
+             <$> (parseIntCheck False) <*> optional (character '.' *> parseInt)
+             -- Leave the last one to check for possible decimals
+             -- afterwards as there should be at most two version
+             -- numbers here.
 
 instance ParseDot Text where
   -- Too many problems with using this within other parsers where
@@ -239,7 +242,7 @@ quotelessString = numString False `onFail` stringBlock
 numString :: Bool -> Parse Text
 numString q = fmap tShow (parseStrictFloat q)
               `onFail`
-              fmap tShow parseInt'
+              fmap tShow parseSignedInt
   where
     tShow :: (Show a) => a -> Text
     tShow = T.pack . show
@@ -257,21 +260,26 @@ parseSigned p = (character '-' *> fmap negate p)
                 p
 
 parseInt :: (Integral a) => Parse a
-parseInt = do cs <- many1Satisfy isDigit
-                    `adjustErr` ("Expected one or more digits\n\t"++)
-              case T.decimal cs of
-                Right (n,"")  -> checkInt n
-                -- This case should never actually happen...
-                Right (_,txt) -> fail $ "Trailing digits not parsed as Integral: " ++ T.unpack txt
-                Left err      -> fail $ "Could not read Integral: " ++ err
+parseInt = parseIntCheck True
+
+-- | Flag indicates whether to check whether the number is actually a
+--   floating-point value.
+parseIntCheck    :: (Integral a) => Bool -> Parse a
+parseIntCheck ch = do cs <- many1Satisfy isDigit
+                            `adjustErr` ("Expected one or more digits\n\t"++)
+                      case T.decimal cs of
+                        Right (n,"")  -> bool return checkInt ch n
+                        -- This case should never actually happen...
+                        Right (_,txt) -> fail $ "Trailing digits not parsed as Integral: " ++ T.unpack txt
+                        Left err      -> fail $ "Could not read Integral: " ++ err
   where
     checkInt n = do c <- optional $ oneOf [ character '.', character 'e' ]
                     if isJust c
                       then fail "This number is actually Floating, not Integral!"
                       else return n
 
-parseInt' :: Parse Int
-parseInt' = parseSigned parseInt
+parseSignedInt :: Parse Int
+parseSignedInt = parseSigned parseInt
 
 -- | Parse a floating point number that actually contains decimals.
 --   Bool flag indicates whether values that need to be quoted are
@@ -299,7 +307,7 @@ parseFloat q = do ds   <- manySatisfy isDigit
     parseExp = character 'e'
                *> commit ((character '+' *> parseInt)
                           `onFail`
-                          parseInt')
+                          parseSignedInt)
     noDec = maybe True T.null
 
 -- Bool indicates whether we can parse values that need quotes.
