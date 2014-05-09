@@ -78,9 +78,10 @@ module Data.GraphViz.Types.Monadic
 import Data.GraphViz.Attributes        (Attributes)
 import Data.GraphViz.Types.Generalised
 
-import           Data.DList    (DList)
-import qualified Data.DList    as DL
-import qualified Data.Sequence as Seq
+import           Control.Applicative (Applicative (..))
+import           Data.DList          (DList)
+import qualified Data.DList          as DL
+import qualified Data.Sequence       as Seq
 
 -- -----------------------------------------------------------------------------
 -- The Dot monad.
@@ -96,8 +97,16 @@ newtype DotM n a = DotM { runDot :: (a, DotStmts n) }
 execDot :: DotM n a -> DotStmts n
 execDot = snd . runDot
 
+instance Functor (DotM n) where
+  fmap f (DotM (a,stmts)) = DotM (f a, stmts)
+
+instance Applicative (DotM n) where
+  pure = DotM . flip (,) DL.empty
+
+  (DotM (f,stmts1)) <*> (DotM (a,stmts2)) = DotM (f a, stmts1 `DL.append` stmts2)
+
 instance Monad (DotM n) where
-  return a = DotM (a, DL.empty)
+  return = pure
 
   dt >>= f = DotM
              $ let ~(a,stmts)  = runDot dt
