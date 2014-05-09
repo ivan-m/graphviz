@@ -68,6 +68,7 @@ instance Arbitrary Attribute where
                     , liftM ArrowHead arbitrary
                     , liftM ArrowSize arbitrary
                     , liftM ArrowTail arbitrary
+                    , liftM Background arbitrary
                     , liftM BoundingBox arbitrary
                     , liftM BgColor arbList
                     , liftM Center arbitrary
@@ -113,6 +114,7 @@ instance Arbitrary Attribute where
                     , liftM Image arbitrary
                     , liftM ImagePath arbitrary
                     , liftM ImageScale arbitrary
+                    , liftM InputScale arbitrary
                     , liftM Label arbitrary
                     , liftM LabelURL arbitrary
                     , liftM LabelScheme arbitrary
@@ -159,6 +161,7 @@ instance Arbitrary Attribute where
                     , liftM OutputOrder arbitrary
                     , liftM Overlap arbitrary
                     , liftM OverlapScaling arbitrary
+                    , liftM OverlapShrink arbitrary
                     , liftM Pack arbitrary
                     , liftM PackMode arbitrary
                     , liftM Pad arbitrary
@@ -214,6 +217,7 @@ instance Arbitrary Attribute where
                     , liftM VoroMargin arbitrary
                     , liftM Weight arbitrary
                     , liftM Width arbitrary
+                    , liftM XDotVersion arbitrary
                     , liftM XLabel arbitrary
                     , liftM XLP arbitrary
                     , liftM2 UnknownAttribute (suchThat arbIDString validUnknown) arbitrary
@@ -226,6 +230,7 @@ instance Arbitrary Attribute where
   shrink (ArrowHead v)          = map ArrowHead           $ shrink v
   shrink (ArrowSize v)          = map ArrowSize           $ shrink v
   shrink (ArrowTail v)          = map ArrowTail           $ shrink v
+  shrink (Background v)         = map Background          $ shrink v
   shrink (BoundingBox v)        = map BoundingBox         $ shrink v
   shrink (BgColor v)            = map BgColor             $ nonEmptyShrinks v
   shrink (Center v)             = map Center              $ shrink v
@@ -271,6 +276,7 @@ instance Arbitrary Attribute where
   shrink (Image v)              = map Image               $ shrink v
   shrink (ImagePath v)          = map ImagePath           $ shrink v
   shrink (ImageScale v)         = map ImageScale          $ shrink v
+  shrink (InputScale v)         = map InputScale          $ shrink v
   shrink (Label v)              = map Label               $ shrink v
   shrink (LabelURL v)           = map LabelURL            $ shrink v
   shrink (LabelScheme v)        = map LabelScheme         $ shrink v
@@ -317,6 +323,7 @@ instance Arbitrary Attribute where
   shrink (OutputOrder v)        = map OutputOrder         $ shrink v
   shrink (Overlap v)            = map Overlap             $ shrink v
   shrink (OverlapScaling v)     = map OverlapScaling      $ shrink v
+  shrink (OverlapShrink v)      = map OverlapShrink       $ shrink v
   shrink (Pack v)               = map Pack                $ shrink v
   shrink (PackMode v)           = map PackMode            $ shrink v
   shrink (Pad v)                = map Pad                 $ shrink v
@@ -372,6 +379,7 @@ instance Arbitrary Attribute where
   shrink (VoroMargin v)         = map VoroMargin          $ shrink v
   shrink (Weight v)             = map Weight              $ shrink v
   shrink (Width v)              = map Width               $ shrink v
+  shrink (XDotVersion v)        = map XDotVersion         $ shrink v
   shrink (XLabel v)             = map XLabel              $ shrink v
   shrink (XLP v)                = map XLP                 $ shrink v
   shrink (UnknownAttribute a v) = liftM2 UnknownAttribute (liftM (filter validUnknown) shrink a) (shrink v)

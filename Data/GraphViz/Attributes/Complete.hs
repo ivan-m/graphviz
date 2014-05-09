@@ -212,6 +212,7 @@ import           Data.Maybe      (isJust, isNothing)
 import qualified Data.Set        as S
 import           Data.Text.Lazy  (Text)
 import qualified Data.Text.Lazy  as T
+import           Data.Version    (Version)
 import           Data.Word       (Word16)
 import           System.FilePath (searchPathSeparator, splitSearchPath)
 
@@ -256,38 +257,39 @@ import           System.FilePath (searchPathSeparator, splitSearchPath)
 --   graphs.  Care must be taken to ensure that the attribute you use
 --   is valid, as not all attributes can be used everywhere.
 data Attribute
-  = Damping Double                      -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: neato only
-  | K Double                            -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: sfdp, fdp only
+  = Damping Double                      -- ^ /Valid for/: G; /Default/: @0.99@; /Minimum/: @0.0@; /Notes/: 'Neato' only
+  | K Double                            -- ^ /Valid for/: GC; /Default/: @0.3@; /Minimum/: @0@; /Notes/: 'Sfdp', 'Fdp' only
   | URL EscString                       -- ^ /Valid for/: ENGC; /Default/: none; /Notes/: svg, postscript, map only
-  | Area Double                         -- ^ /Valid for/: NC; /Default/: @1.0@; /Minimum/: @>0@; /Notes/: patchwork only, requires Graphviz >= 2.30.0
+  | Area Double                         -- ^ /Valid for/: NC; /Default/: @1.0@; /Minimum/: @>0@; /Notes/: 'Patchwork' only, requires Graphviz >= 2.30.0
   | ArrowHead ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
   | ArrowSize Double                    -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
   | ArrowTail ArrowType                 -- ^ /Valid for/: E; /Default/: @'normal'@
+  | Background Text                     -- ^ /Valid for/: G; /Default/: none; /Notes/: xdot only
   | BoundingBox Rect                    -- ^ /Valid for/: G; /Notes/: write only
   | BgColor ColorList                   -- ^ /Valid for/: GC; /Default/: @[]@
   | Center Bool                         -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-  | ClusterRank ClusterMode             -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: dot only
+  | ClusterRank ClusterMode             -- ^ /Valid for/: G; /Default/: @'Local'@; /Notes/: 'Dot' only
   | Color ColorList                     -- ^ /Valid for/: ENC; /Default/: @['WC' ('X11Color' 'Black') Nothing]@
   | ColorScheme ColorScheme             -- ^ /Valid for/: ENCG; /Default/: @'X11'@
   | Comment Text                        -- ^ /Valid for/: ENG; /Default/: @\"\"@
-  | Compound Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
+  | Compound Bool                       -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: 'Dot' only
   | Concentrate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-  | Constraint Bool                     -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: dot only
+  | Constraint Bool                     -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: 'Dot' only
   | Decorate Bool                       -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
-  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(abs(V))@ (unable to statically define); /Minimum/: The value of 'Epsilon'.; /Notes/: neato only, only if @'Pack' 'DontPack'@
-  | Dim Int                             -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: maximum of @10@; sfdp, fdp, neato only
-  | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: maximum of @10@; sfdp, fdp, neato only
+  | DefaultDist Double                  -- ^ /Valid for/: G; /Default/: @1+(avg. len)*sqrt(abs(V))@ (unable to statically define); /Minimum/: The value of 'Epsilon'.; /Notes/: 'Neato' only, only if @'Pack' 'DontPack'@
+  | Dim Int                             -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: maximum of @10@; 'Sfdp', 'Fdp', 'Neato' only
+  | Dimen Int                           -- ^ /Valid for/: G; /Default/: @2@; /Minimum/: @2@; /Notes/: maximum of @10@; 'Sfdp', 'Fdp', 'Neato' only
   | Dir DirType                         -- ^ /Valid for/: E; /Default/: @'Forward'@ (directed), @'NoDir'@ (undirected)
-  | DirEdgeConstraints DEConstraints    -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: neato only
+  | DirEdgeConstraints DEConstraints    -- ^ /Valid for/: G; /Default/: @'NoConstraints'@; /Parsing Default/: 'EdgeConstraints'; /Notes/: 'Neato' only
   | Distortion Double                   -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
   | DPI Double                          -- ^ /Valid for/: G; /Default/: @96.0@, @0.0@; /Notes/: svg, bitmap output only; \"resolution\" is a synonym
   | EdgeURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
   | EdgeTarget EscString                -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
   | EdgeTooltip EscString               -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
-  | Epsilon Double                      -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: neato only
-  | ESep DPoint                         -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not dot
+  | Epsilon Double                      -- ^ /Valid for/: G; /Default/: @.0001 * # nodes@ (@mode == 'KK'@), @.0001@ (@mode == 'Major'@); /Notes/: 'Neato' only
+  | ESep DPoint                         -- ^ /Valid for/: G; /Default/: @'DVal' 3@; /Notes/: not 'Dot'
   | FillColor ColorList                 -- ^ /Valid for/: NEC; /Default/: @['WC' ('X11Color' 'LightGray') Nothing]@ (nodes), @['WC' ('X11Color' 'Black') Nothing]@ (clusters)
-  | FixedSize Bool                      -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
+  | FixedSize NodeSize                  -- ^ /Valid for/: N; /Default/: @'GrowAsNeeded'@; /Parsing Default/: 'SetNodeSize'
   | FontColor Color                     -- ^ /Valid for/: ENGC; /Default/: @'X11Color' 'Black'@
   | FontName Text                       -- ^ /Valid for/: ENGC; /Default/: @\"Times-Roman\"@
   | FontNames SVGFontNames              -- ^ /Valid for/: G; /Default/: @'SvgNames'@; /Notes/: svg only
@@ -295,7 +297,7 @@ data Attribute
   | FontSize Double                     -- ^ /Valid for/: ENGC; /Default/: @14.0@; /Minimum/: @1.0@
   | ForceLabels Bool                    -- ^ /Valid for/: G; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: only for 'XLabel' attributes, requires Graphviz >= 2.29.0
   | GradientAngle Int                   -- ^ /Valid for/: NCG; /Default/: 0; /Notes/: requires Graphviz >= 2.29.0
-  | Group Text                          -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: dot only
+  | Group Text                          -- ^ /Valid for/: N; /Default/: @\"\"@; /Notes/: 'Dot' only
   | HeadURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
   | Head_LP Point                       -- ^ /Valid for/: E; /Notes/: write only, requires Graphviz >= 2.30.0
   | HeadClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
@@ -308,9 +310,10 @@ data Attribute
   | Image Text                          -- ^ /Valid for/: N; /Default/: @\"\"@
   | ImagePath Paths                     -- ^ /Valid for/: G; /Default/: @'Paths' []@; /Notes/: Printing and parsing is OS-specific, requires Graphviz >= 2.29.0
   | ImageScale ScaleType                -- ^ /Valid for/: N; /Default/: @'NoScale'@; /Parsing Default/: 'UniformScale'
+  | InputScale Double                   -- ^ /Valid for/: N; /Default/: none; /Notes/: 'Fdp', 'Neato' only, a value of @0@ is equivalent to being @72@, requires Graphviz >= 2.36.0
   | Label Label                         -- ^ /Valid for/: ENGC; /Default/: @'StrLabel' \"\\N\"@ (nodes), @'StrLabel' \"\"@ (otherwise)
   | LabelURL EscString                  -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-  | LabelScheme LabelScheme             -- ^ /Valid for/: G; /Default/: @'NotEdgeLabel'@; /Notes/: sfdp only, requires Graphviz >= 2.28.0
+  | LabelScheme LabelScheme             -- ^ /Valid for/: G; /Default/: @'NotEdgeLabel'@; /Notes/: 'Sfdp' only, requires Graphviz >= 2.28.0
   | LabelAngle Double                   -- ^ /Valid for/: E; /Default/: @-25.0@; /Minimum/: @-180.0@
   | LabelDistance Double                -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0.0@
   | LabelFloat Bool                     -- ^ /Valid for/: E; /Default/: @'False'@; /Parsing Default/: 'True'
@@ -322,80 +325,81 @@ data Attribute
   | LabelTarget EscString               -- ^ /Valid for/: E; /Default/: none; /Notes/: svg, map only
   | LabelTooltip EscString              -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, cmap only
   | Landscape Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'
-  | Layer LayerRange                    -- ^ /Valid for/: EN; /Default/: @[]@
+  | Layer LayerRange                    -- ^ /Valid for/: ENC; /Default/: @[]@
   | LayerListSep LayerListSep           -- ^ /Valid for/: G; /Default/: @'LLSep' \",\"@; /Notes/: requires Graphviz >= 2.30.0
   | Layers LayerList                    -- ^ /Valid for/: G; /Default/: @'LL' []@
   | LayerSelect LayerRange              -- ^ /Valid for/: G; /Default/: @[]@
   | LayerSep LayerSep                   -- ^ /Valid for/: G; /Default/: @'LSep' \" :\t\"@
   | Layout GraphvizCommand              -- ^ /Valid for/: G
-  | Len Double                          -- ^ /Valid for/: E; /Default/: @1.0@ (neato), @0.3@ (fdp); /Notes/: fdp, neato only
-  | Levels Int                          -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: sfdp only
-  | LevelsGap Double                    -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: neato only
-  | LHead Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | Len Double                          -- ^ /Valid for/: E; /Default/: @1.0@ ('Neato'), @0.3@ ('Fdp'); /Notes/: 'Fdp', 'Neato' only
+  | Levels Int                          -- ^ /Valid for/: G; /Default/: @'maxBound'@; /Minimum/: @0@; /Notes/: 'Sfdp' only
+  | LevelsGap Double                    -- ^ /Valid for/: G; /Default/: @0.0@; /Notes/: 'Neato' only
+  | LHead Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: 'Dot' only
   | LHeight Double                      -- ^ /Valid for/: GC; /Notes/: write only, requires Graphviz >= 2.28.0
   | LPos Point                          -- ^ /Valid for/: EGC; /Notes/: write only
-  | LTail Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | LTail Text                          -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: 'Dot' only
   | LWidth Double                       -- ^ /Valid for/: GC; /Notes/: write only, requires Graphviz >= 2.28.0
-  | Margin DPoint                       -- ^ /Valid for/: NG; /Default/: device dependent
-  | MaxIter Int                         -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ (fdp); /Notes/: fdp, neato only
-  | MCLimit Double                      -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: dot only
-  | MinDist Double                      -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: circo only
-  | MinLen Int                          -- ^ /Valid for/: E; /Default/: @1@; /Minimum/: @0@; /Notes/: dot only
-  | Mode ModeType                       -- ^ /Valid for/: G; /Default/: @'Major'@; /Notes/: neato only
-  | Model Model                         -- ^ /Valid for/: G; /Default/: @'ShortPath'@; /Notes/: neato only
-  | Mosek Bool                          -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: neato only; requires the Mosek software
-  | NodeSep Double                      -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@; /Notes/: dot only
+  | Margin DPoint                       -- ^ /Valid for/: NGC; /Default/: device dependent
+  | MaxIter Int                         -- ^ /Valid for/: G; /Default/: @100 * # nodes@ (@mode == 'KK'@), @200@ (@mode == 'Major'@), @600@ ('Fdp'); /Notes/: 'Fdp', 'Neato' only
+  | MCLimit Double                      -- ^ /Valid for/: G; /Default/: @1.0@; /Notes/: 'Dot' only
+  | MinDist Double                      -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: 'Circo' only
+  | MinLen Int                          -- ^ /Valid for/: E; /Default/: @1@; /Minimum/: @0@; /Notes/: 'Dot' only
+  | Mode ModeType                       -- ^ /Valid for/: G; /Default/: @'Major'@ (actually @'Spring'@ for 'Sfdp', but this isn't used as a default in this library); /Notes/: 'Neato', 'Sfdp' only
+  | Model Model                         -- ^ /Valid for/: G; /Default/: @'ShortPath'@; /Notes/: 'Neato' only
+  | Mosek Bool                          -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: 'Neato' only; requires the Mosek software
+  | NodeSep Double                      -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@
   | NoJustify Bool                      -- ^ /Valid for/: GCNE; /Default/: @'False'@; /Parsing Default/: 'True'
-  | Normalize Bool                      -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: not dot
-  | Nslimit Double                      -- ^ /Valid for/: G; /Notes/: dot only
-  | Nslimit1 Double                     -- ^ /Valid for/: G; /Notes/: dot only
-  | Ordering Order                      -- ^ /Valid for/: GN; /Default/: none; /Notes/: dot only
+  | Normalize Normalized                -- ^ /Valid for/: G; /Default/: @'NotNormalized'@; /Parsing Default/: 'IsNormalized'; /Notes/: not 'Dot'
+  | Nslimit Double                      -- ^ /Valid for/: G; /Notes/: 'Dot' only
+  | Nslimit1 Double                     -- ^ /Valid for/: G; /Notes/: 'Dot' only
+  | Ordering Order                      -- ^ /Valid for/: GN; /Default/: none; /Notes/: 'Dot' only
   | Orientation Double                  -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @360.0@
   | OutputOrder OutputMode              -- ^ /Valid for/: G; /Default/: @'BreadthFirst'@
-  | Overlap Overlap                     -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not dot
-  | OverlapScaling Double               -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: prism only
-  | Pack Pack                           -- ^ /Valid for/: G; /Default/: @'DontPack'@; /Parsing Default/: 'DoPack'; /Notes/: not dot
-  | PackMode PackMode                   -- ^ /Valid for/: G; /Default/: @'PackNode'@; /Notes/: not dot
+  | Overlap Overlap                     -- ^ /Valid for/: G; /Default/: @'KeepOverlaps'@; /Parsing Default/: 'KeepOverlaps'; /Notes/: not 'Dot'
+  | OverlapScaling Double               -- ^ /Valid for/: G; /Default/: @-4@; /Minimum/: @-1.0e10@; /Notes/: 'PrismOverlap' only
+  | OverlapShrink Bool                  -- ^ /Valid for/: G; /Default/: @'True'@; /Parsing Default/: 'True'; /Notes/: 'PrismOverlap' only, requires Graphviz >= 2.36.0
+  | Pack Pack                           -- ^ /Valid for/: G; /Default/: @'DontPack'@; /Parsing Default/: 'DoPack'
+  | PackMode PackMode                   -- ^ /Valid for/: G; /Default/: @'PackNode'@
   | Pad DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 0.0555@ (4 points)
   | Page Point                          -- ^ /Valid for/: G
   | PageDir PageDir                     -- ^ /Valid for/: G; /Default/: @'Bl'@
   | PenColor Color                      -- ^ /Valid for/: C; /Default/: @'X11Color' 'Black'@
   | PenWidth Double                     -- ^ /Valid for/: CNE; /Default/: @1.0@; /Minimum/: @0.0@
   | Peripheries Int                     -- ^ /Valid for/: NC; /Default/: shape default (nodes), @1@ (clusters); /Minimum/: 0
-  | Pin Bool                            -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: fdp, neato only
+  | Pin Bool                            -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: 'Fdp', 'Neato' only
   | Pos Pos                             -- ^ /Valid for/: EN
-  | QuadTree QuadType                   -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: sfdp only
+  | QuadTree QuadType                   -- ^ /Valid for/: G; /Default/: @'NormalQT'@; /Parsing Default/: 'NormalQT'; /Notes/: 'Sfdp' only
   | Quantum Double                      -- ^ /Valid for/: G; /Default/: @0.0@; /Minimum/: @0.0@
-  | Rank RankType                       -- ^ /Valid for/: S; /Notes/: dot only
-  | RankDir RankDir                     -- ^ /Valid for/: G; /Default/: @'FromTop'@; /Notes/: dot only
-  | RankSep [Double]                    -- ^ /Valid for/: G; /Default/: @[0.5]@ (dot), @[1.0]@ (twopi); /Minimum/: [0.02]; /Notes/: twopi, dot only
+  | Rank RankType                       -- ^ /Valid for/: S; /Notes/: 'Dot' only
+  | RankDir RankDir                     -- ^ /Valid for/: G; /Default/: @'FromTop'@; /Notes/: 'Dot' only
+  | RankSep [Double]                    -- ^ /Valid for/: G; /Default/: @[0.5]@ ('Dot'), @[1.0]@ ('Twopi'); /Minimum/: @[0.02]@; /Notes/: 'Twopi', 'Dot' only
   | Ratio Ratios                        -- ^ /Valid for/: G
   | Rects [Rect]                        -- ^ /Valid for/: N; /Notes/: write only
   | Regular Bool                        -- ^ /Valid for/: N; /Default/: @'False'@; /Parsing Default/: 'True'
-  | ReMinCross Bool                     -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: dot only
-  | RepulsiveForce Double               -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: sfdp only
-  | Root Root                           -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: circo, twopi only
+  | ReMinCross Bool                     -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: 'Dot' only
+  | RepulsiveForce Double               -- ^ /Valid for/: G; /Default/: @1.0@; /Minimum/: @0.0@; /Notes/: 'Sfdp' only
+  | Root Root                           -- ^ /Valid for/: GN; /Default/: @'NodeName' \"\"@ (graphs), @'NotCentral'@ (nodes); /Parsing Default/: 'IsCentral'; /Notes/: 'Circo', 'Twopi' only
   | Rotate Int                          -- ^ /Valid for/: G; /Default/: @0@
-  | Rotation Double                     -- ^ /Valid for/: G; /Default/: @0@; /Notes/: sfdp only, requires Graphviz >= 2.28.0
-  | SameHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
-  | SameTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: dot only
+  | Rotation Double                     -- ^ /Valid for/: G; /Default/: @0@; /Notes/: 'Sfdp' only, requires Graphviz >= 2.28.0
+  | SameHead Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: 'Dot' only
+  | SameTail Text                       -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: 'Dot' only
   | SamplePoints Int                    -- ^ /Valid for/: N; /Default/: @8@ (output), @20@ (overlap and image maps)
-  | Scale DPoint                        -- ^ /Valid for/: G; /Notes/: twopi only, requires Graphviz >= 2.28.0
-  | SearchSize Int                      -- ^ /Valid for/: G; /Default/: @30@; /Notes/: dot only
-  | Sep DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not dot
+  | Scale DPoint                        -- ^ /Valid for/: G; /Notes/: Not 'Dot', requires Graphviz >= 2.28.0 (>= 2.38.0 for anything except 'TwoPi')
+  | SearchSize Int                      -- ^ /Valid for/: G; /Default/: @30@; /Notes/: 'Dot' only
+  | Sep DPoint                          -- ^ /Valid for/: G; /Default/: @'DVal' 4@; /Notes/: not 'Dot'
   | Shape Shape                         -- ^ /Valid for/: N; /Default/: @'Ellipse'@
-  | ShowBoxes Int                       -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: dot only; used for debugging by printing PostScript guide boxes
+  | ShowBoxes Int                       -- ^ /Valid for/: ENG; /Default/: @0@; /Minimum/: @0@; /Notes/: 'Dot' only; used for debugging by printing PostScript guide boxes
   | Sides Int                           -- ^ /Valid for/: N; /Default/: @4@; /Minimum/: @0@
   | Size GraphSize                      -- ^ /Valid for/: G
   | Skew Double                         -- ^ /Valid for/: N; /Default/: @0.0@; /Minimum/: @-100.0@
-  | Smoothing SmoothType                -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: sfdp only
+  | Smoothing SmoothType                -- ^ /Valid for/: G; /Default/: @'NoSmooth'@; /Notes/: 'Sfdp' only
   | SortV Word16                        -- ^ /Valid for/: GCN; /Default/: @0@; /Minimum/: @0@
-  | Splines EdgeType                    -- ^ /Valid for/: G; /Default/: @'SplineEdges'@ (dot), @'LineEdges'@ (other); /Parsing Default/: 'SplineEdges'
-  | Start StartType                     -- ^ /Valid for/: G; /Default/: @'StartStyleSeed' 'RandomStyle' seed@ for some unknown fixed seed.; /Notes/: fdp, neato only
-  | Style [StyleItem]                   -- ^ /Valid for/: ENC
+  | Splines EdgeType                    -- ^ /Valid for/: G; /Default/: @'SplineEdges'@ ('Dot'), @'LineEdges'@ (other); /Parsing Default/: 'SplineEdges'
+  | Start StartType                     -- ^ /Valid for/: G; /Default/: @'StartStyleSeed' 'RandomStyle' seed@ for some unknown fixed seed.; /Notes/: 'Fdp', 'Neato' only
+  | Style [StyleItem]                   -- ^ /Valid for/: ENCG
   | StyleSheet Text                     -- ^ /Valid for/: G; /Default/: @\"\"@; /Notes/: svg only
   | TailURL EscString                   -- ^ /Valid for/: E; /Default/: @\"\"@; /Notes/: svg, map only
-  | Tail_LP Point                       -- ^ /Valid for/: E; /Notes/: write only
+  | Tail_LP Point                       -- ^ /Valid for/: E; /Notes/: write only, requires Graphviz >= 2.30.0
   | TailClip Bool                       -- ^ /Valid for/: E; /Default/: @'True'@; /Parsing Default/: 'True'
   | TailLabel Label                     -- ^ /Valid for/: E; /Default/: @'StrLabel' \"\"@
   | TailPort PortPos                    -- ^ /Valid for/: E; /Default/: @'CompassPoint' 'CenterPoint'@
@@ -406,9 +410,10 @@ data Attribute
   | TrueColor Bool                      -- ^ /Valid for/: G; /Parsing Default/: 'True'; /Notes/: bitmap output only
   | Vertices [Point]                    -- ^ /Valid for/: N; /Notes/: write only
   | ViewPort ViewPort                   -- ^ /Valid for/: G; /Default/: none
-  | VoroMargin Double                   -- ^ /Valid for/: G; /Default/: @0.05@; /Minimum/: @0.0@; /Notes/: not dot
-  | Weight Double                       -- ^ /Valid for/: E; /Default/: @1.0@; /Minimum/: @0@ (dot), @1@ (neato,fdp,sfdp)
+  | VoroMargin Double                   -- ^ /Valid for/: G; /Default/: @0.05@; /Minimum/: @0.0@; /Notes/: not 'Dot'
+  | Weight Number                       -- ^ /Valid for/: E; /Default/: @'Int' 1@; /Minimum/: @'Int' 0@ ('Dot'), @'Int' 1@ ('Neato','Fdp','Sfdp'); /Notes/: as of Graphviz 2.30: weights for dot need to be 'Int's
   | Width Double                        -- ^ /Valid for/: N; /Default/: @0.75@; /Minimum/: @0.01@
+  | XDotVersion Version                 -- ^ /Valid for/: G; /Notes/: xdot only, requires Graphviz >= 2.34.0, equivalent to specifying version of xdot to be used
   | XLabel Label                        -- ^ /Valid for/: EN; /Default/: @'StrLabel' \"\"@; /Notes/: requires Graphviz >= 2.29.0
   | XLP Point                           -- ^ /Valid for/: EN; /Notes/: write only, requires Graphviz >= 2.29.0
   | UnknownAttribute AttributeName Text -- ^ /Valid for/: Assumed valid for all; the fields are 'Attribute' name and value respectively.
@@ -427,6 +432,7 @@ instance PrintDot Attribute where
   unqtDot (ArrowHead v)          = printField "arrowhead" v
   unqtDot (ArrowSize v)          = printField "arrowsize" v
   unqtDot (ArrowTail v)          = printField "arrowtail" v
+  unqtDot (Background v)         = printField "_background" v
   unqtDot (BoundingBox v)        = printField "bb" v
   unqtDot (BgColor v)            = printField "bgcolor" v
   unqtDot (Center v)             = printField "center" v
@@ -472,6 +478,7 @@ instance PrintDot Attribute where
   unqtDot (Image v)              = printField "image" v
   unqtDot (ImagePath v)          = printField "imagepath" v
   unqtDot (ImageScale v)         = printField "imagescale" v
+  unqtDot (InputScale v)         = printField "inputscale" v
   unqtDot (Label v)              = printField "label" v
   unqtDot (LabelURL v)           = printField "labelURL" v
   unqtDot (LabelScheme v)        = printField "label_scheme" v
@@ -518,6 +525,7 @@ instance PrintDot Attribute where
   unqtDot (OutputOrder v)        = printField "outputorder" v
   unqtDot (Overlap v)            = printField "overlap" v
   unqtDot (OverlapScaling v)     = printField "overlap_scaling" v
+  unqtDot (OverlapShrink v)      = printField "overlap_shrink" v
   unqtDot (Pack v)               = printField "pack" v
   unqtDot (PackMode v)           = printField "packmode" v
   unqtDot (Pad v)                = printField "pad" v
@@ -573,6 +581,7 @@ instance PrintDot Attribute where
   unqtDot (VoroMargin v)         = printField "voro_margin" v
   unqtDot (Weight v)             = printField "weight" v
   unqtDot (Width v)              = printField "width" v
+  unqtDot (XDotVersion v)        = printField "xdotversion" v
   unqtDot (XLabel v)             = printField "xlabel" v
   unqtDot (XLP v)                = printField "xlp" v
   unqtDot (UnknownAttribute a v) = toDot a <> equals <> toDot v
@@ -587,6 +596,7 @@ instance ParseDot Attribute where
                                   , parseField ArrowHead "arrowhead"
                                   , parseField ArrowSize "arrowsize"
                                   , parseField ArrowTail "arrowtail"
+                                  , parseField Background "_background"
                                   , parseField BoundingBox "bb"
                                   , parseField BgColor "bgcolor"
                                   , parseFieldBool Center "center"
@@ -611,7 +621,7 @@ instance ParseDot Attribute where
                                   , parseField Epsilon "epsilon"
                                   , parseField ESep "esep"
                                   , parseField FillColor "fillcolor"
-                                  , parseFieldBool FixedSize "fixedsize"
+                                  , parseFieldDef FixedSize SetNodeSize "fixedsize"
                                   , parseField FontColor "fontcolor"
                                   , parseField FontName "fontname"
                                   , parseField FontNames "fontnames"
@@ -632,6 +642,7 @@ instance ParseDot Attribute where
                                   , parseField Image "image"
                                   , parseField ImagePath "imagepath"
                                   , parseFieldDef ImageScale UniformScale "imagescale"
+                                  , parseField InputScale "inputscale"
                                   , parseField Label "label"
                                   , parseFields LabelURL ["labelURL", "labelhref"]
                                   , parseField LabelScheme "label_scheme"
@@ -670,7 +681,7 @@ instance ParseDot Attribute where
                                   , parseFieldBool Mosek "mosek"
                                   , parseField NodeSep "nodesep"
                                   , parseFieldBool NoJustify "nojustify"
-                                  , parseFieldBool Normalize "normalize"
+                                  , parseFieldDef Normalize IsNormalized "normalize"
                                   , parseField Nslimit "nslimit"
                                   , parseField Nslimit1 "nslimit1"
                                   , parseField Ordering "ordering"
@@ -678,6 +689,7 @@ instance ParseDot Attribute where
                                   , parseField OutputOrder "outputorder"
                                   , parseFieldDef Overlap KeepOverlaps "overlap"
                                   , parseField OverlapScaling "overlap_scaling"
+                                  , parseFieldBool OverlapShrink "overlap_shrink"
                                   , parseFieldDef Pack DoPack "pack"
                                   , parseField PackMode "packmode"
                                   , parseField Pad "pad"
@@ -733,6 +745,7 @@ instance ParseDot Attribute where
                                   , parseField VoroMargin "voro_margin"
                                   , parseField Weight "weight"
                                   , parseField Width "width"
+                                  , parseField XDotVersion "xdotversion"
                                   , parseField XLabel "xlabel"
                                   , parseField XLP "xlp"
                                   ])
@@ -750,6 +763,7 @@ usedByGraphs                      :: Attribute -> Bool
 usedByGraphs Damping{}            = True
 usedByGraphs K{}                  = True
 usedByGraphs URL{}                = True
+usedByGraphs Background{}         = True
 usedByGraphs BoundingBox{}        = True
 usedByGraphs BgColor{}            = True
 usedByGraphs Center{}             = True
@@ -805,6 +819,7 @@ usedByGraphs Ordering{}           = True
 usedByGraphs OutputOrder{}        = True
 usedByGraphs Overlap{}            = True
 usedByGraphs OverlapScaling{}     = True
+usedByGraphs OverlapShrink{}      = True
 usedByGraphs Pack{}               = True
 usedByGraphs PackMode{}           = True
 usedByGraphs Pad{}                = True
@@ -829,11 +844,13 @@ usedByGraphs Smoothing{}          = True
 usedByGraphs SortV{}              = True
 usedByGraphs Splines{}            = True
 usedByGraphs Start{}              = True
+usedByGraphs Style{}              = True
 usedByGraphs StyleSheet{}         = True
 usedByGraphs Target{}             = True
 usedByGraphs TrueColor{}          = True
 usedByGraphs ViewPort{}           = True
 usedByGraphs VoroMargin{}         = True
+usedByGraphs XDotVersion{}        = True
 usedByGraphs UnknownAttribute{}   = True
 usedByGraphs _                    = False
 
@@ -853,9 +870,11 @@ usedByClusters GradientAngle{}    = True
 usedByClusters Label{}            = True
 usedByClusters LabelJust{}        = True
 usedByClusters LabelLoc{}         = True
+usedByClusters Layer{}            = True
 usedByClusters LHeight{}          = True
 usedByClusters LPos{}             = True
 usedByClusters LWidth{}           = True
+usedByClusters Margin{}           = True
 usedByClusters NoJustify{}        = True
 usedByClusters PenColor{}         = True
 usedByClusters PenWidth{}         = True
@@ -893,6 +912,7 @@ usedByNodes Height{}           = True
 usedByNodes ID{}               = True
 usedByNodes Image{}            = True
 usedByNodes ImageScale{}       = True
+usedByNodes InputScale{}       = True
 usedByNodes Label{}            = True
 usedByNodes LabelLoc{}         = True
 usedByNodes Layer{}            = True
@@ -997,6 +1017,7 @@ sameAttribute Area{}                  Area{}                  = True
 sameAttribute ArrowHead{}             ArrowHead{}             = True
 sameAttribute ArrowSize{}             ArrowSize{}             = True
 sameAttribute ArrowTail{}             ArrowTail{}             = True
+sameAttribute Background{}            Background{}            = True
 sameAttribute BoundingBox{}           BoundingBox{}           = True
 sameAttribute BgColor{}               BgColor{}               = True
 sameAttribute Center{}                Center{}                = True
@@ -1042,6 +1063,7 @@ sameAttribute ID{}                    ID{}                    = True
 sameAttribute Image{}                 Image{}                 = True
 sameAttribute ImagePath{}             ImagePath{}             = True
 sameAttribute ImageScale{}            ImageScale{}            = True
+sameAttribute InputScale{}            InputScale{}            = True
 sameAttribute Label{}                 Label{}                 = True
 sameAttribute LabelURL{}              LabelURL{}              = True
 sameAttribute LabelScheme{}           LabelScheme{}           = True
@@ -1088,6 +1110,7 @@ sameAttribute Orientation{}           Orientation{}           = True
 sameAttribute OutputOrder{}           OutputOrder{}           = True
 sameAttribute Overlap{}               Overlap{}               = True
 sameAttribute OverlapScaling{}        OverlapScaling{}        = True
+sameAttribute OverlapShrink{}         OverlapShrink{}         = True
 sameAttribute Pack{}                  Pack{}                  = True
 sameAttribute PackMode{}              PackMode{}              = True
 sameAttribute Pad{}                   Pad{}                   = True
@@ -1143,6 +1166,7 @@ sameAttribute ViewPort{}              ViewPort{}              = True
 sameAttribute VoroMargin{}            VoroMargin{}            = True
 sameAttribute Weight{}                Weight{}                = True
 sameAttribute Width{}                 Width{}                 = True
+sameAttribute XDotVersion{}           XDotVersion{}           = True
 sameAttribute XLabel{}                XLabel{}                = True
 sameAttribute XLP{}                   XLP{}                   = True
 sameAttribute (UnknownAttribute a1 _) (UnknownAttribute a2 _) = a1 == a2
@@ -1157,6 +1181,7 @@ defaultAttributeValue Area{}               = Just $ Area 1.0
 defaultAttributeValue ArrowHead{}          = Just $ ArrowHead normal
 defaultAttributeValue ArrowSize{}          = Just $ ArrowSize 1.0
 defaultAttributeValue ArrowTail{}          = Just $ ArrowTail normal
+defaultAttributeValue Background{}         = Just $ Background ""
 defaultAttributeValue BgColor{}            = Just $ BgColor []
 defaultAttributeValue Center{}             = Just $ Center False
 defaultAttributeValue ClusterRank{}        = Just $ ClusterRank Local
@@ -1176,7 +1201,7 @@ defaultAttributeValue EdgeURL{}            = Just $ EdgeURL ""
 defaultAttributeValue EdgeTooltip{}        = Just $ EdgeTooltip ""
 defaultAttributeValue ESep{}               = Just $ ESep (DVal 3)
 defaultAttributeValue FillColor{}          = Just $ FillColor [toWColor Black]
-defaultAttributeValue FixedSize{}          = Just $ FixedSize False
+defaultAttributeValue FixedSize{}          = Just $ FixedSize GrowAsNeeded
 defaultAttributeValue FontColor{}          = Just $ FontColor (X11Color Black)
 defaultAttributeValue FontName{}           = Just $ FontName "Times-Roman"
 defaultAttributeValue FontNames{}          = Just $ FontNames SvgNames
@@ -1226,11 +1251,12 @@ defaultAttributeValue Model{}              = Just $ Model ShortPath
 defaultAttributeValue Mosek{}              = Just $ Mosek False
 defaultAttributeValue NodeSep{}            = Just $ NodeSep 0.25
 defaultAttributeValue NoJustify{}          = Just $ NoJustify False
-defaultAttributeValue Normalize{}          = Just $ Normalize False
+defaultAttributeValue Normalize{}          = Just $ Normalize NotNormalized
 defaultAttributeValue Orientation{}        = Just $ Orientation 0.0
 defaultAttributeValue OutputOrder{}        = Just $ OutputOrder BreadthFirst
 defaultAttributeValue Overlap{}            = Just $ Overlap KeepOverlaps
 defaultAttributeValue OverlapScaling{}     = Just $ OverlapScaling (-4)
+defaultAttributeValue OverlapShrink{}      = Just $ OverlapShrink True
 defaultAttributeValue Pack{}               = Just $ Pack DontPack
 defaultAttributeValue PackMode{}           = Just $ PackMode PackNode
 defaultAttributeValue Pad{}                = Just $ Pad (DVal 0.0555)
@@ -1268,7 +1294,7 @@ defaultAttributeValue TailTooltip{}        = Just $ TailTooltip ""
 defaultAttributeValue Target{}             = Just $ Target ""
 defaultAttributeValue Tooltip{}            = Just $ Tooltip ""
 defaultAttributeValue VoroMargin{}         = Just $ VoroMargin 0.05
-defaultAttributeValue Weight{}             = Just $ Weight 1.0
+defaultAttributeValue Weight{}             = Just $ Weight (Int 1)
 defaultAttributeValue Width{}              = Just $ Width 0.75
 defaultAttributeValue XLabel{}             = Just $ XLabel (StrLabel "")
 defaultAttributeValue _                    = Nothing
@@ -1287,6 +1313,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "arrowhead"
                , "arrowsize"
                , "arrowtail"
+               , "_background"
                , "bb"
                , "bgcolor"
                , "center"
@@ -1335,6 +1362,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "image"
                , "imagepath"
                , "imagescale"
+               , "inputscale"
                , "label"
                , "labelURL"
                , "labelhref"
@@ -1382,6 +1410,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "outputorder"
                , "overlap"
                , "overlap_scaling"
+               , "overlap_shrink"
                , "pack"
                , "packmode"
                , "pad"
@@ -1438,6 +1467,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "voro_margin"
                , "weight"
                , "width"
+               , "xdotversion"
                , "xlabel"
                , "xlp"
                , "charset" -- Defined upstream, just not used here.
