@@ -7,6 +7,74 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.17.0.0
+----------------------
+
+* Add support for Graphviz 2.32.0, 2.32.1, 2.34.0, 2.36.0 and 2.38.0:
+
+    - New attributes:
+
+        + `XDotVersion` (as of 2.34.0)
+
+        + `InputScale` (as of 2.36.0)
+
+        + `OverlapShrink` (as of 2.36.0)
+
+    - Changed attributes:
+
+        + `Aspect` no longer available (as of 2.36.0)
+
+        + New `ModeType` values for use with `sfdp`: `SpringMode` and
+          `MaxEnt`.
+
+        + `Weight` now takes a value of type `Number`, that explicitly
+          distinguishes between `Doubles` and `Ints`.
+
+        + `FixedSize` and `Normalize` now have their own types.
+
+        + New `Shape`s: `Star` and `Underline` (as well as `Square`
+          which seems to have been omitted from previous versions).
+
+    - Other relevant changes:
+
+        + `XDot` now takes an optional version.  Note that this
+          doesn't have any effect on how _graphviz_ works.
+
+        + The default extension for Dot-graphs is now `.gv` rather
+          than `.dot` to reflect Graphviz's changed conventions.
+
+* Other changes to the API:
+
+    - Add the `FromGeneralisedDot` class, which provides a
+      semi-inverse to `fromCanonical` in `DotRepr`.
+
+    - `GraphID` now uses `Number` rather than separate `Int` and
+      `Double` constructors; this only matters if you manually
+      constructed or de-constructed `GraphID` values (`ToGraphID`
+      still works).
+
+    - Add the ability to parse a Dot graph "liberally": that is, if an
+      `Attribute` doesn't match the specification, then let it fall
+      back to an `UnknownAttribute`.  This is still experimental, and
+      requires more manual usage than the in-built commands (e.g. it
+      isn't supported in the default round-tripping).
+
+    - Now using the definition of `bracket` from `polyparse >= 1.9`.
+
+    - Monadic representation now has `Functor` and `Applicative`
+      instances to satisfy the up-coming changes in GHC 7.10.
+
+* The testsuite now uses the library explicitly, thus reducing
+  compilation time.
+
+* Bug-fixes:
+
+    - Double values are now longer parseable without double quotes if
+      they have an exponential term (to better match the definition).
+
+    - It is no longer assumed when round-tripping that `dot -Tdot`
+      generates canonicalised Dot graphs.
+
 Changes in 2999.16.0.0
 ----------------------
 
