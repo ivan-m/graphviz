@@ -412,6 +412,8 @@ parseHtmlField' c f p = string f
                            )
 -- Can't use liftEqParse, etc. here because it causes backtracking
 -- problems when the attributes could apply to multiple constructors.
+-- This includes using commit! (Example: if it starts with a FONT tag,
+-- is it a Table or Text?
 
 -- | Specifies horizontal placement. When an object is allocated more
 --   space than required, this value determines where the extra space
