@@ -305,9 +305,9 @@ parseFloat q = do ds   <- manySatisfy isDigit
                fail "Expected a floating point number"
   where
     parseExp = character 'e'
-               *> commit ((character '+' *> parseInt)
-                          `onFail`
-                          parseSignedInt)
+               *> ((character '+' *> parseInt)
+                   `onFail`
+                   parseSignedInt)
     noDec = maybe True T.null
 
 -- Bool indicates whether we can parse values that need quotes.
