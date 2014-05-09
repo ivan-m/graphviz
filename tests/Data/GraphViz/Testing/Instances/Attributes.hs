@@ -1009,3 +1009,6 @@ instance Arbitrary Version where
   arbitrary = liftM createVersion arbList
 
   shrink = map createVersion . nonEmptyShrinks . versionBranch
+
+instance Arbitrary NodeSize where
+  arbitrary = arbBounded

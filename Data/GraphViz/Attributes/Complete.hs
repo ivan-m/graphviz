@@ -127,6 +127,7 @@ module Data.GraphViz.Attributes.Complete
        , Shape(..)
        , Paths(..)
        , ScaleType(..)
+       , NodeSize(..)
 
          -- ** Edges
        , DirType(..)
@@ -3289,3 +3290,33 @@ parseNormalized :: Bool -> Parse Normalized
 parseNormalized q = NormalizedAngle <$> parseSignedFloat q
                     <|>
                     bool NotNormalized IsNormalized <$> onlyBool
+
+-- -----------------------------------------------------------------------------
+
+-- | Determine how the 'Width' and 'Height' attributes specify the
+--   size of nodes.
+data NodeSize = GrowAsNeeded
+                -- ^ Nodes will be the smallest width and height
+                --   needed to contain the label and any possible
+                --   image.  'Width' and 'Height' are the minimum
+                --   allowed sizes.
+              | SetNodeSize
+                -- ^ 'Width' and 'Height' dictate the size of the node
+                --   with a warning if the label cannot fit in this.
+              | SetShapeSize
+                -- ^ 'Width' and 'Height' dictate the size of the
+                --   shape only and the label can expand out of the
+                --   shape (with a warning).  Requires Graphviz >=
+                --   2.38.0.
+              deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot NodeSize where
+  unqtDot GrowAsNeeded = unqtDot False
+  unqtDot SetNodeSize  = unqtDot True
+  unqtDot SetShapeSize = text "shape"
+
+instance ParseDot NodeSize where
+  parseUnqt = bool GrowAsNeeded SetNodeSize <$> parseUnqt
+              <|>
+              stringRep SetShapeSize "shape"
+
