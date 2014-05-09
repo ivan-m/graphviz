@@ -227,10 +227,10 @@ instance ParseDot WeightedColor where
                      failBad $ "Error parsing a ColorList with color scheme of "
                                ++ show cs
 
-  parseList = ((:[]) . toWC <$> parse)
-              -- Potentially unquoted un-weighted single color
+  parseList = quotedParse parseUnqtList
               `onFail`
-              quotedParse parseUnqtList
+              ((:[]) . toWC <$> parse)
+              -- Potentially unquoted un-weighted single color
               `onFail`
               do cs <- getColorScheme
                  failBad $ "Error parsing ColorList with color scheme of "
