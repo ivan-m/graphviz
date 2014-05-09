@@ -3320,3 +3320,32 @@ instance ParseDot NodeSize where
               <|>
               stringRep SetShapeSize "shape"
 
+-- -----------------------------------------------------------------------------
+
+{-
+
+As of Graphviz 2.36.0 this was commented out; as such it might come
+back, so leave this here in case we need it again.
+
+data AspectType = RatioOnly Double
+                | RatioPassCount Double Int
+                deriving (Eq, Ord, Show, Read)
+
+instance PrintDot AspectType where
+  unqtDot (RatioOnly r)        = unqtDot r
+  unqtDot (RatioPassCount r p) = commaDel r p
+
+  toDot at@RatioOnly{}      = unqtDot at
+  toDot at@RatioPassCount{} = dquotes $ unqtDot at
+
+instance ParseDot AspectType where
+  parseUnqt = fmap (uncurry RatioPassCount) commaSepUnqt
+              `onFail`
+              fmap RatioOnly parseUnqt
+
+
+  parse = quotedParse (uncurry RatioPassCount <$> commaSepUnqt)
+          `onFail`
+          fmap RatioOnly parse
+
+-}

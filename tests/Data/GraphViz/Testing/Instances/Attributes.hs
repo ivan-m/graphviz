@@ -1012,3 +1012,20 @@ instance Arbitrary Version where
 
 instance Arbitrary NodeSize where
   arbitrary = arbBounded
+
+{-
+
+As of Graphviz 2.36.0 this was commented out; as such it might come
+back, so leave this here in case we need it again.
+
+instance Arbitrary AspectType where
+  arbitrary = oneof [ liftM  RatioOnly arbitrary
+                    , liftM2 RatioPassCount arbitrary posArbitrary
+                    ]
+
+  shrink (RatioOnly d) = map RatioOnly $ shrink d
+  shrink (RatioPassCount d i) = do ds <- shrink d
+                                   is <- shrink i
+                                   return $ RatioPassCount ds is
+
+-}
