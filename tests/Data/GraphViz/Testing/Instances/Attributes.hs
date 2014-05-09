@@ -1014,7 +1014,7 @@ instance Arbitrary Normalized where
   shrink _                   = []
 
 instance Arbitrary Version where
-  arbitrary = liftM createVersion arbList
+  arbitrary = liftM (createVersion . map getPositive) arbList
 
   shrink = map createVersion . nonEmptyShrinks . versionBranch
 
