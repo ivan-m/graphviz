@@ -131,22 +131,22 @@ instance ParseDot Color where
               fail "Could not parse Color"
     where
       parseHexBased
-          = do character '#'
-               cs <- many1 parse2Hex
-               return $ case cs of
-                          [r,g,b] -> RGB r g b
-                          [r,g,b,a] -> RGBA r g b a
-                          _ -> throw . NotDotCode
-                               $ "Not a valid hex Color specification: "
-                                  ++ show cs
-      parseHSV = HSV <$> parse
+          = character '#' *>
+            commit ( do cs <- many1 parse2Hex
+                        return $ case cs of
+                                   [r,g,b] -> RGB r g b
+                                   [r,g,b,a] -> RGBA r g b a
+                                   _ -> throw . NotDotCode
+                                        $ "Not a valid hex Color specification: "
+                                           ++ show cs
+                    )
+      parseHSV = HSV <$> parseUnqt
                      <*  parseSep
-                     <*> parse
+                     <*> parseUnqt
                      <*  parseSep
-                     <*> parse
-      parseSep = oneOf [ string "," *> whitespace
-                       , whitespace1
-                       ]
+                     <*> parseUnqt
+      parseSep = character ',' *> whitespace <|> whitespace1
+
       parse2Hex = do c1 <- satisfy isHexDigit
                      c2 <- satisfy isHexDigit
                      let [(n, [])] = readHex [c1, c2]
