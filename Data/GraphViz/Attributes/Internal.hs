@@ -9,7 +9,8 @@
    Maintainer  : Ivan.Miljenovic@gmail.com
 
    This module is defined so as to avoid exposing internal functions
-   in the external API.
+   in the external API.  These are those that are needed for the
+   testsuite.
 
  -}
 

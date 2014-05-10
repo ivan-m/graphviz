@@ -64,8 +64,15 @@ Changes in 2999.17.0.0
     - Monadic representation now has `Functor` and `Applicative`
       instances to satisfy the up-coming changes in GHC 7.10.
 
-* The testsuite now uses the library explicitly, thus reducing
-  compilation time.
+* Compilation time has been reduced in two ways:
+
+    - The `Data.GraphViz.Attributes.Complete` module has been split up
+      (but still exports the same API, so no need to import more
+      modules).  Whilst I haven't measured it, this should also reduce
+      memory requirements for compilation.
+
+    - The testsuite now uses the library explicitly, and thus no
+      longer needs to re-compile half the library.
 
 * Bug-fixes:
 

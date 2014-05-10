@@ -96,8 +96,11 @@ Library {
                            Data.GraphViz.Types.Internal.Common
 
         Other-Modules:     Data.GraphViz.Algorithms.Clustering
+                           Data.GraphViz.Attributes.Arrows
                            Data.GraphViz.Attributes.ColorScheme
                            Data.GraphViz.Attributes.Same
+                           Data.GraphViz.Attributes.Values
+                           Data.GraphViz.Commands.Available
                            Data.GraphViz.Types.State
 
         if True

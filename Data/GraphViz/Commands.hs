@@ -47,8 +47,8 @@ module Data.GraphViz.Commands
 
 import Data.GraphViz.Types
 -- This is here just for Haddock linking purposes.
-import Data.GraphViz.Attributes.Complete (GraphvizCommand (..))
-import Data.GraphViz.Commands.IO         (runCommand)
+import Data.GraphViz.Commands.Available
+import Data.GraphViz.Commands.IO        (runCommand)
 import Data.GraphViz.Exception
 
 import           Control.Monad    (liftM, unless)

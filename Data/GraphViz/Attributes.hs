@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 
 {- |
    Module      : Data.GraphViz.Attributes
@@ -93,13 +93,18 @@ module Data.GraphViz.Attributes
        , RankType(..)
        ) where
 
-import Data.GraphViz.Attributes.Complete
-import Data.GraphViz.Attributes.Colors.X11
-import qualified Data.GraphViz.Attributes.HTML as Html
+import           Data.GraphViz.Attributes.Arrows
+import           Data.GraphViz.Attributes.Colors
+import           Data.GraphViz.Attributes.Colors.X11
+import           Data.GraphViz.Attributes.Complete   (Attribute (..),
+                                                      Attributes)
+import qualified Data.GraphViz.Attributes.HTML       as Html
+import           Data.GraphViz.Attributes.Internal
+import           Data.GraphViz.Attributes.Values
 
+import qualified Data.Text      as ST
+import           Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
-import qualified Data.Text as ST
 
 -- -----------------------------------------------------------------------------
 
@@ -378,10 +383,9 @@ arrowFrom = ArrowTail
 edgeEnds :: DirType -> Attribute
 edgeEnds = Dir
 
-box, crow, diamond, dotArrow, inv, noArrow, normal, tee, vee :: Arrow
+box, crow, diamond, dotArrow, inv, noArrow, tee, vee :: Arrow
 oDot, invDot, invODot, oBox, oDiamond :: Arrow
 
-normal = AType [(noMods, Normal)]
 inv = AType [(noMods, Inv)]
 dotArrow = AType [(noMods, DotArrow)]
 invDot = AType [ (noMods, Inv)
