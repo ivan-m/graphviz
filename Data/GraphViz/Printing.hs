@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances, OverloadedStrings, TypeSynonymInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 {- |
    Module      : Data.GraphViz.Printing
