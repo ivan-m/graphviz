@@ -148,7 +148,7 @@ class ParseDot a where
   parseList = quotedParse parseUnqtList
 
 -- | Parse the required value, returning also the rest of the input
---   'String' that hasn't been parsed (for debugging purposes).
+--   'Text' that hasn't been parsed (for debugging purposes).
 parseIt :: (ParseDot a) => Text -> (a, Text)
 parseIt = first checkValidParse . runParser parse
 
@@ -159,7 +159,7 @@ checkValidParse (Left err) = throw (NotDotCode err)
 checkValidParse (Right a)  = a
 
 -- | Parse the required value with the assumption that it will parse
---   all of the input 'String'.
+--   all of the input 'Text'.
 parseIt' :: (ParseDot a) => Text -> a
 parseIt' = runParser' parse
 
@@ -244,7 +244,7 @@ instance (ParseDot a) => ParseDot [a] where
 
   parse = parseList
 
--- | Parse a 'String' that doesn't need to be quoted.
+-- | Parse a 'Text' that doesn't need to be quoted.
 quotelessString :: Parse Text
 quotelessString = numString False `onFail` stringBlock
 
@@ -355,6 +355,8 @@ stringValue = stringParse . map (second return)
 strings :: [String] -> Parse ()
 strings = oneOf . map string
 
+-- | Assumes that any letter is ASCII for case-insensitive
+--   comparisons.
 character   :: Char -> Parse Char
 character c = satisfy parseC
               `adjustErr`
@@ -402,11 +404,10 @@ orQuote p = stringRep quoteChar "\\\""
 quoteChar :: Char
 quoteChar = '"'
 
--- | Parse a 'String' where the provided 'Char's (as well as @\"@ and
+-- | Parse a 'Text' where the provided 'Char's (as well as @\"@ and
 --   @\\@) are escaped and the second list of 'Char's are those that
 --   are not permitted.  Note: does not parse surrounding quotes.  The
---   'Bool' value indicates whether empty 'String's are allowed or
---   not.
+--   'Bool' value indicates whether empty 'Text's are allowed or not.
 parseEscaped             :: Bool -> [Char] -> [Char] -> Parse Text
 parseEscaped empt cs bnd = fmap T.pack . lots $ qPrs `onFail` oth
   where
