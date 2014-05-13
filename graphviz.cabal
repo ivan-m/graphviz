@@ -45,11 +45,14 @@ Extra-Source-Files: TODO.md
                     README.md
                     FAQ.md
                     utils/AttributeGenerator.hs
-                    utils/TestParsing.hs
 
 Source-Repository head
     Type:         darcs
     Location:     http://hub.darcs.net/ivanm/graphviz
+
+Flag test-parsing
+     Description: Build a utility to test parsing of available Dot code.
+     Default:     False
 
 Library {
         Default-Language:  Haskell2010
@@ -171,6 +174,30 @@ Benchmark graphviz-printparse {
 
         if impl(ghc >= 6.12.1)
            Ghc-Options: -fno-warn-unused-do-bind
+
+        GHC-Prof-Options: -auto-all -caf-all -rtsopts
+}
+
+Executable graphviz-testparsing {
+        Default-Language: Haskell2010
+
+        if flag(test-parsing)
+           Buildable:     True
+        else
+           Buildable:     False
+
+        hs-Source-Dirs:   utils
+
+        Main-Is:          TestParsing.hs
+
+        Build-Depends:    base,
+                          graphviz,
+                          bytestring,
+                          directory,
+                          filepath,
+                          text
+
+        Ghc-Options: -O -Wall
 
         GHC-Prof-Options: -auto-all -caf-all -rtsopts
 }

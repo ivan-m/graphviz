@@ -1,4 +1,4 @@
-#!/usr/bin/runhaskell
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 {- |
    Module      : TestParsing
@@ -14,21 +14,21 @@
 -}
 module Main where
 
-import Data.GraphViz
+import           Data.GraphViz
+import           Data.GraphViz.Commands.IO       (hGetStrict, toUTF8)
+import           Data.GraphViz.Exception
+import           Data.GraphViz.Parsing           (runParser)
+import           Data.GraphViz.PreProcessing     (preProcess)
 import qualified Data.GraphViz.Types.Generalised as G
-import Data.GraphViz.Parsing(runParser)
-import Data.GraphViz.PreProcessing(preProcess)
-import Data.GraphViz.Commands.IO(hGetStrict, toUTF8)
-import Data.GraphViz.Exception
 
-import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
+import           Control.Exception    (SomeException, evaluate, try)
+import           Control.Monad        (filterM, liftM)
 import qualified Data.ByteString.Lazy as B
-import Control.Exception(try, evaluate, SomeException)
-import Control.Monad(liftM, filterM)
-import System.Directory
-import System.FilePath
-import System.Environment(getArgs)
+import           Data.Text.Lazy       (Text)
+import qualified Data.Text.Lazy       as T
+import           System.Directory
+import           System.Environment   (getArgs)
+import           System.FilePath
 
 -- -----------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ main = tryParsing =<< getArgs
                                \\n\
                                \One way of using this file:\n\t\
                                \$ locate -r \".*\\.\\(gv\\|dot\\)$\" -0\
-                               \ | xargs -0 runhaskell TestParsing.hs"
+                               \ | xargs -0 TestParsing.hs"
     tryParsing [fp] = do isDir <- doesDirectoryExist fp
                          if isDir
                             then mapM_ tryParseFile =<< getDContents fp

@@ -82,6 +82,13 @@ Changes in 2999.17.0.0
     - It is no longer assumed when round-tripping that `dot -Tdot`
       generates canonicalised Dot graphs.
 
+* The `TestParsing` script is now directly buildable by Cabal using
+  the `test-parsing` flag (the resulting executable is called
+  `graphviz-testparsing`).  This is not made an actual test-suite as
+  not all files found will be actual Dot graphs, and it's known that
+  it fails on some.  Instead it's meant to be used as an indication of
+  how well this library parses "real-world" Dot code.
+
 Changes in 2999.16.0.0
 ----------------------
 
