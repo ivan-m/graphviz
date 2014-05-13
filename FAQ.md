@@ -129,10 +129,6 @@ _aren't_ covered:
 * The deprecated `z` attribute is not available; use the optional
   third dimension for the `pos` attribute instead.
 
-* `pointf` and `point` values have been combined into one datatype; as
-  such, when constructing values such as `Rect` care should be taken
-  about which parts of a `Point` are allowed.
-
 * Only polygon-based `shape`s are available (i.e. no custom shapes as
   yet).
 

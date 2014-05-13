@@ -42,9 +42,6 @@
      expanded upon to give an idea of what they represent rather than
      using generic terms.
 
-   * @PointF@ and 'Point' have been combined.  The optional '!' and
-     third value for Point are also available.
-
    * 'Rect' uses two 'Point' values to denote the lower-left and
      top-right corners.
 
