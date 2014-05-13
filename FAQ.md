@@ -397,10 +397,10 @@ parse those.  Here is an example of a more difficult type that should
 be printed like `"1: Foo"`:
 
 ~~~~~~~~~~~~~~~~~~~~ {.haskell}
-data MyType = MyType String Int
+data MyType = MyType Int String
 
 instance PrintDot MyType where
-  unqtDot (MyType s i) = unqtDot i <> colon <+> unqtDot s
+  unqtDot (MyType i s) = unqtDot i <> colon <+> unqtDot s
 
   -- We have a space in there, so we need quotes.
   toDot = doubleQuotes . unqtDot
