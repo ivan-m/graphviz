@@ -39,7 +39,8 @@ available out of all of them:
           Dot graph (that matches the former layout of `dot -Tcanon`).
        2. Generalised, which allows statements to be in any order.
        3. A graph-based one that allows manipulation of the Dot graph.
-       4. A monadic interface for embedding graphs in Haskell.
+       4. A monadic interface for embedding relatively static graphs
+          in Haskell.
 
     There are also conversion functions between them.
 
@@ -530,8 +531,8 @@ generalised implementation back around the time of the
 yet
 [people didn't like the idea](http://www.haskell.org/pipermail/haskell-cafe/2009-July/064442.html).
 
-The graph-based implementation was added solely so I could write as
-(un-yet finished) tutorial, and thought others might find it useful.
+The graph-based implementation was added solely so I could write an
+(as-yet finished) tutorial, and thought others might find it useful.
 The monadic implementation came about as an attempt to encourage more
 people to use _graphviz_ rather than other libraries such as [dotgen],
 and I thought a nicer way of writing Dot graphs might help (the
