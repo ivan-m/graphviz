@@ -12,6 +12,13 @@ Changes in 2999.17.0.0
 
 * Add support for Graphviz 2.32.0, 2.32.1, 2.34.0, 2.36.0 and 2.38.0:
 
+    - **WARNING**: at least as of Graphviz-2.32.0, `dot -Tcanon` no
+      longer produces Dot code that is in the format expected by the
+      Canonical Dot representation in this library.  As such, unless
+      you're very sure of your sources you should _always_ use the
+      Generalised representation for parsing (see also the new
+      `FromGeneralisedDot` class mentioned below).
+
     - New attributes:
 
         + `XDotVersion` (as of 2.34.0)

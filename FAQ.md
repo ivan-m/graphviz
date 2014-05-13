@@ -35,7 +35,8 @@ available out of all of them:
 
 * There are [four different representations] of Dot graphs:
 
-       1. Canonical, which matches the layout of `dot -Tcanon`.
+       1. Canonical, which provides a clean separated definition of a
+          Dot graph (that matches the former layout of `dot -Tcanon`).
        2. Generalised, which allows statements to be in any order.
        3. A graph-based one that allows manipulation of the Dot graph.
        4. A monadic interface for embedding graphs in Haskell.
@@ -310,8 +311,8 @@ _graphviz_ has four different "implementations" of Dot code:
 
 **Canonical:**
 
-:   matches the output of `dot -Tcanon`.  Recommended for use when
-    converting existing data into Dot (especially with the
+:   matches the (former) output of `dot -Tcanon`.  Recommended for use
+    when converting existing data into Dot (especially with the
     `graphElemsToDot` function in `Data.GraphViz`).
 
 **Generalised:**
@@ -337,22 +338,20 @@ _graphviz_ has four different "implementations" of Dot code:
 
 ### What's the best way to parse Dot code? ###
 
-In both cases below, you should use the `parseDotGraph` function to
-parse the Dot code: this is because it will strip out comments and
-pre-processor lines and join together split lines (if any of these
-remain the parser will fail).  Also, if you are not sure what the type
-of the nodes are, use either String or else the `GraphID` type as it
-explicitly caters for both Strings and numbers (whereas just assuming
-it being a String will result in numbers being stored internally as a
-String).
+Use the `parseDotGraph` function (rather than the general parsing
+functions that are available) to parse your Dot code: this is will
+strip out comments and pre-processor lines and join together split
+lines (if any of these remain the parser will fail).  Also, if you are
+not sure what the type of the nodes are, use either String or else the
+`GraphID` type as it explicitly caters for both Strings and numbers
+(whereas just assuming it being a String will result in numbers being
+stored internally as a String).
 
-If you can, first run `dot -Tcanon` on the Dot code and parse it as a
-`DotGraph` value.  This is because `DotGraph` types are easier to deal
-with.
-
-If, however, this isn't possible (e.g. it uses an image that isn't in
-the current working directory) then use the `Generalised.DotGraph`
-type.
+Unless you are very sure of the representation of the Dot code you
+have been provided, you should parse in any Dot code as the
+`Generalised.DotGraph` type.  Afterwards you can use
+`FromGeneralisedDot` to convert to whichever representation you
+prefer.
 
 ### There are too many attributes!!! Which ones should I use? ###
 
