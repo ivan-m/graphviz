@@ -7,6 +7,11 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.17.0.1
+----------------------
+
+* Allow usage of `transformers-0.4.*`, by **Sergei Trofimovich**.
+
 Changes in 2999.17.0.0
 ----------------------
 
