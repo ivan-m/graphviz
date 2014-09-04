@@ -10,8 +10,8 @@
 -}
 module Main where
 
-import Data.GraphViz.Testing( Test(name, lookupName)
-                            , defaultTests, runChosenTests)
+import Data.GraphViz.Testing (Test (name, lookupName), allTests, defaultTests,
+                              runChosenTests)
 
 import Data.Char(toLower)
 import Data.Maybe(mapMaybe)
@@ -30,7 +30,7 @@ main = do opts <- getArgs
               hasArg arg = any (arg==) opts'
           when (hasArg "help") helpMsg
           let tests = if hasArg "all"
-                      then defaultTests
+                      then allTests
                       else mapMaybe getTest opts'
               tests' = if null tests
                        then defaultTests
@@ -39,7 +39,7 @@ main = do opts <- getArgs
 
 testLookup :: Map String Test
 testLookup = Map.fromList
-             $ map (lookupName &&& id) defaultTests
+             $ map (lookupName &&& id) allTests
 
 getTest :: String -> Maybe Test
 getTest = (`Map.lookup` testLookup)
@@ -52,7 +52,7 @@ helpMsg = getProgName >>= (putStr . msg) >> exitWith ExitSuccess
       , "Various tests are available; see the table below for a complete list."
       , "There are several ways of running this program:"
       , ""
-      , "    " ++ nm ++ "               Run all of the tests"
+      , "    " ++ nm ++ "               Run the default set of tests"
       , "    " ++ nm ++ " all           Run all of the tests"
       , "    " ++ nm ++ " help          Get this help message"
       , "    " ++ nm ++ " <key>         Run the test associated with each key,"
@@ -68,7 +68,7 @@ helpTable = unlines $ fmtName ((lnHeader,lnHeaderLen),(nHeader,nHeaderLen))
                       : map fmtName testNames
   where
     andLen = ((id &&& length) .)
-    testNames = map (andLen lookupName &&& andLen name) defaultTests
+    testNames = map (andLen lookupName &&& andLen name) allTests
     fmtName ((ln,lnl),(n,_)) = concat [ ln
                                       , replicate (maxLN-lnl+spacerLen) ' '
                                       , n

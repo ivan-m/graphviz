@@ -46,6 +46,7 @@ module Data.GraphViz.Testing
          -- ** The tests themselves
        , Test(..)
        , defaultTests
+       , allTests
        , test_printParseID_Attributes
        , test_generalisedSameDot
        , test_printParseID
@@ -166,9 +167,13 @@ defaultTests = [ test_printParseID_Attributes
                , test_generalisedSameDot
                , test_printParseID
                , test_preProcessingID
-               , test_dotizeAugment
-               , test_dotizeHasAugment
-               , test_dotizeAugmentUniq
+               -- These require dot and neato to be installed and
+               -- configured properly.  As such, don't run them by
+               -- default.
+
+               -- , test_dotizeAugment
+               -- , test_dotizeHasAugment
+               -- , test_dotizeAugmentUniq
                , test_findAllNodes
                , test_findAllNodesE
                , test_findAllEdges
@@ -179,6 +184,26 @@ defaultTests = [ test_printParseID_Attributes
                , test_transitive
                , test_transitiveNodes
                ]
+
+-- | All available tests.
+allTests :: [Test]
+allTests = [ test_printParseID_Attributes
+           , test_generalisedSameDot
+           , test_printParseID
+           , test_preProcessingID
+           , test_dotizeAugment
+           , test_dotizeHasAugment
+           , test_dotizeAugmentUniq
+           , test_findAllNodes
+           , test_findAllNodesE
+           , test_findAllEdges
+           , test_noGraphInfo
+           , test_canonicalise
+           , test_canonicaliseNodes
+           , test_canonicaliseEdges
+           , test_transitive
+           , test_transitiveNodes
+           ]
 
 -- | Test that 'Attributes' can be printed and then parsed back.
 test_printParseID_Attributes :: Test
@@ -244,6 +269,10 @@ test_preProcessingID
            \This test is not run on generalised Dot graphs as if it works for\n\
            \normal dot graphs then it should also work for generalised ones."
 
+augMsg :: String
+augMsg = "\n\nThis requires dot and neato to be installed, and for `dot' to be\n\
+         \to be in the output of `dot -Txxx`."
+
 test_dotizeAugment :: Test
 test_dotizeAugment
   = Test { name       = "Augmenting FGL Graphs"
@@ -258,7 +287,7 @@ test_dotizeAugment
     dsc = "The various Graph to Graph functions in Data.GraphViz should\n\
            \only _augment_ the graph labels and not change the graphs\n\
            \themselves.  This test compares the original graphs to these\n\
-           \augmented graphs and verifies that they are the same."
+           \augmented graphs and verifies that they are the same." ++ augMsg
 
 test_dotizeHasAugment :: Test
 test_dotizeHasAugment
@@ -273,7 +302,7 @@ test_dotizeHasAugment
 
     dsc = "The various Graph to Graph functions in Data.GraphViz should\n\
            \actually agument the graph labels; this ensures that all labels\n\
-           \actually have attached Attributes after augmentation."
+           \actually have attached Attributes after augmentation." ++ augMsg
 
 test_dotizeAugmentUniq :: Test
 test_dotizeAugmentUniq
@@ -289,7 +318,7 @@ test_dotizeAugmentUniq
     dsc = "When augmenting a graph with multiple edges, as long as no\n\
            \Attributes are provided that override the default settings,\n\
            \then each edge between two nodes should have a unique position\n\
-           \Attribute, etc."
+           \Attribute, etc." ++ augMsg
 
 test_findAllNodes :: Test
 test_findAllNodes
