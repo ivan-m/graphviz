@@ -52,6 +52,7 @@ module Data.GraphViz.Testing
        , test_printParseID
        , test_preProcessingID
        , test_dotizeAugment
+       , test_dotizeHasAugment
        , test_dotizeAugmentUniq
        , test_canonicalise
        , test_canonicaliseNodes
