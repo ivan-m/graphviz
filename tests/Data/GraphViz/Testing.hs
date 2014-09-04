@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, MultiParamTypeClasses, Rank2Types #-}
 
 {- |
    Module      : Data.GraphViz.Testing
@@ -76,21 +76,21 @@ module Data.GraphViz.Testing
 
 import Test.QuickCheck
 
-import Data.GraphViz.Testing.Instances()
+import Data.GraphViz.Testing.Instances  ()
 import Data.GraphViz.Testing.Properties
 
-import Data.GraphViz
-import Data.GraphViz.Algorithms(CanonicaliseOptions)
-import Data.GraphViz.Parsing(parseIt, parseIt', runParser)
-import Data.GraphViz.PreProcessing(preProcess)
-import Data.GraphViz.Printing(printIt, renderDot)
+import           Data.GraphViz
+import           Data.GraphViz.Algorithms        (CanonicaliseOptions)
+import           Data.GraphViz.Parsing           (parseIt, parseIt', runParser)
+import           Data.GraphViz.PreProcessing     (preProcess)
+import           Data.GraphViz.Printing          (printIt, renderDot)
 import qualified Data.GraphViz.Types.Generalised as G
-import qualified Data.GraphViz.Types.Graph as Gr
+import qualified Data.GraphViz.Types.Graph       as Gr
 -- Can't use PatriciaTree because a Show instance is needed.
-import Data.Graph.Inductive.Tree(Gr)
+import Data.Graph.Inductive.Tree (Gr)
 
-import System.Exit(ExitCode(..), exitWith)
-import System.IO(hPutStrLn, stderr)
+import System.Exit (ExitCode (..), exitWith)
+import System.IO   (hPutStrLn, stderr)
 
 -- -----------------------------------------------------------------------------
 

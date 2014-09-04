@@ -13,21 +13,21 @@ module Main where
 import Data.GraphViz.Testing (Test (name, lookupName), allTests, defaultTests,
                               runChosenTests)
 
-import Data.Char(toLower)
-import Data.Maybe(mapMaybe)
-import qualified Data.Map as Map
-import Data.Map(Map)
-import Control.Arrow((&&&))
-import Control.Monad(when)
-import System.Environment(getArgs, getProgName)
-import System.Exit(ExitCode(ExitSuccess), exitWith)
+import           Control.Arrow      ((&&&))
+import           Control.Monad      (when)
+import           Data.Char          (toLower)
+import           Data.Map           (Map)
+import qualified Data.Map           as Map
+import           Data.Maybe         (mapMaybe)
+import           System.Environment (getArgs, getProgName)
+import           System.Exit        (exitSuccess)
 
 -- -----------------------------------------------------------------------------
 
 main :: IO ()
 main = do opts <- getArgs
           let opts' = map (map toLower) opts
-              hasArg arg = any (arg==) opts'
+              hasArg arg = arg `elem` opts'
           when (hasArg "help") helpMsg
           let tests = if hasArg "all"
                       then allTests
@@ -45,7 +45,7 @@ getTest :: String -> Maybe Test
 getTest = (`Map.lookup` testLookup)
 
 helpMsg :: IO ()
-helpMsg = getProgName >>= (putStr . msg) >> exitWith ExitSuccess
+helpMsg = getProgName >>= (putStr . msg) >> exitSuccess
   where
     msg nm = unlines
       [ "This utility is the test-suite for the graphviz library for Haskell."
