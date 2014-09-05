@@ -154,7 +154,7 @@ runCommand :: (PrintDotRepr dg n)
               -> IO a
 runCommand cmd args hf dg
   = mapException notRunnable $
-    withSystemTempFile ("graphviz" <.> "dot") $ \dotFile dotHandle -> do
+    withSystemTempFile ("graphviz" <.> "gv") $ \dotFile dotHandle -> do
       finally (hPutCompactDot dotHandle dg) (hClose dotHandle)
       bracket
         (runInteractiveProcess cmd (args ++ [dotFile]) Nothing Nothing)
