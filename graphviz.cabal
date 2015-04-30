@@ -36,8 +36,7 @@ License:            BSD3
 License-File:       LICENSE.md
 Copyright:          Matthew Sackman, Ivan Lazar Miljenovic
 Author:             Matthew Sackman, Ivan Lazar Miljenovic
-Maintainer:         Ivan.Miljenovic+graphviz@gmail.com
-Bug-Reports:        http://hub.darcs.net/ivanm/graphviz/issues
+Maintainer:         Ivan.Miljenovic@gmail.com
 Build-Type:         Simple
 Cabal-Version:      >= 1.14
 Extra-Source-Files: TODO.md
@@ -47,8 +46,8 @@ Extra-Source-Files: TODO.md
                     utils/AttributeGenerator.hs
 
 Source-Repository head
-    Type:         darcs
-    Location:     http://hub.darcs.net/ivanm/graphviz
+    Type:         git
+    Location:     git://github.com/ivan-m/graphviz.git
 
 Flag test-parsing
      Description: Build a utility to test parsing of available Dot code.

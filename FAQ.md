@@ -200,16 +200,16 @@ The best place to get _graphviz_ is from its [HackageDB] page.
 
 Also on its [HackageDB] page.
 
-### Is it safe to install and use _graphviz_ from its darcs repository? ###
+### Is it safe to install and use _graphviz_ from its git repository? ###
 
 No; unlike other projects I make no guarantees as to the stability of
-the live version of _graphviz_.  Whilst the [darcs] [repository] is
+the live version of _graphviz_.  Whilst the [git] [repository] is
 _usually_ stable, it's often in a state of flux and at times patches
 that break the repository are recorded (when it's simpler/cleaner to
 break one patch into several smaller patches).
 
-[darcs]: http://darcs.net/
-[repository]: http://hub.darcs.net/ivanm/graphviz
+[git]: http://git-scm.com/
+[repository]: https://github.com/ivan-m/graphviz/
 
 ### How is _graphviz_ licensed? ###
 
@@ -227,7 +227,7 @@ appreciate at least an [email] letting me know how _graphviz_ is being
 used.
 
 [Matthew Sackman]: http://www.wellquite.org/
-[email]: mailto:Ivan.Miljenovic+graphviz@gmail.com
+[email]: mailto:Ivan.Miljenovic@gmail.com
 
 ### Where can I find more information on _graphviz_? ###
 
@@ -602,33 +602,21 @@ is parseable as a `DotGraph`.
 
 ### I've found a bug! ###
 
-Oh-oh... please [email] me the specifics of what you were doing
-(including the Dot file in question if it's a parsing problem) and
-I'll get right on it.
+Oh-oh... please file a report at the GitHub [repository] to tell me
+the specifics of what you were doing (including the Dot file in
+question if it's a parsing problem) and I'll get right on it.
 
 ### I have a feature request. ###
 
-Is it in the TODO?  If not, [email] me and I'll consider implementing
-it (depending on time and how well I think it will fit in the overall
-library).
+Is it in the TODO?  If not, file an issue at the GitHub [repository]
+and I'll consider implementing it (depending on time and how well I
+think it will fit in the overall library).
 
 ### I want to help out with developing _graphviz_. ###
 
 Great!  Whether you have a specific feature in mind or want to help
-clear the TODO list, please [email] me to check with what you're doing
-(who knows, I could already be implementing that very feature).
-
-Once we've discussed what you're going to do, first get yourself a
-copy of the darcs repository:
-
-~~~~~~~~~~~~~~~~~~~~ {.bash}
-darcs get --lazy http://hub.darcs.net/ivanm/graphviz
-~~~~~~~~~~~~~~~~~~~~
-
-Once you've made your changes, make sure you build and run the
-testsuite (and ensure it passes!).  Then record the patch[es] and
-`darcs send` them.  I'll then review them and if I'm happy with them,
-I'll apply them.
+clear the TODO list, please create a pull-request on the GitHub
+[repository].
 
 ### What is the purpose of the AttributeGenerator.hs file? ###
 
