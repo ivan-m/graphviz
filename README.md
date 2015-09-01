@@ -4,6 +4,8 @@
 The graphviz Library
 ====================
 
+[![Hackage](https://img.shields.io/hackage/v/graphviz.svg)](https://hackage.haskell.org/package/graphviz) [![Build Status](https://travis-ci.org/ivan-m/graphviz.svg)](https://travis-ci.org/ivan-m/graphviz)
+
 The _graphviz_ library provides bindings to the [Graphviz] graph
 visualisation suite of tools for the purely functional programming
 language [Haskell].  It can be downloaded from [HackageDB] or - if you
