@@ -156,6 +156,7 @@ instance ParseDot TextItem where
 data Format = Italics
               | Bold
               | Underline
+              | Overline -- ^ Requires Graphviz >= 2.38.0.
               | Subscript
               | Superscript
               deriving (Eq, Ord, Bounded, Enum, Show, Read)
@@ -164,6 +165,7 @@ instance PrintDot Format where
   unqtDot Italics     = text "I"
   unqtDot Bold        = text "B"
   unqtDot Underline   = text "U"
+  unqtDot Overline    = text "O"
   unqtDot Subscript   = text "SUB"
   unqtDot Superscript = text "SUP"
 
@@ -171,6 +173,7 @@ instance ParseDot Format where
   parseUnqt = stringValue [ ("I", Italics)
                           , ("B", Bold)
                           , ("U", Underline)
+                          , ("O", Overline)
                           , ("SUB", Subscript)
                           , ("SUP", Superscript)
                           ]
