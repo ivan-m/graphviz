@@ -11,7 +11,7 @@
    parseable by this library.  This module defines the 'preProcess'
    function to remove these components, which include:
 
-     * Comments (both @\/* ... *\/@ style and @\/\/ ... @ style);
+     * Comments (both @\/\* ... *\/@ style and @\/\/ ... @ style);
 
      * Pre-processor lines (lines starting with a @#@);
 
