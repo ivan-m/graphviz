@@ -346,7 +346,7 @@ data Attribute
   | NodeSep Double                      -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@
   | NoJustify Bool                      -- ^ /Valid for/: GCNE; /Default/: @'False'@; /Parsing Default/: 'True'
   | Normalize Normalized                -- ^ /Valid for/: G; /Default/: @'NotNormalized'@; /Parsing Default/: 'IsNormalized'; /Notes/: not 'Dot'
-  | NoTranslate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: 'Neato' only
+  | NoTranslate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: 'Neato' only, requires Graphviz >= 2.38.0
   | Nslimit Double                      -- ^ /Valid for/: G; /Notes/: 'Dot' only
   | Nslimit1 Double                     -- ^ /Valid for/: G; /Notes/: 'Dot' only
   | Ordering Order                      -- ^ /Valid for/: GN; /Default/: none; /Notes/: 'Dot' only
