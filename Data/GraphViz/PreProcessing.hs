@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {- |
    Module      : Data.GraphViz.PreProcessing
    Description : Pre-process imported Dot code.
@@ -21,14 +23,17 @@
 -}
 module Data.GraphViz.PreProcessing(preProcess) where
 
+import Data.GraphViz.Exception (GraphvizException (NotDotCode), throw)
 import Data.GraphViz.Parsing
-import Data.GraphViz.Exception(GraphvizException(NotDotCode), throw)
 
-import qualified Data.Text.Lazy as T
-import Data.Text.Lazy(Text)
+import           Data.Text.Lazy         (Text)
+import qualified Data.Text.Lazy         as T
+import           Data.Text.Lazy.Builder (Builder)
 import qualified Data.Text.Lazy.Builder as B
-import Data.Text.Lazy.Builder(Builder)
-import Data.Monoid(Monoid(..), mconcat)
+
+#if !(MIN_VERSION_base(4,8,0))
+import Data.Monoid (Monoid (..), mconcat)
+#endif
 
 -- -----------------------------------------------------------------------------
 -- Filtering out unwanted Dot items such as comments

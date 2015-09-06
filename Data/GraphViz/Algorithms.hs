@@ -382,7 +382,7 @@ rmTransEdges es = concatMap (map snd . outgoing) $ Map.elems esM
 
     esMS = do edgeGraph tes
               ns <- getsMap Map.keys
-              mapM_ (traverse zeroTag) ns
+              mapM_ (traverseTag zeroTag) ns
 
     esM = fst $ execState esMS (Map.empty, Set.empty)
 
@@ -442,13 +442,12 @@ edgeGraph = mapM_ addEdge . reverse
                                }
 
 -- Perform a DFS to determine whether or not to keep each edge.
-traverse     :: (Ord n) => Tag -> n -> TagState n ()
-traverse t n = do setMark True
-                  checkIncoming
-                  outEs <- getsMap (maybe [] outgoing . Map.lookup n)
-                  mapM_ maybeRecurse outEs
-                  setMark False
-
+traverseTag     :: (Ord n) => Tag -> n -> TagState n ()
+traverseTag t n = do setMark True
+                     checkIncoming
+                     outEs <- getsMap (maybe [] outgoing . Map.lookup n)
+                     mapM_ maybeRecurse outEs
+                     setMark False
   where
     setMark mrk = modifyMap (Map.adjust (\tv -> tv { marked = mrk }) n)
 
@@ -471,4 +470,4 @@ traverse t n = do setMark True
                              delSet <- getSet
                              let n' = toNode e
                              unless (isMarked m n' || t' `Set.member` delSet)
-                               $ traverse t' n'
+                               $ traverseTag t' n'

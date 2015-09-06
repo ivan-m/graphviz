@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, PatternGuards #-}
+{-# LANGUAGE CPP, OverloadedStrings, PatternGuards #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
@@ -23,7 +23,12 @@ import qualified Data.Set            as Set
 import           Data.Text.Lazy      (Text)
 import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T
-import           Data.Version        (Version (..))
+
+#if MIN_VERSION_base(4,8,0)
+import Data.Version (Version, makeVersion)
+#else
+import Data.Version (Version (..))
+#endif
 
 -- -----------------------------------------------------------------------------
 
@@ -137,8 +142,12 @@ keywords = Set.fromList [ "node"
                         , "strict"
                         ]
 
-createVersion    :: [Int] -> Version
+createVersion :: [Int] -> Version
+#if MIN_VERSION_base(4,8,0)
+createVersion = makeVersion
+#else
 createVersion bs = Version { versionBranch = bs, versionTags = []}
+#endif
 
 -- -----------------------------------------------------------------------------
 
