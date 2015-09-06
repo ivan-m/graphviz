@@ -346,6 +346,7 @@ data Attribute
   | NodeSep Double                      -- ^ /Valid for/: G; /Default/: @0.25@; /Minimum/: @0.02@
   | NoJustify Bool                      -- ^ /Valid for/: GCNE; /Default/: @'False'@; /Parsing Default/: 'True'
   | Normalize Normalized                -- ^ /Valid for/: G; /Default/: @'NotNormalized'@; /Parsing Default/: 'IsNormalized'; /Notes/: not 'Dot'
+  | NoTranslate Bool                    -- ^ /Valid for/: G; /Default/: @'False'@; /Parsing Default/: 'True'; /Notes/: 'Neato' only
   | Nslimit Double                      -- ^ /Valid for/: G; /Notes/: 'Dot' only
   | Nslimit1 Double                     -- ^ /Valid for/: G; /Notes/: 'Dot' only
   | Ordering Order                      -- ^ /Valid for/: GN; /Default/: none; /Notes/: 'Dot' only
@@ -514,6 +515,7 @@ instance PrintDot Attribute where
   unqtDot (NodeSep v)            = printField "nodesep" v
   unqtDot (NoJustify v)          = printField "nojustify" v
   unqtDot (Normalize v)          = printField "normalize" v
+  unqtDot (NoTranslate v)        = printField "notranslate" v
   unqtDot (Nslimit v)            = printField "nslimit" v
   unqtDot (Nslimit1 v)           = printField "nslimit1" v
   unqtDot (Ordering v)           = printField "ordering" v
@@ -678,6 +680,7 @@ instance ParseDot Attribute where
                                   , parseField NodeSep "nodesep"
                                   , parseFieldBool NoJustify "nojustify"
                                   , parseFieldDef Normalize IsNormalized "normalize"
+                                  , parseFieldBool NoTranslate "notranslate"
                                   , parseField Nslimit "nslimit"
                                   , parseField Nslimit1 "nslimit1"
                                   , parseField Ordering "ordering"
@@ -809,6 +812,7 @@ usedByGraphs Mosek{}              = True
 usedByGraphs NodeSep{}            = True
 usedByGraphs NoJustify{}          = True
 usedByGraphs Normalize{}          = True
+usedByGraphs NoTranslate{}        = True
 usedByGraphs Nslimit{}            = True
 usedByGraphs Nslimit1{}           = True
 usedByGraphs Ordering{}           = True
@@ -1099,6 +1103,7 @@ sameAttribute Mosek{}                 Mosek{}                 = True
 sameAttribute NodeSep{}               NodeSep{}               = True
 sameAttribute NoJustify{}             NoJustify{}             = True
 sameAttribute Normalize{}             Normalize{}             = True
+sameAttribute NoTranslate{}           NoTranslate{}           = True
 sameAttribute Nslimit{}               Nslimit{}               = True
 sameAttribute Nslimit1{}              Nslimit1{}              = True
 sameAttribute Ordering{}              Ordering{}              = True
@@ -1248,6 +1253,7 @@ defaultAttributeValue Mosek{}              = Just $ Mosek False
 defaultAttributeValue NodeSep{}            = Just $ NodeSep 0.25
 defaultAttributeValue NoJustify{}          = Just $ NoJustify False
 defaultAttributeValue Normalize{}          = Just $ Normalize NotNormalized
+defaultAttributeValue NoTranslate{}        = Just $ NoTranslate False
 defaultAttributeValue Orientation{}        = Just $ Orientation 0.0
 defaultAttributeValue OutputOrder{}        = Just $ OutputOrder BreadthFirst
 defaultAttributeValue Overlap{}            = Just $ Overlap KeepOverlaps
@@ -1399,6 +1405,7 @@ validUnknown txt = T.toLower txt `S.notMember` names
                , "nodesep"
                , "nojustify"
                , "normalize"
+               , "notranslate"
                , "nslimit"
                , "nslimit1"
                , "ordering"

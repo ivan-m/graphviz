@@ -560,6 +560,7 @@ attributes = [
   makeAttr "NodeSep" ["nodesep"] "G" (Dbl) Nothing (Just "0.25") (Just "@0.25@") (Just "@0.02@") Nothing,
   makeAttr "NoJustify" ["nojustify"] "GCNE" (Bl) (Just "True") (Just "False") (Just "@'False'@") Nothing Nothing,
   makeAttr "Normalize" ["normalize"] "G" (Cust "Normalized") (Just "IsNormalized") (Just "NotNormalized") (Just "@'NotNormalized'@") Nothing (Just "not 'Dot'"),
+  makeAttr "NoTranslate" ["notranslate"] "G" (Bl) (Just "True") (Just "False") (Just "@'False'@") Nothing (Just "'Neato' only"),
   makeAttr "Nslimit" ["nslimit"] "G" (Dbl) Nothing Nothing Nothing Nothing (Just "'Dot' only"),
   makeAttr "Nslimit1" ["nslimit1"] "G" (Dbl) Nothing Nothing Nothing Nothing (Just "'Dot' only"),
   makeAttr "Ordering" ["ordering"] "GN" (Cust "Order") Nothing Nothing (Just "none") Nothing (Just "'Dot' only"),
@@ -751,6 +752,7 @@ This way, you can more easily edit/update the appropriate values.
 | NodeSep         | nodesep         | G       | Dbl             |            | 0.25            | @0.25@               | @0.02@     |                      |
 | NoJustify       | nojustify       | GCNE    | Bl              | True       | False           | @'False'@            |            |                      |
 | Normalize       | normalize       | G       | Cust "Normalized" | IsNormalized | NotNormalized   | @'NotNormalized'@    |            | not 'Dot'            |
+| NoTranslate     | notranslate     | G       | Bl              | True       | False           | @'False'@            |            | 'Neato' only         |
 | Nslimit         | nslimit         | G       | Dbl             |            |                 |                      |            | 'Dot' only           |
 | Nslimit1        | nslimit1        | G       | Dbl             |            |                 |                      |            | 'Dot' only           |
 | Ordering        | ordering        | GN      | Cust "Order"    |            |                 | none                 |            | 'Dot' only           |

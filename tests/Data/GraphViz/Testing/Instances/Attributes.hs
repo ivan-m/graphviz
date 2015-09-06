@@ -154,6 +154,7 @@ instance Arbitrary Attribute where
                     , liftM NodeSep arbitrary
                     , liftM NoJustify arbitrary
                     , liftM Normalize arbitrary
+                    , liftM NoTranslate arbitrary
                     , liftM Nslimit arbitrary
                     , liftM Nslimit1 arbitrary
                     , liftM Ordering arbitrary
@@ -316,6 +317,7 @@ instance Arbitrary Attribute where
   shrink (NodeSep v)            = map NodeSep             $ shrink v
   shrink (NoJustify v)          = map NoJustify           $ shrink v
   shrink (Normalize v)          = map Normalize           $ shrink v
+  shrink (NoTranslate v)        = map NoTranslate         $ shrink v
   shrink (Nslimit v)            = map Nslimit             $ shrink v
   shrink (Nslimit1 v)           = map Nslimit1            $ shrink v
   shrink (Ordering v)           = map Ordering            $ shrink v
