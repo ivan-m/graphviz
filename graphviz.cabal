@@ -126,6 +126,7 @@ Test-Suite graphviz-testsuite {
                            graphviz,
                            containers,
                            fgl,
+                           fgl-arbitrary == 0.2.0.0,
                            filepath,
                            text,
                            QuickCheck >= 2.3 && < 2.9
@@ -138,7 +139,6 @@ Test-Suite graphviz-testsuite {
         Other-Modules:       Data.GraphViz.Testing
                              Data.GraphViz.Testing.Instances
                              Data.GraphViz.Testing.Properties
-                             Data.GraphViz.Testing.Instances.FGL
                              Data.GraphViz.Testing.Instances.Helpers
                              Data.GraphViz.Testing.Instances.Attributes
                              Data.GraphViz.Testing.Instances.Common
