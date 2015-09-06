@@ -7,6 +7,34 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.18.0.0
+----------------------
+
+* Now builds on GHC 7.10.*.
+
+* Attribute changes:
+
+    - Added the `NoTranslate` attribute.
+
+    - Add support for overlines in HTML labels.
+
+    Both of these are available as of Graphviz 2.38.0, but were
+    somehow overlooked in previous releases of this library.
+
+* Uses new `fgl-arbitrary` library for testing rather than custom
+  instances for FGL graphs.
+
+* Migrated to git; central repository now on
+  [GitHub](https://github.com/ivan-m/graphviz).
+
+Changes in 2999.17.0.2
+----------------------
+
+* Augmentation tests are no longer run by default.  This avoids
+  problems where Graphviz is not installed/configured properly.
+
+* Use `.gv` for temporary files instead of `.dot`.
+
 Changes in 2999.17.0.1
 ----------------------
 
