@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE CPP, FlexibleInstances, MultiParamTypeClasses #-}
 
 {- |
    Module      : Data.GraphViz.Types.Monadic
@@ -78,10 +78,13 @@ module Data.GraphViz.Types.Monadic
 import Data.GraphViz.Attributes        (Attributes)
 import Data.GraphViz.Types.Generalised
 
-import           Control.Applicative (Applicative (..))
-import           Data.DList          (DList)
-import qualified Data.DList          as DL
-import qualified Data.Sequence       as Seq
+import           Data.DList    (DList)
+import qualified Data.DList    as DL
+import qualified Data.Sequence as Seq
+
+#if !(MIN_VERSION_base (4,8,0))
+import Control.Applicative (Applicative (..))
+#endif
 
 -- -----------------------------------------------------------------------------
 -- The Dot monad.

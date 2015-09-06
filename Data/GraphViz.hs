@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MultiParamTypeClasses, OverloadedStrings #-}
+{-# LANGUAGE CPP, FlexibleContexts, MultiParamTypeClasses, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz
@@ -78,7 +78,6 @@ import Data.GraphViz.Types.Generalised     (FromGeneralisedDot (..))
 
 import           Control.Arrow              (first, (&&&))
 import           Control.Concurrent         (forkIO)
-import           Data.Functor               ((<$>))
 import           Data.Graph.Inductive.Graph
 import qualified Data.Map                   as Map
 import           Data.Maybe                 (fromJust, mapMaybe)
@@ -86,6 +85,10 @@ import qualified Data.Set                   as Set
 import           Data.Text.Lazy             (Text)
 import qualified Data.Text.Lazy             as T
 import           System.IO.Unsafe           (unsafePerformIO)
+
+#if !(MIN_VERSION_base (4,8,0))
+import Data.Functor ((<$>))
+#endif
 
 -- -----------------------------------------------------------------------------
 

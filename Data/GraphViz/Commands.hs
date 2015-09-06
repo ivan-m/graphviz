@@ -166,7 +166,7 @@ instance GraphvizResult GraphvizOutput where
   outputCall Bmp       = "bmp"
   outputCall Canon     = "canon"
   outputCall DotOutput = "dot"
-  outputCall (XDot mv) = "xdot" ++ maybe "" (showVersion . (\v -> v {versionTags = []})) mv
+  outputCall (XDot mv) = "xdot" ++ maybe "" showVersion mv
   outputCall Eps       = "eps"
   outputCall Fig       = "fig"
   outputCall Gd        = "gd"

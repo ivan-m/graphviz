@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE CPP, FlexibleInstances, MultiParamTypeClasses #-}
 
 {- |
    Module      : Data.GraphViz.Types.Graph
@@ -109,7 +109,7 @@ import qualified Data.GraphViz.Types.Generalised     as G
 import           Data.GraphViz.Types.Internal.Common (partitionGlobal)
 import qualified Data.GraphViz.Types.State           as St
 
-import           Control.Applicative             (liftA2, (<$>), (<*>))
+import           Control.Applicative             (liftA2)
 import           Control.Arrow                   ((***))
 import qualified Data.Foldable                   as F
 import           Data.List                       (delete, foldl', unfoldr)
@@ -121,6 +121,10 @@ import qualified Data.Set                        as S
 import           Text.ParserCombinators.ReadPrec (prec)
 import           Text.Read                       (Lexeme (Ident), lexP, parens,
                                                   readPrec)
+
+#if !(MIN_VERSION_base (4,8,0))
+import Control.Applicative ((<$>), (<*>))
+#endif
 
 -- -----------------------------------------------------------------------------
 
