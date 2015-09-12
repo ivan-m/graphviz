@@ -1,5 +1,5 @@
 Name:               graphviz
-Version:            2999.18.0.0
+Version:            2999.18.0.1
 Stability:          Beta
 Synopsis:           Bindings to Graphviz for graph visualisation.
 Description: {
@@ -126,7 +126,7 @@ Test-Suite graphviz-testsuite {
                            graphviz,
                            containers,
                            fgl,
-                           fgl-arbitrary == 0.2.0.0,
+                           fgl-arbitrary == 0.2.*,
                            filepath,
                            text,
                            QuickCheck >= 2.3 && < 2.9

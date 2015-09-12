@@ -7,6 +7,11 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.18.0.1
+----------------------
+
+* Loosened bound on `fgl-arbitrary`.
+
 Changes in 2999.18.0.0
 ----------------------
 
