@@ -277,12 +277,11 @@ type EdgeNode n = (n, Maybe PortPos)
 -- | Takes into account edge statements containing something like
 --   @a -> \{b c\}@.
 parseEdgeNodes :: (ParseDot n) => Parse [EdgeNode n]
-parseEdgeNodes = parseBraced ( wrapWhitespace
-                               -- Should really use sepBy1, but this will do.
-                               $ parseStatements parseEdgeNode
-                             )
-                 `onFail`
-                 fmap (:[]) parseEdgeNode
+parseEdgeNodes = oneOf [ parseBraced (wrapWhitespace
+                                      -- Should really use sepBy1, but this will do.
+                                      $ parseStatements parseEdgeNode)
+                       , wrapWhitespace (sepBy1 parseEdgeNode (wrapWhitespace parseComma))
+                       , (: []) <$> parseEdgeNode ]
 
 parseEdgeNode :: (ParseDot n) => Parse (EdgeNode n)
 parseEdgeNode = liftA2 (,) parse
