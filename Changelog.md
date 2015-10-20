@@ -7,6 +7,12 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.18.0.2
+----------------------
+
+* Match new behaviour of `dot`, etc. in supporting edge specifications
+  like `a, b -> c, d` (spotted by **Dilawar Singh**).
+
 Changes in 2999.18.0.1
 ----------------------
 
