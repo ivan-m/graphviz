@@ -112,8 +112,6 @@ Library {
 
         if impl(ghc >= 6.12.1)
            Ghc-Options: -fno-warn-unused-do-bind
-
-        Ghc-Prof-Options:  -prof
 }
 
 Test-Suite graphviz-testsuite {
