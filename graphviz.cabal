@@ -39,7 +39,7 @@ Author:             Matthew Sackman, Ivan Lazar Miljenovic
 Maintainer:         Ivan.Miljenovic@gmail.com
 Build-Type:         Simple
 Tested-With:        GHC == 7.4.2, GHC == 7.6.3, GHC == 7.8.4,
-                    GHC == 7.10.2, GHC == 7.11.*
+                    GHC == 7.10.2, GHC == 8.0.1, GHC == 8.1.*
 Cabal-Version:      >= 1.14
 Extra-Source-Files: TODO.md
                     Changelog.md
