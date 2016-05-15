@@ -150,7 +150,7 @@ Test-Suite graphviz-testsuite {
         if impl(ghc >= 6.12.1)
            Ghc-Options: -fno-warn-unused-do-bind
 
-        GHC-Prof-Options: -caf-all -rtsopts
+        GHC-Prof-Options: -rtsopts
 }
 
 Benchmark graphviz-printparse {
@@ -174,7 +174,7 @@ Benchmark graphviz-printparse {
         if impl(ghc >= 6.12.1)
            Ghc-Options: -fno-warn-unused-do-bind
 
-        GHC-Prof-Options: -caf-all -rtsopts
+        GHC-Prof-Options: -rtsopts
 }
 
 Executable graphviz-testparsing {
@@ -198,5 +198,5 @@ Executable graphviz-testparsing {
 
         Ghc-Options: -O -Wall
 
-        GHC-Prof-Options: -caf-all -rtsopts
+        GHC-Prof-Options: -rtsopts
 }
