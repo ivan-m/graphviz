@@ -7,6 +7,18 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.18.1.0
+----------------------
+
+* Monadic graphs can now have edges to and from lists of nodes, as
+  requested by **Harold Carr**.
+
+* Compatible with GHC-8.* pre-releases.
+
+    - Please note that there is currently a warning emitted on
+      compilation by GHC-8.*; this has been reported
+      [here](https://ghc.haskell.org/trac/ghc/ticket/11822).
+
 Changes in 2999.18.0.2
 ----------------------
 
