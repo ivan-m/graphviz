@@ -98,7 +98,7 @@ prop_dotizeHasAugment g = all (not . null) nodeAugments
 --   should have unique 'Attributes' (namely the positions).  Note
 --   that this may not hold true with custom supplied 'Attributes'
 --   (i.e. not using one of the @dotize@ functions).
-prop_dotizeAugmentUniq   :: (DynGraph g, Eq n, Ord e) => g n e -> Bool
+prop_dotizeAugmentUniq   :: (DynGraph g, Ord e) => g n e -> Bool
 prop_dotizeAugmentUniq g = all uniqLs lss
   where
     g' = setDirectedness dotizeGraph nonClusteredParams g
@@ -137,7 +137,7 @@ prop_findAllNodesE dg' g = ((==) `on` sort) gns dgns
 
 -- | Ensure that the definition of 'edgeInformation' for DotReprs
 --   finds all the nodes.
-prop_findAllEdges       :: (DotRepr dg Int, Ord el, Graph g) => dg Int -> g nl el -> Bool
+prop_findAllEdges       :: (DotRepr dg Int, Graph g) => dg Int -> g nl el -> Bool
 prop_findAllEdges dg' g = ((==) `on` sort) ges dges
   where
     ges = edges g

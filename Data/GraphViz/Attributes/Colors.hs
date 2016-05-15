@@ -304,7 +304,7 @@ printNamedColor fl q c = do currentCS <- getColorScheme
       cs = colorScheme c
       lv = fl c
 
-parseNamedColor :: (NamedColor nc, ParseDot lv)
+parseNamedColor :: (ParseDot lv)
                    => (ColorScheme -> Maybe cs) -> Parse cs -> (cs -> Bool)
                    -> (cs -> lv -> nc) -> Bool -> Parse nc
 parseNamedColor gcs parseCS vcs mkC q

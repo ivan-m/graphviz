@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 {- |
    Module      : Benchmark
    Description : Benchmarking utilities for graphviz
@@ -10,13 +12,13 @@
 -}
 module Main where
 
-import Data.GraphViz hiding (DotGraph)
+import Data.GraphViz                   hiding (DotGraph)
 import Data.GraphViz.Types.Generalised
 
 import Criterion.Main
 
 import Control.DeepSeq
-import Data.Text.Lazy(Text)
+import Data.Text.Lazy  (Text)
 
 -- -----------------------------------------------------------------------------
 
