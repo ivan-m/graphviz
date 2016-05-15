@@ -140,7 +140,7 @@ data DotGraph n = DG { strictGraph   :: !Bool
 
 -- | It should be safe to substitute 'unsafeFromCanonical' for
 --   'fromCanonical' in the output of this.
-instance (Ord n, Show n) => Show (DotGraph n) where
+instance (Show n) => Show (DotGraph n) where
   showsPrec d dg = showParen (d > 10) $
                    showString "fromCanonical " . shows (toCanonical dg)
 
@@ -347,7 +347,7 @@ mkGraph ns es = flip (foldl' $ flip addDotEdge) es
 
 -- | Convert this DotGraph into canonical form.  All edges are found
 --   in the outer graph rather than in clusters.
-toCanonical :: (Ord n) => DotGraph n -> C.DotGraph n
+toCanonical :: DotGraph n -> C.DotGraph n
 toCanonical dg = C.DotGraph { C.strictGraph     = strictGraph dg
                             , C.directedGraph   = directedGraph dg
                             , C.graphID         = graphID dg
@@ -452,7 +452,7 @@ deleteDotEdge (DotEdge n1 n2 as) = deleteEdge n1 n2 as
 -- | Delete the specified cluster, and makes any clusters or nodes
 --   within it be in its root cluster (or the overall graph if
 --   required).
-deleteCluster      :: (Ord n) => GraphID -> DotGraph n -> DotGraph n
+deleteCluster      :: GraphID -> DotGraph n -> DotGraph n
 deleteCluster c dg = withValues (M.map adjNode)
                      . withClusters (M.map adjCluster . M.delete c)
                      $ dg
@@ -468,7 +468,7 @@ deleteCluster c dg = withValues (M.map adjNode)
     adjCluster ci = ci { parentCluster = adjParent $ parentCluster ci }
 
 -- | Remove clusters with no sub-clusters and no nodes within them.
-removeEmptyClusters :: (Ord n) => DotGraph n -> DotGraph n
+removeEmptyClusters :: DotGraph n -> DotGraph n
 removeEmptyClusters dg = dg { clusters = cM' }
   where
     cM = clusters dg
@@ -533,8 +533,7 @@ adjacentTo dg n = sucs ++ preds
     sucs = emToDE (DotEdge n) $ _successors ni
     preds = emToDE (`DotEdge` n) $ n `M.delete` _predecessors ni
 
-emToDE :: (Ord n) => (n -> Attributes -> DotEdge n)
-          -> EdgeMap n -> [DotEdge n]
+emToDE :: (n -> Attributes -> DotEdge n) -> EdgeMap n -> [DotEdge n]
 emToDE f = map (uncurry f) . fromMap
 
 -- | Which cluster (or the root graph) is this cluster in?
@@ -580,7 +579,7 @@ instance (Ord n, ParseDot n) => ParseDotRepr DotGraph n
 instance (Ord n, PrintDot n, ParseDot n) => PPDotRepr DotGraph n
 
 -- | Uses the PrintDot instance for canonical 'C.DotGraph's.
-instance (Ord n, PrintDot n) => PrintDot (DotGraph n) where
+instance (PrintDot n) => PrintDot (DotGraph n) where
   unqtDot = unqtDot . toCanonical
 
 -- | Uses the ParseDot instance for generalised 'G.DotGraph's.
@@ -670,7 +669,7 @@ toEdgeMap f t = M.map eM . M.fromList . groupSortCollectBy f t'
     t' = liftA2 (,) t edgeAttributes
     eM = M.fromList . groupSortCollectBy fst snd
 
-mapNs :: (Ord n, Ord n') => (n -> n') -> DotGraph n -> DotGraph n'
+mapNs :: (Ord n') => (n -> n') -> DotGraph n -> DotGraph n'
 mapNs f (DG st d as mid cs vs) = DG st d as mid cs
                                  $ mapNM vs
   where
@@ -695,8 +694,7 @@ getGraphInfo dg = (gas, cl)
                 (p' Seq.:> _) -> p'
                 _             -> Seq.empty
 
-getNodeInfo             :: (Ord n) => Bool -> DotGraph n
-                           -> NodeLookup n
+getNodeInfo             :: Bool -> DotGraph n -> NodeLookup n
 getNodeInfo withGlob dg = M.map toLookup ns
   where
     (gGlob, aM) = globAttrMap nodeAs dg
@@ -713,7 +711,7 @@ getNodeInfo withGlob dg = M.map toLookup ns
         as' | withGlob  = unSame $ toSAttr as `S.union` pAs
             | otherwise = as
 
-getEdgeInfo             :: (Ord n) => Bool -> DotGraph n -> [DotEdge n]
+getEdgeInfo             :: Bool -> DotGraph n -> [DotEdge n]
 getEdgeInfo withGlob dg = concatMap (uncurry mkDotEdges) es
   where
     gGlob = edgeAs $ graphAttrs dg
@@ -761,8 +759,7 @@ clusterPath' dg = pM
 
 -- -----------------------------------------------------------------------------
 
-withValues      :: (Ord n) => (NodeMap n -> NodeMap n)
-                   -> DotGraph n -> DotGraph n
+withValues      :: (NodeMap n -> NodeMap n) -> DotGraph n -> DotGraph n
 withValues f dg = dg { values = f $ values dg }
 
 withClusters      :: (Map GraphID ClusterInfo -> Map GraphID ClusterInfo)
@@ -781,10 +778,10 @@ fromGlobAttrs (GA ga na ea) = filter (not . null . attrs)
                               , EdgeAttrs  $ unSame ea
                               ]
 
-niSucc      :: (Ord n) => (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
+niSucc      :: (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
 niSucc f ni = ni { _successors = f $ _successors ni }
 
-niPred      :: (Ord n) => (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
+niPred      :: (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
 niPred f ni = ni { _predecessors = f $ _predecessors ni }
 
 toMap :: (Ord n) => [(n, Attributes)] -> EdgeMap n

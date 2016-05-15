@@ -168,10 +168,10 @@ data NodeInfo = NI { atts     :: SAttrs
 
 type NodeState n a = GVState (NodeLookup' n) a
 
-toDotNodes :: (Ord n) => NodeLookup n -> [DotNode n]
+toDotNodes :: NodeLookup n -> [DotNode n]
 toDotNodes = map (\(n,(_,as)) -> DotNode n as) . Map.assocs
 
-getNodeLookup       :: (Ord n) => Bool -> NodeState n a -> NodeLookup n
+getNodeLookup       :: Bool -> NodeState n a -> NodeLookup n
 getNodeLookup addGs = Map.map combine . value . (`execState` initState)
   where
     initState = SV Set.empty addGs Seq.empty Map.empty

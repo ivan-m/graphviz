@@ -104,8 +104,7 @@ hPutDot = toHandle printDotGraph
 hPutCompactDot :: (PrintDotRepr dg n) => Handle -> dg n -> IO ()
 hPutCompactDot = toHandle renderCompactDot
 
-toHandle        :: (PrintDotRepr dg n) => (dg n -> Text) -> Handle -> dg n
-                   -> IO ()
+toHandle        :: (dg n -> Text) -> Handle -> dg n -> IO ()
 toHandle f h dg = do B.hPutStr h . T.encodeUtf8 $ f dg
                      hPutChar h '\n'
 
