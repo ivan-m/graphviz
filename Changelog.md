@@ -7,6 +7,11 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.18.1.1
+----------------------
+
+* Bump allowed version of QuickCheck for the test suite.
+
 Changes in 2999.18.1.0
 ----------------------
 
