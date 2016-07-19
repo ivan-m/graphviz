@@ -10,6 +10,13 @@ each release.
 Changes in 2999.18.1.1
 ----------------------
 
+* Allow dlist-0.8, thanks to **Sean Leather**.
+
+* Properly allow QuickCheck-2.9.
+
+Changes in 2999.18.1.1
+----------------------
+
 * Bump allowed version of QuickCheck for the test suite.
 
 Changes in 2999.18.1.0
