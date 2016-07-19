@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz.Testing.Instances.Attributes
@@ -27,7 +27,7 @@ import qualified Data.GraphViz.Attributes.HTML          as Html
 import           Data.GraphViz.Attributes.Internal      (compassLookup)
 import           Data.GraphViz.Internal.State           (initialState,
                                                          layerListSep, layerSep)
-import           Data.GraphViz.Internal.Util            (bool, createVersion)
+import           Data.GraphViz.Internal.Util            (bool)
 
 import Test.QuickCheck
 
@@ -36,8 +36,12 @@ import           Data.List       (delete, groupBy, nub)
 import qualified Data.Map        as Map
 import           Data.Text.Lazy  (Text)
 import qualified Data.Text.Lazy  as T
-import           Data.Version    (Version (..))
 import           System.FilePath (searchPathSeparator)
+
+#if !MIN_VERSION_QuickCheck(2,9,0)
+import Data.GraphViz.Internal.Util (createVersion)
+import Data.Version                (Version (..))
+#endif
 
 -- -----------------------------------------------------------------------------
 -- Defining Arbitrary instances for Attributes
@@ -1015,10 +1019,12 @@ instance Arbitrary Normalized where
   shrink (NormalizedAngle a) = map NormalizedAngle $ shrink a
   shrink _                   = []
 
+#if !MIN_VERSION_QuickCheck(2,9,0)
 instance Arbitrary Version where
   arbitrary = liftM (createVersion . map getPositive) arbList
 
   shrink = map createVersion . nonEmptyShrinks . versionBranch
+#endif
 
 instance Arbitrary NodeSize where
   arbitrary = arbBounded

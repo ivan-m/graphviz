@@ -71,7 +71,7 @@ Library {
                            transformers >= 0.2 && < 0.6,
                            text,
                            wl-pprint-text >= 1.1.0.0 && < 1.2.0.0,
-                           dlist >= 0.5 && < 0.8
+                           dlist >= 0.5 && < 0.9
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types
