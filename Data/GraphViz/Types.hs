@@ -125,7 +125,7 @@ import Data.GraphViz.Attributes.Complete   (rmUnwantedAttributes,
 import Data.GraphViz.Internal.State        (GraphvizState)
 import Data.GraphViz.Internal.Util         (bool)
 import Data.GraphViz.Parsing               (ParseDot (..), adjustErr,
-                                            checkValidParse, parse,
+                                            checkValidParseWithRest, parse,
                                             parseLiberally, runParserWith)
 import Data.GraphViz.PreProcessing         (preProcess)
 import Data.GraphViz.Printing              (PrintDot (..), printIt)
@@ -136,7 +136,7 @@ import Data.GraphViz.Types.Internal.Common (DotEdge (..), DotNode (..),
                                             Number (..), numericValue, withGlob)
 import Data.GraphViz.Types.State
 
-import           Control.Arrow             (first, second, (***))
+import           Control.Arrow             (second, (***))
 import           Control.Monad.Trans.State (evalState, execState, get, modify,
                                             put)
 import           Data.Text.Lazy            (Text)
@@ -286,9 +286,9 @@ parseDotGraphLiberally = parseDotGraphWith parseLiberally
 
 parseDotGraphWith :: (ParseDotRepr dg n) => (GraphvizState -> GraphvizState)
                      -> Text -> dg n
-parseDotGraphWith f = fst . prs . preProcess
+parseDotGraphWith f = prs . preProcess
   where
-    prs = first checkValidParse . runParserWith f parse'
+    prs = checkValidParseWithRest . runParserWith f parse'
 
     parse' = parse `adjustErr`
              ("Unable to parse the Dot graph; usually this is because of either:\n\

@@ -33,6 +33,7 @@ module Data.GraphViz.Parsing
     , runParserWith
     , parseLiberally
     , checkValidParse
+    , checkValidParseWithRest
       -- * Convenience parsing combinators.
     , ignoreSep
     , onlyBool
@@ -125,7 +126,7 @@ runParserWith f p t = let (r,_,t') = P.runParser p (f initialState) t
 --   parsing function consumes all of the 'Text' input (with the
 --   exception of whitespace at the end).
 runParser'   :: Parse a -> Text -> a
-runParser' p = checkValidParse . fst . runParser p'
+runParser' p = checkValidParseWithRest . runParser p'
   where
     p' = p `discard` (whitespace *> eof)
 
@@ -157,6 +158,15 @@ parseIt = first checkValidParse . runParser parse
 checkValidParse :: Either String a -> a
 checkValidParse (Left err) = throw (NotDotCode err)
 checkValidParse (Right a)  = a
+
+-- | If unable to parse /Dot/ code properly, 'throw' a
+--   'GraphvizException', with the error containing the remaining
+--   unparsed code..
+checkValidParseWithRest :: (Either String a, Text) -> a
+checkValidParseWithRest (Left err, rst) = throw (NotDotCode err')
+  where
+    err' = err ++ "\n\nRemaining input:\n\t" ++ show rst
+checkValidParseWithRest (Right a,_)     = a
 
 -- | Parse the required value with the assumption that it will parse
 --   all of the input 'Text'.
