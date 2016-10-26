@@ -280,8 +280,9 @@ parseEdgeNodes :: (ParseDot n) => Parse [EdgeNode n]
 parseEdgeNodes = oneOf [ parseBraced (wrapWhitespace
                                       -- Should really use sepBy1, but this will do.
                                       $ parseStatements parseEdgeNode)
-                       , wrapWhitespace (sepBy1 parseEdgeNode (wrapWhitespace parseComma))
-                       , (: []) <$> parseEdgeNode ]
+                       , sepBy1 parseEdgeNode (wrapWhitespace parseComma)
+                       , (: []) <$> parseEdgeNode
+                       ]
 
 parseEdgeNode :: (ParseDot n) => Parse (EdgeNode n)
 parseEdgeNode = liftA2 (,) parse
