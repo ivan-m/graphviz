@@ -253,14 +253,14 @@ nonClusteredParams = defaultParams
 --   programmatically setting the clustering function (and as such do
 --   not know what the types might be).
 blankParams :: GraphvizParams n nl el cl l
-blankParams = Params { isDirected       = undefined
-                     , globalAttributes = undefined
-                     , clusterBy        = undefined
-                     , isDotCluster     = undefined
-                     , clusterID        = undefined
-                     , fmtCluster       = undefined
-                     , fmtNode          = undefined
-                     , fmtEdge          = undefined
+blankParams = Params { isDirected       = error "Unspecified definition of isDirected"
+                     , globalAttributes = error "Unspecified definition of globalAttributes"
+                     , clusterBy        = error "Unspecified definition of clusterBy"
+                     , isDotCluster     = error "Unspecified definition of isDotCluster"
+                     , clusterID        = error "Unspecified definition of clusterID"
+                     , fmtCluster       = error "Unspecified definition of fmtCluster"
+                     , fmtNode          = error "Unspecified definition of fmtNode"
+                     , fmtEdge          = error "Unspecified definition of fmtEdge"
                      }
 
 -- | Determine if the provided 'Graph' is directed or not and set the
