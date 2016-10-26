@@ -26,6 +26,7 @@ module Data.GraphViz
       -- ** Specifying parameters.
       -- $params
       GraphvizParams(..)
+    , quickParams
     , defaultParams
     , nonClusteredParams
     , blankParams
@@ -205,6 +206,15 @@ data GraphvizParams n nl el cl l
 
 -- | An alias for 'NodeCluster' when dealing with FGL graphs.
 type LNodeCluster cl l = NodeCluster cl (Node,l)
+
+-- | Especially useful for quick explorations in ghci, this is a "do
+--   what I mean" set of parameters that prints the specified labels
+--   of a non-clustered graph.
+quickParams :: (Labellable nl, Labellable el) => GraphvizParams n nl el () nl
+quickParams = nonClusteredParams { fmtNode = nodeFmt, fmtEdge = edgeFmt }
+  where
+    nodeFmt (_,l) = [toLabel l]
+    edgeFmt (_,_,l) = [toLabel l]
 
 -- | A default 'GraphvizParams' value which assumes the graph is
 --   directed, contains no clusters and has no 'Attribute's set.
