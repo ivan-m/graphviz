@@ -7,6 +7,20 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.19.0.0
+----------------------
+
+* Roll back change in 2999.18.1.0 for Monadic graphs, as they turn out
+  to not actually work in practice (reported by **Lennart Spitzner**).
+
+* Add a `quickParams` value to help with testing graphs in ghci
+  (requested by **Ian Jeffries**).
+
+* Fix parsing of edge chains (reported by **Jonas Collberg**).
+
+* Fix how seemingly numeric text literals are quoted (reported by
+  **Joey Hess**).
+
 Changes in 2999.18.1.2
 ----------------------
 
