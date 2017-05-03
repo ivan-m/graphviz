@@ -70,7 +70,6 @@ module Data.GraphViz.Types.Monadic
        , node
        , node'
          -- ** Edges
-       , NodeList (..)
        , edge
        , (-->)
        , (<->)
@@ -212,29 +211,18 @@ node' = (`node` [])
 -- -----------------------------------------------------------------------------
 -- Edges
 
--- | A list of nodes to serve as edge end-points.
-class NodeList n nl where
-  toNodeList :: nl -> [n]
-
-instance NodeList n [n] where
-  toNodeList = id
-
-instance NodeList n n where
-  toNodeList = (:[])
-
 -- | Add an edge to the graph.
-edge     :: (NodeList n f, NodeList n t) => f -> t -> Attributes -> Dot n
-edge fl tl as = mapM_ (tellStmt . ME)
-                      [ DotEdge f t as | f <- toNodeList fl, t <- toNodeList tl ]
+edge     :: n -> n -> Attributes -> Dot n
+edge f t = tellStmt . ME . DotEdge f t
 
 -- | Add an edge with no attributes.
-(-->) :: (NodeList n f, NodeList n t) => f -> t -> Dot n
+(-->) :: n -> n -> Dot n
 f --> t = edge f t []
 
 infixr 9 -->
 
 -- | An alias for '-->' to make edges look more undirected.
-(<->) :: (NodeList n f, NodeList n t) => f -> t -> Dot n
+(<->) :: n -> n -> Dot n
 (<->) = (-->)
 
 infixr 9 <->
