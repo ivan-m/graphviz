@@ -27,7 +27,7 @@ import qualified Data.Text.Lazy.Read as T
 #if MIN_VERSION_base(4,8,0)
 import Data.Version (Version, makeVersion)
 #else
-import Data.Version (Version (..))
+import Data.Version (Version(..))
 #endif
 
 -- -----------------------------------------------------------------------------
@@ -48,13 +48,14 @@ frstIDString c = any ($c) [ isAsciiUpper
 restIDString   :: Char -> Bool
 restIDString c = frstIDString c || isDigit c
 
--- | Determine if this String represents a number.
-isNumString     :: Text -> Bool
-isNumString ""  = False
-isNumString "-" = False
-isNumString str = case T.uncons $ T.toLower str of
-                    Just ('-',str') -> go str'
-                    _               -> go str
+-- | Determine if this String represents a number.  Boolean parameter
+--   determines if exponents are considered part of numbers for this.
+isNumString     :: Bool -> Text -> Bool
+isNumString _      ""  = False
+isNumString _      "-" = False
+isNumString allowE str = case T.uncons $ T.toLower str of
+                           Just ('-',str') -> go str'
+                           _               -> go str
   where
     -- Can't use Data.Text.Lazy.Read.double as it doesn't cover all
     -- possible cases
@@ -73,7 +74,7 @@ isNumString str = case T.uncons $ T.toLower str of
                    (ds,es) -> T.all isDigit ds && checkEs es
     checkEs str' = case T.uncons str' of
                      Nothing       -> True
-                     Just ('e',ds) -> isIntString ds
+                     Just ('e',ds) -> allowE && isIntString ds
                      _             -> False
 
 {-

@@ -72,8 +72,8 @@ import Data.GraphViz.Attributes.ColorScheme
 -- Only implicitly import and re-export combinators.
 import           Data.Text.Lazy                       (Text)
 import qualified Data.Text.Lazy                       as T
-import           Text.PrettyPrint.Leijen.Text.Monadic hiding (Pretty (..),
-                                                       SimpleDoc (..), bool,
+import           Text.PrettyPrint.Leijen.Text.Monadic hiding (Pretty(..),
+                                                       SimpleDoc(..), bool,
                                                        displayIO, displayT,
                                                        hPutDoc, putDoc,
                                                        renderCompact,
@@ -85,7 +85,7 @@ import           Control.Monad             (ap, when)
 import           Control.Monad.Trans.State
 import           Data.Char                 (toLower)
 import qualified Data.Set                  as Set
-import           Data.Version              (Version (..))
+import           Data.Version              (Version(..))
 import           Data.Word                 (Word16, Word8)
 
 -- -----------------------------------------------------------------------------
@@ -205,11 +205,11 @@ qtChar c
 
 needsQuotes :: Text -> Bool
 needsQuotes str
-  | T.null str      = True
-  | isKeyword str   = True
-  | isIDString str  = False
-  | isNumString str = False
-  | otherwise       = True
+  | T.null str            = True
+  | isKeyword str         = True
+  | isIDString str        = False
+  | isNumString False str = False
+  | otherwise             = True
 
 addQuotes :: Text -> DotCode -> DotCode
 addQuotes = bool id dquotes . needsQuotes

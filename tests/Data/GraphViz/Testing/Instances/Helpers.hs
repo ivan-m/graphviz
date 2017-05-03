@@ -66,7 +66,7 @@ shrinkString :: String -> [String]
 shrinkString = map T.unpack . shrink . T.pack
 
 notNumStr :: Text -> Bool
-notNumStr = not . isNumString
+notNumStr = not . isNumString True
 
 arbBounded :: (Bounded a, Enum a) => Gen a
 arbBounded = elements [minBound .. maxBound]

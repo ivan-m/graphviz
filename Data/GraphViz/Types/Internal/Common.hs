@@ -32,8 +32,8 @@ module Data.GraphViz.Types.Internal.Common
        , parseStatements
        ) where
 
-import Data.GraphViz.Attributes.Complete (Attribute (HeadPort, TailPort),
-                                          Attributes, Number (..),
+import Data.GraphViz.Attributes.Complete (Attribute(HeadPort, TailPort),
+                                          Attributes, Number(..),
                                           usedByClusters, usedByGraphs,
                                           usedByNodes)
 import Data.GraphViz.Attributes.Internal (PortPos, parseEdgeBasedPP)
@@ -76,7 +76,7 @@ instance ParseDot GraphID where
 stringNum     :: Text -> GraphID
 stringNum str = maybe checkDbl (Num . Int) $ stringToInt str
   where
-    checkDbl = if isNumString str
+    checkDbl = if isNumString True str
                then Num . Dbl $ toDouble str
                else Str str
 
