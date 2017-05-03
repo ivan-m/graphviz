@@ -49,7 +49,7 @@ Extra-Source-Files: TODO.md
 
 Source-Repository head
     Type:         git
-    Location:     git://github.com/ivan-m/graphviz.git
+    Location:     https://github.com/ivan-m/graphviz.git
 
 Flag test-parsing
      Description: Build a utility to test parsing of available Dot code.
