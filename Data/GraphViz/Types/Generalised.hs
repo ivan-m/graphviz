@@ -62,7 +62,7 @@ module Data.GraphViz.Types.Generalised
        ) where
 
 import           Data.GraphViz.Algorithms            (canonicalise)
-import           Data.GraphViz.Internal.State        (AttributeType (..))
+import           Data.GraphViz.Internal.State        (AttributeType(..))
 import           Data.GraphViz.Internal.Util         (bool)
 import           Data.GraphViz.Parsing
 import           Data.GraphViz.Printing
@@ -135,7 +135,6 @@ instance (ParseDot n) => ParseDot (DotGraph n) where
   parse = parseUnqt -- Don't want the option of quoting
           `adjustErr`
           ("Not a valid generalised DotGraph\n\t"++)
-
 
 -- | Assumed to be an injective mapping function.
 instance Functor DotGraph where
