@@ -70,6 +70,7 @@ module Data.GraphViz.Types.Monadic
        , node
        , node'
          -- ** Edges
+         -- $edges
        , edge
        , (-->)
        , (<->)
@@ -83,7 +84,7 @@ import qualified Data.DList    as DL
 import qualified Data.Sequence as Seq
 
 #if !(MIN_VERSION_base (4,8,0))
-import Control.Applicative (Applicative (..))
+import Control.Applicative (Applicative(..))
 #endif
 
 -- -----------------------------------------------------------------------------
@@ -210,6 +211,23 @@ node' = (`node` [])
 
 -- -----------------------------------------------------------------------------
 -- Edges
+
+{- $edges
+
+   If you wish to use something analogous to Dot's ability to write
+   multiple edges with in-line subgraphs such as:
+
+   > {a b c} -> {d e f}
+
+   Then you can use '-->' and '<->' in combination with monadic
+   traversal functions such as @traverse_@, @for_@, @mapM_@, @forM_@
+   and @zipWithM_@; for example:
+
+   > ("a" -->) `traverse_` ["d", "e", "f"]
+   > ["a", "b", "c"] `for_` (--> "d")
+   > zipWithM_ (-->) ["a", "b", "c"] ["d", "e", "f"]
+
+ -}
 
 -- | Add an edge to the graph.
 edge     :: n -> n -> Attributes -> Dot n
