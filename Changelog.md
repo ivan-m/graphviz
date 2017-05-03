@@ -7,7 +7,7 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
-Changes in 2999.18.1.1
+Changes in 2999.18.1.2
 ----------------------
 
 * Allow dlist-0.8, thanks to **Sean Leather**.
