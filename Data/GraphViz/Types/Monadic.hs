@@ -175,7 +175,7 @@ convertStatement (ME de)  = DE de
 -- -----------------------------------------------------------------------------
 -- Global Attributes
 
--- | Add graph/sub-graph/cluster attributes.
+-- | Add graph\/sub-graph\/cluster attributes.
 graphAttrs :: Attributes -> Dot n
 graphAttrs = tellStmt . MA . GraphAttrs
 
