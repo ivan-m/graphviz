@@ -85,6 +85,11 @@ import qualified Data.Sequence as Seq
 
 #if !(MIN_VERSION_base (4,8,0))
 import Control.Applicative (Applicative(..))
+import Data.Monoid (Monoid(..))
+#endif
+
+#if MIN_VERSION_base (4,9,0)
+import Data.Semigroup (Semigroup(..))
 #endif
 
 -- -----------------------------------------------------------------------------
@@ -116,6 +121,15 @@ instance Monad (DotM n) where
              $ let ~(a,stmts)  = runDot dt
                    ~(b,stmts') = runDot $ f a
                in (b, stmts `DL.append` stmts')
+
+#if MIN_VERSION_base (4,9,0)
+instance Semigroup a => Semigroup (DotM n a) where
+  DotM x1 <> DotM x2 = DotM (x1 <> x2)
+#endif
+
+instance Monoid a => Monoid (DotM n a) where
+  mappend (DotM x1) (DotM x2) = DotM (mappend x1 x2)
+  mempty = DotM mempty
 
 tell :: DotStmts n -> Dot n
 tell = DotM . (,) ()
