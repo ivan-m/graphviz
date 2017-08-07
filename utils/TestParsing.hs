@@ -53,18 +53,19 @@ getDContents fp = (filterM doesFileExist . map (fp </>)) =<< getDirectoryContent
 
 -- -----------------------------------------------------------------------------
 
-
-withParse :: (PPDotRepr dg n) => (a -> IO Text) -> (dg n -> IO ())
+withParse :: (Show a, PPDotRepr dg n) => (a -> IO Text) -> (dg n -> IO ())
              -> (ErrMsg -> String) -> a -> IO ()
 withParse toStr withDG cmbErr a = do dc <- liftM getMsg . try $ toStr a
                                      case dc of
                                        Right dc' -> do edg <- tryParse dc'
                                                        case edg of
                                                          (Right dg) -> withDG dg
-                                                         (Left err) -> do putStrLn "Parsing problem!"
+                                                         (Left err) -> do putStr (show a)
+                                                                          putStrLn " - Parsing problem!"
                                                                           putStrLn $ cmbErr err
                                                                           putStrLn  ""
-                                       Left err  -> do putStrLn "IO problem!"
+                                       Left err  -> do putStr (show a)
+                                                       putStrLn " - IO problem!"
                                                        putStrLn err
                                                        putStrLn ""
   where
@@ -77,7 +78,7 @@ type ErrMsg = String
 tryParseFile    :: FilePath -> IO ()
 tryParseFile fp = withParse readUTF8File
                             ((`seq` return ()) . T.length . printDotGraph . asGDG)
-                            ((fp ++ " - Cannot parse as a G.DotGraph: ")++)
+                            ("Cannot parse as a G.DotGraph: "++)
                             fp
   where
     asGDG :: GDG -> GDG
