@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, OverloadedStrings #-}
 
 {- |
    Module      : TestParsing
@@ -99,7 +99,7 @@ tryParse dc = handle getErr
         sampleLen = 35
 
         res | T.length rst <= sampleLen = rst
-            | otherwise                 = (T.take sampleLen rst) `mappend` " ..."
+            | otherwise                 = T.take sampleLen rst `mappend` " ..."
 
     eitherLR f g = either (Left . f) (Right . g)
 
