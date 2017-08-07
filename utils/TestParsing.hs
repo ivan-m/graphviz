@@ -24,6 +24,8 @@ import qualified Data.GraphViz.Types.Generalised as G
 import           Control.Exception    (SomeException, evaluate, try)
 import           Control.Monad        (filterM, liftM)
 import qualified Data.ByteString.Lazy as B
+import           Data.Either          (either)
+import           Data.Monoid          (mappend)
 import           Data.Text.Lazy       (Text)
 import qualified Data.Text.Lazy       as T
 import           System.Directory
@@ -87,10 +89,19 @@ tryParseFile fp = withParse readUTF8File
 tryParse    :: (PPDotRepr dg n) => Text -> IO (Either ErrMsg (dg n))
 tryParse dc = handle getErr
               $ let (dg, rst) = runParser parse $ preProcess dc
-                in T.length rst `seq` return dg
+                in T.length rst `seq` return (eitherLR (augmentErr rst) id dg)
   where
     getErr :: SomeException -> IO (Either ErrMsg a)
     getErr = return . Left . show
+
+    augmentErr rst err = err ++ "\n\tRemaining input: " ++ show res
+      where
+        sampleLen = 35
+
+        res | T.length rst <= sampleLen = rst
+            | otherwise                 = (T.take sampleLen rst) `mappend` " ..."
+
+    eitherLR f g = either (Left . f) (Right . g)
 
 -- Force any encoding errors into the IO section rather than when parsing.
 readUTF8File    :: FilePath -> IO Text
