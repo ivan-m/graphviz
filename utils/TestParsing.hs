@@ -12,10 +12,10 @@
    (with the assumption that the provided code is valid).
 
 -}
-module Main where
+module Main (main) where
 
 import           Data.GraphViz
-import           Data.GraphViz.Commands.IO       (hGetStrict, toUTF8)
+import           Data.GraphViz.Commands.IO       (toUTF8)
 import           Data.GraphViz.Exception
 import           Data.GraphViz.Parsing           (runParser)
 import           Data.GraphViz.PreProcessing     (preProcess)
@@ -71,25 +71,17 @@ withParse toStr withDG cmbErr a = do dc <- liftM getMsg . try $ toStr a
     getMsg :: Either SomeException Text -> Either ErrMsg Text
     getMsg = either (Left . show) Right
 
-type DG = DotGraph Text
 type GDG = G.DotGraph Text
 type ErrMsg = String
 
 tryParseFile    :: FilePath -> IO ()
 tryParseFile fp = withParse readFile'
-                            (tryParseCanon fp)
+                            ((`seq` putStrLn "Parsed OK!") . T.length . printDotGraph . asGDG)
                             ("Cannot parse as a G.DotGraph: "++)
                             fp
-
-tryParseCanon    :: FilePath -> GDG -> IO ()
-tryParseCanon fp = withParse prettyPrint
-                             ((`seq` putStrLn "Parsed OK!") . T.length . printDotGraph . asDG)
-                             (\ e -> fp ++ ": Canonical Form not a DotGraph:\n"
-                                     ++ e)
   where
-    asDG = flip asTypeOf emptDG
-    emptDG = DotGraph False False Nothing $ DotStmts [] [] [] [] :: DG
-    prettyPrint dg = graphvizWithHandle (commandFor dg) dg Canon hGetStrict
+    asGDG :: GDG -> GDG
+    asGDG = id
 
 tryParse    :: (PPDotRepr dg n) => Text -> IO (Either ErrMsg (dg n))
 tryParse dc = handle getErr
