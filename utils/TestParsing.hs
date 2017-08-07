@@ -75,9 +75,9 @@ type GDG = G.DotGraph Text
 type ErrMsg = String
 
 tryParseFile    :: FilePath -> IO ()
-tryParseFile fp = withParse readFile'
-                            ((`seq` putStrLn "Parsed OK!") . T.length . printDotGraph . asGDG)
-                            ("Cannot parse as a G.DotGraph: "++)
+tryParseFile fp = withParse readUTF8File
+                            ((`seq` return ()) . T.length . printDotGraph . asGDG)
+                            ((fp ++ " - Cannot parse as a G.DotGraph: ")++)
                             fp
   where
     asGDG :: GDG -> GDG
@@ -90,11 +90,6 @@ tryParse dc = handle getErr
   where
     getErr :: SomeException -> IO (Either ErrMsg a)
     getErr = return . Left . show
-
-readFile' :: FilePath -> IO Text
-readFile' fp = do putStr fp
-                  putStr " - "
-                  readUTF8File fp
 
 -- Force any encoding errors into the IO section rather than when parsing.
 readUTF8File    :: FilePath -> IO Text
