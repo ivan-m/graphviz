@@ -1272,7 +1272,7 @@ instance ParseDot StyleItem where
           `onFail`
           fmap (`SItem` []) parse
 
-  parseUnqtList = sepBy1 parseUnqt parseComma
+  parseUnqtList = sepBy1 parseUnqt (wrapWhitespace parseComma)
 
   parseList = quotedParse parseUnqtList
               `onFail`
@@ -1417,9 +1417,9 @@ instance PrintDot VerticalPlacement where
   unqtDot VBottom = char 'b'
 
 instance ParseDot VerticalPlacement where
-  parseUnqt = oneOf [ stringRep VTop "t"
-                    , stringRep VCenter "c"
-                    , stringRep VBottom "b"
+  parseUnqt = oneOf [ stringReps VTop    ["top", "t"]
+                    , stringReps VCenter ["centre", "center", "c"]
+                    , stringReps VBottom ["bottom", "b"]
                     ]
 
 -- -----------------------------------------------------------------------------
@@ -1478,9 +1478,9 @@ instance PrintDot Justification where
   unqtDot JCenter = char 'c'
 
 instance ParseDot Justification where
-  parseUnqt = oneOf [ stringRep JLeft "l"
-                    , stringRep JRight "r"
-                    , stringRep JCenter "c"
+  parseUnqt = oneOf [ stringReps JLeft ["left", "l"]
+                    , stringReps JRight ["right", "r"]
+                    , stringReps JCenter ["center", "centre", "c"]
                     ]
 
 -- -----------------------------------------------------------------------------
