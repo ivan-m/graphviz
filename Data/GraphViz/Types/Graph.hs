@@ -117,7 +117,6 @@ import           Data.Map                        (Map)
 import qualified Data.Map                        as M
 import           Data.Maybe                      (fromMaybe, mapMaybe)
 import qualified Data.Sequence                   as Seq
-import           Data.Semigroup
 import qualified Data.Set                        as S
 import           Text.ParserCombinators.ReadPrec (prec)
 import           Text.Read                       (Lexeme (Ident), lexP, parens,
@@ -259,8 +258,8 @@ addPS fni t fas nm = t `seq` foldl' addSucc' nm fas'
               . maybe (error "Node not in the graph!")
                       (fni (M.insertWith (++) t [as]))
 
--- | Add a node to the current graph.  Throws an error if the node
---   already exists in the graph.
+-- | Add a node to the current graph. Merges attributes and edges if
+--   the node already exists in the graph.
 --
 --   If the specified cluster does not yet exist in the graph, then it
 --   will be added (as a sub-graph of the overall graph and no
@@ -272,19 +271,17 @@ addNode :: (Ord n)
            -> Attributes
            -> DotGraph n
            -> DotGraph n
-addNode n mc as dg = addedNewCluster
+addNode n mc as dg = addEmptyCluster mc $ dg { values = ns' }
   where
     ns = values dg
     ns' = M.insertWith mergeLogic n (NI mc as M.empty M.empty) ns
-    addedNewCluster = addEmptyCluster mc $ dg { values   = ns' }
-    mutatedCluster  = addEmptyCluster mc $ dg { values   = ns' }
     mergeLogic (NI newClust newAttrs newPreds newSuccs) (NI oldClust oldAttrs oldPreds oldSuccs) =
         NI resClust resAttrs resPreds resSuccs
       where
         resClust = newClust <|> oldClust
-        resAttrs = S.toList $ S.fromList newAttrs <> S.fromList oldAttrs
-        resPreds = M.unionWith (<>) newPreds oldPreds
-        resSuccs = M.unionWith (<>) newSuccs oldSuccs
+        resAttrs = S.toList $ S.union (S.fromList newAttrs) (S.fromList oldAttrs)
+        resPreds = M.unionWith (++) newPreds oldPreds
+        resSuccs = M.unionWith (++) newSuccs oldSuccs
 
 -- | A variant of 'addNode' that takes in a DotNode (not in a
 --   cluster).
