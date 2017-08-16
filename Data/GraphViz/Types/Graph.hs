@@ -109,7 +109,7 @@ import qualified Data.GraphViz.Types.Generalised     as G
 import           Data.GraphViz.Types.Internal.Common (partitionGlobal)
 import qualified Data.GraphViz.Types.State           as St
 
-import           Control.Applicative             (liftA2)
+import           Control.Applicative             ((<|>),liftA2)
 import           Control.Arrow                   ((***))
 import qualified Data.Foldable                   as F
 import           Data.List                       (delete, foldl', unfoldr)
@@ -117,6 +117,7 @@ import           Data.Map                        (Map)
 import qualified Data.Map                        as M
 import           Data.Maybe                      (fromMaybe, mapMaybe)
 import qualified Data.Sequence                   as Seq
+import           Data.Semigroup
 import qualified Data.Set                        as S
 import           Text.ParserCombinators.ReadPrec (prec)
 import           Text.Read                       (Lexeme (Ident), lexP, parens,
@@ -271,13 +272,19 @@ addNode :: (Ord n)
            -> Attributes
            -> DotGraph n
            -> DotGraph n
-addNode n mc as dg
-  | n `M.member` ns = error "Node already exists in the graph"
-  | otherwise       = addEmptyCluster mc
-                      $ dg { values   = ns' }
+addNode n mc as dg = addedNewCluster
   where
     ns = values dg
-    ns' = M.insert n (NI mc as M.empty M.empty) ns
+    ns' = M.insertWith mergeLogic n (NI mc as M.empty M.empty) ns
+    addedNewCluster = addEmptyCluster mc $ dg { values   = ns' }
+    mutatedCluster  = addEmptyCluster mc $ dg { values   = ns' }
+    mergeLogic (NI newClust newAttrs newPreds newSuccs) (NI oldClust oldAttrs oldPreds oldSuccs) =
+        NI resClust resAttrs resPreds resSuccs
+      where
+        resClust = newClust <|> oldClust
+        resAttrs = S.toList $ S.fromList newAttrs <> S.fromList oldAttrs
+        resPreds = M.unionWith (<>) newPreds oldPreds
+        resSuccs = M.unionWith (<>) newSuccs oldSuccs
 
 -- | A variant of 'addNode' that takes in a DotNode (not in a
 --   cluster).
