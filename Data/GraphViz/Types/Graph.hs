@@ -279,7 +279,7 @@ addNode n mc as dg = addEmptyCluster mc $ dg { values = ns' }
         NI resClust resAttrs resPreds resSuccs
       where
         resClust = newClust <|> oldClust
-        resAttrs = S.toList $ S.union (S.fromList newAttrs) (S.fromList oldAttrs)
+        resAttrs = unSame $ S.union (toSAttr newAttrs) (toSAttr oldAttrs)
         resPreds = M.unionWith (++) newPreds oldPreds
         resSuccs = M.unionWith (++) newSuccs oldSuccs
 
