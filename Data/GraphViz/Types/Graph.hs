@@ -109,7 +109,7 @@ import qualified Data.GraphViz.Types.Generalised     as G
 import           Data.GraphViz.Types.Internal.Common (partitionGlobal)
 import qualified Data.GraphViz.Types.State           as St
 
-import           Control.Applicative             (liftA2)
+import           Control.Applicative             ((<|>),liftA2)
 import           Control.Arrow                   ((***))
 import qualified Data.Foldable                   as F
 import           Data.List                       (delete, foldl', unfoldr)
@@ -258,8 +258,8 @@ addPS fni t fas nm = t `seq` foldl' addSucc' nm fas'
               . maybe (error "Node not in the graph!")
                       (fni (M.insertWith (++) t [as]))
 
--- | Add a node to the current graph.  Throws an error if the node
---   already exists in the graph.
+-- | Add a node to the current graph. Merges attributes and edges if
+--   the node already exists in the graph.
 --
 --   If the specified cluster does not yet exist in the graph, then it
 --   will be added (as a sub-graph of the overall graph and no
@@ -271,13 +271,17 @@ addNode :: (Ord n)
            -> Attributes
            -> DotGraph n
            -> DotGraph n
-addNode n mc as dg
-  | n `M.member` ns = error "Node already exists in the graph"
-  | otherwise       = addEmptyCluster mc
-                      $ dg { values   = ns' }
+addNode n mc as dg = addEmptyCluster mc $ dg { values = ns' }
   where
     ns = values dg
-    ns' = M.insert n (NI mc as M.empty M.empty) ns
+    ns' = M.insertWith mergeLogic n (NI mc as M.empty M.empty) ns
+    mergeLogic (NI newClust newAttrs newPreds newSuccs) (NI oldClust oldAttrs oldPreds oldSuccs) =
+        NI resClust resAttrs resPreds resSuccs
+      where
+        resClust = newClust <|> oldClust
+        resAttrs = unSame $ S.union (toSAttr newAttrs) (toSAttr oldAttrs)
+        resPreds = M.unionWith (++) newPreds oldPreds
+        resSuccs = M.unionWith (++) newSuccs oldSuccs
 
 -- | A variant of 'addNode' that takes in a DotNode (not in a
 --   cluster).
