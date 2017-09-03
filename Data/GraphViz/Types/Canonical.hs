@@ -36,7 +36,7 @@
    >                                                             , subGraphStmts = DotStmts { attrStmts = [ GraphAttrs [ style filled
    >                                                                                                                   , color LightGray
    >                                                                                                                   , textLabel "process #1"]
-   >                                                                                                      , NodeAttrs [style filled, color White]]}
+   >                                                                                                      , NodeAttrs [style filled, color White]]
    >                                                                                        , subGraphs = []
    >                                                                                        , nodeStmts = [ DotNode "a0" []
    >                                                                                                      , DotNode "a1" []
