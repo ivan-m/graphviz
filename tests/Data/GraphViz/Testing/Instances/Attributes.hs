@@ -945,45 +945,55 @@ instance Arbitrary Html.Attribute where
                     , liftM Html.CellSpacing arbitrary
                     , liftM Html.Color arbitrary
                     , liftM Html.ColSpan arbitrary
+                    , liftM Html.Columns arbitrary
                     , liftM Html.Face arbitrary
                     , liftM Html.FixedSize arbitrary
+                    , liftM Html.GradientAngle arbitrary
                     , liftM Html.Height arbitrary
                     , liftM Html.HRef arbitrary
                     , liftM Html.ID arbitrary
                     , liftM Html.PointSize arbitrary
                     , liftM Html.Port arbitrary
+                    , liftM Html.Rows arbitrary
                     , liftM Html.RowSpan arbitrary
                     , liftM Html.Scale arbitrary
+                    , liftM Html.Sides (nub <$> arbitrary)
                     , liftM Html.Src arbString
+                    , liftM Html.Style arbitrary
                     , liftM Html.Target arbitrary
                     , liftM Html.Title arbitrary
                     , liftM Html.VAlign arbitrary
                     , liftM Html.Width arbitrary
                     ]
 
-  shrink (Html.Align v)       = map Html.Align       $ shrink v
-  shrink (Html.BAlign v)      = map Html.BAlign      $ shrink v
-  shrink (Html.BGColor v)     = map Html.BGColor     $ shrink v
-  shrink (Html.Border v)      = map Html.Border      $ shrink v
-  shrink (Html.CellBorder v)  = map Html.CellBorder  $ shrink v
-  shrink (Html.CellPadding v) = map Html.CellPadding $ shrink v
-  shrink (Html.CellSpacing v) = map Html.CellSpacing $ shrink v
-  shrink (Html.Color v)       = map Html.Color       $ shrink v
-  shrink (Html.ColSpan v)     = map Html.ColSpan     $ shrink v
-  shrink (Html.Face v)        = map Html.Face        $ shrink v
-  shrink (Html.FixedSize v)   = map Html.FixedSize   $ shrink v
-  shrink (Html.Height v)      = map Html.Height      $ shrink v
-  shrink (Html.HRef v)        = map Html.HRef        $ shrink v
-  shrink (Html.ID v)          = map Html.ID          $ shrink v
-  shrink (Html.PointSize v)   = map Html.PointSize   $ shrink v
-  shrink (Html.Port v)        = map Html.Port        $ shrink v
-  shrink (Html.RowSpan v)     = map Html.RowSpan     $ shrink v
-  shrink (Html.Scale v)       = map Html.Scale       $ shrink v
-  shrink (Html.Src v)         = map Html.Src         $ shrinkString v
-  shrink (Html.Target v)      = map Html.Target      $ shrink v
-  shrink (Html.Title v)       = map Html.Title       $ shrink v
-  shrink (Html.VAlign v)      = map Html.VAlign      $ shrink v
-  shrink (Html.Width v)       = map Html.Width       $ shrink v
+  shrink (Html.Align v)         = map Html.Align         $ shrink v
+  shrink (Html.BAlign v)        = map Html.BAlign        $ shrink v
+  shrink (Html.BGColor v)       = map Html.BGColor       $ shrink v
+  shrink (Html.Border v)        = map Html.Border        $ shrink v
+  shrink (Html.CellBorder v)    = map Html.CellBorder    $ shrink v
+  shrink (Html.CellPadding v)   = map Html.CellPadding   $ shrink v
+  shrink (Html.CellSpacing v)   = map Html.CellSpacing   $ shrink v
+  shrink (Html.Color v)         = map Html.Color         $ shrink v
+  shrink (Html.ColSpan v)       = map Html.ColSpan       $ shrink v
+  shrink (Html.Columns v)       = map Html.Columns       $ shrink v
+  shrink (Html.Face v)          = map Html.Face          $ shrink v
+  shrink (Html.FixedSize v)     = map Html.FixedSize     $ shrink v
+  shrink (Html.GradientAngle v) = map Html.GradientAngle $ shrink v
+  shrink (Html.Height v)        = map Html.Height        $ shrink v
+  shrink (Html.HRef v)          = map Html.HRef          $ shrink v
+  shrink (Html.ID v)            = map Html.ID            $ shrink v
+  shrink (Html.PointSize v)     = map Html.PointSize     $ shrink v
+  shrink (Html.Port v)          = map Html.Port          $ shrink v
+  shrink (Html.Rows v)          = map Html.Rows          $ shrink v
+  shrink (Html.RowSpan v)       = map Html.RowSpan       $ shrink v
+  shrink (Html.Scale v)         = map Html.Scale         $ shrink v
+  shrink (Html.Sides v)         = map Html.Sides         $ listShrink' v
+  shrink (Html.Src v)           = map Html.Src           $ shrinkString v
+  shrink (Html.Style v)         = map Html.Style         $ shrink v
+  shrink (Html.Target v)        = map Html.Target        $ shrink v
+  shrink (Html.Title v)         = map Html.Title         $ shrink v
+  shrink (Html.VAlign v)        = map Html.VAlign        $ shrink v
+  shrink (Html.Width v)         = map Html.Width         $ shrink v
 
 instance Arbitrary Html.Scale where
   arbitrary = arbBounded
@@ -992,6 +1002,15 @@ instance Arbitrary Html.Align where
   arbitrary = arbBounded
 
 instance Arbitrary Html.VAlign where
+  arbitrary = arbBounded
+
+instance Arbitrary Html.CellFormat where
+  arbitrary = arbBounded
+
+instance Arbitrary Html.Side where
+  arbitrary = arbBounded
+
+instance Arbitrary Html.Style where
   arbitrary = arbBounded
 
 instance Arbitrary PortName where

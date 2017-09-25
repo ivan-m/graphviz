@@ -64,7 +64,10 @@ module Data.GraphViz.Attributes.HTML
        , Attribute(..)
        , Align(..)
        , VAlign(..)
+       , CellFormat(..)
        , Scale(..)
+       , Side(..)
+       , Style(..)
        ) where
 
 import Data.GraphViz.Attributes.Colors
@@ -301,55 +304,65 @@ type Attributes = [Attribute]
 
 -- | Note that not all 'Attribute' values are valid everywhere:
 --   see the comments for each one on where it is valid.
-data Attribute = Align Align       -- ^ Valid for:  'Table', 'Cell', 'Newline'.
-               | BAlign Align      -- ^ Valid for: 'Cell'.
-               | BGColor Color     -- ^ Valid for: 'Table' (including 'tableFontAttrs'), 'Cell', 'Font'.
-               | Border Word8      -- ^ Valid for: 'Table', 'Cell'.  Default is @1@; @0@ represents no border.
-               | CellBorder Word8  -- ^ Valid for: 'Table'.  Default is @1@; @0@ represents no border.
-               | CellPadding Word8 -- ^ Valid for: 'Table', 'Cell'.  Default is @2@.
-               | CellSpacing Word8 -- ^ Valid for: 'Table', 'Cell'.  Default is @2@; maximum is @127@.
-               | Color Color       -- ^ Valid for: 'Table', 'Cell'.
-               | ColSpan Word16    -- ^ Valid for: 'Cell'.  Default is @1@.
-               | Face T.Text       -- ^ Valid for: 'tableFontAttrs', 'Font'.
-               | FixedSize Bool    -- ^ Valid for: 'Table', 'Cell'.  Default is @'False'@.
-               | Height Word16     -- ^ Valid for: 'Table', 'Cell'.
-               | HRef T.Text       -- ^ Valid for: 'Table', 'Cell'.
-               | ID T.Text         -- ^ Valid for: 'Table', 'Cell'.  Requires Graphviz >= 2.29.0
-               | PointSize Double  -- ^ Valid for: 'tableFontAttrs', 'Font'.
-               | Port PortName     -- ^ Valid for: 'Table', 'Cell'.
-               | RowSpan Word16    -- ^ Valid for: 'Cell'.
-               | Scale Scale       -- ^ Valid for: 'Img'.
-               | Src FilePath      -- ^ Valid for: 'Img'.
-               | Target T.Text     -- ^ Valid for: 'Table', 'Cell'.
-               | Title T.Text      -- ^ Valid for: 'Table', 'Cell'.  Has an alias of @TOOLTIP@.
-               | VAlign VAlign     -- ^ Valid for: 'Table', 'Cell'.
-               | Width Word16      -- ^ Valid for: 'Table', 'Cell'.
+data Attribute = Align Align        -- ^ Valid for: 'Table', 'Cell', 'Newline'.
+               | BAlign Align       -- ^ Valid for: 'Cell'.
+               | BGColor Color      -- ^ Valid for: 'Table' (including 'tableFontAttrs'), 'Cell', 'Font'.
+               | Border Word8       -- ^ Valid for: 'Table', 'Cell'.  Default is @1@; @0@ represents no border.
+               | CellBorder Word8   -- ^ Valid for: 'Table'.  Default is @1@; @0@ represents no border.
+               | CellPadding Word8  -- ^ Valid for: 'Table', 'Cell'.  Default is @2@.
+               | CellSpacing Word8  -- ^ Valid for: 'Table', 'Cell'.  Default is @2@; maximum is @127@.
+               | Color Color        -- ^ Valid for: 'Table', 'Cell'.
+               | ColSpan Word16     -- ^ Valid for: 'Cell'.  Default is @1@.
+               | Columns CellFormat -- ^ Valid for: 'Table'.  Requires Graphviz >= 2.40.1
+               | Face T.Text        -- ^ Valid for: 'tableFontAttrs', 'Font'.
+               | FixedSize Bool     -- ^ Valid for: 'Table', 'Cell'.  Default is @'False'@.
+               | GradientAngle Int  -- ^ Valid for: 'Table', 'Cell'.  Default is @0@.  Requires Graphviz >= 2.40.1
+               | Height Word16      -- ^ Valid for: 'Table', 'Cell'.
+               | HRef T.Text        -- ^ Valid for: 'Table', 'Cell'.
+               | ID T.Text          -- ^ Valid for: 'Table', 'Cell'.  Requires Graphviz >= 2.29.0
+               | PointSize Double   -- ^ Valid for: 'tableFontAttrs', 'Font'.
+               | Port PortName      -- ^ Valid for: 'Table', 'Cell'.
+               | Rows CellFormat    -- ^ Valid for: 'Table'.  Requires Graphviz >= 2.40.1
+               | RowSpan Word16     -- ^ Valid for: 'Cell'.
+               | Scale Scale        -- ^ Valid for: 'Img'.
+               | Sides [Side]       -- ^ Valid for: 'Table', 'Cell'.  Default is @['LeftSide', 'TopSide', 'RightSide', 'BottomSide']@.  Requires Graphviz >= 2.40.1
+               | Src FilePath       -- ^ Valid for: 'Img'.
+               | Style Style        -- ^ Valid for: 'Table', 'Cell'.  Requires Graphviz >= 2.40.1
+               | Target T.Text      -- ^ Valid for: 'Table', 'Cell'.
+               | Title T.Text       -- ^ Valid for: 'Table', 'Cell'.  Has an alias of @TOOLTIP@.
+               | VAlign VAlign      -- ^ Valid for: 'Table', 'Cell'.
+               | Width Word16       -- ^ Valid for: 'Table', 'Cell'.
                deriving (Eq, Ord, Show, Read)
 
 instance PrintDot Attribute where
-  unqtDot (Align v)       = printHtmlField  "ALIGN" v
-  unqtDot (BAlign v)      = printHtmlField  "BALIGN" v
-  unqtDot (BGColor v)     = printHtmlField  "BGCOLOR" v
-  unqtDot (Border v)      = printHtmlField  "BORDER" v
-  unqtDot (CellBorder v)  = printHtmlField  "CELLBORDER" v
-  unqtDot (CellPadding v) = printHtmlField  "CELLPADDING" v
-  unqtDot (CellSpacing v) = printHtmlField  "CELLSPACING" v
-  unqtDot (Color v)       = printHtmlField  "COLOR" v
-  unqtDot (ColSpan v)     = printHtmlField  "COLSPAN" v
-  unqtDot (Face v)        = printHtmlField' "FACE" $ escapeAttribute v
-  unqtDot (FixedSize v)   = printHtmlField' "FIXEDSIZE" $ printBoolHtml v
-  unqtDot (Height v)      = printHtmlField  "HEIGHT" v
-  unqtDot (HRef v)        = printHtmlField' "HREF" $ escapeAttribute v
-  unqtDot (ID v)          = printHtmlField' "ID" $ escapeAttribute v
-  unqtDot (PointSize v)   = printHtmlField  "POINT-SIZE" v
-  unqtDot (Port v)        = printHtmlField' "PORT" . escapeAttribute $ portName v
-  unqtDot (RowSpan v)     = printHtmlField  "ROWSPAN" v
-  unqtDot (Scale v)       = printHtmlField  "SCALE" v
-  unqtDot (Src v)         = printHtmlField' "SRC" . escapeAttribute $ T.pack v
-  unqtDot (Target v)      = printHtmlField' "TARGET" $ escapeAttribute v
-  unqtDot (Title v)       = printHtmlField' "TITLE" $ escapeAttribute v
-  unqtDot (VAlign v)      = printHtmlField  "VALIGN" v
-  unqtDot (Width v)       = printHtmlField  "WIDTH" v
+  unqtDot (Align v)         = printHtmlField  "ALIGN" v
+  unqtDot (BAlign v)        = printHtmlField  "BALIGN" v
+  unqtDot (BGColor v)       = printHtmlField  "BGCOLOR" v
+  unqtDot (Border v)        = printHtmlField  "BORDER" v
+  unqtDot (CellBorder v)    = printHtmlField  "CELLBORDER" v
+  unqtDot (CellPadding v)   = printHtmlField  "CELLPADDING" v
+  unqtDot (CellSpacing v)   = printHtmlField  "CELLSPACING" v
+  unqtDot (Color v)         = printHtmlField  "COLOR" v
+  unqtDot (ColSpan v)       = printHtmlField  "COLSPAN" v
+  unqtDot (Columns v)       = printHtmlField  "COLUMNS" v
+  unqtDot (Face v)          = printHtmlField' "FACE" $ escapeAttribute v
+  unqtDot (FixedSize v)     = printHtmlField' "FIXEDSIZE" $ printBoolHtml v
+  unqtDot (GradientAngle v) = printHtmlField  "GRADIENTANGLE" v
+  unqtDot (Height v)        = printHtmlField  "HEIGHT" v
+  unqtDot (HRef v)          = printHtmlField' "HREF" $ escapeAttribute v
+  unqtDot (ID v)            = printHtmlField' "ID" $ escapeAttribute v
+  unqtDot (PointSize v)     = printHtmlField  "POINT-SIZE" v
+  unqtDot (Port v)          = printHtmlField' "PORT" . escapeAttribute $ portName v
+  unqtDot (Rows v)          = printHtmlField  "ROWS" v
+  unqtDot (RowSpan v)       = printHtmlField  "ROWSPAN" v
+  unqtDot (Scale v)         = printHtmlField  "SCALE" v
+  unqtDot (Sides v)         = printHtmlField  "SIDES" v
+  unqtDot (Src v)           = printHtmlField' "SRC" . escapeAttribute $ T.pack v
+  unqtDot (Style v)         = printHtmlField  "STYLE" v
+  unqtDot (Target v)        = printHtmlField' "TARGET" $ escapeAttribute v
+  unqtDot (Title v)         = printHtmlField' "TITLE" $ escapeAttribute v
+  unqtDot (VAlign v)        = printHtmlField  "VALIGN" v
+  unqtDot (Width v)         = printHtmlField  "WIDTH" v
 
   unqtListToDot = hsep . mapM unqtDot
 
@@ -374,16 +387,21 @@ instance ParseDot Attribute where
                     , parseHtmlField  CellSpacing "CELLSPACING"
                     , parseHtmlField  Color "COLOR"
                     , parseHtmlField  ColSpan "COLSPAN"
+                    , parseHtmlField  Columns "COLUMNS"
                     , parseHtmlField' Face "FACE" unescapeAttribute
                     , parseHtmlField' FixedSize "FIXEDSIZE" parseBoolHtml
+                    , parseHtmlField  GradientAngle "GRADIENTANGLE"
                     , parseHtmlField  Height "HEIGHT"
                     , parseHtmlField' HRef "HREF" unescapeAttribute
                     , parseHtmlField' ID "ID" unescapeAttribute
                     , parseHtmlField  PointSize "POINT-SIZE"
                     , parseHtmlField' (Port . PN) "PORT" unescapeAttribute
+                    , parseHtmlField  Rows "ROWS"
                     , parseHtmlField  RowSpan "ROWSPAN"
                     , parseHtmlField  Scale "SCALE"
+                    , parseHtmlField  Sides "SIDES"
                     , parseHtmlField' Src "SRC" $ fmap T.unpack unescapeAttribute
+                    , parseHtmlField  Style "STYLE"
                     , parseHtmlField' Target "TARGET" unescapeAttribute
                     , parseHtmlField' Title "TITLE" unescapeAttribute
                       `onFail`
@@ -466,6 +484,17 @@ instance ParseDot VAlign where
 
   parse = parseUnqt
 
+data CellFormat = RuleBetween
+                deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot CellFormat where
+  unqtDot RuleBetween = text "*"
+
+instance ParseDot CellFormat where
+  parseUnqt = stringRep RuleBetween "*"
+
+  parse = parseUnqt
+
 -- | Specifies how an image will use any extra space available in its
 --   cell.  If undefined, the image inherits the value of the
 --   @ImageScale@ attribute.
@@ -489,6 +518,52 @@ instance ParseDot Scale where
                     , stringRep ExpandWidth "WIDTH"
                     , stringRep ExpandHeight "HEIGHT"
                     , stringRep ExpandBoth "BOTH"
+                    ]
+
+  parse = parseUnqt
+
+-- | Which sides of a border in a cell or table should be drawn, if a
+--   border is drawn.
+data Side = LeftSide
+          | RightSide
+          | TopSide
+          | BottomSide
+          deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot Side where
+  unqtDot LeftSide   = text "L"
+  unqtDot RightSide  = text "R"
+  unqtDot TopSide    = text "T"
+  unqtDot BottomSide = text "B"
+
+  unqtListToDot = hcat . mapM unqtDot
+
+  listToDot = unqtListToDot
+
+instance ParseDot Side where
+  parseUnqt = oneOf [ stringRep LeftSide   "L"
+                    , stringRep RightSide  "R"
+                    , stringRep TopSide    "T"
+                    , stringRep BottomSide "B"
+                    ]
+
+  parse = parseUnqt
+
+  parseUnqtList = many parseUnqt
+
+  parseList = parseUnqtList
+
+data Style = Rounded  -- ^ Valid for 'Table'
+           | Radial   -- ^ Valid for 'Table', 'Cell'.
+           deriving (Eq, Ord, Bounded, Enum, Show, Read)
+
+instance PrintDot Style where
+  unqtDot Rounded = text "ROUNDED"
+  unqtDot Radial  = text "RADIAL"
+
+instance ParseDot Style where
+  parseUnqt = oneOf [ stringRep Rounded "ROUNDED"
+                    , stringRep Radial  "RADIAL"
                     ]
 
   parse = parseUnqt
