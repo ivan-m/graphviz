@@ -40,7 +40,7 @@ import           System.FilePath (searchPathSeparator)
 
 #if !MIN_VERSION_QuickCheck(2,9,0)
 import Data.GraphViz.Internal.Util (createVersion)
-import Data.Version                (Version (..))
+import Data.Version                (Version(..))
 #endif
 
 -- -----------------------------------------------------------------------------
@@ -663,8 +663,8 @@ instance Arbitrary StartType where
                     , liftM2 StartStyleSeed arbitrary arbitrary
                     ]
 
-  shrink StartStyle{} = [] -- No shrinks for STStyle
-  shrink (StartSeed ss) = map StartSeed $ shrink ss
+  shrink StartStyle{}           = [] -- No shrinks for STStyle
+  shrink (StartSeed ss)         = map StartSeed $ shrink ss
   shrink (StartStyleSeed st ss) = map (StartStyleSeed st) $ shrink ss
 
 instance Arbitrary STStyle where
