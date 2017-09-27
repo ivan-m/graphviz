@@ -957,7 +957,7 @@ instance Arbitrary Html.Attribute where
                     , liftM Html.Rows arbitrary
                     , liftM Html.RowSpan arbitrary
                     , liftM Html.Scale arbitrary
-                    , liftM Html.Sides (nub <$> arbitrary)
+                    , liftM Html.Sides (fmap nub (sized (\s -> resize (min s 4) arbitrary))) -- Will never have more than 4 values
                     , liftM Html.Src arbString
                     , liftM Html.Style arbitrary
                     , liftM Html.Target arbitrary
