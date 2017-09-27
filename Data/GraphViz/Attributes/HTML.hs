@@ -99,40 +99,11 @@ instance PrintDot Label where
   unqtDot (Text txt)  = unqtDot txt
   unqtDot (Table tbl) = unqtDot tbl
 
--- | Consists of either:
---
---   * Fontless 'Table'
---   * 'Text' with @length > 1@ (can have 'Font')
---   * Singular fontless 'TextItem'
-fontlessLabel :: Parse Label
-fontlessLabel = fmap Table fontlessTable
-                `onFail`
-                -- Note: these must be combined as backtracking only
-                -- works on a single layer, not back up to here when
-                -- trying for more items.
-                fmap Text fontlessText
-                `adjustErr`
-                ("Not a fontless label\n\t"++)
-
--- | Either a font-wrapped table, or a single font-wrapped list of 'TextItem's.
-fontedLabel :: Parse Label
-fontedLabel = parseFontTag setAttrs
-                (fmap Table fontlessTable
-                 `onFail`
-                 fmap Text parse -- Can have more fonts here, empty
-                                 -- list, etc.
-                `adjustErrBad`
-                ("Invalid font-wrapped label:\n\t"++)
-                )
-  where
-    setAttrs fas (Table tbl) = Table (setFontAttributes fas tbl)
-    setAttrs fas (Text txt)  = Text [Font fas txt]
-
 instance ParseDot Label where
   -- Try parsing Table first in case of a FONT tag being used.
-  parseUnqt = fontlessLabel
+  parseUnqt = fmap Table parseUnqt
               `onFail`
-              fontedLabel
+              fmap Text parseUnqt
               `adjustErr`
               ("Can't parse Html.Label\n\t"++)
 
@@ -169,17 +140,6 @@ instance PrintDot TextItem where
   unqtListToDot = hcat . mapM unqtDot
 
   listToDot = unqtListToDot
-
--- | Parse Text that does not consist solely of a single top-level
---   Font value.
-fontlessText :: Parse Text
-fontlessText = (do ti <- parse
-                   (ti:) <$> listParse ti parse)
-               `adjustErr`
-               ("Can't parse fontless Html.Text\n\t"++)
-  where
-    listParse (Font{}) = some -- Have to have at least one more value.
-    listParse _        = many
 
 instance ParseDot TextItem where
   parseUnqt = oneOf [ fmap Str unescapeValue
@@ -242,20 +202,17 @@ instance PrintDot Table where
                           (tableAttrs tbl)
                           (toDot $ tableRows tbl)
 
-fontlessTable :: Parse Table
-fontlessTable = parseTag (HTable Nothing)
-                         "TABLE"
-                         (wrapWhitespace parseUnqt)
-
-setFontAttributes :: Attributes -> Table -> Table
-setFontAttributes fas tbl = tbl { tableFontAttrs = Just fas }
-
 instance ParseDot Table where
-  parseUnqt = wrapWhitespace (parseFontTag setFontAttributes fontlessTable)
+  parseUnqt = wrapWhitespace (parseFontTag addFontAttrs pTbl)
               `onFail`
-              fontlessTable
+              pTbl
               `adjustErr`
               ("Can't parse Html.Table\n\t"++)
+    where
+      pTbl = wrapWhitespace $ parseTag (HTable Nothing)
+                                       "TABLE"
+                                       (wrapWhitespace parseUnqt)
+      addFontAttrs fas tbl = tbl { tableFontAttrs = Just fas }
 
   parse = parseUnqt
 
@@ -459,6 +416,8 @@ instance ParseDot Attribute where
 
   parseList = parseUnqtList
 
+
+
 parseHtmlField     :: (ParseDot a) => (a -> Attribute) -> String
                   -> Parse Attribute
 parseHtmlField c f = parseHtmlField' c f parseUnqt
@@ -468,7 +427,7 @@ parseHtmlField'       :: (a -> Attribute) -> String -> Parse a
 parseHtmlField' c f p = string f
                         *> parseEq
                         *> ( c <$> ( quotedParse p
-                                      `adjustErrBad`
+                                      `adjustErr`
                                       (("Can't parse HTML.Attribute." ++ f ++ "\n\t")++)
                                    )
                            )
@@ -747,8 +706,6 @@ parseTag c t pv = c <$> parseAngled openingTag
     openingTag = t'
                  *> tryParseList' (whitespace1 >> parse)
                  <* whitespace
-                 -- `adjustErrBad`
-                 -- ("Invalid Html Attribute list:\n\t"++)
 
 parseFontTag :: (Attributes -> val -> tag) -> Parse val -> Parse tag
 parseFontTag = (`parseTag` "FONT")
