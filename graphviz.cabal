@@ -127,7 +127,7 @@ Test-Suite graphviz-testsuite {
                            fgl-arbitrary == 0.2.*,
                            filepath,
                            text,
-                           QuickCheck >= 2.3 && < 2.10
+                           QuickCheck >= 2.3 && < 2.11
 
         hs-Source-Dirs:    tests
 

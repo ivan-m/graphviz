@@ -427,7 +427,7 @@ instance Arbitrary Point where
   -- Pretty sure points have to be positive...
   arbitrary = liftM4 Point posArbitrary posArbitrary posZ arbitrary
     where
-      posZ = frequency [(1, return Nothing), (3, liftM Just posArbitrary)]
+      posZ = liftArbitrary posArbitrary
 
   shrink p = do x' <- shrink $ xCoord p
                 y' <- shrink $ yCoord p
@@ -837,8 +837,8 @@ instance Arbitrary BrewerColor where
 instance Arbitrary Html.Label where
   arbitrary = sized $ arbHtml True
 
-  shrink ht@(Html.Text txts) = delete ht . map Html.Text $ shrinkL txts
-  shrink (Html.Table tbl)    = map Html.Table $ shrink tbl
+  shrink (Html.Text txts) = map Html.Text $ listShrink txts
+  shrink (Html.Table tbl) = map Html.Table $ shrink tbl
 
 -- Note: for the most part, Html.Label values are very repetitive (and
 -- furthermore, they end up chewing a large amount of memory).  As
@@ -864,7 +864,7 @@ arbHtmlTexts fnt s = liftM simplifyHtmlText
                      . sized
                      $ arbHtmlText fnt
   where
-    s' = min s 10
+    s' = min s 5
 
 -- When parsing, all textual characters are parsed together; thus,
 -- make sure we generate them like that.
@@ -881,8 +881,8 @@ instance Arbitrary Html.TextItem where
   arbitrary = sized $ arbHtmlText True
 
   shrink (Html.Str str)        = map Html.Str . filter (not . T.null) . map T.strip $ shrink str
-  shrink (Html.Newline as)     = map Html.Newline $ shrink as
-  shrink hf@(Html.Font as txt) = do as' <- shrink as
+  shrink (Html.Newline as)     = map Html.Newline $ shrinkHtmlAttrs as
+  shrink hf@(Html.Font as txt) = do as' <- shrinkHtmlAttrs as
                                     txt' <- shrinkL txt
                                     returnCheck hf $ Html.Font as' txt'
   shrink (Html.Format _ txt)   = txt
@@ -895,22 +895,33 @@ arbHtmlText font s = frequency options
                  else id
     s' = min 2 s
     arbRec = resize s' . sized $ arbHtmlTexts False
-    recHtmlText = [ (1, liftM2 Html.Font arbitrary arbRec)
+    recHtmlText = [ (1, liftM2 Html.Font arbHtmlAttrs arbRec)
                   , (3, liftM2 Html.Format arbitrary arbRec)
                   ]
     options = allowFonts [ (10, liftM Html.Str (suchThat (liftM T.strip arbitrary) (not . T.null)))
-                         , (10, liftM Html.Newline arbitrary)
+                         , (10, liftM Html.Newline arbHtmlAttrs)
                          ]
 
 instance Arbitrary Html.Format where
   arbitrary = arbBounded
 
 instance Arbitrary Html.Table where
-  arbitrary = liftM3 Html.HTable arbitrary arbitrary (sized arbRows)
+  arbitrary = liftM3 Html.HTable (liftArbitrary arbHtmlAttrs) arbHtmlAttrs (sized arbRows)
     where
       arbRows s = resize (min s 10) arbList
 
-  shrink (Html.HTable fas as rs) = map (Html.HTable fas as) $ shrinkL rs
+  shrink (Html.HTable fas as rs) = liftM3 Html.HTable shrinkFont (shrinkHtmlAttrs as) (shrinkL rs)
+    where
+      shrinkFont = liftShrink shrinkHtmlAttrs fas
+
+#if !MIN_VERSION_QuickCheck(2,10,0)
+liftArbitrary :: Gen a -> Gen (Maybe a)
+liftArbitrary gen = frequency [(1, return Nothing), (3, liftM Just gen)]
+
+liftShrink :: (a -> [a]) -> Maybe a -> [Maybe a]
+liftShrink shr (Just x) = Nothing : map Just (shr x)
+liftShrink _   Nothing  = []
+#endif
 
 instance Arbitrary Html.Row where
   arbitrary = frequency [ (5, liftM Html.Cells arbList)
@@ -934,6 +945,12 @@ instance Arbitrary Html.Cell where
 
 instance Arbitrary Html.Img where
   arbitrary = liftM Html.Img arbitrary
+
+arbHtmlAttrs :: Gen Html.Attributes
+arbHtmlAttrs = sized (\s -> resize (min 5 s) arbitrary)
+
+shrinkHtmlAttrs :: Html.Attributes -> [Html.Attributes]
+shrinkHtmlAttrs = listShrink
 
 instance Arbitrary Html.Attribute where
   arbitrary = oneof [ liftM Html.Align arbitrary
