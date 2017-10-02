@@ -880,7 +880,7 @@ simplifyHtmlText = map head . groupBy sameType
 instance Arbitrary Html.TextItem where
   arbitrary = sized $ arbHtmlText True
 
-  shrink (Html.Str str)        = map Html.Str $ shrink str
+  shrink (Html.Str str)        = map Html.Str . filter (not . T.null) . map T.strip $ shrink str
   shrink (Html.Newline as)     = map Html.Newline $ shrink as
   shrink hf@(Html.Font as txt) = do as' <- shrink as
                                     txt' <- shrinkL txt
@@ -898,7 +898,7 @@ arbHtmlText font s = frequency options
     recHtmlText = [ (1, liftM2 Html.Font arbitrary arbRec)
                   , (3, liftM2 Html.Format arbitrary arbRec)
                   ]
-    options = allowFonts [ (10, liftM Html.Str arbitrary)
+    options = allowFonts [ (10, liftM Html.Str (suchThat (liftM T.strip arbitrary) (not . T.null)))
                          , (10, liftM Html.Newline arbitrary)
                          ]
 
