@@ -78,6 +78,7 @@ import Test.QuickCheck
 
 import Data.GraphViz.Testing.Instances  ()
 import Data.GraphViz.Testing.Properties
+import Data.GraphViz.Testing.Proxy      (DGProxy(..))
 
 import           Data.GraphViz
 import           Data.GraphViz.Algorithms        (CanonicaliseOptions)
@@ -89,7 +90,7 @@ import qualified Data.GraphViz.Types.Graph       as Gr
 -- Can't use PatriciaTree because a Show instance is needed.
 import Data.Graph.Inductive.Tree (Gr)
 
-import System.Exit (ExitCode (..), exitWith)
+import System.Exit (ExitCode(..), exitWith)
 import System.IO   (hPutStrLn, stderr)
 
 -- -----------------------------------------------------------------------------
@@ -451,9 +452,9 @@ test_transitiveNodes
 -- | Used when a property takes in a DotRepr as the first argument to
 --   indicate which instance it should test via 'fromCanonical'.
 testAllGraphTypes      :: (Testable prop)
-                          => (forall dg. (Eq (dg Int), DotRepr dg Int) => dg Int -> prop)
+                          => (forall dg. (Eq (dg Int), DotRepr dg Int) => DGProxy dg -> prop)
                           -> [prop]
-testAllGraphTypes prop = [ prop (undefined :: DotGraph Int)
-                         , prop (undefined :: G.DotGraph Int)
-                         , prop (undefined :: Gr.DotGraph Int)
+testAllGraphTypes prop = [ prop (DGProxy :: DGProxy DotGraph)
+                         , prop (DGProxy :: DGProxy G.DotGraph)
+                         , prop (DGProxy :: DGProxy Gr.DotGraph)
                          ]

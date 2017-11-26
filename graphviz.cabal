@@ -144,6 +144,7 @@ Test-Suite graphviz-testsuite {
                              Data.GraphViz.Testing.Instances.Canonical
                              Data.GraphViz.Testing.Instances.Generalised
                              Data.GraphViz.Testing.Instances.Graph
+                             Data.GraphViz.Testing.Proxy
 
         if True
            Ghc-Options: -Wall
