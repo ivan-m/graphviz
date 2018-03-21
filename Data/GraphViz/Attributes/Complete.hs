@@ -204,6 +204,7 @@ import Data.GraphViz.Internal.Util         (bool, isIDString, keywords,
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
+import           Prelude        hiding ((<>))
 import           Data.List      (partition)
 import           Data.Maybe     (isNothing)
 import qualified Data.Set       as S

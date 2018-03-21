@@ -42,6 +42,7 @@ import Data.GraphViz.Internal.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
+import           Prelude             hiding ((<>))
 import           Control.Monad       (unless, when)
 import           Data.Maybe          (isJust)
 import           Data.Text.Lazy      (Text)

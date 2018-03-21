@@ -76,6 +76,7 @@ import Data.GraphViz.Internal.Util       (bool)
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
+import           Prelude        hiding ((<>))
 import           Data.Char      (chr, isSpace, ord)
 import           Data.Function  (on)
 import           Data.List      (delete)

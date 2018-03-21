@@ -53,6 +53,7 @@ import Data.Colour.RGBSpace     (uncurryRGB)
 import Data.Colour.RGBSpace.HSV (hsv)
 import Data.Colour.SRGB         (Colour, sRGB, sRGB24, toSRGB24)
 
+import           Prelude        hiding ((<>))
 import           Data.Char      (isHexDigit)
 import           Data.Maybe     (isJust)
 import qualified Data.Text.Lazy as T

@@ -16,6 +16,7 @@ import Data.GraphViz.Internal.Util (bool)
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
+import Prelude hiding ((<>))
 import Data.Maybe (isJust)
 
 -- -----------------------------------------------------------------------------
