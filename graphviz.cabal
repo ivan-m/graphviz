@@ -127,7 +127,7 @@ Test-Suite graphviz-testsuite {
                            fgl-arbitrary == 0.2.*,
                            filepath,
                            text,
-                           QuickCheck >= 2.3 && < 2.11
+                           QuickCheck >= 2.3 && < 2.12
 
         hs-Source-Dirs:    tests
 
@@ -162,7 +162,7 @@ Benchmark graphviz-printparse {
                           deepseq,
                           text,
                           graphviz,
-                          criterion >= 0.5 && < 1.3
+                          criterion >= 0.5 && < 1.5
 
         hs-Source-Dirs:   utils
 
