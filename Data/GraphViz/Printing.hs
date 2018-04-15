@@ -81,13 +81,13 @@ import           Text.PrettyPrint.Leijen.Text.Monadic hiding (Pretty(..),
                                                        width, (<$>))
 import qualified Text.PrettyPrint.Leijen.Text.Monadic as PP
 
+import           Prelude                   hiding ((<>))
 import           Control.Monad             (ap, when)
 import           Control.Monad.Trans.State
 import           Data.Char                 (toLower)
 import qualified Data.Set                  as Set
 import           Data.Version              (Version(..))
 import           Data.Word                 (Word16, Word8)
-
 -- -----------------------------------------------------------------------------
 
 -- | A type alias to indicate what is being produced.
