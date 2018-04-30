@@ -8,10 +8,12 @@
 
 
  -}
-module Data.GraphViz.Types.GeneralisedSpec where
+module Data.GraphViz.Types.GeneralisedSpec (spec) where
 
 import Data.GraphViz.Testing.Instances  ()
-import Data.GraphViz.Testing.Properties
+import Data.GraphViz.Testing.Properties (prop_findAllEdges, prop_findAllNodes,
+                                         prop_findAllNodesE, prop_noGraphInfo,
+                                         prop_printParseID)
 import Data.GraphViz.Testing.Proxy      (DGProxy(..))
 import Data.GraphViz.Types.Generalised  (DotGraph)
 
