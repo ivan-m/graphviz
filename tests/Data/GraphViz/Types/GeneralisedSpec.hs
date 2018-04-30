@@ -1,6 +1,6 @@
 {- |
    Module      : Data.GraphViz.Types.GeneralisedSpec
-   Description : Testing canonical graph representation
+   Description : Testing generalised graph representation
    Copyright   : Matthew Sackman, Ivan Lazar Miljenovic
    License     : BSD3
    Maintainer  : Ivan.Miljenovic@gmail.com

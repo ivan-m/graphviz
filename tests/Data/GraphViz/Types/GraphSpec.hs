@@ -1,6 +1,6 @@
 {- |
    Module      : Data.GraphViz.Types.GraphSpec
-   Description : Testing canonical graph representation
+   Description : Testing graph-based graph representation
    Copyright   : Matthew Sackman, Ivan Lazar Miljenovic
    License     : BSD3
    Maintainer  : Ivan.Miljenovic@gmail.com
