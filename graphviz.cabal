@@ -128,16 +128,16 @@ Test-Suite graphviz-testsuite {
                            fgl-arbitrary == 0.2.*,
                            filepath,
                            hspec >= 2.1 && < 2.5,
+                           hspec-discover,
                            text,
                            QuickCheck >= 2.3 && < 2.12
 
         hs-Source-Dirs:    tests
 
-        Main-Is:           RunTests.hs
+        Main-Is:           Spec.hs
 
 
-        Other-Modules:       Data.GraphViz.Testing
-                             Data.GraphViz.Testing.Instances
+        Other-Modules:       Data.GraphViz.Testing.Instances
                              Data.GraphViz.Testing.Properties
                              Data.GraphViz.Testing.Instances.Helpers
                              Data.GraphViz.Testing.Instances.Attributes
