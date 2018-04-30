@@ -10,12 +10,10 @@
  -}
 module Data.GraphVizSpec (spec) where
 
-import Data.GraphViz.Algorithms         (CanonicaliseOptions)
 import Data.GraphViz.Testing.Instances  ()
 import Data.GraphViz.Testing.Properties (prop_dotizeAugment,
                                          prop_dotizeAugmentUniq,
                                          prop_dotizeHasAugment)
-import Data.GraphViz.Types.Canonical    (DotGraph)
 
 import Test.Hspec            (Spec)
 import Test.Hspec.QuickCheck (prop)
