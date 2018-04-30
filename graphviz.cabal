@@ -147,6 +147,7 @@ Test-Suite graphviz-testsuite {
                              Data.GraphViz.Testing.Instances.Graph
                              Data.GraphViz.Testing.Proxy
 
+                             Data.GraphViz.AlgorithmsSpec
                              Data.GraphViz.Attributes.CompleteSpec
                              Data.GraphViz.Attributes.HTMLSpec
                              Data.GraphViz.PreProcessingSpec
