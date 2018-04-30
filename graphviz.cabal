@@ -151,6 +151,8 @@ Test-Suite graphviz-testsuite {
                              Data.GraphViz.Attributes.HTMLSpec
                              Data.GraphViz.PreProcessingSpec
                              Data.GraphViz.Types.CanonicalSpec
+                             Data.GraphViz.Types.GeneralisedSpec
+                             Data.GraphViz.Types.GraphSpec
 
         if True
            Ghc-Options: -Wall
