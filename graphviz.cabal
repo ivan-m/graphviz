@@ -134,7 +134,7 @@ Test-Suite graphviz-testsuite {
 
         hs-Source-Dirs:    tests
 
-        Main-Is:           Spec.hs
+        Main-Is:           Main.hs
 
 
         Other-Modules:       Data.GraphViz.Testing.Instances
@@ -155,6 +155,8 @@ Test-Suite graphviz-testsuite {
                              Data.GraphViz.Types.CanonicalSpec
                              Data.GraphViz.Types.GeneralisedSpec
                              Data.GraphViz.Types.GraphSpec
+
+                             Spec
 
         if True
            Ghc-Options: -Wall
