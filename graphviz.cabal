@@ -124,19 +124,20 @@ Test-Suite graphviz-testsuite {
         Build-Depends:     base,
                            graphviz,
                            containers,
-                           fgl,
+                           fgl >= 5.5.0.0,
                            fgl-arbitrary == 0.2.*,
                            filepath,
+                           hspec >= 2.1 && < 2.5,
+                           hspec-discover,
                            text,
                            QuickCheck >= 2.3 && < 2.12
 
         hs-Source-Dirs:    tests
 
-        Main-Is:           RunTests.hs
+        Main-Is:           Main.hs
 
 
-        Other-Modules:       Data.GraphViz.Testing
-                             Data.GraphViz.Testing.Instances
+        Other-Modules:       Data.GraphViz.Testing.Instances
                              Data.GraphViz.Testing.Properties
                              Data.GraphViz.Testing.Instances.Helpers
                              Data.GraphViz.Testing.Instances.Attributes
@@ -144,6 +145,18 @@ Test-Suite graphviz-testsuite {
                              Data.GraphViz.Testing.Instances.Canonical
                              Data.GraphViz.Testing.Instances.Generalised
                              Data.GraphViz.Testing.Instances.Graph
+                             Data.GraphViz.Testing.Proxy
+
+                             Data.GraphVizSpec
+                             Data.GraphViz.AlgorithmsSpec
+                             Data.GraphViz.Attributes.CompleteSpec
+                             Data.GraphViz.Attributes.HTMLSpec
+                             Data.GraphViz.PreProcessingSpec
+                             Data.GraphViz.Types.CanonicalSpec
+                             Data.GraphViz.Types.GeneralisedSpec
+                             Data.GraphViz.Types.GraphSpec
+
+                             Spec
 
         if True
            Ghc-Options: -Wall

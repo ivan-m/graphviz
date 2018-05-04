@@ -16,20 +16,21 @@ import           Data.GraphViz                   (dotizeGraph, graphToDot,
                                                   setDirectedness)
 import           Data.GraphViz.Algorithms
 import           Data.GraphViz.Internal.Util     (groupSortBy, isSingle)
-import           Data.GraphViz.Parsing           (ParseDot (..), parseIt,
+import           Data.GraphViz.Parsing           (ParseDot(..), parseIt,
                                                   parseIt')
 import           Data.GraphViz.PreProcessing     (preProcess)
-import           Data.GraphViz.Printing          (PrintDot (..), printIt)
-import           Data.GraphViz.Types             (DotEdge (..), DotNode (..),
-                                                  DotRepr (..),
-                                                  GlobalAttributes (..),
+import           Data.GraphViz.Printing          (PrintDot(..), printIt)
+import           Data.GraphViz.Testing.Proxy     (DGProxy(..))
+import           Data.GraphViz.Types             (DotEdge(..), DotNode(..),
+                                                  DotRepr(..),
+                                                  GlobalAttributes(..),
                                                   PrintDotRepr,
                                                   edgeInformationClean,
                                                   graphEdges, graphNodes,
                                                   nodeInformationClean,
                                                   printDotGraph)
-import           Data.GraphViz.Types.Canonical   (DotGraph (..),
-                                                  DotStatements (..))
+import           Data.GraphViz.Types.Canonical   (DotGraph(..),
+                                                  DotStatements(..))
 import qualified Data.GraphViz.Types.Generalised as G
 
 import Test.QuickCheck
@@ -62,7 +63,7 @@ prop_printParseListID as =  not (null as) ==> prop_printParseID as
 prop_generalisedSameDot    :: (Ord n, PrintDot n, ParseDot n) => DotGraph n -> Bool
 prop_generalisedSameDot dg = printDotGraph dg == printDotGraph gdg
   where
-    gdg = canonicalToType (undefined :: G.DotGraph n) dg
+    gdg = canonicalToType (DGProxy :: DGProxy G.DotGraph) dg
 
 -- | Pre-processing shouldn't change the output of printed Dot code.
 --   This should work for all 'PrintDot' instances, but is more
@@ -111,22 +112,22 @@ prop_dotizeAugmentUniq g = all uniqLs lss
 -- | Ensure that the definition of 'nodeInformation' for a DotRepr
 --   finds all the nodes.
 prop_findAllNodes       :: (DotRepr dg Int, Ord el, Graph g)
-                           => dg Int -> g nl el -> Bool
-prop_findAllNodes dg' g = ((==) `on` sort) gns dgns
+                           => DGProxy dg -> g nl el -> Bool
+prop_findAllNodes dgp g = ((==) `on` sort) gns dgns
   where
     gns = nodes g
-    dg = canonicalToType dg' $ setDirectedness graphToDot nonClusteredParams g
+    dg = canonicalToType dgp $ setDirectedness graphToDot nonClusteredParams g
     dgns = map nodeID $ graphNodes dg
 
 -- | Ensure that the definition of 'nodeInformation' for DotReprs
 --   finds all the nodes when the explicit 'DotNode' definitions are
 --   removed.
 prop_findAllNodesE       :: (DotRepr dg Int, Ord el, Graph g)
-                            => dg Int -> g nl el -> Bool
-prop_findAllNodesE dg' g = ((==) `on` sort) gns dgns
+                            => DGProxy dg -> g nl el -> Bool
+prop_findAllNodesE dgp g = ((==) `on` sort) gns dgns
   where
     gns = nodes g
-    dg = canonicalToType dg' . removeNodes $ setDirectedness graphToDot nonClusteredParams g
+    dg = canonicalToType dgp . removeNodes $ setDirectedness graphToDot nonClusteredParams g
     dgns = map nodeID $ graphNodes dg
     removeNodes dot@DotGraph{graphStatements = stmts}
       = dot { graphStatements
@@ -137,21 +138,21 @@ prop_findAllNodesE dg' g = ((==) `on` sort) gns dgns
 
 -- | Ensure that the definition of 'edgeInformation' for DotReprs
 --   finds all the nodes.
-prop_findAllEdges       :: (DotRepr dg Int, Graph g) => dg Int -> g nl el -> Bool
-prop_findAllEdges dg' g = ((==) `on` sort) ges dges
+prop_findAllEdges       :: (DotRepr dg Int, Graph g) => DGProxy dg -> g nl el -> Bool
+prop_findAllEdges dgp g = ((==) `on` sort) ges dges
   where
     ges = edges g
-    dg = canonicalToType dg' $ graphToDot nonClusteredParams g
+    dg = canonicalToType dgp $ graphToDot nonClusteredParams g
     dges = map (fromNode &&& toNode) $ graphEdges dg
 
 -- | There should be no clusters or global attributes when converting
 --   a 'Graph' to a DotRepr (via fromCanonical) without any formatting
 --   or clustering.
 prop_noGraphInfo       :: (DotRepr dg Int, Ord el, Graph g)
-                          => dg Int -> g nl el -> Bool
-prop_noGraphInfo dg' g = info == (GraphAttrs [], Map.empty)
+                          => DGProxy dg -> g nl el -> Bool
+prop_noGraphInfo dgp g = info == (GraphAttrs [], Map.empty)
   where
-    dg = canonicalToType dg'
+    dg = canonicalToType dgp
          $ setDirectedness graphToDot nonClusteredParams g
     info = graphStructureInformation dg
 
@@ -205,5 +206,5 @@ tryParse' = parseIt' . printIt
 
 -- | A wrapper around 'fromCanonical' that lets you specify up-front
 --   what type to create (it need not be a sensible value).
-canonicalToType   :: (DotRepr dg n) => dg n -> DotGraph n -> dg n
+canonicalToType   :: (DotRepr dg n) => DGProxy dg -> DotGraph n -> dg n
 canonicalToType _ = fromCanonical
