@@ -29,8 +29,7 @@ module Data.GraphViz.Commands.IO
        ) where
 
 import Data.GraphViz.Exception
-import Data.GraphViz.Internal.State (initialState)
-import Data.GraphViz.Printing       (toDot)
+import Data.GraphViz.Printing       (runDotCode, toDot)
 import Data.GraphViz.Types          (ParseDotRepr, PrintDotRepr, parseDotGraph,
                                      printDotGraph)
 import Text.PrettyPrint.Leijen.Text (displayT, renderOneLine)
@@ -39,7 +38,6 @@ import           Control.Concurrent       (MVar, forkIO, newEmptyMVar, putMVar,
                                            takeMVar)
 import           Control.Exception        (IOException, evaluate, finally)
 import           Control.Monad            (liftM)
-import           Control.Monad.State      (evalState)
 import qualified Data.ByteString          as SB
 import           Data.ByteString.Lazy     (ByteString)
 import qualified Data.ByteString.Lazy     as B
@@ -62,7 +60,7 @@ import           System.Process           (runInteractiveProcess,
 --   (i.e. more compact than the output of 'renderDot').
 renderCompactDot :: (PrintDotRepr dg n) => dg n -> Text
 renderCompactDot = displayT . renderOneLine
-                   . (`evalState` initialState)
+                   . runDotCode
                    . toDot
 
 -- -----------------------------------------------------------------------------

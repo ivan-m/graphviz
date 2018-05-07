@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 {- |
    Module      : Data.GraphViz.Internal.State
@@ -30,7 +30,6 @@ module Data.GraphViz.Internal.State
 
 import Data.GraphViz.Attributes.ColorScheme
 
-import Control.Monad.State                   (State, gets, modify)
 import Text.ParserCombinators.Poly.StateText (Parser, stQuery, stUpdate)
 
 -- -----------------------------------------------------------------------------
@@ -39,11 +38,6 @@ class (Monad m) => GraphvizStateM m where
   modifyGS :: (GraphvizState -> GraphvizState) -> m ()
 
   getsGS :: (GraphvizState -> a) -> m a
-
-instance GraphvizStateM (State GraphvizState) where
-  modifyGS = modify
-
-  getsGS = gets
 
 instance GraphvizStateM (Parser GraphvizState) where
   modifyGS = stUpdate

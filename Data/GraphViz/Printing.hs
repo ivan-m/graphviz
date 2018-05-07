@@ -1,4 +1,5 @@
-{-# LANGUAGE CPP, FlexibleInstances, OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE CPP, FlexibleInstances, GeneralizedNewtypeDeriving,
+             OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 {- |
@@ -48,6 +49,8 @@
 module Data.GraphViz.Printing
     ( module Text.PrettyPrint.Leijen.Text.Monadic
     , DotCode
+    , DotCodeM
+    , runDotCode
     , renderDot -- Exported for Data.GraphViz.Types.Internal.Common.printSGID
     , PrintDot(..)
     , unqtText
@@ -82,7 +85,8 @@ import           Text.PrettyPrint.Leijen.Text.Monadic hiding (Pretty(..),
 import qualified Text.PrettyPrint.Leijen.Text.Monadic as PP
 
 import           Control.Monad       (ap, when)
-import           Control.Monad.State
+import           Control.Monad.State (MonadState, State, evalState, gets,
+                                      modify)
 import           Data.Char           (toLower)
 import qualified Data.Set            as Set
 import           Data.String         (IsString(..))
@@ -92,7 +96,8 @@ import           Data.Word           (Word16, Word8)
 #if !(MIN_VERSION_base (4,11,0))
 
 #if !(MIN_VERSION_base (4,8,0))
-import Data.Monoid (Monoid(..))
+import Control.Applicative (Applicative)
+import Data.Monoid         (Monoid(..))
 #endif
 
 #if MIN_VERSION_base (4,9,0)
@@ -106,7 +111,13 @@ import Data.Monoid ((<>))
 -- -----------------------------------------------------------------------------
 
 -- | A type alias to indicate what is being produced.
-type DotCode = State GraphvizState Doc
+newtype DotCodeM a = DotCodeM { getDotCode :: State GraphvizState a }
+  deriving (Functor, Applicative, Monad, MonadState GraphvizState)
+
+type DotCode = DotCodeM Doc
+
+runDotCode :: DotCode -> Doc
+runDotCode = (`evalState` initialState) . getDotCode
 
 instance Show DotCode where
   showsPrec d = showsPrec d . renderDot
@@ -127,10 +138,15 @@ instance Monoid DotCode where
   mappend = beside
 #endif
 
+instance GraphvizStateM DotCodeM where
+  modifyGS = modify
+
+  getsGS = gets
+
 -- | Correctly render Graphviz output.
 renderDot :: DotCode -> Text
 renderDot = PP.displayT . PP.renderPretty 0.4 80
-            . (`evalState` initialState)
+            . runDotCode
 
 -- | A class used to correctly print parts of the Graphviz Dot language.
 --   Minimal implementation is 'unqtDot'.
