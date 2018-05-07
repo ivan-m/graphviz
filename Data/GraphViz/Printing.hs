@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE CPP, FlexibleInstances, OverloadedStrings, TypeSynonymInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 {- |
@@ -81,13 +81,28 @@ import           Text.PrettyPrint.Leijen.Text.Monadic hiding (Pretty(..),
                                                        width, (<$>))
 import qualified Text.PrettyPrint.Leijen.Text.Monadic as PP
 
-import           Prelude                   hiding ((<>))
 import           Control.Monad             (ap, when)
 import           Control.Monad.Trans.State
 import           Data.Char                 (toLower)
 import qualified Data.Set                  as Set
+import           Data.String               (IsString(..))
 import           Data.Version              (Version(..))
 import           Data.Word                 (Word16, Word8)
+
+#if !(MIN_VERSION_base (4,11,0))
+
+#if !(MIN_VERSION_base (4,8,0))
+import Data.Monoid (Monoid(..))
+#endif
+
+#if MIN_VERSION_base (4,9,0)
+import Data.Semigroup (Semigroup(..))
+#else
+import Data.Monoid ((<>))
+#endif
+
+#endif
+
 -- -----------------------------------------------------------------------------
 
 -- | A type alias to indicate what is being produced.
@@ -95,6 +110,22 @@ type DotCode = State GraphvizState Doc
 
 instance Show DotCode where
   showsPrec d = showsPrec d . renderDot
+
+instance IsString DotCode where
+  fromString = PP.string . fromString
+
+#if MIN_VERSION_base (4,9,0)
+instance Semigroup DotCode where
+  (<>) = beside
+
+instance Monoid DotCode where
+  mempty  = empty
+  mappend = (<>)
+#else
+instance Monoid DotCode where
+  mempty  = empty
+  mappend = beside
+#endif
 
 -- | Correctly render Graphviz output.
 renderDot :: DotCode -> Text

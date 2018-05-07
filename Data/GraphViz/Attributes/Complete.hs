@@ -192,11 +192,11 @@ module Data.GraphViz.Attributes.Complete
 
 import Data.GraphViz.Attributes.Arrows
 import Data.GraphViz.Attributes.Colors
-import Data.GraphViz.Attributes.Colors.X11 (X11Color (Black))
+import Data.GraphViz.Attributes.Colors.X11 (X11Color(Black))
 import Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Attributes.Values
 import Data.GraphViz.Commands.Available
-import Data.GraphViz.Exception             (GraphvizException (NotCustomAttr),
+import Data.GraphViz.Exception             (GraphvizException(NotCustomAttr),
                                             throw)
 import Data.GraphViz.Internal.State        (getsGS, parseStrictly)
 import Data.GraphViz.Internal.Util         (bool, isIDString, keywords,
@@ -204,13 +204,13 @@ import Data.GraphViz.Internal.Util         (bool, isIDString, keywords,
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
-import           Prelude        hiding ((<>))
 import           Data.List      (partition)
 import           Data.Maybe     (isNothing)
+import           Data.Monoid    ((<>))
 import qualified Data.Set       as S
 import           Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as T
-import           Data.Version   (Version (..))
+import           Data.Version   (Version(..))
 import           Data.Word      (Word16)
 
 -- -----------------------------------------------------------------------------

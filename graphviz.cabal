@@ -59,7 +59,7 @@ Flag test-parsing
 Library {
         Default-Language:  Haskell2010
 
-        Build-Depends:     base == 4.*,
+        Build-Depends:     base >=4.5.0.0 && <5,
                            containers,
                            process,
                            directory,
@@ -71,7 +71,7 @@ Library {
                            colour == 2.3.*,
                            transformers >= 0.2 && < 0.6,
                            text,
-                           wl-pprint-text >= 1.1.0.0 && < 1.2.0.0,
+                           wl-pprint-text == 1.2.*,
                            dlist >= 0.5 && < 0.9
 
         Exposed-Modules:   Data.GraphViz
