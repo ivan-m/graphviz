@@ -124,23 +124,22 @@ import Data.GraphViz.Attributes.Complete   (rmUnwantedAttributes,
                                             usedByGraphs, usedByNodes)
 import Data.GraphViz.Internal.State        (GraphvizState)
 import Data.GraphViz.Internal.Util         (bool)
-import Data.GraphViz.Parsing               (ParseDot (..), adjustErr,
+import Data.GraphViz.Parsing               (ParseDot(..), adjustErr,
                                             checkValidParseWithRest, parse,
                                             parseLiberally, runParserWith)
 import Data.GraphViz.PreProcessing         (preProcess)
-import Data.GraphViz.Printing              (PrintDot (..), printIt)
-import Data.GraphViz.Types.Canonical       (DotGraph (..), DotStatements (..),
-                                            DotSubGraph (..))
-import Data.GraphViz.Types.Internal.Common (DotEdge (..), DotNode (..),
-                                            GlobalAttributes (..), GraphID (..),
-                                            Number (..), numericValue, withGlob)
+import Data.GraphViz.Printing              (PrintDot(..), printIt)
+import Data.GraphViz.Types.Canonical       (DotGraph(..), DotStatements(..),
+                                            DotSubGraph(..))
+import Data.GraphViz.Types.Internal.Common (DotEdge(..), DotNode(..),
+                                            GlobalAttributes(..), GraphID(..),
+                                            Number(..), numericValue, withGlob)
 import Data.GraphViz.Types.State
 
-import           Control.Arrow             (second, (***))
-import           Control.Monad.Trans.State (evalState, execState, get, modify,
-                                            put)
-import           Data.Text.Lazy            (Text)
-import qualified Data.Text.Lazy            as T
+import           Control.Arrow       (second, (***))
+import           Control.Monad.State (evalState, execState, get, modify, put)
+import           Data.Text.Lazy      (Text)
+import qualified Data.Text.Lazy      as T
 
 -- -----------------------------------------------------------------------------
 

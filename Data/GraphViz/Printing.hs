@@ -81,13 +81,13 @@ import           Text.PrettyPrint.Leijen.Text.Monadic hiding (Pretty(..),
                                                        width, (<$>))
 import qualified Text.PrettyPrint.Leijen.Text.Monadic as PP
 
-import           Control.Monad             (ap, when)
-import           Control.Monad.Trans.State
-import           Data.Char                 (toLower)
-import qualified Data.Set                  as Set
-import           Data.String               (IsString(..))
-import           Data.Version              (Version(..))
-import           Data.Word                 (Word16, Word8)
+import           Control.Monad       (ap, when)
+import           Control.Monad.State
+import           Data.Char           (toLower)
+import qualified Data.Set            as Set
+import           Data.String         (IsString(..))
+import           Data.Version        (Version(..))
+import           Data.Word           (Word16, Word8)
 
 #if !(MIN_VERSION_base (4,11,0))
 

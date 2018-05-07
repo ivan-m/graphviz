@@ -30,7 +30,7 @@ module Data.GraphViz.Internal.State
 
 import Data.GraphViz.Attributes.ColorScheme
 
-import Control.Monad.Trans.State             (State, gets, modify)
+import Control.Monad.State                   (State, gets, modify)
 import Text.ParserCombinators.Poly.StateText (Parser, stQuery, stUpdate)
 
 -- -----------------------------------------------------------------------------

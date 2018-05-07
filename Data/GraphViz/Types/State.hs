@@ -39,17 +39,17 @@ import Data.GraphViz.Attributes.Complete   (Attributes, usedByClusters,
 import Data.GraphViz.Attributes.Same
 import Data.GraphViz.Types.Internal.Common
 
-import           Control.Arrow             ((&&&), (***))
-import           Control.Monad             (when)
-import           Control.Monad.Trans.State
-import           Data.DList                (DList)
-import qualified Data.DList                as DList
-import           Data.Function             (on)
-import           Data.Map                  (Map)
-import qualified Data.Map                  as Map
-import           Data.Sequence             (Seq, ViewL (..), (|>))
-import qualified Data.Sequence             as Seq
-import qualified Data.Set                  as Set
+import           Control.Arrow       ((&&&), (***))
+import           Control.Monad       (when)
+import           Control.Monad.State (State, execState, gets, modify)
+import           Data.DList          (DList)
+import qualified Data.DList          as DList
+import           Data.Function       (on)
+import           Data.Map            (Map)
+import qualified Data.Map            as Map
+import           Data.Sequence       (Seq, ViewL(..), (|>))
+import qualified Data.Sequence       as Seq
+import qualified Data.Set            as Set
 
 -- -----------------------------------------------------------------------------
 
