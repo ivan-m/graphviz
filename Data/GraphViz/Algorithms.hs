@@ -38,19 +38,19 @@ import Data.GraphViz.Types
 import Data.GraphViz.Types.Canonical
 import Data.GraphViz.Types.Internal.Common
 
-import           Control.Arrow             (first, second, (***))
-import           Control.Monad             (unless)
-import           Control.Monad.Trans.State
-import qualified Data.DList                as DList
-import qualified Data.Foldable             as F
-import           Data.Function             (on)
-import           Data.List                 (deleteBy, groupBy, partition,
-                                            sortBy, (\\))
-import           Data.Map                  (Map)
-import qualified Data.Map                  as Map
-import           Data.Maybe                (fromMaybe, listToMaybe, mapMaybe)
-import           Data.Set                  (Set)
-import qualified Data.Set                  as Set
+import           Control.Arrow       (first, second, (***))
+import           Control.Monad       (unless)
+import           Control.Monad.State (State, execState, gets, modify)
+import qualified Data.DList          as DList
+import qualified Data.Foldable       as F
+import           Data.Function       (on)
+import           Data.List           (deleteBy, groupBy, partition, sortBy,
+                                      (\\))
+import           Data.Map            (Map)
+import qualified Data.Map            as Map
+import           Data.Maybe          (fromMaybe, listToMaybe, mapMaybe)
+import           Data.Set            (Set)
+import qualified Data.Set            as Set
 
 -- -----------------------------------------------------------------------------
 

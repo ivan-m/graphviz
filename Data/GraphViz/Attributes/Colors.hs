@@ -36,11 +36,10 @@ module Data.GraphViz.Attributes.Colors
        , fromAColour
        ) where
 
-import Data.GraphViz.Attributes.Colors.Brewer (BrewerColor (..))
+import Data.GraphViz.Attributes.Colors.Brewer (BrewerColor(..))
 import Data.GraphViz.Attributes.Colors.SVG    (SVGColor, svgColour)
-import Data.GraphViz.Attributes.Colors.X11    (X11Color (Transparent),
-                                               x11Colour)
-import Data.GraphViz.Attributes.ColorScheme   (ColorScheme (..))
+import Data.GraphViz.Attributes.Colors.X11    (X11Color(Transparent), x11Colour)
+import Data.GraphViz.Attributes.ColorScheme   (ColorScheme(..))
 import Data.GraphViz.Exception
 import Data.GraphViz.Internal.State
 import Data.GraphViz.Internal.Util            (bool)
@@ -53,9 +52,9 @@ import Data.Colour.RGBSpace     (uncurryRGB)
 import Data.Colour.RGBSpace.HSV (hsv)
 import Data.Colour.SRGB         (Colour, sRGB, sRGB24, toSRGB24)
 
-import           Prelude        hiding ((<>))
 import           Data.Char      (isHexDigit)
 import           Data.Maybe     (isJust)
+import           Data.Monoid    ((<>))
 import qualified Data.Text.Lazy as T
 import           Data.Word      (Word8)
 import           Numeric        (readHex, showHex)

@@ -25,10 +25,10 @@ module Data.GraphViz.Attributes.Internal
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
-import           Prelude        hiding ((<>))
 import           Data.Map       (Map)
 import qualified Data.Map       as Map
 import           Data.Maybe     (isNothing)
+import           Data.Monoid    ((<>))
 import           Data.Text.Lazy (Text)
 
 -- -----------------------------------------------------------------------------

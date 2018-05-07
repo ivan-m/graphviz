@@ -76,12 +76,12 @@ import Data.GraphViz.Internal.Util       (bool)
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
-import           Prelude        hiding ((<>))
 import           Data.Char      (chr, isSpace, ord)
 import           Data.Function  (on)
 import           Data.List      (delete)
 import qualified Data.Map       as Map
 import           Data.Maybe     (catMaybes, listToMaybe)
+import           Data.Monoid    ((<>))
 import qualified Data.Text.Lazy as T
 import           Data.Word      (Word16, Word8)
 import           Numeric        (readHex)

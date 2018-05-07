@@ -42,9 +42,9 @@ import Data.GraphViz.Internal.Util
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
-import           Prelude             hiding ((<>))
 import           Control.Monad       (unless, when)
 import           Data.Maybe          (isJust)
+import           Data.Monoid         ((<>))
 import           Data.Text.Lazy      (Text)
 import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T

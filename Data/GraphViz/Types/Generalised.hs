@@ -71,13 +71,12 @@ import qualified Data.GraphViz.Types.Canonical       as C
 import           Data.GraphViz.Types.Internal.Common
 import           Data.GraphViz.Types.State
 
-import           Control.Arrow             ((&&&))
-import           Control.Monad.Trans.State (evalState, execState, get, modify,
-                                            put)
-import qualified Data.Foldable             as F
-import           Data.Sequence             (Seq, (><))
-import qualified Data.Sequence             as Seq
-import qualified Data.Traversable          as T
+import           Control.Arrow       ((&&&))
+import           Control.Monad.State (evalState, execState, get, modify, put)
+import qualified Data.Foldable       as F
+import           Data.Sequence       (Seq, (><))
+import qualified Data.Sequence       as Seq
+import qualified Data.Traversable    as T
 
 -- -----------------------------------------------------------------------------
 

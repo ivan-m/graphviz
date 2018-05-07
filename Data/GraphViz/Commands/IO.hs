@@ -29,32 +29,29 @@ module Data.GraphViz.Commands.IO
        ) where
 
 import Data.GraphViz.Exception
-import Data.GraphViz.Internal.State (initialState)
-import Data.GraphViz.Printing       (toDot)
+import Data.GraphViz.Printing       (runDotCode, toDot)
 import Data.GraphViz.Types          (ParseDotRepr, PrintDotRepr, parseDotGraph,
                                      printDotGraph)
 import Text.PrettyPrint.Leijen.Text (displayT, renderOneLine)
 
-import           Control.Concurrent        (MVar, forkIO, newEmptyMVar, putMVar,
-                                            takeMVar)
-import           Control.Exception         (IOException, evaluate, finally)
-import           Control.Monad             (liftM)
-import           Control.Monad.Trans.State
-import qualified Data.ByteString           as SB
-import           Data.ByteString.Lazy      (ByteString)
-import qualified Data.ByteString.Lazy      as B
-import           Data.Text.Encoding.Error  (UnicodeException)
-import           Data.Text.Lazy            (Text)
-import qualified Data.Text.Lazy.Encoding   as T
-import           System.Exit               (ExitCode (ExitSuccess))
-import           System.FilePath           ((<.>))
-import           System.IO                 (Handle,
-                                            IOMode (ReadMode, WriteMode),
-                                            hClose, hGetContents, hPutChar,
-                                            stdin, stdout, withFile)
-import           System.IO.Temp            (withSystemTempFile)
-import           System.Process            (runInteractiveProcess,
-                                            waitForProcess)
+import           Control.Concurrent       (MVar, forkIO, newEmptyMVar, putMVar,
+                                           takeMVar)
+import           Control.Exception        (IOException, evaluate, finally)
+import           Control.Monad            (liftM)
+import qualified Data.ByteString          as SB
+import           Data.ByteString.Lazy     (ByteString)
+import qualified Data.ByteString.Lazy     as B
+import           Data.Text.Encoding.Error (UnicodeException)
+import           Data.Text.Lazy           (Text)
+import qualified Data.Text.Lazy.Encoding  as T
+import           System.Exit              (ExitCode(ExitSuccess))
+import           System.FilePath          ((<.>))
+import           System.IO                (Handle, IOMode(ReadMode, WriteMode),
+                                           hClose, hGetContents, hPutChar,
+                                           stdin, stdout, withFile)
+import           System.IO.Temp           (withSystemTempFile)
+import           System.Process           (runInteractiveProcess,
+                                           waitForProcess)
 
 
 -- -----------------------------------------------------------------------------
@@ -63,7 +60,7 @@ import           System.Process            (runInteractiveProcess,
 --   (i.e. more compact than the output of 'renderDot').
 renderCompactDot :: (PrintDotRepr dg n) => dg n -> Text
 renderCompactDot = displayT . renderOneLine
-                   . (`evalState` initialState)
+                   . runDotCode
                    . toDot
 
 -- -----------------------------------------------------------------------------

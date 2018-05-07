@@ -22,9 +22,9 @@ import           Data.GraphViz.Internal.Util       (bool, stringToInt)
 import           Data.GraphViz.Parsing
 import           Data.GraphViz.Printing
 
-import           Prelude         hiding ((<>))
 import           Data.List       (intercalate)
 import           Data.Maybe      (isJust)
+import           Data.Monoid     ((<>))
 import           Data.Text.Lazy  (Text)
 import qualified Data.Text.Lazy  as T
 import           Data.Word       (Word16)
