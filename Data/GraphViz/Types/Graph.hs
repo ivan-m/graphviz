@@ -224,9 +224,9 @@ emptyGA = GA S.empty S.empty S.empty
 (Cntxt n mc as ps ss) & dg = withValues merge dg'
   where
     ps' = toMap ps
-    ps'' = M.delete n ps'
+    ps'' = fromMap (M.delete n ps')
     ss' = toMap ss
-    ss'' = M.delete n ss'
+    ss'' = fromMap (M.delete n ss')
 
     dg' = addNode n mc as dg
 
@@ -243,11 +243,11 @@ infixr 5 &
 composeList :: (Ord n) => [Context n] -> DotGraph n
 composeList = foldr (&) emptyGraph
 
-addSucc :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
-addSucc = addPS niSucc
+addSucc :: (Ord n) => n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
+addSucc = addEdgeLinks niSucc niSkip
 
-addPred :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
-addPred = addPS niPred
+addPred :: (Ord n) => n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
+addPred = addEdgeLinks niPred niSkip
 
 addPS :: (Ord n) => UpdateEdgeMap n
          -> n -> EdgeMap n -> NodeMap n -> NodeMap n
@@ -264,9 +264,15 @@ addPS fni t fas nm = t `seq` foldl' addSucc' nm fas'
 
 addEdgeLinks :: (Ord n) => UpdateEdgeMap n -> UpdateEdgeMap n
                 -> n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
-addEdgeLinks fwd rev f tas nm = undefined
+addEdgeLinks fwd rev f tas = updRev . updFwd
   where
-    updFwd = fwd
+    updFwd = M.adjust addFwd f
+
+    addFwd ni = foldl' (\ni' (t,as) -> fwd (M.insertWith (++) t [as]) ni') ni tas
+
+    updRev nm = foldl' (\nm' (t,as) -> M.adjust (addRev as) t nm') nm tas
+
+    addRev as = rev (M.insertWith (++) f [as])
 
 -- | Add a node to the current graph. Merges attributes and edges if
 --   the node already exists in the graph.
@@ -304,9 +310,7 @@ addDotNode (DotNode n as) = addNode n Nothing as
 addEdge :: (Ord n) => n -> n -> Attributes -> DotGraph n -> DotGraph n
 addEdge f t as = withValues merge
   where
-    -- Add the edge assuming it's directed; let the getter functions
-    -- be smart regarding directedness.
-    merge = addPred t (M.singleton f [as]) . addSucc f (M.singleton t [as])
+    merge = addPred t [(f,as)] . addSucc f [(t,as)]
 
 -- | A variant of 'addEdge' that takes a 'DotEdge' value.
 addDotEdge                  :: (Ord n) => DotEdge n -> DotGraph n -> DotGraph n
@@ -799,6 +803,9 @@ niSucc f ni = ni { _successors = f $ _successors ni }
 
 niPred      :: UpdateEdgeMap n
 niPred f ni = ni { _predecessors = f $ _predecessors ni }
+
+niSkip      :: UpdateEdgeMap n
+niSkip _ ni = ni
 
 toMap :: (Ord n) => [(n, Attributes)] -> EdgeMap n
 toMap = M.fromAscList . groupSortCollectBy fst snd
