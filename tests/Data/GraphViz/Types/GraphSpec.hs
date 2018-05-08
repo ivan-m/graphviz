@@ -17,7 +17,8 @@ import Data.GraphViz.Testing.Properties (prop_findAllEdges, prop_findAllNodes,
 import Data.GraphViz.Testing.Proxy      (DGProxy(..))
 import Data.GraphViz.Types              (edgeInformation)
 import Data.GraphViz.Types.Graph        (Context(..), DotEdge(..), DotGraph,
-                                         DotNode(..), emptyGraph, mkGraph, (&))
+                                         DotNode(..), addEdge, emptyGraph,
+                                         mkGraph, (&))
 
 import Test.Hspec            (Spec, describe, it)
 import Test.Hspec.QuickCheck (prop)
@@ -47,6 +48,8 @@ spec = do
                & Cntxt { node = 0, inCluster = Nothing, attributes = [], predecessors = [], successors = []}
                & emptyGraph)
               (0,1)
+    it "addEdge retains proper edge order" $
+      hasEdge (addEdge 0 1 [] (mkGraph [DotNode 0 [], DotNode 1 []] [])) (0,1)
 
 
 dproxy :: DGProxy DotGraph
