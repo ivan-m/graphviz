@@ -230,7 +230,7 @@ emptyGA = GA S.empty S.empty S.empty
 
     dg' = addNode n mc as dg
 
-    merge = addSucc n ps'' . addPred n ss''
+    merge = addSuccRev n ps'' . addPredRev n ss''
             -- ^ Add reverse edges
             . M.adjust (\ni -> ni { _predecessors = ps', _successors = ss' }) n
             -- ^ Add actual edges
@@ -243,24 +243,11 @@ infixr 5 &
 composeList :: (Ord n) => [Context n] -> DotGraph n
 composeList = foldr (&) emptyGraph
 
-addSucc :: (Ord n) => n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
-addSucc = addEdgeLinks niSucc niSkip
+addSuccRev :: (Ord n) => n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
+addSuccRev = addEdgeLinks niSkip niSucc
 
-addPred :: (Ord n) => n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
-addPred = addEdgeLinks niPred niSkip
-
-addPS :: (Ord n) => UpdateEdgeMap n
-         -> n -> EdgeMap n -> NodeMap n -> NodeMap n
-addPS fni t fas nm = t `seq` foldl' addSucc' nm fas'
-  where
-    fas' = fromMap fas
-
-    addSucc' nm' (f,as) = f `seq` M.alter (addS as) f nm'
-
-    -- addS :: Attributes -> Maybe (NodeInfo n) -> Maybe (NodeInfo n)
-    addS as = Just
-              . maybe (error "Node not in the graph!")
-                      (fni (M.insertWith (++) t [as]))
+addPredRev :: (Ord n) => n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
+addPredRev = addEdgeLinks niSkip niPred
 
 addEdgeLinks :: (Ord n) => UpdateEdgeMap n -> UpdateEdgeMap n
                 -> n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
@@ -310,7 +297,7 @@ addDotNode (DotNode n as) = addNode n Nothing as
 addEdge :: (Ord n) => n -> n -> Attributes -> DotGraph n -> DotGraph n
 addEdge f t as = withValues merge
   where
-    merge = addPred t [(f,as)] . addSucc f [(t,as)]
+    merge = addEdgeLinks niSucc niPred f [(t,as)]
 
 -- | A variant of 'addEdge' that takes a 'DotEdge' value.
 addDotEdge                  :: (Ord n) => DotEdge n -> DotGraph n -> DotGraph n
