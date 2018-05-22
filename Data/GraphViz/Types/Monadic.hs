@@ -64,7 +64,9 @@ module Data.GraphViz.Types.Monadic
        , nodeAttrs
        , edgeAttrs
          -- * Adding items to the graph.
-         -- ** Clusters
+         -- ** Subgraphs and clusters
+       , subgraph
+       , anonSubgraph
        , cluster
          -- ** Nodes
        , node
@@ -85,7 +87,7 @@ import qualified Data.Sequence as Seq
 
 #if !(MIN_VERSION_base (4,8,0))
 import Control.Applicative (Applicative(..))
-import Data.Monoid (Monoid(..))
+import Data.Monoid         (Monoid(..))
 #endif
 
 #if MIN_VERSION_base (4,9,0)
@@ -175,14 +177,14 @@ convertStatements :: DotStmts n -> DotStatements n
 convertStatements = Seq.fromList . map convertStatement . DL.toList
 
 data DotStmt n = MA GlobalAttributes
-               | MC (Cluster n)
+               | MS (Subgraph n)
                | MN (DotNode n)
                | ME (DotEdge n)
 
 convertStatement          :: DotStmt n -> DotStatement n
 convertStatement (MA gas) = GA gas
-convertStatement (MC cl)  = SG . DotSG True (Just $ clID cl)
-                                 . execStmts $ clStmts cl
+convertStatement (MS sg)  = SG . DotSG (sgIsClust sg) (sgID sg)
+                                 . execStmts $ sgStmts sg
 convertStatement (MN dn)  = DN dn
 convertStatement (ME de)  = DE de
 
@@ -202,15 +204,32 @@ edgeAttrs :: Attributes -> Dot n
 edgeAttrs = tellStmt . MA . EdgeAttrs
 
 -- -----------------------------------------------------------------------------
--- Clusters
+-- Subgraphs (including Clusters)
 
-data Cluster n = Cl { clID    :: GraphID
-                    , clStmts :: Dot n
-                    }
+data Subgraph n = Sg { sgIsClust :: Bool
+                     , sgID      :: Maybe GraphID
+                     , sgStmts   :: Dot n
+                     }
+
+-- | Add a named subgraph to the graph.
+subgraph :: GraphID -> DotM n a -> Dot n
+subgraph = nonClust . Just
+
+-- | Add an anonymous subgraph to the graph.
+--
+--   It is highly recommended you use 'subgraph' instead.
+anonSubgraph :: DotM n a -> Dot n
+anonSubgraph = nonClust Nothing
+
+nonClust :: Maybe GraphID -> DotM n a -> Dot n
+nonClust = createSubGraph False
+
+createSubGraph :: Bool -> Maybe GraphID -> DotM n a -> Dot n
+createSubGraph isCl mid = tellStmt . MS . Sg isCl mid . (>> return ())
 
 -- | Add a named cluster to the graph.
-cluster     :: GraphID -> DotM n a -> Dot n
-cluster cid = tellStmt . MC . Cl cid . (>> return ())
+cluster :: GraphID -> DotM n a -> Dot n
+cluster = createSubGraph True . Just
 
 -- -----------------------------------------------------------------------------
 -- Nodes
