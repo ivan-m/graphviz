@@ -78,7 +78,7 @@ module Data.GraphViz.Parsing
     , parseColorScheme
     ) where
 
-import Data.GraphViz.Exception      (GraphvizException (NotDotCode), throw)
+import Data.GraphViz.Exception      (GraphvizException(NotDotCode), throw)
 import Data.GraphViz.Internal.State
 import Data.GraphViz.Internal.Util
 
@@ -99,10 +99,11 @@ import           Data.Maybe          (fromMaybe, isJust, isNothing, listToMaybe,
                                       maybeToList)
 import           Data.Ratio          ((%))
 import qualified Data.Set            as Set
+import qualified Data.Text           as ST
 import           Data.Text.Lazy      (Text)
 import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T
-import           Data.Version        (Version (..))
+import           Data.Version        (Version(..))
 import           Data.Word           (Word16, Word8)
 
 -- -----------------------------------------------------------------------------
@@ -248,6 +249,11 @@ instance ParseDot Text where
           -- This will also take care of quoted versions of
           -- above.
           quotedParse quotedString
+
+instance ParseDot ST.Text where
+  parseUnqt = T.toStrict <$> parseUnqt
+
+  parse = T.toStrict <$> parse
 
 instance (ParseDot a) => ParseDot [a] where
   parseUnqt = parseUnqtList

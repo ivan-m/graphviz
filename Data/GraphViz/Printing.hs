@@ -73,6 +73,7 @@ import Data.GraphViz.Internal.Util
 import Data.GraphViz.Attributes.ColorScheme
 
 -- Only implicitly import and re-export combinators.
+import qualified Data.Text                            as ST
 import           Data.Text.Lazy                       (Text)
 import qualified Data.Text.Lazy                       as T
 import           Text.PrettyPrint.Leijen.Text.Monadic hiding (Pretty(..),
@@ -235,6 +236,11 @@ instance PrintDot Text where
   unqtDot = unqtString
 
   toDot = qtString
+
+instance PrintDot ST.Text where
+  unqtDot = unqtDot . T.fromStrict
+
+  toDot = qtString . T.fromStrict
 
 -- | For use with @OverloadedStrings@ to avoid ambiguous type variable errors.
 unqtText :: Text -> DotCode
