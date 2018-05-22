@@ -10,6 +10,24 @@ each release.
 Changes in 2999.20.0.0
 ----------------------
 
+* Can now create subgraphs using the Monadic representation.
+
+* Allow unescaped `-` and `'` in HTML labels (thanks to **Andrey
+  Kartashov**)
+
+* Support for strict `Text` instances for printing/parsing.
+
+* Creating a Graph representation with `mkGraph` was not adding edges
+  correctly (reported by **Joshua Chia**).
+
+* Test suite now uses HSpec, making it a lot easier to add tests for
+  specific issues.
+
+* Builds with GHC 8.4.* (thanks to **Tony Day**).
+
+* Monoid and Semigroup instances for Monadic representation (thanks to
+  **Chris Martin**).
+
 * Be more lenient in parsing some attributes (e.g. allow `top` instead
   of just `t` for `VerticalPlacement`).
 
