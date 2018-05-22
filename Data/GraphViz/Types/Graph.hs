@@ -96,7 +96,7 @@ module Data.GraphViz.Types.Graph
        , removeEmptyClusters
        ) where
 
-import           Data.GraphViz.Algorithms            (CanonicaliseOptions (..),
+import           Data.GraphViz.Algorithms            (CanonicaliseOptions(..),
                                                       canonicaliseOptions)
 import           Data.GraphViz.Algorithms.Clustering
 import           Data.GraphViz.Attributes.Complete   (Attributes)
@@ -109,17 +109,18 @@ import qualified Data.GraphViz.Types.Generalised     as G
 import           Data.GraphViz.Types.Internal.Common (partitionGlobal)
 import qualified Data.GraphViz.Types.State           as St
 
-import           Control.Applicative             ((<|>),liftA2)
+import           Control.Applicative             (liftA2, (<|>))
 import           Control.Arrow                   ((***))
 import qualified Data.Foldable                   as F
 import           Data.List                       (delete, foldl', unfoldr)
 import           Data.Map                        (Map)
 import qualified Data.Map                        as M
-import           Data.Maybe                      (fromMaybe, mapMaybe)
+import           Data.Maybe                      (fromMaybe, mapMaybe,
+                                                  maybeToList)
 import qualified Data.Sequence                   as Seq
 import qualified Data.Set                        as S
 import           Text.ParserCombinators.ReadPrec (prec)
-import           Text.Read                       (Lexeme (Ident), lexP, parens,
+import           Text.Read                       (Lexeme(Ident), lexP, parens,
                                                   readPrec)
 
 #if !(MIN_VERSION_base (4,8,0))
@@ -223,14 +224,16 @@ emptyGA = GA S.empty S.empty S.empty
 (Cntxt n mc as ps ss) & dg = withValues merge dg'
   where
     ps' = toMap ps
-    ps'' = M.delete n ps'
+    ps'' = fromMap (M.delete n ps')
     ss' = toMap ss
-    ss'' = M.delete n ss'
+    ss'' = fromMap (M.delete n ss')
 
     dg' = addNode n mc as dg
 
-    merge = addSucc n ps'' . addPred n ss''
+    merge = addSuccRev n ps'' . addPredRev n ss''
+            -- ^ Add reverse edges
             . M.adjust (\ni -> ni { _predecessors = ps', _successors = ss' }) n
+            -- ^ Add actual edges
 
 infixr 5 &
 
@@ -240,23 +243,23 @@ infixr 5 &
 composeList :: (Ord n) => [Context n] -> DotGraph n
 composeList = foldr (&) emptyGraph
 
-addSucc :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
-addSucc = addPS niSucc
+addSuccRev :: (Ord n) => n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
+addSuccRev = addEdgeLinks niSkip niSucc
 
-addPred :: (Ord n) => n -> EdgeMap n -> NodeMap n -> NodeMap n
-addPred = addPS niPred
+addPredRev :: (Ord n) => n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
+addPredRev = addEdgeLinks niSkip niPred
 
-addPS :: (Ord n) => ((EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n)
-         -> n -> EdgeMap n -> NodeMap n -> NodeMap n
-addPS fni t fas nm = t `seq` foldl' addSucc' nm fas'
+addEdgeLinks :: (Ord n) => UpdateEdgeMap n -> UpdateEdgeMap n
+                -> n -> [(n, Attributes)] -> NodeMap n -> NodeMap n
+addEdgeLinks fwd rev f tas = updRev . updFwd
   where
-    fas' = fromMap fas
+    updFwd = M.adjust addFwd f
 
-    addSucc' nm' (f,as) = f `seq` M.alter (addS as) f nm'
+    addFwd ni = foldl' (\ni' (t,as) -> fwd (M.insertWith (++) t [as]) ni') ni tas
 
-    addS as = Just
-              . maybe (error "Node not in the graph!")
-                      (fni (M.insertWith (++) t [as]))
+    updRev nm = foldl' (\nm' (t,as) -> M.adjust (addRev as) t nm') nm tas
+
+    addRev as = rev (M.insertWith (++) f [as])
 
 -- | Add a node to the current graph. Merges attributes and edges if
 --   the node already exists in the graph.
@@ -294,9 +297,7 @@ addDotNode (DotNode n as) = addNode n Nothing as
 addEdge :: (Ord n) => n -> n -> Attributes -> DotGraph n -> DotGraph n
 addEdge f t as = withValues merge
   where
-    -- Add the edge assuming it's directed; let the getter functions
-    -- be smart regarding directedness.
-    merge = addPred t (M.singleton f [as]) . addSucc f (M.singleton t [as])
+    merge = addEdgeLinks niSucc niPred f [(t,as)]
 
 -- | A variant of 'addEdge' that takes a 'DotEdge' value.
 addDotEdge                  :: (Ord n) => DotEdge n -> DotGraph n -> DotGraph n
@@ -690,7 +691,7 @@ getGraphInfo dg = (gas, cl)
 
     cl = M.mapWithKey addPath $ M.mapKeysMonotonic Just cgs
 
-    addPath c as = ( maybe [] (:[]) $ c `M.lookup` pM
+    addPath c as = ( maybeToList $ c `M.lookup` pM
                    , as
                    )
 
@@ -782,11 +783,16 @@ fromGlobAttrs (GA ga na ea) = filter (not . null . attrs)
                               , EdgeAttrs  $ unSame ea
                               ]
 
-niSucc      :: (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
+type UpdateEdgeMap n = (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
+
+niSucc      :: UpdateEdgeMap n
 niSucc f ni = ni { _successors = f $ _successors ni }
 
-niPred      :: (EdgeMap n -> EdgeMap n) -> NodeInfo n -> NodeInfo n
+niPred      :: UpdateEdgeMap n
 niPred f ni = ni { _predecessors = f $ _predecessors ni }
+
+niSkip      :: UpdateEdgeMap n
+niSkip _ ni = ni
 
 toMap :: (Ord n) => [(n, Attributes)] -> EdgeMap n
 toMap = M.fromAscList . groupSortCollectBy fst snd

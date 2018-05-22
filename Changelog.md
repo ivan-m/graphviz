@@ -7,6 +7,20 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.20.0.0
+----------------------
+
+* Be more lenient in parsing some attributes (e.g. allow `top` instead
+  of just `t` for `VerticalPlacement`).
+
+* Add new HTML attributes: `Columns`, `GradientAngle`, `Rows`, `Sides`
+  and `Style`.
+
+* Improve/update the TestParsing executable to work on being able to
+  parse all the sample `Dot` graphs shipped with Graphviz.
+
+* Bump dependencies.
+
 Changes in 2999.19.0.0
 ----------------------
 
