@@ -648,9 +648,6 @@ htmlEscapes = [ ('"', "quot")
               , ('>', "gt")
               , ('&', "amp")
               ]
-              ++ map numEscape ['-', '\'']
-  where
-    numEscape c = (c, T.pack $ '#' : show (ord c))
 
 -- | Flip the order and add extra values that might be escaped.  More
 --   specifically, provide the escape code for spaces (@\"nbsp\"@) and
