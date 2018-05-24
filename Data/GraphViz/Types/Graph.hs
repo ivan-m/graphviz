@@ -231,9 +231,9 @@ emptyGA = GA S.empty S.empty S.empty
     dg' = addNode n mc as dg
 
     merge = addSuccRev n ps'' . addPredRev n ss''
-            -- ^ Add reverse edges
+            -- Add reverse edges
             . M.adjust (\ni -> ni { _predecessors = ps', _successors = ss' }) n
-            -- ^ Add actual edges
+            -- Add actual edges
 
 infixr 5 &
 
