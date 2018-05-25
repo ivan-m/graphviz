@@ -7,6 +7,15 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.20.0.2
+----------------------
+
+* Fix Haddock issue (thanks to **Moritz Kiefer**)
+
+* Bump HSpec upper bound (thanks to **Moritz Kiefer**)
+
+* Make Hackage happier with Cabal-Version field
+
 Changes in 2999.20.0.1
 ----------------------
 
