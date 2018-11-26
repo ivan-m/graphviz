@@ -130,7 +130,7 @@ Test-Suite graphviz-testsuite {
                            hspec >= 2.1 && < 2.7,
                            text,
                            QuickCheck >= 2.3 && < 2.13
-        Build-Tool-Depends: hspec-discover:hspec-discover ^>= 2.4.4
+        Build-Tool-Depends: hspec-discover:hspec-discover == 2.*
 
         hs-Source-Dirs:    tests
 
