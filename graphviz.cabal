@@ -1,5 +1,5 @@
 Name:               graphviz
-Version:            2999.20.0.2
+Version:            2999.20.0.3
 Stability:          Beta
 Synopsis:           Bindings to Graphviz for graph visualisation.
 Description: {
@@ -39,8 +39,8 @@ Author:             Matthew Sackman, Ivan Lazar Miljenovic
 Maintainer:         Ivan.Miljenovic@gmail.com
 Build-Type:         Simple
 Tested-With:        GHC == 7.6.3, GHC == 7.8.4, GHC == 7.10.2,
-                    GHC == 8.0.1, GHC == 8.2.2, GHC == 8.4.1,
-                    GHC == 8.5.*
+                    GHC == 8.0.1, GHC == 8.2.2, GHC == 8.4.2,
+                    GHC == 8.6.2, GHC == 8.7.*
 Cabal-Version:      1.14
 Extra-Source-Files: TODO.md
                     Changelog.md
@@ -64,7 +64,7 @@ Library {
                            process,
                            directory,
                            temporary >=1.1 && <1.4,
-                           fgl >= 5.4 && < 5.7,
+                           fgl >= 5.4 && < 5.8,
                            filepath,
                            polyparse >=1.9 && <1.13,
                            bytestring >= 0.9 && < 0.11,
@@ -127,10 +127,10 @@ Test-Suite graphviz-testsuite {
                            fgl >= 5.5.0.0,
                            fgl-arbitrary == 0.2.*,
                            filepath,
-                           hspec >= 2.1 && < 2.6,
+                           hspec >= 2.1 && < 2.7,
                            hspec-discover,
                            text,
-                           QuickCheck >= 2.3 && < 2.12
+                           QuickCheck >= 2.3 && < 2.13
 
         hs-Source-Dirs:    tests
 
@@ -176,7 +176,7 @@ Benchmark graphviz-printparse {
                           deepseq,
                           text,
                           graphviz,
-                          criterion >= 0.5 && < 1.5
+                          criterion >= 0.5 && < 1.6
 
         hs-Source-Dirs:   utils
 

@@ -7,6 +7,11 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.20.0.3
+----------------------
+
+* Dependency bumps.
+
 Changes in 2999.20.0.2
 ----------------------
 
