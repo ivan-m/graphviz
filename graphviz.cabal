@@ -130,7 +130,7 @@ Test-Suite graphviz-testsuite {
                            hspec >= 2.1 && < 2.6,
                            hspec-discover,
                            text,
-                           QuickCheck >= 2.3 && < 2.12
+                           QuickCheck >= 2.3 && < 2.13
 
         hs-Source-Dirs:    tests
 
