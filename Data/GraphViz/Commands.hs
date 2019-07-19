@@ -249,7 +249,7 @@ runGraphvizCommand :: (PrintDotRepr dg n) => GraphvizCommand -> dg n
                       -> GraphvizOutput -> FilePath
                       -> IO FilePath
 runGraphvizCommand cmd gr t fp
-  = mapException addExc $ graphvizWithHandle cmd gr t toFile
+  = handle (throwIO . addExc) $ graphvizWithHandle cmd gr t toFile
   where
     addFl = (++) ("Unable to create " ++ fp ++ "\n")
     toFile h = SB.hGetContents h >>= SB.writeFile fp >> return fp
