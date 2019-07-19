@@ -149,7 +149,7 @@ runCommand :: (PrintDotRepr dg n)
               -> dg n
               -> IO a
 runCommand cmd args hf dg
-  = mapException notRunnable $
+  = handle (throwIO . notRunnable) $
     withSystemTempFile ("graphviz" <.> "gv") $ \dotFile dotHandle -> do
       finally (hPutCompactDot dotHandle dg) (hClose dotHandle)
       bracket
@@ -189,7 +189,7 @@ runCommand cmd args hf dg
                     ]
 
     -- Augmenting the hf function to let it work within the forkIO:
-    hf' = mapException fErr . hf
+    hf' = handle (throwIO . fErr) . hf
     fErr :: IOException -> GraphvizException
     fErr e = GVProgramExc $ "Error re-directing the output from "
              ++ cmd ++ ": " ++ show e

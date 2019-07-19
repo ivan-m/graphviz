@@ -11,6 +11,7 @@ module Data.GraphViz.Exception
          -- * Re-exported for convenience.
        , mapException
        , throw
+       , throwIO
        , handle
        , bracket
        ) where
