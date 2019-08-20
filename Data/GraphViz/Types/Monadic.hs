@@ -94,6 +94,8 @@ import Data.Monoid         (Monoid(..))
 import Data.Semigroup (Semigroup(..))
 #endif
 
+import Control.Monad.Fix (MonadFix (mfix))
+
 -- -----------------------------------------------------------------------------
 -- The Dot monad.
 
@@ -123,6 +125,10 @@ instance Monad (DotM n) where
              $ let ~(a,stmts)  = runDot dt
                    ~(b,stmts') = runDot $ f a
                in (b, stmts `DL.append` stmts')
+
+instance MonadFix (DotM n) where
+  mfix m = let (a,n) = runDot $ m a
+           in  DotM (a,n)
 
 #if MIN_VERSION_base (4,9,0)
 instance Semigroup a => Semigroup (DotM n a) where
