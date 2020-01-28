@@ -123,10 +123,12 @@ getColorScheme = do tp <- getsGS attributeType
                                NodeAttribute     -> nodeColor
                                EdgeAttribute     -> edgeColor
 
--- | The default separators for 'LayerSep'.
+-- | The default separators for
+--   'Data.GraphViz.Attributes.Complete.LayerSep'.
 defLayerSep :: [Char]
 defLayerSep = [' ', ':', '\t']
 
--- | The default separators for 'LayerListSep'.
+-- | The default separators for
+--   'Data.GraphViz.Attributes.Complete.LayerListSep'.
 defLayerListSep :: [Char]
 defLayerListSep = [',']
