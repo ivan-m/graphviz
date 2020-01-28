@@ -1,5 +1,5 @@
 Name:               graphviz
-Version:            2999.20.0.3
+Version:            2999.20.0.4
 Stability:          Beta
 Synopsis:           Bindings to Graphviz for graph visualisation.
 Description: {
@@ -40,7 +40,7 @@ Maintainer:         Ivan.Miljenovic@gmail.com
 Build-Type:         Simple
 Tested-With:        GHC == 7.6.3, GHC == 7.8.4, GHC == 7.10.2,
                     GHC == 8.0.1, GHC == 8.2.2, GHC == 8.4.2,
-                    GHC == 8.6.2
+                    GHC == 8.6.2, GHC == 8.8.2, GHC == 8.10.1
 Cabal-Version:      1.14
 Extra-Source-Files: TODO.md
                     Changelog.md
@@ -66,7 +66,7 @@ Library {
                            temporary >=1.1 && <1.4,
                            fgl >= 5.4 && < 5.8,
                            filepath,
-                           polyparse >=1.9 && <1.13,
+                           polyparse >=1.9 && <1.14,
                            bytestring >= 0.9 && < 0.11,
                            colour == 2.3.*,
                            mtl == 2.*,
@@ -127,9 +127,9 @@ Test-Suite graphviz-testsuite {
                            fgl >= 5.5.0.0,
                            fgl-arbitrary == 0.2.*,
                            filepath,
-                           hspec >= 2.1 && < 2.7,
+                           hspec >= 2.1 && < 2.8,
                            text,
-                           QuickCheck >= 2.3 && < 2.13
+                           QuickCheck >= 2.3 && < 2.14
         Build-Tool-Depends: hspec-discover:hspec-discover == 2.*
 
         hs-Source-Dirs:    tests
