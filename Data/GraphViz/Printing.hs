@@ -101,7 +101,7 @@ import Control.Applicative (Applicative)
 import Data.Monoid         (Monoid(..))
 #endif
 
-#if MIN_VERSION_base (4,9,0)
+#if MIN_VERSION_base (4,9,0) && !MIN_VERSION_base (4,13,0)
 import Data.Semigroup (Semigroup(..))
 #else
 import Data.Monoid ((<>))

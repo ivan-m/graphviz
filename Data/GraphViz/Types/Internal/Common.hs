@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
@@ -44,10 +44,13 @@ import Data.GraphViz.Printing
 
 import           Control.Monad       (unless, when)
 import           Data.Maybe          (isJust)
-import           Data.Monoid         ((<>))
 import           Data.Text.Lazy      (Text)
 import qualified Data.Text.Lazy      as T
 import qualified Data.Text.Lazy.Read as T
+
+#if !MIN_VERSION_base (4,13,0)
+import Data.Monoid ((<>))
+#endif
 
 -- -----------------------------------------------------------------------------
 -- This is re-exported by Data.GraphViz.Types

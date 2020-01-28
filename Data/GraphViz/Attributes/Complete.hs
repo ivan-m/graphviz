@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz.Attributes.Complete
@@ -206,12 +206,15 @@ import Data.GraphViz.Printing
 
 import           Data.List      (partition)
 import           Data.Maybe     (isNothing)
-import           Data.Monoid    ((<>))
 import qualified Data.Set       as S
 import           Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as T
 import           Data.Version   (Version(..))
 import           Data.Word      (Word16)
+
+#if !MIN_VERSION_base (4,13,0)
+import Data.Monoid ((<>))
+#endif
 
 -- -----------------------------------------------------------------------------
 

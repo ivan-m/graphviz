@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, PatternGuards #-}
+{-# LANGUAGE CPP, OverloadedStrings, PatternGuards #-}
 
 {- |
    Module      : Data.GraphViz.Attributes.HTML
@@ -81,10 +81,13 @@ import           Data.Function  (on)
 import           Data.List      (delete)
 import qualified Data.Map       as Map
 import           Data.Maybe     (catMaybes, listToMaybe)
-import           Data.Monoid    ((<>))
 import qualified Data.Text.Lazy as T
 import           Data.Word      (Word16, Word8)
 import           Numeric        (readHex)
+
+#if !MIN_VERSION_base (4,13,0)
+import Data.Monoid ((<>))
+#endif
 
 -- -----------------------------------------------------------------------------
 

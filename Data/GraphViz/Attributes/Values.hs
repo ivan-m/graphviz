@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 {-# OPTIONS_HADDOCK hide #-}
 {- |
    Module      : Data.GraphViz.Attributes.Values
@@ -24,11 +24,14 @@ import           Data.GraphViz.Printing
 
 import           Data.List       (intercalate)
 import           Data.Maybe      (isJust)
-import           Data.Monoid     ((<>))
 import           Data.Text.Lazy  (Text)
 import qualified Data.Text.Lazy  as T
 import           Data.Word       (Word16)
 import           System.FilePath (searchPathSeparator, splitSearchPath)
+
+#if !MIN_VERSION_base (4,13,0)
+import Data.Monoid ((<>))
+#endif
 
 -- -----------------------------------------------------------------------------
 

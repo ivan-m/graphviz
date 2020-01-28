@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 {-# OPTIONS_HADDOCK hide #-}
 {- |
    Module      : Data.GraphViz.Attributes.Arrows
@@ -16,8 +16,11 @@ import Data.GraphViz.Internal.Util (bool)
 import Data.GraphViz.Parsing
 import Data.GraphViz.Printing
 
-import Data.Maybe  (isJust)
+import Data.Maybe (isJust)
+
+#if !MIN_VERSION_base (4,13,0)
 import Data.Monoid ((<>))
+#endif
 
 -- -----------------------------------------------------------------------------
 

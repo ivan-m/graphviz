@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 {- |
    Module      : Data.GraphViz.Attributes.Colors
@@ -54,10 +54,13 @@ import Data.Colour.SRGB         (Colour, sRGB, sRGB24, toSRGB24)
 
 import           Data.Char      (isHexDigit)
 import           Data.Maybe     (isJust)
-import           Data.Monoid    ((<>))
 import qualified Data.Text.Lazy as T
 import           Data.Word      (Word8)
 import           Numeric        (readHex, showHex)
+
+#if !MIN_VERSION_base (4,13,0)
+import Data.Monoid ((<>))
+#endif
 
 -- -----------------------------------------------------------------------------
 

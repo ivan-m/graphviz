@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 {-# OPTIONS_HADDOCK hide #-}
 
 {- |
@@ -28,8 +28,11 @@ import Data.GraphViz.Printing
 import           Data.Map       (Map)
 import qualified Data.Map       as Map
 import           Data.Maybe     (isNothing)
-import           Data.Monoid    ((<>))
 import           Data.Text.Lazy (Text)
+
+#if !MIN_VERSION_base (4,13,0)
+import Data.Monoid ((<>))
+#endif
 
 -- -----------------------------------------------------------------------------
 
