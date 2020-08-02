@@ -30,7 +30,7 @@ Main features of the graphviz library include:
   augment node and edge labels with positional information, etc.
 }
 
-Homepage:           http://projects.haskell.org/graphviz/
+Homepage:           https://github.com/ivan-m/graphviz
 Category:           Graphs, Graphics
 License:            BSD3
 License-File:       LICENSE.md
@@ -72,7 +72,7 @@ Library {
                            mtl == 2.*,
                            text,
                            wl-pprint-text == 1.2.*,
-                           dlist >= 0.5 && < 0.9
+                           dlist >= 0.5 && < 1.1
 
         Exposed-Modules:   Data.GraphViz
                            Data.GraphViz.Types
@@ -129,7 +129,7 @@ Test-Suite graphviz-testsuite {
                            filepath,
                            hspec >= 2.1 && < 2.8,
                            text,
-                           QuickCheck >= 2.3 && < 2.14
+                           QuickCheck >= 2.3 && < 2.15
         Build-Tool-Depends: hspec-discover:hspec-discover == 2.*
 
         hs-Source-Dirs:    tests
