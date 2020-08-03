@@ -7,6 +7,16 @@ Release History and Changelog
 The following is information about what major changes have gone into
 each release.
 
+Changes in 2999.20.1.0
+----------------------
+
+* Add `MonadFix` instance for `DotM` (thanks to **George Wilson**)
+
+* Fix exception catching for missing executables (thanks to **Kostas
+  Dermentzis**)
+
+* Dependency bumps.
+
 Changes in 2999.20.0.4
 ----------------------
 
