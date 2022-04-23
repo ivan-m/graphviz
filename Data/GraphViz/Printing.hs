@@ -192,10 +192,10 @@ instance PrintDot Word16 where
   unqtDot = int . fromIntegral
 
 instance PrintDot Word32 where
-  unqtDot = int . fromIntegral
+  unqtDot = unqtDot . toInteger
 
 instance PrintDot Word64 where
-  unqtDot = int . fromIntegral
+  unqtDot = unqtDot . toInteger
 
 instance PrintDot Double where
   -- If it's an "integral" double, then print as an integer.  This
