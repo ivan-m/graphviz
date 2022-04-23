@@ -92,7 +92,7 @@ import           Data.Char           (toLower)
 import qualified Data.Set            as Set
 import           Data.String         (IsString(..))
 import           Data.Version        (Version(..))
-import           Data.Word           (Word16, Word8)
+import           Data.Word           (Word64, Word32, Word16, Word8)
 
 #if !(MIN_VERSION_base (4,11,0))
 
@@ -189,6 +189,12 @@ instance PrintDot Word8 where
   unqtDot = int . fromIntegral
 
 instance PrintDot Word16 where
+  unqtDot = int . fromIntegral
+
+instance PrintDot Word32 where
+  unqtDot = int . fromIntegral
+
+instance PrintDot Word64 where
   unqtDot = int . fromIntegral
 
 instance PrintDot Double where
