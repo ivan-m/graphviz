@@ -127,7 +127,7 @@ Test-Suite graphviz-testsuite {
                            fgl >= 5.5.0.0,
                            fgl-arbitrary == 0.2.*,
                            filepath,
-                           hspec >= 2.1 && < 2.8,
+                           hspec >= 2.1 && < 2.11,
                            text,
                            QuickCheck >= 2.3 && < 2.15
         Build-Tool-Depends: hspec-discover:hspec-discover == 2.*
