@@ -64,10 +64,10 @@ Library {
                            process,
                            directory,
                            temporary >=1.1 && <1.4,
-                           fgl >= 5.4 && < 5.8,
+                           fgl >= 5.4 && < 5.9,
                            filepath,
                            polyparse >=1.9 && <1.14,
-                           bytestring >= 0.9 && < 0.11,
+                           bytestring >= 0.9 && < 0.12,
                            colour == 2.3.*,
                            mtl == 2.*,
                            text,
@@ -127,7 +127,7 @@ Test-Suite graphviz-testsuite {
                            fgl >= 5.5.0.0,
                            fgl-arbitrary == 0.2.*,
                            filepath,
-                           hspec >= 2.1 && < 2.8,
+                           hspec >= 2.1 && < 2.11,
                            text,
                            QuickCheck >= 2.3 && < 2.15
         Build-Tool-Depends: hspec-discover:hspec-discover == 2.*
